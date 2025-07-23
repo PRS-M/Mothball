@@ -1,6 +1,6 @@
 using System;
 
-namespace CoreApp.Services;
+namespace CoreApp.Services.Implementations;
 
 public class FileHandler
 {

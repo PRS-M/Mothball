@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+             x:Class="MothballMobile.UI.Views.ContainersList"
+             Title="ContainersList">
+    <VerticalStackLayout
+        Spacing="10"
+        Padding="20">
+        <Label
+            Text="Lista kontenerów"
+            VerticalOptions="Center"
+            HorizontalOptions="Center" />
+        <CollectionView>
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical"
+                                 Span="1"
+                                 VerticalItemSpacing="10" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Kontener 1</x:String>
+                    <x:String>Kontener 2</x:String>
+                    <x:String>Kontener 3</x:String>
+                </x:Array>
+            </CollectionView.ItemsSource>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="10" Padding="10">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <Label Text="{Binding .}" VerticalOptions="Center" HorizontalOptions="Start" />
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <controls:ContainerTile />
+    </VerticalStackLayout>
+</ContentPage>
