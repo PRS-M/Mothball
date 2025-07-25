@@ -33,8 +33,8 @@ public class PhotoFileHandler
 
         return new Photo
         {
-            Id = Guid.NewGuid().ToString(),
-            ImageData = imageData,
+            FileName = Guid.NewGuid().ToString(),
+            // ImageData = imageData,
             DateTaken = dateTaken
         };
     }

@@ -4,7 +4,6 @@ namespace CoreApp;
 
 public class Photo
 {
-    public string Id { get; set; }
-    public byte[] ImageData { get; set; }
+    public string FileName { get; set; } = string.Empty;
     public DateTime DateTaken { get; set; }
 }

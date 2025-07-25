@@ -10,7 +10,7 @@ public static class JsonHandler
         if (string.IsNullOrEmpty(filePath))
             throw new ArgumentNullException(nameof(filePath));
 
-        if (data == null)
+        if (EqualityComparer<T>.Default.Equals(data, default))
             throw new ArgumentNullException(nameof(data));
 
         var json = JsonSerializer.Serialize(data);
