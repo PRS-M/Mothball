@@ -1,31 +1,41 @@
 using System;
 using System.Text.Json;
+using CoreApp.Services.Interfaces;
 
 namespace CoreApp.Services.Implementations;
 
-public static class JsonHandler
+public class JsonHandler
 {
-    public static void SerializeToFile<T>(string filePath, T data)
+    private readonly ITextFileHandler fileHandler;
+
+    public JsonHandler(ITextFileHandler fileHandler)
     {
-        if (string.IsNullOrEmpty(filePath))
-            throw new ArgumentNullException(nameof(filePath));
+        this.fileHandler = fileHandler;
+    }
+
+    public async Task SerializeToFile<T>(string fileName, string folderName, T data)
+    {
+        if (string.IsNullOrEmpty(fileName))
+            throw new ArgumentNullException(nameof(fileName));
 
         if (EqualityComparer<T>.Default.Equals(data, default))
             throw new ArgumentNullException(nameof(data));
 
-        var json = JsonSerializer.Serialize(data);
-        File.WriteAllText(filePath, json);
+        string json = JsonSerializer.Serialize(data);
+        await fileHandler.SaveTextFileAsync(fileName, folderName, json);
     }
 
-    public static T DeserializeFromFile<T>(string filePath)
+    public static async Task<T> DeserializeFromFile<T>(string fileName, string folderName, string appDataPath)
     {
-        if (string.IsNullOrEmpty(filePath))
-            throw new ArgumentNullException(nameof(filePath));
+        if (string.IsNullOrEmpty(fileName))
+            throw new ArgumentNullException(nameof(fileName));
+
+        string filePath = Path.Combine(appDataPath, folderName, fileName);
 
         if (!File.Exists(filePath))
             throw new FileNotFoundException($"File not found: {filePath}");
 
-        var json = File.ReadAllText(filePath);
+        var json = await File.ReadAllTextAsync(filePath);
         var result = JsonSerializer.Deserialize<T>(json);
 
         return result;
