@@ -5,9 +5,9 @@ namespace CoreApp.Services.Implementations;
 
 public class FileHandler : IFileHandler, ITextFileHandler
 {
-    public async Task<string> SaveFileAsync(string fileName, string folderName, byte[] data)
+    public async Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
     {
-        string fullPath = GetFullPath(fileName, folderName);
+        string fullPath = GetFullPath(fileName, folderPath);
         await File.WriteAllBytesAsync(fullPath, data);
 
         return fullPath;

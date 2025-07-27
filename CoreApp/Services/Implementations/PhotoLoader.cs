@@ -27,10 +27,7 @@ public class PhotoLoader
 
     private PhotoWithData LoadPhotoData(Photo photo)
     {
-        if (photo == null)
-        {
-            throw new ArgumentNullException(nameof(photo));
-        }
+        ArgumentNullException.ThrowIfNull(photo);
 
         return new PhotoWithData
         {

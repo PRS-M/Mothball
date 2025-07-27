@@ -4,18 +4,12 @@ namespace CoreApp.Services;
 
 public class PhotoFileHandler
 {
-    public void SavePhoto(Photo photo, string filePath)
+    public PhotoFileHandler()
     {
-        if (photo == null || string.IsNullOrEmpty(filePath))
-        {
-            throw new ArgumentNullException("Photo or file path cannot be null.");
-        }
 
-        // Logic to save the photo's ImageData to the specified file path
-        File.WriteAllBytes(filePath, photo.ImageData);
     }
 
-    public Photo LoadPhoto(string filePath)
+    public PhotoWithData LoadPhoto(string filePath)
     {
         if (string.IsNullOrEmpty(filePath))
         {
@@ -31,7 +25,7 @@ public class PhotoFileHandler
         var fileInfo = new FileInfo(filePath);
         DateTime dateTaken = fileInfo.CreationTime;
 
-        return new Photo
+        return new PhotoWithData
         {
             FileName = Guid.NewGuid().ToString(),
             // ImageData = imageData,

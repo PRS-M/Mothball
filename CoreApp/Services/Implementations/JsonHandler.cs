@@ -13,7 +13,7 @@ public class JsonHandler
         this.fileHandler = fileHandler;
     }
 
-    public async Task SerializeToFile<T>(string fileName, string folderName, T data)
+    public async Task<string> SerializeToFile<T>(string fileName, string folderName, T data)
     {
         if (string.IsNullOrEmpty(fileName))
             throw new ArgumentNullException(nameof(fileName));
@@ -22,7 +22,7 @@ public class JsonHandler
             throw new ArgumentNullException(nameof(data));
 
         string json = JsonSerializer.Serialize(data);
-        await fileHandler.SaveTextFileAsync(fileName, folderName, json);
+        return await fileHandler.SaveTextFileAsync(fileName, folderName, json);
     }
 
     public static async Task<T> DeserializeFromFile<T>(string fileName, string folderName, string appDataPath)

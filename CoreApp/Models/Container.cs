@@ -1,4 +1,6 @@
-﻿namespace CoreApp;
+﻿using CoreApp.Services.Interfaces;
+
+namespace CoreApp;
 
 public class Container
 {
@@ -12,6 +14,12 @@ public class Container
     public void AddItem(Item item)
     {
         Items.Add(item);
+    }
+
+    public async Task AddItemPhoto(ICameraHandler cameraHandler, Item item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        await item.CapturePhotoAsync(cameraHandler, Name);
     }
 
     public void RemoveItem(Item item)
