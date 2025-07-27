@@ -34,9 +34,9 @@ public class FileHandler : IFileHandler, ITextFileHandler
         await Task.Run(() => File.Delete(filePath));
     }
 
-    public async Task<string> SaveTextFileAsync(string fileName, string folderName, string content)
+    public async Task<string> SaveTextFileAsync(string fileName, string folderPath, string content)
     {
-        string fullPath = GetFullPath(fileName, folderName);
+        string fullPath = GetFullPath(fileName, folderPath);
         await File.WriteAllTextAsync(fullPath, content);
 
         return fullPath;
