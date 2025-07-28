@@ -11,7 +11,7 @@ public class Item
     public List<Photo> Photos { get; set; }
 
     [JsonIgnore]
-    public List<PhotoWithData> PhotosWithData { get; set; }
+    public List<Photo> PhotosWithData { get; set; }
 
     public async Task CapturePhotoAsync(ICameraHandler cameraHandler, string containerName)
     {
@@ -19,7 +19,7 @@ public class Item
         ArgumentNullException.ThrowIfNull(containerName);
 
         // Capture photo logic using the camera handler
-        PhotoWithData photoWithData = await cameraHandler.CapturePhotoAsync(this, containerName);
+        Photo photoWithData = await cameraHandler.CapturePhotoAsync(this, containerName);
 
         PhotosWithData.Add(photoWithData);
         Photo photo = new Photo { FileName = photoWithData.FileName };

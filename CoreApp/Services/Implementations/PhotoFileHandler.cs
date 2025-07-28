@@ -21,13 +21,12 @@ public class PhotoFileHandler
             foreach (var photo in item.Photos)
             {
                 byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Constants.PathToPhotos);
-                PhotoWithData photoWithData = item.PhotosWithData.Find(p => p.FileName == photo.FileName) ?? new PhotoWithData();
-                photoWithData.ImageData = bytes;
+                photo.ImageData = bytes;
             }
         }
     }
 
-    public PhotoWithData LoadPhoto(string filePath)
+    public Photo LoadPhoto(string filePath)
     {
         if (string.IsNullOrEmpty(filePath))
         {
@@ -43,7 +42,7 @@ public class PhotoFileHandler
         var fileInfo = new FileInfo(filePath);
         DateTime dateTaken = fileInfo.CreationTime;
 
-        return new PhotoWithData
+        return new Photo
         {
             FileName = Guid.NewGuid().ToString(),
             // ImageData = imageData,

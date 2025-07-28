@@ -16,11 +16,11 @@ public class CameraHandler : ICameraHandler
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
-    public async Task<PhotoWithData> CapturePhotoAsync(Item item, string containerName)
+    public async Task<Photo> CapturePhotoAsync(Item item, string containerName)
     {
         string fileName = $"{item.Name}-{Guid.NewGuid()}.jpg";
 
-        PhotoWithData photoWithData = new PhotoWithData
+        Photo photoWithData = new Photo
         {
             FileName = fileName,
         };

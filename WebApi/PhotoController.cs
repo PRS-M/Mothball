@@ -8,7 +8,7 @@ namespace WebApi
     public class PhotoController : ControllerBase
     {
         [HttpGet("image")]
-        public IActionResult GetImage([FromBody] CoreApp.PhotoWithData photo)
+        public IActionResult GetImage([FromBody] CoreApp.Photo photo)
         {
             if (photo == null || photo.ImageData == null)
             {

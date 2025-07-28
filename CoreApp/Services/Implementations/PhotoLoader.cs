@@ -25,11 +25,11 @@ public class PhotoLoader
         }
     }
 
-    private PhotoWithData LoadPhotoData(Photo photo)
+    private Photo LoadPhotoData(Photo photo)
     {
         ArgumentNullException.ThrowIfNull(photo);
 
-        return new PhotoWithData
+        return new Photo
         {
             FileName = photo.FileName,
             DateTaken = photo.DateTaken,
