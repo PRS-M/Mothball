@@ -3,7 +3,7 @@ using CoreApp.Services.Interfaces;
 
 namespace CoreApp.Services.Implementations;
 
-public class FileHandler : IFileHandler, ITextFileHandler
+public class FileHandler : IFileHandler
 {
     public async Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
     {
@@ -20,19 +20,20 @@ public class FileHandler : IFileHandler, ITextFileHandler
 
     public async Task<byte[]> ReadFileAsync(string fileName, string folderPath)
     {
-        string path = GetFullPath(fileName, folderPath);
-        if (!File.Exists(path))
-            throw new FileNotFoundException($"File not found: {path}");
+        string fullPath = GetFullPath(fileName, folderPath);
+        if (!File.Exists(fullPath))
+            throw new FileNotFoundException($"File not found: {fullPath}");
 
-        return await File.ReadAllBytesAsync(path);
+        return await File.ReadAllBytesAsync(fullPath);
     }
 
-    public async Task DeleteFileAsync(string filePath)
+    public async Task DeleteFileAsync(string fileName, string folderPath)
     {
-        if (!File.Exists(filePath))
-            throw new FileNotFoundException($"File not found: {filePath}");
+        string fullPath = GetFullPath(fileName, folderPath);
+        if (!File.Exists(fullPath))
+            throw new FileNotFoundException($"File not found: {fullPath}");
 
-        await Task.Run(() => File.Delete(filePath));
+        await Task.Run(() => File.Delete(fullPath));
     }
 
     public async Task<string> SaveTextFileAsync(string fileName, string folderPath, string content)
@@ -43,12 +44,13 @@ public class FileHandler : IFileHandler, ITextFileHandler
         return fullPath;
     }
 
-    public async Task<string> ReadTextFileAsync(string filePath)
+    public async Task<string> ReadTextFileAsync(string fileName, string folderPath)
     {
-        if (!File.Exists(filePath))
-            throw new FileNotFoundException($"File not found: {filePath}");
+        string fullPath = GetFullPath(fileName, folderPath);
+        if (!File.Exists(fullPath))
+            throw new FileNotFoundException($"File not found: {fullPath}");
 
-        return await File.ReadAllTextAsync(filePath);
+        return await File.ReadAllTextAsync(fullPath);
     }
 
     private string GetFullPath(string fileName, string folderName)

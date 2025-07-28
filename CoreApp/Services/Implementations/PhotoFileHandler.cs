@@ -16,6 +16,7 @@ public class PhotoFileHandler
 
     public async Task LoadPhotos(Container container)
     {
+        ArgumentNullException.ThrowIfNull(container);
         foreach (var item in container.Items)
         {
             foreach (var photo in item.Photos)

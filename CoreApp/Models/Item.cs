@@ -19,7 +19,7 @@ public class Item
         ArgumentNullException.ThrowIfNull(containerName);
 
         // Capture photo logic using the camera handler
-        Photo photoWithData = await cameraHandler.CapturePhotoAsync(this, containerName);
+        Photo photoWithData = await cameraHandler.CaptureItemPhotoAsync(this, containerName);
 
         PhotosWithData.Add(photoWithData);
         Photo photo = new Photo { FileName = photoWithData.FileName };

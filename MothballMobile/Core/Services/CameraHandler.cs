@@ -16,7 +16,7 @@ public class CameraHandler : ICameraHandler
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
-    public async Task<Photo> CapturePhotoAsync(Item item, string containerName)
+    public async Task<Photo> CaptureItemPhotoAsync(Item item, string containerName)
     {
         string fileName = $"{item.Name}-{Guid.NewGuid()}.jpg";
 
@@ -27,22 +27,7 @@ public class CameraHandler : ICameraHandler
 
         try
         {
-            FileResult? photo = await mediaPicker.CapturePhotoAsync();
-            if (photo != null)
-            {
-                using Stream stream = await photo.OpenReadAsync();
-                byte[] bytes = new byte[stream.Length];
-
-                string path = Path.Combine(Constants.PathToPhotos, containerName);
-                await stream.ReadExactlyAsync(bytes, 0, (int)stream.Length);
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-
-                await fileHandler.SaveFileAsync(fileName, path, bytes);
-                photoWithData.ImageData = bytes;
-            }
+            await CaptureAndSavePhoto(containerName, fileName, photoWithData);
         }
         catch (Exception ex)
         {
@@ -51,5 +36,26 @@ public class CameraHandler : ICameraHandler
         }
 
         return photoWithData;
+    }
+
+    private async Task CaptureAndSavePhoto(string containerName, string fileName, Photo photoWithData)
+    {
+        FileResult? photo = await mediaPicker.CapturePhotoAsync();
+        if (photo != null)
+        {
+            using Stream stream = await photo.OpenReadAsync();
+            byte[] bytes = new byte[stream.Length];
+
+            string path = Path.Combine(Constants.PathToPhotos, containerName);
+            await stream.ReadExactlyAsync(bytes, 0, (int)stream.Length);
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            await fileHandler.SaveFileAsync(fileName, path, bytes);
+            photoWithData.ImageData = bytes;
+        }
     }
 }

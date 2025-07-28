@@ -6,9 +6,9 @@ namespace CoreApp.Services.Implementations;
 
 public class JsonHandler
 {
-    private readonly ITextFileHandler fileHandler;
+    private readonly IFileHandler fileHandler;
 
-    public JsonHandler(ITextFileHandler fileHandler)
+    public JsonHandler(IFileHandler fileHandler)
     {
         this.fileHandler = fileHandler;
     }
@@ -25,19 +25,17 @@ public class JsonHandler
         return await fileHandler.SaveTextFileAsync(fileName, folderName, json);
     }
 
-    public static async Task<T> DeserializeFromFile<T>(string fileName, string folderName, string appDataPath)
+    public async Task<T> DeserializeFromFile<T>(string fileName, string folderName)
     {
         if (string.IsNullOrEmpty(fileName))
             throw new ArgumentNullException(nameof(fileName));
 
-        string filePath = Path.Combine(appDataPath, folderName, fileName);
+        if (string.IsNullOrEmpty(folderName))
+            throw new ArgumentNullException(nameof(folderName));
 
-        if (!File.Exists(filePath))
-            throw new FileNotFoundException($"File not found: {filePath}");
-
-        var json = await File.ReadAllTextAsync(filePath);
+        var json = await fileHandler.ReadTextFileAsync(fileName, folderName);
         var result = JsonSerializer.Deserialize<T>(json);
 
-        return result;
+        return result ?? throw new JsonException($"Failed to deserialize JSON from file: {fileName}");
     }
 }
