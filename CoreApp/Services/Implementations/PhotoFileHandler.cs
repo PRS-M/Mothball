@@ -1,12 +1,30 @@
 using System;
+using System.Threading.Tasks;
+using CoreApp.Services.Interfaces;
+using CoreApp.Utilities;
 
 namespace CoreApp.Services;
 
 public class PhotoFileHandler
 {
-    public PhotoFileHandler()
-    {
+    private readonly IFileHandler fileHandler;
 
+    public PhotoFileHandler(IFileHandler fileHandler)
+    {
+        this.fileHandler = fileHandler;
+    }
+
+    public async Task LoadPhotos(Container container)
+    {
+        foreach (var item in container.Items)
+        {
+            foreach (var photo in item.Photos)
+            {
+                byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Constants.PathToPhotos);
+                PhotoWithData photoWithData = item.PhotosWithData.Find(p => p.FileName == photo.FileName) ?? new PhotoWithData();
+                photoWithData.ImageData = bytes;
+            }
+        }
     }
 
     public PhotoWithData LoadPhoto(string filePath)

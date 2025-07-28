@@ -18,12 +18,13 @@ public class FileHandler : IFileHandler, ITextFileHandler
         return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     }
 
-    public async Task<byte[]> ReadFileAsync(string filePath)
+    public async Task<byte[]> ReadFileAsync(string fileName, string folderPath)
     {
-        if (!File.Exists(filePath))
-            throw new FileNotFoundException($"File not found: {filePath}");
+        string path = GetFullPath(fileName, folderPath);
+        if (!File.Exists(path))
+            throw new FileNotFoundException($"File not found: {path}");
 
-        return await File.ReadAllBytesAsync(filePath);
+        return await File.ReadAllBytesAsync(path);
     }
 
     public async Task DeleteFileAsync(string filePath)
