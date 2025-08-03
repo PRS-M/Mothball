@@ -68,7 +68,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Core/Models/" />
-	  <Folder Include="UI/ViewModels/" />
 	</ItemGroup>
 
 	<ItemGroup>

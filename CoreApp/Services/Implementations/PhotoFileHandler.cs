@@ -17,6 +17,11 @@ public class PhotoFileHandler
     public async Task LoadPhotos(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
+
+        container.Photo = new Photo
+        {
+            FileName = $"{container.Name}-photo.jpg",
+        };
         foreach (var item in container.Items)
         {
             foreach (var photo in item.Photos)

@@ -16,18 +16,46 @@ public class CameraHandler : ICameraHandler
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
-    public async Task<Photo> CaptureItemPhotoAsync(Item item, string containerName)
+    public async Task<Photo> CaptureContainerPhotoAsync(Container container)
     {
-        string fileName = $"{item.Name}-{Guid.NewGuid()}.jpg";
-
-        Photo photoWithData = new Photo
+        if (container == null)
         {
-            FileName = fileName,
+            throw new ArgumentNullException(nameof(container), "Container cannot be null.");
+        }
+
+        var photoWithData = new Photo
+        {
+            FileName = $"{container.Name}-{Guid.NewGuid()}.jpg"
         };
 
         try
         {
-            await CaptureAndSavePhoto(containerName, fileName, photoWithData);
+            await CaptureAndSavePhoto(container.Name, photoWithData.FileName, photoWithData);
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions (e.g., user cancels, permissions denied)
+            Console.WriteLine($"Error capturing photo: {ex.Message}");
+        }
+
+        return photoWithData;
+    }
+
+    public async Task<Photo> CaptureItemPhotoAsync(Item item, string containerName)
+    {
+        if (item == null)
+        {
+            throw new ArgumentNullException(nameof(item), "Item cannot be null.");
+        }
+
+        var photoWithData = new Photo
+        {
+            FileName = $"{item.Name}-{Guid.NewGuid()}.jpg"
+        };
+
+        try
+        {
+            await CaptureAndSavePhoto(containerName, photoWithData.FileName, photoWithData);
         }
         catch (Exception ex)
         {

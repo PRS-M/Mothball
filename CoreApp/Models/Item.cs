@@ -22,7 +22,7 @@ public class Item
         Photo photoWithData = await cameraHandler.CaptureItemPhotoAsync(this, containerName);
 
         PhotosWithData.Add(photoWithData);
-        Photo photo = new Photo { FileName = photoWithData.FileName };
+        var photo = new Photo { FileName = photoWithData.FileName };
         Photos.Add(photo);
     }
 }

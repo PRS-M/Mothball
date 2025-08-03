@@ -9,7 +9,7 @@
 
     <ShellContent
         Title="Home"
-        ContentTemplate="{DataTemplate ui:ContainersList}"
+        ContentTemplate="{DataTemplate ui:AddContainer}"
         Route="MainPage" />
 
 </Shell>
