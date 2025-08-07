@@ -68,7 +68,7 @@ public class CameraHandler : ICameraHandler
 
     private async Task CaptureAndSavePhoto(string containerName, string fileName, Photo photoWithData)
     {
-        FileResult? photo = await mediaPicker.CapturePhotoAsync();
+        FileResult? photo = await mediaPicker.PickPhotoAsync();
         if (photo != null)
         {
             using Stream stream = await photo.OpenReadAsync();
@@ -76,11 +76,6 @@ public class CameraHandler : ICameraHandler
 
             string path = Path.Combine(Constants.PathToPhotos, containerName);
             await stream.ReadExactlyAsync(bytes, 0, (int)stream.Length);
-
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
 
             await fileHandler.SaveFileAsync(fileName, path, bytes);
             photoWithData.ImageData = bytes;
