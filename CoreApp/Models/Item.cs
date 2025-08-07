@@ -7,11 +7,11 @@ namespace CoreApp;
 public class Item
 {
     public string Name { get; set; }
-    public List<string> PhotoFileNames { get; set; }
-    public List<Photo> Photos { get; set; }
+    public List<string> PhotoFileNames { get; set; } = new();
+    public List<Photo> Photos { get; set; } = new();
 
     [JsonIgnore]
-    public List<Photo> PhotosWithData { get; set; }
+    public List<Photo> PhotosWithData { get; set; } = new();
 
     public async Task CapturePhotoAsync(ICameraHandler cameraHandler, string containerName)
     {

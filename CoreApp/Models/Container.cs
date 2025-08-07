@@ -10,7 +10,7 @@ public class Container
     public string LocationDescription { get; set; }
     public string Description { get; set; }
     public Photo Photo { get; set; }
-    public List<Item> Items { get; set; }
+    public List<Item> Items { get; set; } = new();
 
     public void AddItem(Item item)
     {
