@@ -6,10 +6,32 @@
     xmlns:local="clr-namespace:MothballMobile"
     xmlns:ui="clr-namespace:MothballMobile.UI.Views"
     Title="MothballMobile">
-
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate ui:AddContainer}"
-        Route="MainPage" />
-
+    <FlyoutItem Title="Home">
+        <ShellContent
+            Title="Home"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Containers">
+        <Tab Title="Containers List">
+            <ShellContent
+                Title="Containers List"
+                ContentTemplate="{DataTemplate ui:ContainersList}"
+                Route="ContainersList">
+                <ShellContent.Icon>
+                    <FontImageSource Glyph="&#xf080;" FontFamily="FontAwesome" Size="24" Color="{AppThemeBinding Light=Black, Dark=White}" />
+                </ShellContent.Icon>
+            </ShellContent>
+        </Tab>
+        <Tab Title="Add Container">
+            <ShellContent
+                Title="Add Container"
+                ContentTemplate="{DataTemplate ui:AddContainer}"
+                Route="AddContainer">
+                <ShellContent.Icon>
+                    <FontImageSource Glyph="&#xf196;" FontFamily="FontAwesome" Size="24" Color="{AppThemeBinding Light=Black, Dark=White}" />
+                </ShellContent.Icon>
+            </ShellContent>
+        </Tab>
+    </FlyoutItem>
 </Shell>

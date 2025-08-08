@@ -3,30 +3,42 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:MothballMobile.UI.ViewModels"
              x:Class="MothballMobile.UI.Views.AddContainer"
-             Title="AddContainer">
-    <VerticalStackLayout>
+             x:DataType="local:AddContainerViewModel"
+             Title="Add Container">
+             <ContentPage.Resources>
+                <x:Double x:Key="width">250</x:Double>
+            </ContentPage.Resources>
+    <VerticalStackLayout Padding="10"
+                         Spacing="20"
+                         Margin="20"
+                         VerticalOptions="Start"
+                         HorizontalOptions="Center">
         <Label
-            Text="Welcome to .NET MAUI!"
+            Text="Enter container details."
             VerticalOptions="Center"
             HorizontalOptions="Center" />
         <Entry
             Placeholder="Enter container name"
             Text="{Binding Name}"
+            WidthRequest="{StaticResource width}"
             VerticalOptions="Center"
             HorizontalOptions="Center" />
         <Entry
             Placeholder="Enter container description"
             Text="{Binding Description}"
+            WidthRequest="{StaticResource width}"
             VerticalOptions="Center"
             HorizontalOptions="Center" />
         <Entry
             Placeholder="Enter container location"
             Text="{Binding LocationDescription}"
+            WidthRequest="{StaticResource width}"
             VerticalOptions="Center"
             HorizontalOptions="Center" />
         <Button
             Text="Add Container"
             Command="{Binding AddContainerCommand}"
+            WidthRequest="{StaticResource width}"
             VerticalOptions="Center"
             HorizontalOptions="Center" />
     </VerticalStackLayout>
