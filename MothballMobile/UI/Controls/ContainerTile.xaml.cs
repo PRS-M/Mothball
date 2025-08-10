@@ -25,6 +25,9 @@ public partial class ContainerTile : ContentView
 	public static readonly BindableProperty ItemCountProperty =
 		BindableProperty.Create(nameof(ItemCount), typeof(int), typeof(ContainerTile), 99);
 
+	public static readonly BindableProperty ImageSourceProperty =
+		BindableProperty.Create(nameof(ImageSource), typeof(ImageSource), typeof(ContainerTile), default(ImageSource));
+
 	public ICommand Command
 	{
 		get => (ICommand)GetValue(CommandProperty);
@@ -53,6 +56,12 @@ public partial class ContainerTile : ContentView
 	{
 		get => (int)GetValue(ItemCountProperty);
 		set => SetValue(ItemCountProperty, value);
+	}
+
+	public ImageSource ImageSource
+	{
+		get => (ImageSource)GetValue(ImageSourceProperty);
+		set => SetValue(ImageSourceProperty, value);
 	}
 
 	private void Border_OnTapped(object sender, EventArgs e)
