@@ -11,7 +11,9 @@
             Text="Lista kontenerów"
             VerticalOptions="Center"
             HorizontalOptions="Center" />
-        <CollectionView>
+        <CollectionView HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Margin="10">
             <CollectionView.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical"
                                  Span="1"
@@ -26,7 +28,7 @@
             </CollectionView.ItemsSource>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border Margin="10" Padding="10">
+                    <Border Margin="10" Padding="10" HorizontalOptions="Center" WidthRequest="300">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="10" />
                         </Border.StrokeShape>
@@ -36,5 +38,6 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
         <controls:ContainerTile />
+        <controls:ContainerNavTile Text="Kontener 1" Command="{Binding NavigateCommand}" />
     </VerticalStackLayout>
 </ContentPage>

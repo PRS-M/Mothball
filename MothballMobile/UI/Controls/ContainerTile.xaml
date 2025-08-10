@@ -23,7 +23,7 @@
                 Grid.Column="0"
                 Text="{Binding Source={x:Reference this}, Path=Name}"
                 VerticalOptions="Center"
-                HorizontalOptions="Center" />
+                HorizontalOptions="Start" />
             <Label
                 Grid.Row="0"
                 Grid.Column="1"
@@ -35,7 +35,7 @@
                 Grid.Column="0"
                 Text="{Binding Source={x:Reference this}, Path=LocationDescription}"
                 VerticalOptions="Center"
-                HorizontalOptions="Center" />
+                HorizontalOptions="Start" />
             <Label
                 Grid.Row="1"
                 Grid.Column="1"

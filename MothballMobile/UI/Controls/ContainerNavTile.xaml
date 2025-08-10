@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MothballMobile.UI.Controls.ContainerNavTile">
+        <Border
+            HeightRequest="150"
+            WidthRequest="200">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="10" StrokeThickness="4" Stroke="LightBlue" />
+            </Border.StrokeShape>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup>
+                    <VisualState x:Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="White" />
+                            <Setter Property="Scale" Value="1" />
+                            <Setter Property="Stroke" Value="LightGray" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="LightGray" />
+                            <Setter Property="Scale" Value="0.95" />
+                            <Setter Property="Stroke" Value="LightBlue" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            <VerticalStackLayout
+                VerticalOptions="Center"
+                Spacing="1"
+                Padding="5">
+                <Image
+                    Source="dotnet_bot.png"
+                    Aspect="AspectFit"
+                    HeightRequest="80" />
+                <Label
+                    TextColor="{AppThemeBinding Dark={StaticResource Black}}"
+                    Text="{Binding Text, Source={RelativeSource AncestorType={x:Type ContentView}}}"
+                    HorizontalOptions="Center"
+                    LineBreakMode="WordWrap"/>
+            </VerticalStackLayout>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer
+                    Tapped="CardBorder_OnTapped"
+                    Command="{Binding Command, Source={RelativeSource AncestorType={x:Type ContentView}}}" />
+                <PointerGestureRecognizer
+                    PointerPressed="CardBorder_PointerPressed"
+                    PointerReleased="CardBorder_PointerReleased"
+                    PointerExited="CardBorder_PointerReleased" />
+            </Border.GestureRecognizers>
+        </Border>
+</ContentView>
