@@ -53,7 +53,30 @@ public class FileHandler : IFileHandler
         return await File.ReadAllTextAsync(fullPath);
     }
 
-    private string GetFullPath(string fileName, string folderName)
+    public async Task<MemoryStream> GetImageMemoryStream(string fileName, string folderPath)
+    {
+        string fullPath = GetFullPath(fileName, folderPath);
+        if (!File.Exists(fullPath))
+            throw new FileNotFoundException($"File not found: {fullPath}");
+
+        using FileStream stream = File.OpenRead(fullPath);
+        byte[] imageBytes = new byte[stream.Length];
+        int totalBytesRead = 0;
+
+        while (stream.Position < stream.Length)
+        {
+            int bytesRead = await stream.ReadAsync(imageBytes, totalBytesRead, (int)(stream.Length - totalBytesRead));
+
+            if (bytesRead == 0)
+                break; // End of stream reached
+
+            totalBytesRead += bytesRead;
+        }
+
+        return new MemoryStream(imageBytes);
+    }
+
+    protected string GetFullPath(string fileName, string folderName)
     {
         string directoryPath = Path.Combine(GetAppDataPath(), folderName);
         if (!Directory.Exists(directoryPath))

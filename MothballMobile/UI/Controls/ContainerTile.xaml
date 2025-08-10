@@ -3,13 +3,39 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MothballMobile.UI.Controls.ContainerTile"
              x:Name="this">
-    <Border>
+    <Border Margin="50">
         <Border.StrokeShape>
             <RoundRectangle CornerRadius="10" />
         </Border.StrokeShape>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Normal">
+                    <VisualState.Setters>
+                        <Setter Property="BackgroundColor" Value="White" />
+                        <Setter Property="Scale" Value="1" />
+                        <Setter Property="Stroke" Value="LightGray" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Pressed">
+                    <VisualState.Setters>
+                        <Setter Property="BackgroundColor" Value="LightGray" />
+                        <Setter Property="Scale" Value="0.95" />
+                        <Setter Property="Stroke" Value="LightBlue" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer
+                Tapped="Border_OnTapped"
+                Command="{Binding Command, Source={RelativeSource AncestorType={x:Type ContentView}}}" />
+            <PointerGestureRecognizer
+                PointerPressed="Border_PointerPressed"
+                PointerReleased="Border_PointerReleased"
+                PointerExited="Border_PointerReleased" />
+        </Border.GestureRecognizers>
         <Grid Padding="10" Margin="5" RowSpacing="10" ColumnSpacing="10">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
@@ -42,13 +68,15 @@
                 Text="{Binding Source={x:Reference this}, Path=ItemCount}"
                 VerticalOptions="Center"
                 HorizontalOptions="Start" />
-            <Button
-                Grid.Row="0"
-                Grid.Column="2"
-                Grid.ColumnSpan="1"
-                Grid.RowSpan="3"
-                Text="View Details"
-                VerticalOptions="Center"/>
+            <Border Grid.RowSpan="3"
+                    Grid.Column="2"
+                    StrokeShape="RoundRectangle 10"
+                    HorizontalOptions="Fill">
+                <Image
+                    Source="dotnet_bot.png"
+                    Aspect="AspectFit"/>
+
+            </Border>
         </Grid>
     </Border>
 </ContentView>

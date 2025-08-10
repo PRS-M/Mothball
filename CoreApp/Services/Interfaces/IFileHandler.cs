@@ -9,5 +9,6 @@ public interface IFileHandler
     Task DeleteFileAsync(string fileName, string folderPath);
     Task<string> SaveTextFileAsync(string fileName, string folderPath, string content);
     Task<string> ReadTextFileAsync(string fileName, string folderPath);
+    Task<MemoryStream> GetImageMemoryStream(string fileName, string folderPath);
     string GetAppDataPath();
 }

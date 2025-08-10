@@ -32,7 +32,7 @@ public static class MauiProgram
 	{
 		// Register your services here
 		services.AddSingleton<ICameraHandler, CameraHandler>();
-		services.AddSingleton<MobileFileSystemHandler>();
+		services.AddSingleton<MobileFileHandler>();
 		services.AddSingleton(typeof(IFileSystem), FileSystem.Current);
 		services.AddSingleton(typeof(IMediaPicker), MediaPicker.Default);
 
