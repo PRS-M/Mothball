@@ -46,13 +46,11 @@ public class PhotoFileHandler
 
         byte[] imageData = File.ReadAllBytes(filePath);
         var fileInfo = new FileInfo(filePath);
-        DateTime dateTaken = fileInfo.CreationTime;
 
         return new Photo
         {
             FileName = Guid.NewGuid().ToString(),
             // ImageData = imageData,
-            DateTaken = dateTaken
         };
     }
 

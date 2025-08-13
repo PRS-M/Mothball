@@ -20,7 +20,7 @@ public partial class ContainersList : ContentPage
 		this.Loaded += ContainersList_Loaded;
 	}
 
-	private async void ContainersList_Loaded(object sender, EventArgs e)
+	private async void ContainersList_Loaded(object? sender, EventArgs e)
 	{
 		if (ViewModel != null)
 		{

@@ -29,16 +29,15 @@ public partial class AddContainerViewModel : ObservableObject
     Container Container { get; set; }
 
     [RelayCommand]
-    public async Task AddContainer()
+    public async Task AddContainer(int id)
     {
-        Container = new Container
-        {
-            UniqueId = Guid.NewGuid().ToString(),
-            Name = Name,
-            Description = Description,
-            LocationDescription = LocationDescription,
-
-        };
+        Container = new Container(
+            id,
+            Guid.NewGuid().ToString(),
+            Name,
+            Description,
+            LocationDescription
+        );
 
         await Container.CaptureContainerPhotoAsync(cameraHandler);
     }

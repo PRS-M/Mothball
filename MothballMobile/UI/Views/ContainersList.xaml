@@ -15,7 +15,7 @@
                         ItemsSource="{Binding Containers}"
                         HorizontalOptions="Center"
                         VerticalOptions="Center"
-                        Margin="10"
+                        Margin="5"
                         RemainingItemsThreshold="2"
                         RemainingItemsThresholdReached="OnRemainingItemsThresholdReached">
             <CollectionView.ItemsLayout>

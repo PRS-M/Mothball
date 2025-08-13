@@ -51,15 +51,16 @@ public partial class ContainerListViewModel : ObservableObject
         {
             for (int i = 1; i <= 15; i++)
             {
-                var dummy = new Container
-                {
-                    Name = $"Dummy Container {i}",
-                    Description = $"Description for container {i}",
-                    LocationDescription = $"Location {i}",
-                    Items = new System.Collections.Generic.List<Item>(),
-                    Photo = new Photo { FileName = string.Empty }
-                };
-                var fileName = $"Dummy_Container_{i}.json";
+                var dummy = new Container(
+                    id: i,
+                    uniqueId: Guid.NewGuid().ToString(),
+                    name: $"Dummy_Container_{i}",
+                    description: $"Description for container {i}",
+                    locationDescription: $"Location {i}",
+                    items: [],
+                    photo: new Photo { FileName = string.Empty }
+                );
+
                 await _containerJsonHandler.SaveContainerAsync(dummy);
             }
             _allContainerFiles = Directory.EnumerateFiles(containersPath, "*.json").ToList();

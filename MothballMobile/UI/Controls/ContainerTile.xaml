@@ -3,7 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MothballMobile.UI.Controls.ContainerTile"
              x:Name="this">
-    <Border Margin="50">
+    <ContentView.Resources>
+        <x:Int32 x:Key="fontSize">12</x:Int32>
+    </ContentView.Resources>
+    <Border>
         <Border.StrokeShape>
             <RoundRectangle CornerRadius="10" />
         </Border.StrokeShape>
@@ -34,7 +37,7 @@
                 PointerReleased="Border_PointerReleased"
                 PointerExited="Border_PointerReleased" />
         </Border.GestureRecognizers>
-        <Grid Padding="10" Margin="5" RowSpacing="10" ColumnSpacing="10">
+        <Grid Padding="5" Margin="5" RowSpacing="5" ColumnSpacing="5">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -47,24 +50,28 @@
             <Label
                 Grid.Row="0"
                 Grid.Column="0"
+                FontSize="{StaticResource fontSize}"
                 Text="{Binding Name, Source={x:Reference this}}"
                 VerticalOptions="Center"
                 HorizontalOptions="Start" />
             <Label
                 Grid.Row="0"
                 Grid.Column="1"
+                FontSize="{StaticResource fontSize}"
                 Text="{Binding Description, Source={x:Reference this}}"
                 VerticalOptions="Center"
                 HorizontalOptions="Start" />
             <Label
                 Grid.Row="1"
                 Grid.Column="0"
+                FontSize="{StaticResource fontSize}"
                 Text="{Binding LocationDescription, Source={x:Reference this}}"
                 VerticalOptions="Center"
                 HorizontalOptions="Start" />
             <Label
                 Grid.Row="1"
                 Grid.Column="1"
+                FontSize="{StaticResource fontSize}"
                 Text="{Binding ItemCount, Source={x:Reference this}}"
                 VerticalOptions="Center"
                 HorizontalOptions="Start" />

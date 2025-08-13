@@ -4,6 +4,28 @@ namespace CoreApp;
 
 public class Container
 {
+    public Container(int id, string uniqueId, string name, string locationDescription, string description)
+    {
+        Id = id;
+        UniqueId = Guid.NewGuid().ToString();
+        Name = name;
+        LocationDescription = locationDescription;
+        Description = description;
+        Items = new List<Item>();
+        Photo = new Photo();
+    }
+
+    public Container(int id, string uniqueId, string name, string locationDescription, string description, Photo photo, List<Item>? items)
+    {
+        Id = id;
+        UniqueId = uniqueId;
+        Name = name;
+        LocationDescription = locationDescription;
+        Description = description;
+        Photo = photo;
+        Items = items ?? new List<Item>();
+    }
+
     public int Id { get; set; }
     public string UniqueId { get; set; }
     public string Name { get; set; }
