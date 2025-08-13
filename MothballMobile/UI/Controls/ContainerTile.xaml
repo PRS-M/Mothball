@@ -4,7 +4,7 @@
              x:Class="MothballMobile.UI.Controls.ContainerTile"
              x:Name="this">
     <ContentView.Resources>
-        <x:Int32 x:Key="fontSize">12</x:Int32>
+        <x:Double x:Key="fontSize">12</x:Double>
     </ContentView.Resources>
     <Border>
         <Border.StrokeShape>
