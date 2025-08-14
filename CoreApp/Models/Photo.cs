@@ -10,6 +10,12 @@ public class Photo
         FileName = $"photo_{Guid.NewGuid()}.jpg";
     }
 
+    [JsonConstructor]
+    public Photo(string fileName)
+    {
+        FileName = fileName;
+    }
+
     public Photo(string fileName, byte[]? imageData)
     {
         FileName = fileName;

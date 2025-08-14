@@ -70,6 +70,7 @@ public partial class ContainerListViewModel : ObservableObject
         await LoadNextPageAsync();
     }
 
+    [RelayCommand]
     public async Task LoadNextPageAsync()
     {
         if (_isLoading) return;
@@ -86,14 +87,14 @@ public partial class ContainerListViewModel : ObservableObject
         _isLoading = false;
     }
 
-    [RelayCommand]
-    public void AddContainer(Container container)
-    {
-        if (container == null)
-            throw new ArgumentNullException(nameof(container), "Container cannot be null.");
-        var vm = new ContainerViewModel(container, _mobileFileHandler);
-        Containers.Add(vm);
-    }
+    // [RelayCommand]
+    // public void AddContainer(Container container)
+    // {
+    //     if (container == null)
+    //         throw new ArgumentNullException(nameof(container), "Container cannot be null.");
+    //     var vm = new ContainerViewModel(container, _mobileFileHandler);
+    //     Containers.Add(vm);
+    // }
 }
 
 public class ContainerViewModel : ObservableObject

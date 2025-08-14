@@ -1,4 +1,5 @@
-﻿using CoreApp.Services.Interfaces;
+﻿using CoreApp.Services.Implementations;
+using CoreApp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Media;
 using MothballMobile.Core.Services;
@@ -32,11 +33,15 @@ public static class MauiProgram
 	{
 		// Register your services here
 		services.AddSingleton<ICameraHandler, CameraHandler>();
-		services.AddSingleton<MobileFileHandler>();
+		services.AddSingleton<IFileHandler, MobileFileHandler>();
+		services.AddSingleton<IMobileFileHandler, MobileFileHandler>();
+		services.AddSingleton<JsonHandler>();
+		services.AddSingleton<ContainerJsonHandler>();
 		services.AddSingleton(typeof(IFileSystem), FileSystem.Current);
 		services.AddSingleton(typeof(IMediaPicker), MediaPicker.Default);
 
 		// services.AddTransient(typeof(IFileSystem), typeof(FileSystem));
 		services.AddTransient<AddContainerViewModel>();
+		services.AddTransient<ContainerListViewModel>();
 	}
 }

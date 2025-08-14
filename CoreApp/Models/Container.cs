@@ -1,4 +1,5 @@
-﻿using CoreApp.Services.Interfaces;
+﻿using System.Text.Json.Serialization;
+using CoreApp.Services.Interfaces;
 
 namespace CoreApp;
 
@@ -7,7 +8,7 @@ public class Container
     public Container(int id, string uniqueId, string name, string locationDescription, string description)
     {
         Id = id;
-        UniqueId = Guid.NewGuid().ToString();
+        UniqueId = string.IsNullOrEmpty(uniqueId) ? Guid.NewGuid().ToString() : uniqueId;
         Name = name;
         LocationDescription = locationDescription;
         Description = description;
@@ -15,6 +16,7 @@ public class Container
         Photo = new Photo();
     }
 
+    [JsonConstructor]
     public Container(int id, string uniqueId, string name, string locationDescription, string description, Photo photo, List<Item>? items)
     {
         Id = id;

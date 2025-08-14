@@ -2,7 +2,9 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+             xmlns:local="clr-namespace:MothballMobile.UI.ViewModels"
              x:Class="MothballMobile.UI.Views.ContainersList"
+             x:DataType="local:ContainerListViewModel"
              Title="ContainersList">
     <VerticalStackLayout
         Spacing="10"
@@ -17,7 +19,7 @@
                         VerticalOptions="Center"
                         Margin="5"
                         RemainingItemsThreshold="2"
-                        RemainingItemsThresholdReached="OnRemainingItemsThresholdReached">
+                        RemainingItemsThresholdReachedCommand="{Binding LoadNextPageAsyncCommand}">
             <CollectionView.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical"
                                  Span="1"

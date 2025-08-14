@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MothballMobile.UI.Views.ItemsList"
+             Title="ItemsList">
+    <VerticalStackLayout>
+        <Label
+            Text="Lista przedmiotów"
+            VerticalOptions="Center"
+            HorizontalOptions="Center" />
+        <CollectionView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Image
+                            Source="{Binding ImageSource}"
+                            Aspect="AspectFit"
+                            HeightRequest="100"
+                            Grid.Row="0" />
+                        <Label
+                            Text="{Binding Name}"
+                            FontAttributes="Bold"
+                            HorizontalOptions="Center"
+                            Grid.Row="1" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>
