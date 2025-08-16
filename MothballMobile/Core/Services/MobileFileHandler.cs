@@ -1,11 +1,12 @@
 using System;
-using CoreApp.Services.Implementations;
 using CoreApp.Services.Interfaces;
 using Microsoft.Maui.Storage;
+using System.IO;
+using System.Linq;
 
 namespace MothballMobile.Core.Services;
 
-public class MobileFileHandler : FileHandler, IMobileFileHandler
+public class MobileFileHandler : IFileHandler
 {
     private readonly IFileSystem fileSystem;
 
@@ -14,25 +15,91 @@ public class MobileFileHandler : FileHandler, IMobileFileHandler
         this.fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
     }
 
-    public async Task<ImageSource> GetImageSourceAsync(string fileName, string folderPath)
+    public string GetAppDataPath() => fileSystem.AppDataDirectory;
+
+    public async Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
     {
-        MemoryStream memoryStream = await GetImageMemoryStream(fileName, folderPath);
-        return ImageSource.FromStream(() => memoryStream);
+        string fullPath = GetFullPath(fileName, folderPath);
+        await File.WriteAllBytesAsync(fullPath, data);
+        return fullPath;
     }
 
-    public static ImageSource GetImageMemoryStream(MemoryStream memoryStream)
+    public async Task<byte[]> ReadFileAsync(string fileName, string folderPath)
     {
-        if (memoryStream == null)
+        string fullPath = GetFullPath(fileName, folderPath);
+        if (!File.Exists(fullPath))
+            throw new FileNotFoundException($"File not found: {fullPath}");
+
+        return await File.ReadAllBytesAsync(fullPath);
+    }
+
+    public async Task DeleteFileAsync(string fileName, string folderPath)
+    {
+        string fullPath = GetFullPath(fileName, folderPath);
+        if (!File.Exists(fullPath))
+            throw new FileNotFoundException($"File not found: {fullPath}");
+
+        await Task.Run(() => File.Delete(fullPath));
+    }
+
+    public async Task<string> SaveTextFileAsync(string fileName, string folderPath, string content)
+    {
+        string fullPath = GetFullPath(fileName, folderPath);
+        await File.WriteAllTextAsync(fullPath, content);
+        return fullPath;
+    }
+
+    public async Task<string> ReadTextFileAsync(string fileName, string folderPath)
+    {
+        string fullPath = GetFullPath(fileName, folderPath);
+        if (!File.Exists(fullPath))
+            throw new FileNotFoundException($"File not found: {fullPath}");
+
+        return await File.ReadAllTextAsync(fullPath);
+    }
+
+    public async Task<MemoryStream> GetImageMemoryStream(string fileName, string folderPath)
+    {
+        string fullPath = GetFullPath(fileName, folderPath);
+        if (!File.Exists(fullPath))
+            throw new FileNotFoundException($"File not found: {fullPath}");
+
+        using FileStream stream = File.OpenRead(fullPath);
+        byte[] imageBytes = new byte[stream.Length];
+        int totalBytesRead = 0;
+        while (stream.Position < stream.Length)
         {
-            throw new ArgumentNullException(nameof(memoryStream));
+            int bytesRead = await stream.ReadAsync(imageBytes, totalBytesRead, (int)(stream.Length - totalBytesRead));
+            if (bytesRead == 0) break;
+            totalBytesRead += bytesRead;
+        }
+        return new MemoryStream(imageBytes);
+    }
+
+    public Task<IEnumerable<string>> EnumerateFilesAsync(string folderPath, string searchPattern = "*.*")
+    {
+        string directoryPath = Path.Combine(GetAppDataPath(), folderPath);
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
         }
 
-        memoryStream.Position = 0; // Reset stream position
-        return ImageSource.FromStream(() => memoryStream);
+        var files = Directory.EnumerateFiles(directoryPath, searchPattern)
+            .Select(Path.GetFileName)!
+            .Where(n => !string.IsNullOrEmpty(n))
+            .Cast<string>();
+        return Task.FromResult(files);
     }
 
-    public override string GetAppDataPath()
+    private string GetFullPath(string fileName, string folderName)
     {
-        return fileSystem.AppDataDirectory;
+        string directoryPath = Path.Combine(GetAppDataPath(), folderName);
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+
+        string fullPath = Path.Combine(directoryPath, fileName);
+        return fullPath;
     }
 }

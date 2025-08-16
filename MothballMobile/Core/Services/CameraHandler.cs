@@ -8,9 +8,9 @@ namespace MothballMobile.Core.Services;
 public class CameraHandler : ICameraHandler
 {
     private readonly IMediaPicker mediaPicker;
-    private readonly MobileFileHandler fileHandler;
+    private readonly IFileHandler fileHandler;
 
-    public CameraHandler(IMediaPicker mediaPicker, MobileFileHandler fileHandler)
+    public CameraHandler(IMediaPicker mediaPicker, IFileHandler fileHandler)
     {
         this.mediaPicker = mediaPicker ?? throw new ArgumentNullException(nameof(mediaPicker));
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));

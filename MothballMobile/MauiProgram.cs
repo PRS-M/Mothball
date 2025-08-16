@@ -34,7 +34,6 @@ public static class MauiProgram
 		// Register your services here
 		services.AddSingleton<ICameraHandler, CameraHandler>();
 		services.AddSingleton<IFileHandler, MobileFileHandler>();
-		services.AddSingleton<IMobileFileHandler, MobileFileHandler>();
 		services.AddSingleton<JsonHandler>();
 		services.AddSingleton<ContainerJsonHandler>();
 		services.AddSingleton(typeof(IFileSystem), FileSystem.Current);
