@@ -10,6 +10,6 @@ public interface IFileHandler
     Task<string> SaveTextFileAsync(string fileName, string folderPath, string content);
     Task<string> ReadTextFileAsync(string fileName, string folderPath);
     Task<MemoryStream> GetImageMemoryStream(string fileName, string folderPath);
-    Task<IEnumerable<string>> EnumerateFilesAsync(string folderPath, string searchPattern = "*.*");
+    IEnumerable<string> EnumerateFiles(string folderPath, string searchPattern = "*.*");
     string GetAppDataPath();
 }

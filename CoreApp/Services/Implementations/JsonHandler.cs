@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Text.Json;
 using CoreApp.Services.Interfaces;
 
@@ -23,6 +24,14 @@ public class JsonHandler
 
         string json = JsonSerializer.Serialize(data);
         return await fileHandler.SaveTextFileAsync(fileName, folderName, json);
+    }
+
+    public IEnumerable<string> EnumerateJsonFiles(string folderPath)
+    {
+        foreach (string file in fileHandler.EnumerateFiles(folderPath, "*.json"))
+        {
+            yield return file;
+        }
     }
 
     public async Task<T> DeserializeFromFile<T>(string fileName, string folderName)

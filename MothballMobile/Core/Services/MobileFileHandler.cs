@@ -1,8 +1,4 @@
-using System;
 using CoreApp.Services.Interfaces;
-using Microsoft.Maui.Storage;
-using System.IO;
-using System.Linq;
 
 namespace MothballMobile.Core.Services;
 
@@ -76,19 +72,20 @@ public class MobileFileHandler : IFileHandler
         return new MemoryStream(imageBytes);
     }
 
-    public Task<IEnumerable<string>> EnumerateFilesAsync(string folderPath, string searchPattern = "*.*")
+    public IEnumerable<string> EnumerateFiles(string folderPath, string searchPattern = "*.*")
     {
         string directoryPath = Path.Combine(GetAppDataPath(), folderPath);
         if (!Directory.Exists(directoryPath))
         {
-            Directory.CreateDirectory(directoryPath);
+            return Enumerable.Empty<string>();
         }
 
         var files = Directory.EnumerateFiles(directoryPath, searchPattern)
             .Select(Path.GetFileName)!
             .Where(n => !string.IsNullOrEmpty(n))
             .Cast<string>();
-        return Task.FromResult(files);
+
+        return files;
     }
 
     private string GetFullPath(string fileName, string folderName)

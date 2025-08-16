@@ -10,12 +10,10 @@ namespace CoreApp.Services.Implementations
     public class ContainerJsonHandler
     {
         private readonly JsonHandler jsonHandler;
-        private readonly IFileHandler fileHandler;
 
-        public ContainerJsonHandler(JsonHandler jsonHandler, IFileHandler fileHandler)
+        public ContainerJsonHandler(JsonHandler jsonHandler)
         {
             this.jsonHandler = jsonHandler;
-            this.fileHandler = fileHandler;
         }
 
         public async Task SaveContainerAsync(Container container)
@@ -29,7 +27,8 @@ namespace CoreApp.Services.Implementations
         public async Task<List<Container>> LoadContainersAsync()
         {
             List<Container> containers = new List<Container>();
-            IEnumerable<string> files = await fileHandler.EnumerateFilesAsync(Constants.PathToContainers, "*.json");
+            IEnumerable<string> files = jsonHandler.EnumerateJsonFiles(Constants.PathToContainers);
+
             foreach (var fileName in files)
             {
                 var container = await jsonHandler.DeserializeFromFile<Container>(fileName, Constants.PathToContainers);
