@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using CoreApp.Models;
 using CoreApp.Services.Interfaces;
 using CoreApp.Utilities;
 
@@ -14,7 +15,7 @@ public class PhotoFileHandler
         this.fileHandler = fileHandler;
     }
 
-    public async Task LoadPhotos(Container container)
+    public async Task LoadPhotos(InventoryRoot inventoryRoot, Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
 
@@ -22,8 +23,15 @@ public class PhotoFileHandler
         {
             FileName = $"{container.Name}-photo.jpg",
         };
-        foreach (var item in container.Items)
+
+        List<string> itemIds = inventoryRoot.ItemIdsByContainerId[container.UniqueId];
+
+        foreach (var itemId in itemIds)
         {
+            if (string.IsNullOrEmpty(itemId))
+                continue;
+
+            Item item = inventoryRoot.Items[itemId];
             foreach (var photo in item.Photos)
             {
                 byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Constants.PathToPhotos);

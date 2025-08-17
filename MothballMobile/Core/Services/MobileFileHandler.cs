@@ -69,6 +69,7 @@ public class MobileFileHandler : IFileHandler
             if (bytesRead == 0) break;
             totalBytesRead += bytesRead;
         }
+
         return new MemoryStream(imageBytes);
     }
 

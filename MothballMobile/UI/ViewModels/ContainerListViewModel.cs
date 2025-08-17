@@ -35,22 +35,21 @@ public partial class ContainerListViewModel : ObservableObject
     public async Task InitializeAsync()
     {
         // Get all container JSON files for paging
-    var containersPath = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToContainers);
+        var containersPath = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToContainers);
         if (!Directory.Exists(containersPath))
             Directory.CreateDirectory(containersPath);
-        _allContainerFiles = Directory.EnumerateFiles(containersPath, "*.json").ToList();
+
+        _allContainerFiles = _fileHandler.EnumerateFiles(containersPath, "*.json").ToList();
         // If no files, create dummy data
         if (_allContainerFiles.Count == 0)
         {
             for (int i = 1; i <= 15; i++)
             {
                 var dummy = new Container(
-                    id: i,
                     uniqueId: Guid.NewGuid().ToString(),
                     name: $"Dummy_Container_{i}",
                     description: $"Description for container {i}",
                     locationDescription: $"Location {i}",
-                    items: [],
                     photo: new Photo { FileName = string.Empty }
                 );
 
@@ -86,6 +85,7 @@ public partial class ContainerListViewModel : ObservableObject
 public class ContainerViewModel : ObservableObject
 {
     public Container Container { get; }
+    public Dictionary<string, List<string>> ItemIdsByContainerId { get; }
     private readonly IFileHandler _fileHandler;
     private ImageSource _imageSource;
     public ImageSource ImageSource
@@ -97,7 +97,7 @@ public class ContainerViewModel : ObservableObject
     public string Name => Container.Name;
     public string Description => Container.Description;
     public string LocationDescription => Container.LocationDescription;
-    public int ItemCount => Container.Items?.Count ?? 0;
+    // public int ItemCount => Container.ItemIds?.Count ?? 0;
 
     public ContainerViewModel(Container container, IFileHandler fileHandler)
     {

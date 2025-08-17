@@ -29,10 +29,9 @@ public partial class AddContainerViewModel : ObservableObject
     Container Container { get; set; }
 
     [RelayCommand]
-    public async Task AddContainer(int id)
+    public async Task AddContainer()
     {
         Container = new Container(
-            id,
             Guid.NewGuid().ToString(),
             Name,
             Description,
