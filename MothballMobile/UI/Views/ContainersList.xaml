@@ -13,20 +13,20 @@
             Text="Lista kontenerów"
             VerticalOptions="Center"
             HorizontalOptions="Center" />
-        <CollectionView x:Name="ContainersCollectionView"
+    <CollectionView x:Name="ContainersCollectionView"
                         ItemsSource="{Binding Containers}"
                         HorizontalOptions="Center"
                         VerticalOptions="Center"
                         Margin="5"
-                        RemainingItemsThreshold="2"
-                        RemainingItemsThresholdReachedCommand="{Binding LoadNextPageAsyncCommand}">
+            RemainingItemsThreshold="2"
+            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageAsyncCommand}">
             <CollectionView.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical"
                                  Span="1"
                                  VerticalItemSpacing="10" />
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="local:ContainerViewModel">
                     <controls:ContainerTile
                         Name="{Binding Name}"
                         Description="{Binding Description}"
@@ -36,7 +36,6 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-        <controls:ContainerTile />
-        <controls:ContainerNavTile Text="Kontener 1" Command="{Binding NavigateCommand}" />
+        <!-- Sample controls removed; use real list above -->
     </VerticalStackLayout>
 </ContentPage>

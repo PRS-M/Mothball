@@ -41,6 +41,6 @@ public class Container
     public async Task AddItemPhoto(ICameraHandler cameraHandler, Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
-        await item.CapturePhotoAsync(cameraHandler, Name);
+        await item.CapturePhotoAsync(cameraHandler, UniqueId);
     }
 }

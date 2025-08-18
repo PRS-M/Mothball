@@ -30,7 +30,7 @@ public class CameraHandler : ICameraHandler
 
         try
         {
-            await CaptureAndSavePhoto(container.Name, photoWithData.FileName, photoWithData);
+            await CaptureAndSavePhoto(container.UniqueId, photoWithData.FileName, photoWithData);
         }
         catch (Exception ex)
         {
@@ -41,12 +41,10 @@ public class CameraHandler : ICameraHandler
         return photoWithData;
     }
 
-    public async Task<Photo> CaptureItemPhotoAsync(Item item, string containerName)
+    public async Task<Photo> CaptureItemPhotoAsync(Item item, string containerId)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item), "Item cannot be null.");
-        }
+        if (item == null) throw new ArgumentNullException(nameof(item));
+        if (string.IsNullOrEmpty(containerId)) throw new ArgumentNullException(nameof(containerId));
 
         var photoWithData = new Photo
         {
@@ -55,7 +53,7 @@ public class CameraHandler : ICameraHandler
 
         try
         {
-            await CaptureAndSavePhoto(containerName, photoWithData.FileName, photoWithData);
+            await CaptureAndSavePhoto(containerId, photoWithData.FileName, photoWithData);
         }
         catch (Exception ex)
         {
@@ -66,7 +64,7 @@ public class CameraHandler : ICameraHandler
         return photoWithData;
     }
 
-    private async Task CaptureAndSavePhoto(string containerName, string fileName, Photo photoWithData)
+    private async Task CaptureAndSavePhoto(string containerId, string fileName, Photo photoWithData)
     {
         FileResult? photo = await mediaPicker.PickPhotoAsync();
         if (photo != null)
@@ -74,7 +72,7 @@ public class CameraHandler : ICameraHandler
             using Stream stream = await photo.OpenReadAsync();
             byte[] bytes = new byte[stream.Length];
 
-            string path = Path.Combine(Constants.PathToPhotos, containerName);
+            string path = Path.Combine(Constants.PathToPhotos, containerId);
             await stream.ReadExactlyAsync(bytes, 0, (int)stream.Length);
 
             await fileHandler.SaveFileAsync(fileName, path, bytes);

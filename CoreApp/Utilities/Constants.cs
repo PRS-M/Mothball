@@ -2,10 +2,15 @@ namespace CoreApp.Utilities;
 
 public record class Constants
 {
-    public static readonly string PathToPhotos = Path.Combine(photoFolder, "Items");
-    public static readonly string PathToContainers = Path.Combine(containerFolder, "Containers");
+    // Root data folder for app-specific files
+    public const string DataFolder = "MothballData";
+    public static readonly string PathToData = DataFolder; // placed under IFileHandler.GetAppDataPath()
 
-    private const string photoFolder = "Photos";
-    private const string containerFolder = "Containers";
+    // Aggregate root file name
+    public const string InventoryFileName = "inventory.json";
+
+    // Legacy/auxiliary folders
+    public static readonly string PathToPhotos = Path.Combine(PathToData, "Photos", "Items");
+    public static readonly string PathToContainers = Path.Combine(PathToData, "Containers");
 
 }
