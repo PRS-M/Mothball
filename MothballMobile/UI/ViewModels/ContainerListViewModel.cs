@@ -121,7 +121,7 @@ public class ContainerViewModel : ObservableObject
         {
             try
             {
-                var photoFolder = Path.Combine(Constants.PathToPhotos, Container.UniqueId);
+                var photoFolder = Path.Combine(Constants.PathToItemPhotos, Container.UniqueId);
                 var ms = await _fileHandler.GetImageMemoryStream(Container.Photo.FileName, photoFolder);
                 ImageSource = ImageSource.FromStream(() => ms);
             }

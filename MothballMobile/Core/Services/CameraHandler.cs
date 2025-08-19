@@ -72,7 +72,7 @@ public class CameraHandler : ICameraHandler
             using Stream stream = await photo.OpenReadAsync();
             byte[] bytes = new byte[stream.Length];
 
-            string path = Path.Combine(Constants.PathToPhotos, containerId);
+            string path = Path.Combine(Constants.PathToItemPhotos, containerId);
             await stream.ReadExactlyAsync(bytes, 0, (int)stream.Length);
 
             await fileHandler.SaveFileAsync(fileName, path, bytes);

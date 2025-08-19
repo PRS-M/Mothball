@@ -10,7 +10,7 @@ public record class Constants
     public const string InventoryFileName = "inventory.json";
 
     // Legacy/auxiliary folders
-    public static readonly string PathToPhotos = Path.Combine(PathToData, "Photos", "Items");
-    public static readonly string PathToContainers = Path.Combine(PathToData, "Containers");
+    public static readonly string PathToItemPhotos = Path.Combine(PathToData, "Photos", "Items");
+    public static readonly string PathToContainerPhotos = Path.Combine(PathToData, "Containers");
 
 }

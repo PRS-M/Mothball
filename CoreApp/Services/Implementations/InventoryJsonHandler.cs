@@ -24,11 +24,11 @@ public class InventoryJsonHandler
         {
             // No aggregate yet; attempt migration from legacy per-container files.
             var inventory = new InventoryRoot();
-            foreach (var fileName in _jsonHandler.EnumerateJsonFiles(Constants.PathToContainers))
+            foreach (var fileName in _jsonHandler.EnumerateJsonFiles(Constants.PathToContainerPhotos))
             {
                 try
                 {
-                    var container = await _jsonHandler.DeserializeFromFile<Container>(fileName, Constants.PathToContainers);
+                    var container = await _jsonHandler.DeserializeFromFile<Container>(fileName, Constants.PathToContainerPhotos);
                     inventory.AddContainer(container);
                 }
                 catch

@@ -34,7 +34,7 @@ public class PhotoFileHandler
             Item item = inventoryRoot.Items[itemId];
             foreach (var photo in item.Photos)
             {
-        byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Path.Combine(Constants.PathToPhotos, container.UniqueId));
+        byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Path.Combine(Constants.PathToItemPhotos, container.UniqueId));
                 photo.ImageData = bytes;
             }
         }
