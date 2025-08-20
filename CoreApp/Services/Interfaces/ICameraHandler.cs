@@ -1,4 +1,5 @@
 using System;
+using CoreApp.Models;
 
 namespace CoreApp.Services.Interfaces;
 

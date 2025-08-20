@@ -1,5 +1,6 @@
 using System;
 using CoreApp;
+using CoreApp.Models;
 using CoreApp.Services.Interfaces;
 using CoreApp.Utilities;
 

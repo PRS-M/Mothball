@@ -3,7 +3,9 @@ using CoreApp.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Media;
 using MothballMobile.Core.Services;
+using MothballMobile.Infrastructure;
 using MothballMobile.UI.ViewModels;
+using MothballMobile.Infrastructure.DatabaseModels;
 
 namespace MothballMobile;
 
@@ -39,7 +41,10 @@ public static class MauiProgram
 		services.AddSingleton(typeof(IFileSystem), FileSystem.Current);
 		services.AddSingleton(typeof(IMediaPicker), MediaPicker.Default);
 
-		// services.AddTransient(typeof(IFileSystem), typeof(FileSystem));
+		// Database and repositories
+		services.AddSingleton<MothballDatabase>();
+		services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
+		services.AddSingleton<IInventoryDomainRepository, InventoryDomainRepository>();
 	services.AddTransient<AddContainerViewModel>();
 	services.AddTransient<ContainerListViewModel>();
 	}

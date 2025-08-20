@@ -2,7 +2,7 @@ using System;
 using System.Text.Json.Serialization;
 using CoreApp.Services.Interfaces;
 
-namespace CoreApp;
+namespace CoreApp.Models;
 
 public class Item
 {

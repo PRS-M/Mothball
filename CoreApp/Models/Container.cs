@@ -1,10 +1,19 @@
 ﻿using System.Text.Json.Serialization;
 using CoreApp.Services.Interfaces;
 
-namespace CoreApp;
+namespace CoreApp.Models;
 
 public class Container
 {
+    public Container()
+    {
+        UniqueId = Guid.NewGuid().ToString();
+        Name = string.Empty;
+        LocationDescription = string.Empty;
+        Description = string.Empty;
+        Photo = new Photo();
+    }
+
     public Container(string uniqueId, string name, string locationDescription, string description)
     {
         UniqueId = string.IsNullOrEmpty(uniqueId) ? Guid.NewGuid().ToString() : uniqueId;
