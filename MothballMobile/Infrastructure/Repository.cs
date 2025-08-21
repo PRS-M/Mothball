@@ -13,18 +13,18 @@ public class Repository<T> : IRepository<T> where T : new()
 
     public Task InitializeAsync() => _db.InitializeAsync();
 
-    private SQLiteAsyncConnection Conn => _db.Connection;
+    private SQLiteAsyncConnection Connection => _db.Connection;
 
-    public Task<int> InsertAsync(T entity) => Conn.InsertAsync(entity);
-    public Task<int> InsertAllAsync(IEnumerable<T> entities) => Conn.InsertAllAsync(entities);
+    public Task<int> InsertAsync(T entity) => Connection.InsertAsync(entity);
+    public Task<int> InsertAllAsync(IEnumerable<T> entities) => Connection.InsertAllAsync(entities);
 
-    public Task<int> UpdateAsync(T entity) => Conn.UpdateAsync(entity);
-    public Task<int> DeleteAsync(T entity) => Conn.DeleteAsync(entity);
+    public Task<int> UpdateAsync(T entity) => Connection.UpdateAsync(entity);
+    public Task<int> DeleteAsync(T entity) => Connection.DeleteAsync(entity);
 
-    public Task<T> GetAsync(object primaryKey) => Conn.FindAsync<T>(primaryKey);
-    public Task<List<T>> GetAllAsync() => Conn.Table<T>().ToListAsync();
+    public Task<T> GetAsync(object primaryKey) => Connection.FindAsync<T>(primaryKey);
+    public Task<List<T>> GetAllAsync() => Connection.Table<T>().ToListAsync();
 
-    public Task<List<T>> QueryAsync(string query, params object[] args) => Conn.QueryAsync<T>(query, args);
+    public Task<List<T>> QueryAsync(string query, params object[] args) => Connection.QueryAsync<T>(query, args);
 
-    public AsyncTableQuery<T> Table() => Conn.Table<T>();
+    public AsyncTableQuery<T> Table() => Connection.Table<T>();
 }

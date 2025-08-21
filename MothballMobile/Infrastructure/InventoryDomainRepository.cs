@@ -22,7 +22,6 @@ public class InventoryDomainRepository : IInventoryDomainRepository
 
     public async Task<Container?> GetContainerAsync(string containerId)
     {
-        await _containers.InitializeAsync();
         var db = await _containers.GetAsync(containerId);
         if (db is null) return null;
 
@@ -37,8 +36,6 @@ public class InventoryDomainRepository : IInventoryDomainRepository
 
     public async Task<List<Item>> GetItemsForContainerAsync(string containerId)
     {
-        await Task.WhenAll(_items.InitializeAsync(), _photos.InitializeAsync());
-
         var items = await _items.Table()
             .Where(i => i.ContainerId == containerId)
             .ToListAsync();
@@ -66,8 +63,6 @@ public class InventoryDomainRepository : IInventoryDomainRepository
 
     public async Task<Item?> GetItemWithPhotosAsync(string itemId)
     {
-        await Task.WhenAll(_items.InitializeAsync(), _photos.InitializeAsync());
-
         var dbItem = await _items.GetAsync(itemId);
         if (dbItem is null) return null;
 
