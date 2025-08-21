@@ -12,39 +12,57 @@ public class Repository<T> : IRepository<T> where T : new()
         _db = db;
     }
 
+    /// <inheritdoc />
     public Task InitializeAsync() => _db.InitializeAsync();
 
     private SQLiteAsyncConnection Connection => _db.Connection;
 
+    /// <inheritdoc />
     public Task<int> InsertAsync(T entity) => Connection.InsertAsync(entity);
+
+    /// <inheritdoc />
     public Task<int> InsertAllAsync(IEnumerable<T> entities) => Connection.InsertAllAsync(entities);
 
+    /// <inheritdoc />
     public Task<int> UpdateAsync(T entity) => Connection.UpdateAsync(entity);
+
+    /// <inheritdoc />
     public Task<int> DeleteAsync(T entity) => Connection.DeleteAsync(entity);
+
+    /// <inheritdoc />
     public async Task<int> UpsertAsync(T entity)
     {
         // sqlite-net InsertOrReplaceAsync is convenient for simple PK entities
         return await Connection.InsertOrReplaceAsync(entity);
     }
 
+    /// <inheritdoc />
     public Task<T> GetAsync(object primaryKey) => Connection.FindAsync<T>(primaryKey);
+
+    /// <inheritdoc />
     public Task<List<T>> GetAllAsync() => Connection.Table<T>().ToListAsync();
 
+    /// <inheritdoc />
     public Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
         => Connection.Table<T>().Where(predicate).FirstOrDefaultAsync();
 
+    /// <inheritdoc />
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
         => (await Connection.Table<T>().Where(predicate).CountAsync()) > 0;
 
+    /// <inheritdoc />
     public Task<int> CountAsync(Expression<Func<T, bool>> predicate)
         => Connection.Table<T>().Where(predicate).CountAsync();
 
+    /// <inheritdoc />
     public Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate, int skip, int take)
         => Connection.Table<T>().Where(predicate).Skip(skip).Take(take).ToListAsync();
 
+    /// <inheritdoc />
     public Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate)
         => Connection.Table<T>().Where(predicate).ToListAsync();
 
+    /// <inheritdoc />
     public Task<List<T>> WhereInAsync(string propertyName, IEnumerable<object> values)
     {
         // Build a dynamic IN clause: SELECT * FROM T WHERE propertyName IN (?, ?, ...)
@@ -58,7 +76,9 @@ public class Repository<T> : IRepository<T> where T : new()
         return Connection.QueryAsync<T>(query, list.ToArray());
     }
 
+    /// <inheritdoc />
     public Task<List<T>> QueryAsync(string query, params object[] args) => Connection.QueryAsync<T>(query, args);
 
+    /// <inheritdoc />
     public AsyncTableQuery<T> Table() => Connection.Table<T>();
 }

@@ -20,24 +20,26 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         _photos = photos;
     }
 
+    /// <inheritdoc />
     public async Task<Container?> GetContainerAsync(string containerId)
     {
         var db = await _containers.GetAsync(containerId);
         if (db is null) return null;
 
         // Load container photo if any
-    var dbPhoto = await _photos.FirstOrDefaultAsync(p => p.ContainerId == containerId);
-    var photo = dbPhoto?.ToDomain();
+        var dbPhoto = await _photos.FirstOrDefaultAsync(p => p.ContainerId == containerId);
+        var photo = dbPhoto?.ToDomain();
 
         return db.ToDomain(photo);
     }
 
+    /// <inheritdoc />
     public async Task<List<Item>> GetItemsForContainerAsync(string containerId)
     {
-    var items = await _items.WhereAsync(i => i.ContainerId == containerId);
+        var items = await _items.WhereAsync(i => i.ContainerId == containerId);
 
         var itemIds = items.Select(i => i.UniqueId).ToList();
-    var photos = await _photos.WhereInAsync(nameof(DbPhoto.ItemId), itemIds);
+        var photos = await _photos.WhereInAsync(nameof(DbPhoto.ItemId), itemIds);
 
         var photosByItem = photos.GroupBy(p => p.ItemId!).ToDictionary(g => g.Key, g => g.AsEnumerable());
         var domain = new List<Item>(items.Count);
@@ -49,6 +51,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         return domain;
     }
 
+    /// <inheritdoc />
     public async Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId)
     {
         var container = await GetContainerAsync(containerId);
@@ -57,12 +60,13 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         return (container, items);
     }
 
+    /// <inheritdoc />
     public async Task<Item?> GetItemWithPhotosAsync(string itemId)
     {
         var dbItem = await _items.GetAsync(itemId);
         if (dbItem is null) return null;
 
-    var dbPhotos = await _photos.WhereAsync(p => p.ItemId == itemId);
+        var dbPhotos = await _photos.WhereAsync(p => p.ItemId == itemId);
         return dbItem.ToDomain(dbPhotos);
     }
 }
