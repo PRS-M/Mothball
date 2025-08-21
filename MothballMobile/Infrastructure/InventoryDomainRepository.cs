@@ -27,7 +27,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         if (db is null) return null;
 
         // Load container photo if any
-        var dbPhoto = await _photos.FirstOrDefaultAsync(p => p.ContainerId == containerId);
+        var dbPhoto = await _photos.FirstOrDefaultAsync(p => p.OwnerUniqueId == containerId);
         var photo = dbPhoto?.ToDomain();
 
         return db.ToDomain(photo);
@@ -39,9 +39,9 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         var items = await _items.WhereAsync(i => i.ContainerId == containerId);
 
         var itemIds = items.Select(i => i.UniqueId).ToList();
-        var photos = await _photos.WhereInAsync(nameof(DbPhoto.ItemId), itemIds);
+        var photos = await _photos.WhereInAsync(nameof(DbPhoto.OwnerUniqueId), itemIds);
 
-        var photosByItem = photos.GroupBy(p => p.ItemId!).ToDictionary(g => g.Key, g => g.AsEnumerable());
+        var photosByItem = photos.GroupBy(p => p.OwnerUniqueId!).ToDictionary(g => g.Key, g => g.AsEnumerable());
         var domain = new List<Item>(items.Count);
         foreach (var dbItem in items)
         {
@@ -66,7 +66,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         var dbItem = await _items.GetAsync(itemId);
         if (dbItem is null) return null;
 
-        var dbPhotos = await _photos.WhereAsync(p => p.ItemId == itemId);
+        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId == itemId);
         return dbItem.ToDomain(dbPhotos);
     }
 }

@@ -83,25 +83,13 @@ public static class ItemMapper
 
 public static class PhotoMapper
 {
-    public static DbPhoto ToDbForContainer(this Photo photo, string containerId)
+    public static DbPhoto ToDbForContainer(this Photo photo, string ownerId)
     {
         ArgumentNullException.ThrowIfNull(photo);
-        ArgumentNullException.ThrowIfNull(containerId);
+        ArgumentNullException.ThrowIfNull(ownerId);
         return new DbPhoto
         {
-            ContainerId = containerId,
-            FileName = photo.FileName,
-            ImageData = photo.ImageData
-        };
-    }
-
-    public static DbPhoto ToDbForItem(this Photo photo, string itemId)
-    {
-        ArgumentNullException.ThrowIfNull(photo);
-        ArgumentNullException.ThrowIfNull(itemId);
-        return new DbPhoto
-        {
-            ItemId = itemId,
+            OwnerUniqueId = ownerId,
             FileName = photo.FileName,
             ImageData = photo.ImageData
         };

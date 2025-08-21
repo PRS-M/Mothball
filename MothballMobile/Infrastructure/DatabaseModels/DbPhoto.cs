@@ -9,12 +9,9 @@ public class DbPhoto
 	[AutoIncrement]
 	public int Id { get; set; }
 
-	// Optional owner relationships
-	[Indexed]
-	public string? ContainerId { get; set; }
-
-	[Indexed]
-	public string? ItemId { get; set; }
+    // Owner relationship (GUID)
+    [Indexed]
+    public string? OwnerUniqueId { get; set; }
 
 	[NotNull]
 	public string FileName { get; set; } = string.Empty;

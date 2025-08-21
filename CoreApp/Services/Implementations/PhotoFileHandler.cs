@@ -26,7 +26,7 @@ public class PhotoFileHandler
 
         List<string> itemIds = inventoryRoot.ItemIdsByContainerId[container.UniqueId];
 
-    foreach (var itemId in itemIds)
+        foreach (var itemId in itemIds)
         {
             if (string.IsNullOrEmpty(itemId))
                 continue;
@@ -34,7 +34,7 @@ public class PhotoFileHandler
             Item item = inventoryRoot.Items[itemId];
             foreach (var photo in item.Photos)
             {
-        byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Path.Combine(Constants.PathToItemPhotos, container.UniqueId));
+                byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Path.Combine(Constants.PathToItemPhotos, container.UniqueId));
                 photo.ImageData = bytes;
             }
         }
