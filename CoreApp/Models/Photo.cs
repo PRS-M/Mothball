@@ -7,7 +7,7 @@ public class Photo
 {
     public Photo()
     {
-        FileName = $"photo_{Guid.NewGuid()}.jpg";
+        FileName = $"{Guid.NewGuid()}.jpg";
     }
 
     [JsonConstructor]

@@ -18,12 +18,6 @@ public class PhotoFileHandler
     public async Task LoadPhotos(InventoryRoot inventoryRoot, Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
-
-        container.Photo = new Photo
-        {
-            FileName = $"{container.Name}-photo.jpg",
-        };
-
         List<string> itemIds = inventoryRoot.ItemIdsByContainerId[container.UniqueId];
 
         foreach (var itemId in itemIds)
@@ -57,8 +51,8 @@ public class PhotoFileHandler
 
         return new Photo
         {
-            FileName = Guid.NewGuid().ToString(),
-            // ImageData = imageData,
+            FileName = fileInfo.Name,
+            ImageData = imageData,
         };
     }
 

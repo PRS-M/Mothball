@@ -26,7 +26,7 @@ public class CameraHandler : ICameraHandler
 
         var photoWithData = new Photo
         {
-            FileName = $"{container.Name}-{Guid.NewGuid()}.jpg"
+            FileName = $"{Guid.NewGuid()}.jpg"
         };
 
         try
@@ -49,7 +49,7 @@ public class CameraHandler : ICameraHandler
 
         var photoWithData = new Photo
         {
-            FileName = $"{item.Name}-{Guid.NewGuid()}.jpg"
+            FileName = $"{Guid.NewGuid()}.jpg"
         };
 
         try

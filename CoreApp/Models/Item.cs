@@ -11,9 +11,6 @@ public class Item
     public List<string> PhotoFileNames { get; set; } = new();
     public List<Photo> Photos { get; set; } = new();
 
-    [JsonIgnore]
-    public List<Photo> PhotosWithData { get; set; } = new();
-
     public async Task CapturePhotoAsync(ICameraHandler cameraHandler, string containerId)
     {
         ArgumentNullException.ThrowIfNull(cameraHandler);
@@ -22,8 +19,6 @@ public class Item
         // Capture photo logic using the camera handler
         Photo photoWithData = await cameraHandler.CaptureItemPhotoAsync(this, containerId);
 
-        PhotosWithData.Add(photoWithData);
-        var photo = new Photo { FileName = photoWithData.FileName };
-        Photos.Add(photo);
+        Photos.Add(photoWithData);
     }
 }
