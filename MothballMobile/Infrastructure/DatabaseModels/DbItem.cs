@@ -12,8 +12,4 @@ public class DbItem
 	[NotNull]
 	[Indexed]
 	public string Name { get; set; } = string.Empty;
-
-	// Foreign key to DbContainer.UniqueId
-	[Indexed]
-	public string? ContainerId { get; set; }
 }

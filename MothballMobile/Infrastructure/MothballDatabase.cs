@@ -28,5 +28,6 @@ public class MothballDatabase
         await _database.CreateTableAsync<DbContainer>();
         await _database.CreateTableAsync<DbItem>();
         await _database.CreateTableAsync<DbPhoto>();
+        await _database.CreateTableAsync<DbItemContainerRelation>();
     }
 }

@@ -44,8 +44,9 @@ public class CameraHandler : ICameraHandler
 
     public async Task<Photo> CaptureItemPhotoAsync(Item item, string containerId)
     {
-        if (item == null) throw new ArgumentNullException(nameof(item));
-        if (string.IsNullOrEmpty(containerId)) throw new ArgumentNullException(nameof(containerId));
+        ArgumentNullException.ThrowIfNull(item);
+        if (string.IsNullOrEmpty(containerId))
+            throw new ArgumentNullException(nameof(containerId));
 
         var photoWithData = new Photo
         {

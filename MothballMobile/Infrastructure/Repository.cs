@@ -44,15 +44,15 @@ public class Repository<T> : IRepository<T> where T : new()
 
     /// <inheritdoc />
     public Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
-        => Connection.Table<T>().Where(predicate).FirstOrDefaultAsync();
+        => Connection.Table<T>().FirstOrDefaultAsync(predicate);
 
     /// <inheritdoc />
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
-        => (await Connection.Table<T>().Where(predicate).CountAsync()) > 0;
+        => (await Connection.Table<T>().CountAsync(predicate)) > 0;
 
     /// <inheritdoc />
     public Task<int> CountAsync(Expression<Func<T, bool>> predicate)
-        => Connection.Table<T>().Where(predicate).CountAsync();
+        => Connection.Table<T>().CountAsync(predicate);
 
     /// <inheritdoc />
     public Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate, int skip, int take)
@@ -73,6 +73,7 @@ public class Repository<T> : IRepository<T> where T : new()
         var placeholders = string.Join(",", Enumerable.Repeat("?", list.Count));
         var table = typeof(T).Name;
         var query = $"SELECT * FROM {table} WHERE {propertyName} IN ({placeholders})";
+
         return Connection.QueryAsync<T>(query, list.ToArray());
     }
 

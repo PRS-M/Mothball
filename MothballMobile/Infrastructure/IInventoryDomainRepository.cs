@@ -1,4 +1,6 @@
+using System.Linq.Expressions;
 using CoreApp.Models;
+using MothballMobile.Infrastructure.DatabaseModels;
 
 namespace MothballMobile.Infrastructure;
 
@@ -27,6 +29,19 @@ public interface IInventoryDomainRepository
     /// <param name="containerId">The container UniqueId.</param>
     /// <returns>Tuple of container and items, or null if container not found.</returns>
     Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId);
+
+    /// <summary>
+    /// Loads all Items with their photos.
+    /// </summary>
+    /// <returns>A list of Items with their photos loaded.</returns>
+    Task<List<Item>> GetAllItemsWithPhotosAsync();
+
+    /// <summary>
+    /// Loads items with their photos
+    /// </summary>
+    /// <param name="predicate">Predicate for filtering of the items.</param>
+    /// <returns>A list of Items with their photos loaded.</returns>
+    Task<List<Item>> GetItemsWithPhotosAsync(Expression<Func<DbItem, bool>> predicate);
 
     /// <summary>
     /// Loads a domain Item together with its photos.
