@@ -8,7 +8,6 @@ public class Item
 {
     public string UniqueId { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = string.Empty;
-    public List<string> PhotoFileNames { get; set; } = new();
     public List<Photo> Photos { get; set; } = new();
 
     public async Task CapturePhotoAsync(ICameraHandler cameraHandler, string containerId)

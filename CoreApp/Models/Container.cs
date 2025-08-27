@@ -11,7 +11,7 @@ public class Container
         Name = string.Empty;
         LocationDescription = string.Empty;
         Description = string.Empty;
-        Photo = new Photo();
+        Photos = new List<Photo>();
     }
 
     public Container(string uniqueId, string name, string locationDescription, string description)
@@ -20,31 +20,31 @@ public class Container
         Name = name;
         LocationDescription = locationDescription;
         Description = description;
-        Photo = new Photo();
+        Photos = new List<Photo>();
     }
 
     [JsonConstructor]
-    public Container(string uniqueId, string name, string locationDescription, string description, Photo photo)
+    public Container(string uniqueId, string name, string locationDescription, string description, List<Photo> photos)
     {
         UniqueId = uniqueId;
         Name = name;
         LocationDescription = locationDescription;
         Description = description;
-        Photo = photo;
+        Photos = photos;
     }
 
     public string UniqueId { get; set; }
     public string Name { get; set; }
     public string LocationDescription { get; set; }
     public string Description { get; set; }
-    public Photo Photo { get; set; }
+    public List<Photo> Photos { get; set; }
 
     public async Task CaptureContainerPhotoAsync(ICameraHandler cameraHandler)
     {
         ArgumentNullException.ThrowIfNull(cameraHandler);
 
         Photo photoWithData = await cameraHandler.CaptureContainerPhotoAsync(this);
-        Photo = photoWithData;
+        Photos.Add(photoWithData);
     }
 
     public async Task AddItemPhoto(ICameraHandler cameraHandler, Item item)

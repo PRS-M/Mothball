@@ -49,7 +49,7 @@ public partial class ContainerListViewModel : ObservableObject
                     name: $"Dummy_Container_{i}",
                     locationDescription: $"Location {i}",
                     description: $"Description for container {i}",
-                    photo: new Photo(string.Empty)
+                    photos: [new Photo(string.Empty)]
                 );
                 inventory.AddContainer(dummy);
             }
@@ -117,12 +117,14 @@ public class ContainerViewModel : ObservableObject
 
     public async Task LoadImageAsync()
     {
-        if (Container.Photo != null && !string.IsNullOrEmpty(Container.Photo.FileName))
+        if (Container.Photos != null && Container.Photos.Any(p => !string.IsNullOrEmpty(p.FileName)))
         {
             try
             {
                 var photoFolder = Path.Combine(Constants.PathToItemPhotos, Container.UniqueId);
-                var ms = await _fileHandler.GetImageMemoryStream(Container.Photo.FileName, photoFolder);
+
+                // TODO: Multiple photos handling.
+                var ms = await _fileHandler.GetImageMemoryStream(Container.Photos[0].FileName, photoFolder);
                 ImageSource = ImageSource.FromStream(() => ms);
             }
             catch

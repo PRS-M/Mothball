@@ -16,7 +16,4 @@ public class DbContainer
 	public string LocationDescription { get; set; } = string.Empty;
 
 	public string Description { get; set; } = string.Empty;
-
-	// Store only the file name for the container's photo; image bytes are stored on disk
-	public string? PhotoFileName { get; set; }
 }

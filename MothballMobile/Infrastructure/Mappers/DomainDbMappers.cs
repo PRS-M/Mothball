@@ -1,3 +1,4 @@
+using System.Linq;
 using CoreApp.Models;
 using MothballMobile.Infrastructure.DatabaseModels;
 
@@ -14,11 +15,10 @@ public static class ContainerMapper
             Name = container.Name,
             LocationDescription = container.LocationDescription,
             Description = container.Description,
-            PhotoFileName = container.Photo?.FileName
         };
     }
 
-    public static Container ToDomain(this DbContainer dbContainer, Photo? photo = null)
+    public static Container ToDomain(this DbContainer dbContainer, IEnumerable<DbPhoto>? photos = null)
     {
         ArgumentNullException.ThrowIfNull(dbContainer);
         var result = new Container(
@@ -28,14 +28,10 @@ public static class ContainerMapper
             dbContainer.Description
         );
 
-        // Prefer provided photo (with data) else instantiate from stored file name
-        if (photo is not null)
+        if (photos is not null && photos.Any())
         {
-            result.Photo = photo;
-        }
-        else if (!string.IsNullOrWhiteSpace(dbContainer.PhotoFileName))
-        {
-            result.Photo = new Photo(dbContainer.PhotoFileName);
+            List<Photo> convertedPhotos = [.. photos.Select(p => p.ToDomain())];
+            result.Photos.AddRange(convertedPhotos);
         }
 
         return result;
@@ -51,7 +47,6 @@ public static class ItemMapper
         {
             UniqueId = item.UniqueId,
             Name = item.Name,
-            ContainerId = containerId
         };
     }
 
@@ -68,11 +63,10 @@ public static class ItemMapper
         {
             foreach (var p in dbPhotos.Where(p => !string.IsNullOrWhiteSpace(p.FileName)))
             {
-                item.PhotoFileNames.Add(p.FileName);
                 item.Photos.Add(new Photo(p.FileName));
                 if (p.ImageData is not null)
                 {
-                    item.PhotosWithData.Add(new Photo(p.FileName, p.ImageData));
+                    item.Photos.Add(new Photo(p.FileName, p.ImageData));
                 }
             }
         }

@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using CoreApp.Models;
+using CoreApp.Services.Interfaces;
 using MothballMobile.Infrastructure.DatabaseModels;
 using MothballMobile.Infrastructure.Mappers;
 
@@ -31,10 +32,19 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         if (db is null) return null;
 
         // Load container photo if any
-        var dbPhoto = await _photos.FirstOrDefaultAsync(p => p.OwnerUniqueId == containerId);
-        var photo = dbPhoto?.ToDomain();
+        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId == containerId);
+        return db.ToDomain(dbPhotos);
+    }
 
-        return db.ToDomain(photo);
+    public async Task<List<Container>> GetAllContainersAsync()
+    {
+        var dbContainers = await _containers.GetAllAsync();
+        var containerIds = dbContainers.Select(c => c.UniqueId).ToList();
+        var photos = await _photos.WhereInAsync(nameof(DbPhoto.OwnerUniqueId), containerIds);
+
+        var photosByContainer = GroupPhotosByOwnerUniqueId(photos);
+
+        return MapDbContainersToDomain(dbContainers, photosByContainer);
     }
 
     /// <inheritdoc />
@@ -103,6 +113,18 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         }
 
         return domain;
+    }
+
+    private static List<Container> MapDbContainersToDomain(List<DbContainer> dbContainers, Dictionary<string, IEnumerable<DbPhoto>> photosByContainer)
+    {
+        var domainContainers = new List<Container>(dbContainers.Count);
+        foreach (var dbContainer in dbContainers)
+        {
+            photosByContainer.TryGetValue(dbContainer.UniqueId, out var dbPhotosForContainer);
+            domainContainers.Add(dbContainer.ToDomain(dbPhotosForContainer));
+        }
+
+        return domainContainers;
     }
 
     private static Dictionary<string, IEnumerable<DbPhoto>> GroupPhotosByOwnerUniqueId(List<DbPhoto> photos)

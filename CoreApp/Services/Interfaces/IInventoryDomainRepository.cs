@@ -1,8 +1,7 @@
 using System.Linq.Expressions;
 using CoreApp.Models;
-using MothballMobile.Infrastructure.DatabaseModels;
 
-namespace MothballMobile.Infrastructure;
+namespace CoreApp.Services.Interfaces;
 
 /// <summary>
 /// Domain-oriented repository that composes SQLite entities into rich domain models.
@@ -37,9 +36,11 @@ public interface IInventoryDomainRepository
     Task<List<Item>> GetAllItemsWithPhotosAsync();
 
     /// <summary>
-    /// Loads items with their photos
+    /// Loads items with their photos filtered by a domain-level predicate.
+    /// The predicate is defined on the domain model and must only reference
+    /// properties that are persisted (e.g., UniqueId, Name).
     /// </summary>
-    /// <param name="predicate">Predicate for filtering of the items.</param>
+    /// <param name="predicate">Domain predicate for filtering items.</param>
     /// <returns>A list of Items with their photos loaded.</returns>
     Task<List<Item>> GetItemsWithPhotosAsync(Expression<Func<DbItem, bool>> predicate);
 
