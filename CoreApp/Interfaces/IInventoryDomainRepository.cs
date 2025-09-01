@@ -1,4 +1,5 @@
 using CoreApp.Entities;
+using CoreApp.Entities.ContainerAggregate;
 
 namespace CoreApp.Interfaces;
 

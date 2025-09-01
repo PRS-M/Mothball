@@ -1,5 +1,6 @@
 using System.Linq;
 using CoreApp.Entities;
+using CoreApp.Entities.ContainerAggregate;
 using MothballMobile.Infrastructure.DatabaseModels;
 
 namespace MothballMobile.Infrastructure.Mappers;

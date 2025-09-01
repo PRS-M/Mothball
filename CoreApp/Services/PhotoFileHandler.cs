@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using CoreApp.Entities;
+using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
 
@@ -15,17 +16,17 @@ public class PhotoFileHandler
         this.fileHandler = fileHandler;
     }
 
-    public async Task LoadPhotos(InventoryRoot inventoryRoot, Container container)
+    public async Task LoadPhotos(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
-        List<string> itemIds = inventoryRoot.ItemIdsByContainerId[container.UniqueId];
+        List<int> itemIds = container.Items.Select(i => i.ItemId).ToList();
 
         foreach (var itemId in itemIds)
         {
-            if (string.IsNullOrEmpty(itemId))
+            if (itemId == 0)
                 continue;
 
-            Item item = inventoryRoot.Items[itemId];
+            StoredItem item = container.Items[itemId];
             foreach (var photo in item.Photos)
             {
                 byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Path.Combine(Constants.PathToItemPhotos, container.UniqueId));

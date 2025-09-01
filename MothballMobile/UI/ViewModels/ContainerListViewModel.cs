@@ -5,6 +5,7 @@ using CoreApp.Utilities;
 using CoreApp.Entities;
 using CoreApp.Interfaces;
 using CoreApp.Services;
+using CoreApp.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.ViewModels;
 public partial class ContainerListViewModel : ObservableObject

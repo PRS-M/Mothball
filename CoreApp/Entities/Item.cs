@@ -2,7 +2,7 @@ using CoreApp.Interfaces;
 
 namespace CoreApp.Entities;
 
-public class Item
+public class Item : BaseEntity, IAggregateRoot
 {
     public string UniqueId { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = string.Empty;
