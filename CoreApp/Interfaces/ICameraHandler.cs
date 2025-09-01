@@ -1,6 +1,7 @@
 using System;
 using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Shared;
 
 namespace CoreApp.Interfaces;
 

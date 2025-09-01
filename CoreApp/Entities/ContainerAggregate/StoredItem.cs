@@ -1,4 +1,5 @@
 using System;
+using CoreApp.Entities.Shared;
 
 namespace CoreApp.Entities.ContainerAggregate;
 

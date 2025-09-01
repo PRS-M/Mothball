@@ -2,8 +2,8 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp;
-using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 
