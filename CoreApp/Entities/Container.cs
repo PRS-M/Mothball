@@ -1,9 +1,9 @@
 ﻿using System.Text.Json.Serialization;
-using CoreApp.Services.Interfaces;
+using CoreApp.Interfaces;
 
-namespace CoreApp.Models;
+namespace CoreApp.Entities;
 
-public class Container
+public class Container : BaseEntity, IAggregateRoot
 {
     public Container()
     {

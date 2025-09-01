@@ -1,6 +1,4 @@
-using System;
-
-namespace CoreApp.Services.Interfaces;
+namespace CoreApp.Interfaces;
 
 public interface IFileHandler
 {

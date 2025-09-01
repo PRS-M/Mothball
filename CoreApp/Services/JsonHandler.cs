@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.Text.Json;
-using CoreApp.Services.Interfaces;
+using CoreApp.Interfaces;
 
-namespace CoreApp.Services.Implementations;
+namespace CoreApp.Services;
 
 public class JsonHandler
 {

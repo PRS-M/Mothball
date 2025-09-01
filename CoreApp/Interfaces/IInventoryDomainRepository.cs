@@ -1,7 +1,6 @@
-using System.Linq.Expressions;
-using CoreApp.Models;
+using CoreApp.Entities;
 
-namespace CoreApp.Services.Interfaces;
+namespace CoreApp.Interfaces;
 
 /// <summary>
 /// Domain-oriented repository that composes SQLite entities into rich domain models.
@@ -42,7 +41,7 @@ public interface IInventoryDomainRepository
     /// </summary>
     /// <param name="predicate">Domain predicate for filtering items.</param>
     /// <returns>A list of Items with their photos loaded.</returns>
-    Task<List<Item>> GetItemsWithPhotosAsync(Expression<Func<DbItem, bool>> predicate);
+    Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm);
 
     /// <summary>
     /// Loads a domain Item together with its photos.

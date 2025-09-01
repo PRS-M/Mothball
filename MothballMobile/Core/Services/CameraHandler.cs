@@ -1,7 +1,7 @@
 using System;
 using CoreApp;
-using CoreApp.Models;
-using CoreApp.Services.Interfaces;
+using CoreApp.Entities;
+using CoreApp.Interfaces;
 using CoreApp.Utilities;
 
 namespace MothballMobile.Core.Services;

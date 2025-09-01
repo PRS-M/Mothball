@@ -1,7 +1,7 @@
 using System;
-using CoreApp.Models;
+using CoreApp.Entities;
 
-namespace CoreApp.Services.Interfaces;
+namespace CoreApp.Interfaces;
 
 public interface ICameraHandler
 {

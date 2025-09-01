@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace CoreApp.Services.Implementations;
+namespace CoreApp.Services;
 
 public static class PlatformDetector
 {

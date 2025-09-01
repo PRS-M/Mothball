@@ -1,13 +1,12 @@
-using System;
-using System.Text.Json.Serialization;
-using CoreApp.Services.Interfaces;
+using CoreApp.Interfaces;
 
-namespace CoreApp.Models;
+namespace CoreApp.Entities;
 
 public class Item
 {
     public string UniqueId { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public List<Photo> Photos { get; set; } = new();
 
     public async Task CapturePhotoAsync(ICameraHandler cameraHandler, string containerId)

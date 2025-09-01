@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
-using CoreApp.Models;
-using CoreApp.Services.Interfaces;
+using CoreApp.Entities;
+using CoreApp.Interfaces;
 using MothballMobile.Infrastructure.DatabaseModels;
 using MothballMobile.Infrastructure.Mappers;
 
@@ -92,9 +92,9 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         return MapDbItemsToDomain(items, photosByItem);
     }
 
-    public async Task<List<Item>> GetItemsWithPhotosAsync(Expression<Func<DbItem, bool>> predicate)
+    public async Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm)
     {
-        var items = await _items.WhereAsync(predicate);
+        var items = await _items.WhereAsync(i => i.Name.Contains(searchTerm));
         var itemIds = items.Select(i => i.UniqueId).ToList();
         var photos = await _photos.WhereInAsync(nameof(DbPhoto.OwnerUniqueId), itemIds);
 

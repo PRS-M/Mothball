@@ -1,5 +1,5 @@
 using System.Linq;
-using CoreApp.Models;
+using CoreApp.Entities;
 using MothballMobile.Infrastructure.DatabaseModels;
 
 namespace MothballMobile.Infrastructure.Mappers;

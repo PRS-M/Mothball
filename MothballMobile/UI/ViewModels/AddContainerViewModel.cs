@@ -2,9 +2,9 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp;
-using CoreApp.Services.Interfaces;
-using CoreApp.Services.Implementations;
-using CoreApp.Models;
+using CoreApp.Entities;
+using CoreApp.Interfaces;
+using CoreApp.Services;
 
 namespace MothballMobile.UI.ViewModels;
 

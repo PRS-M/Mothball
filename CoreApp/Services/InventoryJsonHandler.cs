@@ -1,9 +1,8 @@
 using System;
-using CoreApp.Models;
-using CoreApp;
 using CoreApp.Utilities;
+using CoreApp.Entities;
 
-namespace CoreApp.Services.Implementations;
+namespace CoreApp.Services;
 
 public class InventoryJsonHandler
 {

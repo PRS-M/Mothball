@@ -1,7 +1,6 @@
-using System;
 using System.Text.Json.Serialization;
 
-namespace CoreApp.Models;
+namespace CoreApp.Entities;
 
 public class Photo
 {

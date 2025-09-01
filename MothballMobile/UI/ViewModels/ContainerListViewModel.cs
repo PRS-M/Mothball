@@ -1,11 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp;
-using CoreApp.Services.Implementations;
-using CoreApp.Services.Interfaces;
 using CoreApp.Utilities;
-using CoreApp.Models;
+using CoreApp.Entities;
+using CoreApp.Interfaces;
+using CoreApp.Services;
 
 namespace MothballMobile.UI.ViewModels;
 public partial class ContainerListViewModel : ObservableObject

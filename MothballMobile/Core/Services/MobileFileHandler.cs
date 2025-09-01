@@ -1,4 +1,4 @@
-using CoreApp.Services.Interfaces;
+using CoreApp.Interfaces;
 
 namespace MothballMobile.Core.Services;
 
