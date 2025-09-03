@@ -30,7 +30,7 @@ public partial class AddContainerViewModel : ObservableObject
     public string Description { get; set; }
     public string LocationDescription { get; set; }
     public string UniqueId { get; set; }
-    public Photo Photo { get; set; }
+    public ImageItem Photo { get; set; }
     Container Container { get; set; }
 
     [RelayCommand]

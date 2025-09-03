@@ -3,18 +3,17 @@ using SQLite;
 
 namespace MothballMobile.Infrastructure.DatabaseModels;
 
-public class DbPhoto
+public class DbImage
 {
-	[PrimaryKey]
-	[AutoIncrement]
-	public int Id { get; set; }
+	[PrimaryKey, AutoIncrement, NotNull]
+	public Guid ImageId { get; set; } = Guid.NewGuid();
 
     // Owner relationship (GUID)
     [Indexed]
-    public string? OwnerUniqueId { get; set; }
+    public Guid OwnerUniqueId { get; set; }
 
-	[NotNull]
-	public string FileName { get; set; } = string.Empty;
+	[Ignore]
+	public string FileName => $"{ImageId}.jpg";
 
 	// Not recommended for large images, but kept as optional blob for thumbnails or small data
 	public byte[]? ImageData { get; set; }

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using SQLite;
 
 namespace MothballMobile.Infrastructure.DatabaseModels;
@@ -9,10 +10,10 @@ public class DbItemContainerRelation
     public int Id { get; set; }
 
     // Foreign key to DbItem.UniqueId
-    [Indexed]
-    public string ItemId { get; set; } = string.Empty;
+    [Indexed, ForeignKey(nameof(DbItem))]
+    public Guid ItemId { get; set; }
 
     // Foreign key to DbContainer.UniqueId
-    [Indexed]
-    public string ContainerId { get; set; } = string.Empty;
+    [Indexed, ForeignKey(nameof(DbContainer))]
+    public Guid ContainerId { get; set; }
 }

@@ -103,7 +103,7 @@ public class ContainerViewModel : ObservableObject
     }
 
     public string Name => Container.Name;
-    public string Description => Container.Description;
+    public string Description => Container.Notes;
     public string LocationDescription => Container.LocationDescription;
     public int ItemCount => _itemCount;
 
@@ -121,7 +121,7 @@ public class ContainerViewModel : ObservableObject
         {
             try
             {
-                var photoFolder = Path.Combine(Constants.PathToItemPhotos, Container.UniqueId);
+                var photoFolder = Path.Combine(Constants.PathToItemPhotos, Container.ContainerId);
 
                 // TODO: Multiple photos handling.
                 var ms = await _fileHandler.GetImageMemoryStream(Container.Photos[0].FileName, photoFolder);

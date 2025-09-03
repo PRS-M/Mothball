@@ -11,13 +11,13 @@ public class InventoryDomainRepository : IInventoryDomainRepository
 {
     private readonly IRepository<DbContainer> _containers;
     private readonly IRepository<DbItem> _items;
-    private readonly IRepository<DbPhoto> _photos;
+    private readonly IRepository<DbImage> _photos;
     private readonly IRepository<DbItemContainerRelation> _itemContainerRelations;
 
     public InventoryDomainRepository(
         IRepository<DbContainer> containers,
         IRepository<DbItem> items,
-        IRepository<DbPhoto> photos,
+        IRepository<DbImage> photos,
         IRepository<DbItemContainerRelation> itemContainerRelations)
     {
         _containers = containers;
@@ -33,15 +33,15 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         if (db is null) return null;
 
         // Load container photo if any
-        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId == containerId);
+        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId.ToString() == containerId);
         return db.ToDomain(dbPhotos);
     }
 
     public async Task<List<Container>> GetAllContainersAsync()
     {
         var dbContainers = await _containers.GetAllAsync();
-        var containerIds = dbContainers.Select(c => c.UniqueId).ToList();
-        var photos = await _photos.WhereInAsync(nameof(DbPhoto.OwnerUniqueId), containerIds);
+        var containerIds = dbContainers.Select(c => (object)c.ContainerId).ToList();
+        var photos = await _photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), containerIds);
 
         var photosByContainer = GroupPhotosByOwnerUniqueId(photos);
 
@@ -52,13 +52,13 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     public async Task<List<Item>> GetItemsForContainerAsync(string containerId)
     {
         IEnumerable<DbItemContainerRelation> dbItemContainerRelations =
-            await _itemContainerRelations.WhereAsync(r => r.ContainerId == containerId);
+            await _itemContainerRelations.WhereAsync(r => r.ContainerId.ToString() == containerId);
 
-        var itemIds = dbItemContainerRelations.Select(r => r.ItemId).ToList();
+        var itemIds = dbItemContainerRelations.Select(r => (object)r.ItemId).ToList();
 
-        List<DbItem> items = await _items.WhereInAsync(nameof(DbItem.UniqueId), itemIds);
-        List<DbPhoto> photos = await _photos.WhereInAsync(nameof(DbPhoto.OwnerUniqueId), itemIds);
-        Dictionary<string, IEnumerable<DbPhoto>> photosByItem = GroupPhotosByOwnerUniqueId(photos);
+        List<DbItem> items = await _items.WhereInAsync(nameof(DbItem.ItemId), itemIds);
+        List<DbImage> photos = await _photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
+        Dictionary<Guid, IEnumerable<DbImage>> photosByItem = GroupPhotosByOwnerUniqueId(photos);
 
         return MapDbItemsToDomain(items, photosByItem);
     }
@@ -78,15 +78,15 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         var dbItem = await _items.GetAsync(itemId);
         if (dbItem is null) return null;
 
-        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId == itemId);
+        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId.ToString() == itemId);
         return dbItem.ToDomain(dbPhotos);
     }
 
     public async Task<List<Item>> GetAllItemsWithPhotosAsync()
     {
         var items = await _items.GetAllAsync();
-        var itemIds = items.Select(i => i.UniqueId).ToList();
-        var photos = await _photos.WhereInAsync(nameof(DbPhoto.OwnerUniqueId), itemIds);
+        var itemIds = items.Select(i => (object)i.ItemId).ToList();
+        var photos = await _photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
 
         var photosByItem = GroupPhotosByOwnerUniqueId(photos);
 
@@ -96,43 +96,42 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     public async Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm)
     {
         var items = await _items.WhereAsync(i => i.Name.Contains(searchTerm));
-        var itemIds = items.Select(i => i.UniqueId).ToList();
-        var photos = await _photos.WhereInAsync(nameof(DbPhoto.OwnerUniqueId), itemIds);
+        var itemIds = items.Select(i => (object)i.ItemId).ToList();
+        var photos = await _photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
 
         var photosByItem = GroupPhotosByOwnerUniqueId(photos);
 
         return MapDbItemsToDomain(items, photosByItem);
     }
 
-    private static List<Item> MapDbItemsToDomain(List<DbItem> items, Dictionary<string, IEnumerable<DbPhoto>> photosByItem)
+    private static List<Item> MapDbItemsToDomain(List<DbItem> items, Dictionary<Guid, IEnumerable<DbImage>> photosByItem)
     {
         var domain = new List<Item>(items.Count);
         foreach (var dbItem in items)
         {
-            photosByItem.TryGetValue(dbItem.UniqueId, out var dbPhotosForItem);
+            photosByItem.TryGetValue(dbItem.ItemId, out var dbPhotosForItem);
             domain.Add(dbItem.ToDomain(dbPhotosForItem));
         }
 
         return domain;
     }
 
-    private static List<Container> MapDbContainersToDomain(List<DbContainer> dbContainers, Dictionary<string, IEnumerable<DbPhoto>> photosByContainer)
+    private static List<Container> MapDbContainersToDomain(List<DbContainer> dbContainers, Dictionary<Guid, IEnumerable<DbImage>> photosByContainer)
     {
         var domainContainers = new List<Container>(dbContainers.Count);
         foreach (var dbContainer in dbContainers)
         {
-            photosByContainer.TryGetValue(dbContainer.UniqueId, out var dbPhotosForContainer);
+            photosByContainer.TryGetValue(dbContainer.ContainerId, out var dbPhotosForContainer);
             domainContainers.Add(dbContainer.ToDomain(dbPhotosForContainer));
         }
 
         return domainContainers;
     }
 
-    private static Dictionary<string, IEnumerable<DbPhoto>> GroupPhotosByOwnerUniqueId(List<DbPhoto> photos)
+    private static Dictionary<Guid, IEnumerable<DbImage>> GroupPhotosByOwnerUniqueId(List<DbImage> photos)
     {
         return photos
-            .Where(p => p.OwnerUniqueId != null)
-            .GroupBy(p => p.OwnerUniqueId!)
+            .GroupBy(p => p.OwnerUniqueId)
             .ToDictionary(g => g.Key, g => g.AsEnumerable());
     }
 }

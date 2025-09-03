@@ -5,11 +5,9 @@ namespace MothballMobile.Infrastructure.DatabaseModels;
 
 public class DbItem
 {
-	[PrimaryKey]
-	[NotNull]
-	public string UniqueId { get; set; } = Guid.NewGuid().ToString();
+	[PrimaryKey, NotNull]
+	public Guid ItemId { get; set; } = Guid.NewGuid();
 
-	[NotNull]
-	[Indexed]
+	[Indexed, NotNull]
 	public string Name { get; set; } = string.Empty;
 }

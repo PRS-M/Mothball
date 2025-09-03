@@ -7,6 +7,6 @@ namespace CoreApp.Interfaces;
 
 public interface ICameraHandler
 {
-    Task<Photo> CaptureContainerPhotoAsync(Container container);
-    Task<Photo> CaptureItemPhotoAsync(Item item, string containerId);
+    Task<ImageItem> CaptureContainerPhotoAsync(Container container);
+    Task<ImageItem> CaptureItemPhotoAsync(Item item, string containerId);
 }

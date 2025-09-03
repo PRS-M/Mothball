@@ -27,7 +27,7 @@ public class MothballDatabase
         // Create tables for DB models
         await _database.CreateTableAsync<DbContainer>();
         await _database.CreateTableAsync<DbItem>();
-        await _database.CreateTableAsync<DbPhoto>();
+        await _database.CreateTableAsync<DbImage>();
         await _database.CreateTableAsync<DbItemContainerRelation>();
     }
 }

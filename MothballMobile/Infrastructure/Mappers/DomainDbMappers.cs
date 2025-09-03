@@ -13,26 +13,24 @@ public static class ContainerMapper
         ArgumentNullException.ThrowIfNull(container);
         return new DbContainer
         {
-            UniqueId = container.UniqueId,
+            ContainerId = container.ContainerId,
             Name = container.Name,
-            LocationDescription = container.LocationDescription,
-            Description = container.Description,
+            Description = container.Notes,
         };
     }
 
-    public static Container ToDomain(this DbContainer dbContainer, IEnumerable<DbPhoto>? photos = null)
+    public static Container ToDomain(this DbContainer dbContainer, IEnumerable<DbImage>? photos = null)
     {
         ArgumentNullException.ThrowIfNull(dbContainer);
         var result = new Container(
-            dbContainer.UniqueId,
+            dbContainer.ContainerId.ToString(),
             dbContainer.Name,
-            dbContainer.LocationDescription,
             dbContainer.Description
         );
 
         if (photos is not null && photos.Any())
         {
-            List<Photo> convertedPhotos = [.. photos.Select(p => p.ToDomain())];
+            List<ImageItem> convertedPhotos = [.. photos.Select(p => p.ToDomain())];
             result.Photos.AddRange(convertedPhotos);
         }
 
@@ -47,17 +45,17 @@ public static class ItemMapper
         ArgumentNullException.ThrowIfNull(item);
         return new DbItem
         {
-            UniqueId = item.UniqueId,
+            ItemId = item.ItemId,
             Name = item.Name,
         };
     }
 
-    public static Item ToDomain(this DbItem dbItem, IEnumerable<DbPhoto>? dbPhotos = null)
+    public static Item ToDomain(this DbItem dbItem, IEnumerable<DbImage>? dbPhotos = null)
     {
         ArgumentNullException.ThrowIfNull(dbItem);
         var item = new Item
         {
-            UniqueId = dbItem.UniqueId,
+            ItemId = dbItem.ItemId,
             Name = dbItem.Name,
         };
 
@@ -65,11 +63,7 @@ public static class ItemMapper
         {
             foreach (var p in dbPhotos.Where(p => !string.IsNullOrWhiteSpace(p.FileName)))
             {
-                item.Photos.Add(new Photo(p.FileName));
-                if (p.ImageData is not null)
-                {
-                    item.Photos.Add(new Photo(p.FileName, p.ImageData));
-                }
+                item.Photos.Add(new ImageItem(Guid.Parse(p.FileName)));
             }
         }
 
@@ -79,21 +73,19 @@ public static class ItemMapper
 
 public static class PhotoMapper
 {
-    public static DbPhoto ToDbForContainer(this Photo photo, string ownerId)
+    public static DbImage ToDbForContainer(this ImageItem photo, string ownerId)
     {
         ArgumentNullException.ThrowIfNull(photo);
         ArgumentNullException.ThrowIfNull(ownerId);
-        return new DbPhoto
+        return new DbImage
         {
-            OwnerUniqueId = ownerId,
-            FileName = photo.FileName,
-            ImageData = photo.ImageData
+            OwnerUniqueId = Guid.Parse(ownerId),
         };
     }
 
-    public static Photo ToDomain(this DbPhoto dbPhoto)
+    public static ImageItem ToDomain(this DbImage dbPhoto)
     {
         ArgumentNullException.ThrowIfNull(dbPhoto);
-        return new Photo(dbPhoto.FileName, dbPhoto.ImageData);
+        return new ImageItem(dbPhoto.ImageId);
     }
 }

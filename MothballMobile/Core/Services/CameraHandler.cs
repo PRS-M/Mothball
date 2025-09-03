@@ -19,21 +19,21 @@ public class CameraHandler : ICameraHandler
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
-    public async Task<Photo> CaptureContainerPhotoAsync(Container container)
+    public async Task<ImageItem> CaptureContainerPhotoAsync(Container container)
     {
         if (container == null)
         {
             throw new ArgumentNullException(nameof(container), "Container cannot be null.");
         }
 
-        var photoWithData = new Photo
+        var photoWithData = new ImageItem
         {
             FileName = $"{Guid.NewGuid()}.jpg"
         };
 
         try
         {
-            await CaptureAndSavePhoto(container.UniqueId, photoWithData.FileName, photoWithData);
+            await CaptureAndSavePhoto(container.ContainerId, photoWithData.FileName, photoWithData);
         }
         catch (Exception ex)
         {
@@ -44,13 +44,13 @@ public class CameraHandler : ICameraHandler
         return photoWithData;
     }
 
-    public async Task<Photo> CaptureItemPhotoAsync(Item item, string containerId)
+    public async Task<ImageItem> CaptureItemPhotoAsync(Item item, string containerId)
     {
         ArgumentNullException.ThrowIfNull(item);
         if (string.IsNullOrEmpty(containerId))
             throw new ArgumentNullException(nameof(containerId));
 
-        var photoWithData = new Photo
+        var photoWithData = new ImageItem
         {
             FileName = $"{Guid.NewGuid()}.jpg"
         };
@@ -68,7 +68,7 @@ public class CameraHandler : ICameraHandler
         return photoWithData;
     }
 
-    private async Task CaptureAndSavePhoto(string containerId, string fileName, Photo photoWithData)
+    private async Task CaptureAndSavePhoto(string containerId, string fileName, ImageItem photoWithData)
     {
         FileResult? photo = await mediaPicker.PickPhotoAsync();
         if (photo != null)

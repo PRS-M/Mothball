@@ -5,10 +5,10 @@ namespace CoreApp.Entities;
 
 public class Item : BaseEntity, IAggregateRoot
 {
-    public string UniqueId { get; set; } = Guid.NewGuid().ToString();
+    public Guid ItemId { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public List<Photo> Photos { get; set; } = new();
+    public List<ImageItem> Photos { get; set; } = new();
 
     public async Task CapturePhotoAsync(ICameraHandler cameraHandler, string containerId)
     {
@@ -16,7 +16,7 @@ public class Item : BaseEntity, IAggregateRoot
         ArgumentNullException.ThrowIfNull(containerId);
 
         // Capture photo logic using the camera handler
-        Photo photoWithData = await cameraHandler.CaptureItemPhotoAsync(this, containerId);
+        ImageItem photoWithData = await cameraHandler.CaptureItemPhotoAsync(this, containerId);
 
         Photos.Add(photoWithData);
     }

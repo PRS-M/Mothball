@@ -29,13 +29,13 @@ public class PhotoFileHandler
             StoredItem item = container.Items[itemId];
             foreach (var photo in item.Photos)
             {
-                byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Path.Combine(Constants.PathToItemPhotos, container.UniqueId));
+                byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Path.Combine(Constants.PathToItemPhotos, container.ContainerId));
                 photo.ImageData = bytes;
             }
         }
     }
 
-    public Photo LoadPhoto(string filePath)
+    public ImageItem LoadPhoto(string filePath)
     {
         if (string.IsNullOrEmpty(filePath))
         {
@@ -50,14 +50,14 @@ public class PhotoFileHandler
         byte[] imageData = File.ReadAllBytes(filePath);
         var fileInfo = new FileInfo(filePath);
 
-        return new Photo
+        return new ImageItem
         {
             FileName = fileInfo.Name,
             ImageData = imageData,
         };
     }
 
-    public List<Photo> LoadAllPhotos(string directoryPath)
+    public List<ImageItem> LoadAllPhotos(string directoryPath)
     {
         if (string.IsNullOrEmpty(directoryPath))
         {
@@ -69,7 +69,7 @@ public class PhotoFileHandler
             throw new DirectoryNotFoundException("The specified directory does not exist.");
         }
 
-        var photos = new List<Photo>();
+        var photos = new List<ImageItem>();
         var files = Directory.GetFiles(directoryPath, "*.jpg"); // Assuming photos are in JPG format
 
         foreach (var file in files)
