@@ -1,7 +1,7 @@
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 
-namespace CoreApp.Entities;
+namespace CoreApp.Entities.ItemAggregate;
 
 public class Item : BaseEntity, IAggregateRoot
 {

@@ -1,7 +1,7 @@
 using System;
 using CoreApp;
-using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;

@@ -1,5 +1,6 @@
 using System;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 
@@ -24,6 +25,18 @@ public class ContainerService
         ArgumentNullException.ThrowIfNull(container);
         ImageItem capturedPhoto = await cameraHandler.CaptureContainerPhotoAsync(container);
         container.Photos.Add(capturedPhoto);
+
+        await inventoryRepository.InsertImageItem(capturedPhoto);
         await inventoryRepository.UpdateContainerAsync(container);
+    }
+
+    public async Task CaptureItemPhotoAsync(Item item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ImageItem capturedPhoto = await cameraHandler.CaptureItemPhotoAsync(item);
+        item.Photos.Add(capturedPhoto);
+
+        await inventoryRepository.InsertImageItem(capturedPhoto);
+        await inventoryRepository.UpdateItemAsync(item);
     }
 }
