@@ -6,12 +6,12 @@ using CoreApp.Interfaces;
 
 namespace CoreApp.Services;
 
-public class ContainerService
+public class ImageService
 {
     private readonly ICameraHandler cameraHandler;
     private readonly IInventoryDomainRepository inventoryRepository;
 
-    public ContainerService(ICameraHandler cameraHandler, IInventoryDomainRepository inventoryRepository)
+    public ImageService(ICameraHandler cameraHandler, IInventoryDomainRepository inventoryRepository)
     {
         ArgumentNullException.ThrowIfNull(cameraHandler);
         ArgumentNullException.ThrowIfNull(inventoryRepository);
