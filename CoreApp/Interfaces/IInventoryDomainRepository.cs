@@ -17,6 +17,12 @@ public interface IInventoryDomainRepository
     Task<Container?> GetContainerAsync(string containerId);
 
     /// <summary>
+    /// Loads all Containers with their photos (if any).
+    /// </summary>
+    /// <returns>List of Containers.</returns>
+    Task<List<Container>> GetAllContainersAsync();
+
+    /// <summary>
     /// Loads domain Items for a container, each with its photos (filenames and any stored image data).
     /// </summary>
     /// <param name="containerId">The container UniqueId.</param>
