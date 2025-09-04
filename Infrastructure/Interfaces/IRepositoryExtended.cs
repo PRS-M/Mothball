@@ -1,5 +1,5 @@
 using System;
-using CoreApp.Interfaces;
+using Infrastructure.Interfaces;
 using SQLite;
 
 namespace MothballMobile.Infrastructure;

@@ -6,7 +6,7 @@ using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
 
-namespace MothballMobile.Core.Services;
+namespace Infrastructure.Services;
 
 public class CameraHandler : ICameraHandler
 {

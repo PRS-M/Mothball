@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Media;
-using MothballMobile.Core.Services;
 using MothballMobile.Infrastructure;
 using MothballMobile.UI.ViewModels;
 using MothballMobile.Infrastructure.DatabaseModels;
 using CoreApp.Interfaces;
 using CoreApp.Services;
+using Infrastructure.Interfaces;
+using Infrastructure.Services;
 
 namespace MothballMobile;
 

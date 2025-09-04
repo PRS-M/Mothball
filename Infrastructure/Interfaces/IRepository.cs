@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace CoreApp.Interfaces;
+namespace Infrastructure.Interfaces;
 
 /// <summary>
 /// Generic repository abstraction for CRUD and common query patterns over a SQLite table using sqlite-net.

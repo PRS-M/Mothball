@@ -3,6 +3,7 @@ using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
+using Infrastructure.Interfaces;
 using MothballMobile.Infrastructure.DatabaseModels;
 using MothballMobile.Infrastructure.Mappers;
 

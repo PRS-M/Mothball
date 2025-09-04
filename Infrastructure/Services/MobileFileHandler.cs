@@ -1,7 +1,7 @@
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
 
-namespace MothballMobile.Core.Services;
+namespace Infrastructure.Services;
 
 public class MobileFileHandler : IFileHandler
 {
