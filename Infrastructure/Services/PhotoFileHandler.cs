@@ -16,6 +16,24 @@ public class PhotoFileHandler
         this.fileHandler = fileHandler;
     }
 
+    public async Task<List<MemoryStream>> LoadContainerImages(Container container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+        List<string> fileNames = container.Photos.Select(i => i.FileName).ToList();
+
+        var memoryStreams = new List<MemoryStream>();
+        foreach (var fileName in fileNames)
+        {
+            var memoryStream = await LoadContainerImage(fileName);
+            if (memoryStream != null)
+            {
+                memoryStreams.Add(memoryStream);
+            }
+        }
+
+        return memoryStreams;
+    }
+
     // public async Task LoadPhotos(Container container)
     // {
     //     ArgumentNullException.ThrowIfNull(container);
@@ -37,6 +55,16 @@ public class PhotoFileHandler
     //         }
     //     }
     // }
+
+    public async Task<MemoryStream> LoadContainerImage(string fileName)
+    {
+        return await fileHandler.GetImageMemoryStream(fileName, Constants.PathToContainerPhotos);
+    }
+
+    public async Task<MemoryStream> LoadItemImage(string fileName)
+    {
+        return await fileHandler.GetImageMemoryStream(fileName, Constants.PathToItemPhotos);
+    }
 
     public ImageItem LoadPhoto(string filePath)
     {

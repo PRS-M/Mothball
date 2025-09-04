@@ -12,12 +12,10 @@ namespace MothballMobile.UI.ViewModels;
 public partial class AddContainerViewModel : ObservableObject
 {
     private readonly ICameraHandler cameraHandler;
-    private readonly InventoryJsonHandler inventoryHandler;
 
-    public AddContainerViewModel(ICameraHandler cameraHandler, InventoryJsonHandler inventoryHandler)
+    public AddContainerViewModel(ICameraHandler cameraHandler)
     {
         this.cameraHandler = cameraHandler ?? throw new ArgumentNullException(nameof(cameraHandler));
-        this.inventoryHandler = inventoryHandler ?? throw new ArgumentNullException(nameof(inventoryHandler));
         Name = string.Empty;
         Description = string.Empty;
         LocationDescription = string.Empty;
@@ -39,15 +37,7 @@ public partial class AddContainerViewModel : ObservableObject
         Container = new Container(
             uniqueId: Guid.NewGuid().ToString(),
             name: Name,
-            locationDescription: LocationDescription,
             description: Description
         );
-
-        await Container.CaptureContainerPhotoAsync(cameraHandler);
-
-        // Persist via aggregate root
-        var inventory = await inventoryHandler.LoadAsync();
-        inventory.AddContainer(Container);
-        await inventoryHandler.SaveAsync(inventory);
     }
 }

@@ -67,6 +67,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="../CoreApp/CoreApp.csproj" />
 	  <ProjectReference Include="../Infrastructure/Infrastructure.csproj" />
 	</ItemGroup>
 

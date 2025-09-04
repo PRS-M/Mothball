@@ -32,6 +32,7 @@ public class Container : BaseEntity, IAggregateRoot
     public string Notes { get; set; }
     public List<ImageItem> Photos { get; set; }
     public List<StoredItem> Items { get; set; }
+    public int ItemCount => Items.Sum(i => i.Quantity);
 
     public void AddItem(Guid itemId, int quantity)
     {
