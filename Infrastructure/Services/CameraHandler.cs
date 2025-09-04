@@ -22,7 +22,7 @@ public class CameraHandler : ICameraHandler
     public async Task<ImageItem> CaptureContainerPhotoAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
-        var imageItem = new ImageItem();
+        ImageItem imageItem = container.AddImageItem();
 
         try
         {
@@ -40,7 +40,7 @@ public class CameraHandler : ICameraHandler
     public async Task<ImageItem> CaptureItemPhotoAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
-        var imageItem = new ImageItem();
+        ImageItem imageItem = item.AddImageItem();
 
         try
         {

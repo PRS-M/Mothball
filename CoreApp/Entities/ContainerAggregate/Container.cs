@@ -30,8 +30,8 @@ public class Container : BaseEntity, IAggregateRoot
     public Guid ContainerId { get; set; }
     public string Name { get; set; }
     public string Notes { get; set; }
-    public List<ImageItem> Photos { get; set; }
-    public List<StoredItem> Items { get; set; }
+    public List<ImageItem> Photos { get; private set; }
+    public List<StoredItem> Items { get; private set; }
     public int ItemCount => Items.Sum(i => i.Quantity);
 
     public void AddItem(Guid itemId, int quantity)
@@ -52,9 +52,21 @@ public class Container : BaseEntity, IAggregateRoot
         }
     }
 
-    public void AddPhoto(Guid imageId)
+    public ImageItem AddImageItem()
+    {
+        var newImage = new ImageItem();
+        Photos.Add(newImage);
+        return newImage;
+    }
+
+    public void AddImageItem(Guid imageId)
     {
         Photos.Add(new ImageItem(imageId));
+    }
+
+    public void RemoveImageItem(Guid imageId)
+    {
+        Photos.RemoveAll(p => p.ImageId == imageId);
     }
 
     public void RemoveItem(Guid itemId)
