@@ -1,4 +1,5 @@
 using CoreApp.Interfaces;
+using CoreApp.Utilities;
 
 namespace MothballMobile.Core.Services;
 
@@ -89,15 +90,15 @@ public class MobileFileHandler : IFileHandler
         return files;
     }
 
-    private string GetFullPath(string fileName, string folderName)
+    private string GetFullPath(string fileName, string folderPath)
     {
-        string directoryPath = Path.Combine(GetAppDataPath(), folderName);
-        if (!Directory.Exists(directoryPath))
+        string fullDirectoryPath = Path.Combine(GetAppDataPath(), Constants.PathToData, folderPath);
+        if (!Directory.Exists(fullDirectoryPath))
         {
-            Directory.CreateDirectory(directoryPath);
+            Directory.CreateDirectory(fullDirectoryPath);
         }
 
-        string fullPath = Path.Combine(directoryPath, fileName);
+        string fullPath = Path.Combine(fullDirectoryPath, fileName);
         return fullPath;
     }
 }

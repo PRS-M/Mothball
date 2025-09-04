@@ -1,5 +1,6 @@
 using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Shared;
 
 namespace CoreApp.Interfaces;
 
@@ -50,4 +51,16 @@ public interface IInventoryDomainRepository
     /// <param name="itemId">The item UniqueId.</param>
     /// <returns>The Item or null if not found.</returns>
     Task<Item?> GetItemWithPhotosAsync(string itemId);
+
+    Task InsertContainerAsync(Container container);
+
+    Task InsertItemAsync(Item item);
+
+    Task InsertImageItem(ImageItem imageItem);
+
+    Task UpdateContainerAsync(Container container);
+
+    Task UpdateItemAsync(Item item);
+
+    Task UpdateImageItemAsync(ImageItem image, string ownerId);
 }

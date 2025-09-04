@@ -1,9 +1,10 @@
+using CoreApp.Interfaces;
 using SQLite;
 using System.Linq.Expressions;
 
 namespace MothballMobile.Infrastructure;
 
-public class Repository<T> : IRepository<T> where T : new()
+public class Repository<T> : IRepositoryExtended<T> where T : new()
 {
     private readonly MothballDatabase _db;
 

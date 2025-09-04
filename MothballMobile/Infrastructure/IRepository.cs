@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
-using SQLite;
 
-namespace MothballMobile.Infrastructure;
+namespace CoreApp.Interfaces;
 
 /// <summary>
 /// Generic repository abstraction for CRUD and common query patterns over a SQLite table using sqlite-net.
@@ -118,10 +117,4 @@ public interface IRepository<T> where T : new()
     /// <param name="args">Parameters corresponding to '?' placeholders.</param>
     /// <returns>List of entities.</returns>
     Task<List<T>> QueryAsync(string query, params object[] args);
-
-    /// <summary>
-    /// Provides low-level access to sqlite-net's query builder for advanced scenarios.
-    /// Prefer high-level methods in this interface for common cases.
-    /// </summary>
-    AsyncTableQuery<T> Table();
 }

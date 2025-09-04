@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using MothballMobile.Infrastructure.DatabaseModels;
 using MothballMobile.Infrastructure.Mappers;
@@ -102,6 +103,59 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         var photosByItem = GroupPhotosByOwnerUniqueId(photos);
 
         return MapDbItemsToDomain(items, photosByItem);
+    }
+
+    public async Task InsertContainerAsync(Container container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+        var dbContainer = container.ToDb();
+        await _containers.InsertAsync(dbContainer);
+    }
+
+    public async Task InsertItemAsync(Item item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        var dbItem = item.ToDb();
+        await _items.InsertAsync(dbItem);
+    }
+
+    public async Task InsertImageItem(ImageItem imageItem)
+    {
+        ArgumentNullException.ThrowIfNull(imageItem);
+        var dbImage = imageItem.ToDb(imageItem.FileName);
+        await _photos.InsertAsync(dbImage);
+    }
+
+    public async Task InsertItemContainerRelation(Guid itemId, Guid containerId)
+    {
+        var relation = new DbItemContainerRelation
+        {
+            ItemId = itemId,
+            ContainerId = containerId
+        };
+
+        await _itemContainerRelations.InsertAsync(relation);
+    }
+
+    public async Task UpdateContainerAsync(Container container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+        var dbContainer = container.ToDb();
+        await _containers.UpdateAsync(dbContainer);
+    }
+
+    public async Task UpdateItemAsync(Item item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        var dbItem = item.ToDb();
+        await _items.UpdateAsync(dbItem);
+    }
+
+    public async Task UpdateImageItemAsync(ImageItem image, string ownerId)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        var dbImage = image.ToDb(ownerId);
+        await _photos.UpdateAsync(dbImage);
     }
 
     private static List<Item> MapDbItemsToDomain(List<DbItem> items, Dictionary<Guid, IEnumerable<DbImage>> photosByItem)

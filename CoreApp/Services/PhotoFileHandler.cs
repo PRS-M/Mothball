@@ -16,24 +16,27 @@ public class PhotoFileHandler
         this.fileHandler = fileHandler;
     }
 
-    public async Task LoadPhotos(Container container)
-    {
-        ArgumentNullException.ThrowIfNull(container);
-        List<int> itemIds = container.Items.Select(i => i.ItemId).ToList();
+    // public async Task LoadPhotos(Container container)
+    // {
+    //     ArgumentNullException.ThrowIfNull(container);
+    //     List<string> itemIds = container.Photos.Select(i => i.FileName).ToList();
 
-        foreach (var itemId in itemIds)
-        {
-            if (itemId == 0)
-                continue;
+    //     foreach (var itemId in itemIds)
+    //     {
+    //         if (itemId == 0)
+    //             continue;
 
-            StoredItem item = container.Items[itemId];
-            foreach (var photo in item.Photos)
-            {
-                byte[] bytes = await fileHandler.ReadFileAsync(photo.FileName, Path.Combine(Constants.PathToItemPhotos, container.ContainerId));
-                photo.ImageData = bytes;
-            }
-        }
-    }
+    //         StoredItem item = container.Items[itemId];
+    //         foreach (var photo in item.Photos)
+    //         {
+    //             byte[] bytes = await fileHandler.ReadFileAsync(
+    //                 photo.FileName,
+    //                 Path.Combine(Constants.PathToItemPhotos, container.ContainerId));
+
+    //             photo.ImageData = bytes;
+    //         }
+    //     }
+    // }
 
     public ImageItem LoadPhoto(string filePath)
     {
@@ -52,8 +55,7 @@ public class PhotoFileHandler
 
         return new ImageItem
         {
-            FileName = fileInfo.Name,
-            ImageData = imageData,
+
         };
     }
 

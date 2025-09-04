@@ -65,12 +65,4 @@ public class Container : BaseEntity, IAggregateRoot
     {
         Photos.RemoveAll(p => p.ImageId == imageId);
     }
-
-    public async Task CaptureContainerPhotoAsync(ICameraHandler cameraHandler)
-    {
-        ArgumentNullException.ThrowIfNull(cameraHandler);
-
-        ImageItem photoWithData = await cameraHandler.CaptureContainerPhotoAsync(this);
-        Photos.Add(photoWithData);
-    }
 }

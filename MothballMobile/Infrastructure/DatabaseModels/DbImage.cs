@@ -5,7 +5,7 @@ namespace MothballMobile.Infrastructure.DatabaseModels;
 
 public class DbImage
 {
-	[PrimaryKey, AutoIncrement, NotNull]
+	[PrimaryKey, NotNull]
 	public Guid ImageId { get; set; } = Guid.NewGuid();
 
     // Owner relationship (GUID)

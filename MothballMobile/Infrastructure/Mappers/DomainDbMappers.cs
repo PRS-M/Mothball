@@ -15,7 +15,7 @@ public static class ContainerMapper
         {
             ContainerId = container.ContainerId,
             Name = container.Name,
-            Description = container.Notes,
+            Notes = container.Notes,
         };
     }
 
@@ -25,7 +25,7 @@ public static class ContainerMapper
         var result = new Container(
             dbContainer.ContainerId.ToString(),
             dbContainer.Name,
-            dbContainer.Description
+            dbContainer.Notes
         );
 
         if (photos is not null && photos.Any())
@@ -71,9 +71,9 @@ public static class ItemMapper
     }
 }
 
-public static class PhotoMapper
+public static class ImageMapper
 {
-    public static DbImage ToDbForContainer(this ImageItem photo, string ownerId)
+    public static DbImage ToDb(this ImageItem photo, string ownerId)
     {
         ArgumentNullException.ThrowIfNull(photo);
         ArgumentNullException.ThrowIfNull(ownerId);

@@ -21,19 +21,12 @@ public class CameraHandler : ICameraHandler
 
     public async Task<ImageItem> CaptureContainerPhotoAsync(Container container)
     {
-        if (container == null)
-        {
-            throw new ArgumentNullException(nameof(container), "Container cannot be null.");
-        }
-
-        var photoWithData = new ImageItem
-        {
-            FileName = $"{Guid.NewGuid()}.jpg"
-        };
+        ArgumentNullException.ThrowIfNull(container);
+        var imageItem = new ImageItem();
 
         try
         {
-            await CaptureAndSavePhoto(container.ContainerId, photoWithData.FileName, photoWithData);
+            await CaptureAndSavePhoto(imageItem.FileName, Constants.PathToContainerPhotos);
         }
         catch (Exception ex)
         {
@@ -41,23 +34,17 @@ public class CameraHandler : ICameraHandler
             Console.WriteLine($"Error capturing photo: {ex.Message}");
         }
 
-        return photoWithData;
+        return imageItem;
     }
 
-    public async Task<ImageItem> CaptureItemPhotoAsync(Item item, string containerId)
+    public async Task<ImageItem> CaptureItemPhotoAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
-        if (string.IsNullOrEmpty(containerId))
-            throw new ArgumentNullException(nameof(containerId));
-
-        var photoWithData = new ImageItem
-        {
-            FileName = $"{Guid.NewGuid()}.jpg"
-        };
+        var imageItem = new ImageItem();
 
         try
         {
-            await CaptureAndSavePhoto(containerId, photoWithData.FileName, photoWithData);
+            await CaptureAndSavePhoto(imageItem.FileName, Constants.PathToItemPhotos);
         }
         catch (Exception ex)
         {
@@ -65,22 +52,33 @@ public class CameraHandler : ICameraHandler
             Console.WriteLine($"Error capturing photo: {ex.Message}");
         }
 
-        return photoWithData;
+        return imageItem;
     }
 
-    private async Task CaptureAndSavePhoto(string containerId, string fileName, ImageItem photoWithData)
+    private async Task CaptureAndSavePhoto(string imageFileName, string pathPrefix)
     {
+        byte[] bytes = await CapturePhoto();
+        await SavePhoto(imageFileName, pathPrefix, bytes);
+    }
+
+    private async Task SavePhoto(string imageFileName, string pathPrefix, byte[] bytes)
+    {
+        await fileHandler.SaveFileAsync(imageFileName, pathPrefix, bytes);
+    }
+
+    private async Task<byte[]> CapturePhoto()
+    {
+        byte[] bytes;
         FileResult? photo = await mediaPicker.PickPhotoAsync();
         if (photo != null)
         {
             using Stream stream = await photo.OpenReadAsync();
-            byte[] bytes = new byte[stream.Length];
-
-            string path = Path.Combine(Constants.PathToItemPhotos, containerId);
+            bytes = new byte[stream.Length];
             await stream.ReadExactlyAsync(bytes, 0, (int)stream.Length);
 
-            await fileHandler.SaveFileAsync(fileName, path, bytes);
-            photoWithData.ImageData = bytes;
+            return bytes;
         }
+
+        return Array.Empty<byte>();
     }
 }
