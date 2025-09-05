@@ -30,7 +30,7 @@ public class DemoDataSeeder
         var existing = await _containers.GetAllAsync();
         if (existing.Count >= minContainers) return;
 
-    int toCreate = minContainers - existing.Count;
+        int toCreate = minContainers - existing.Count;
 
         for (int i = 0; i < toCreate; i++)
         {

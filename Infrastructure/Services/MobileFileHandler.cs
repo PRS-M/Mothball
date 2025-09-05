@@ -92,7 +92,7 @@ public class MobileFileHandler : IFileHandler
 
     private string GetFullPath(string fileName, string folderPath)
     {
-        string fullDirectoryPath = Path.Combine(GetAppDataPath(), Constants.PathToData, folderPath);
+        string fullDirectoryPath = Path.Combine(GetAppDataPath(), folderPath);
         if (!Directory.Exists(fullDirectoryPath))
         {
             Directory.CreateDirectory(fullDirectoryPath);
