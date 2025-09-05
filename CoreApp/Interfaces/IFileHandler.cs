@@ -3,6 +3,7 @@ namespace CoreApp.Interfaces;
 public interface IFileHandler
 {
     Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data);
+    Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath);
     Task<byte[]> ReadFileAsync(string fileName, string folderPath);
     Task DeleteFileAsync(string fileName, string folderPath);
     Task<string> SaveTextFileAsync(string fileName, string folderPath, string content);

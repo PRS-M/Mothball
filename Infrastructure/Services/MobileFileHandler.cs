@@ -21,6 +21,26 @@ public class MobileFileHandler : IFileHandler
         return fullPath;
     }
 
+    public async Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath)
+    {
+        using Stream input = await FileSystem.OpenAppPackageFileAsync(rawFileName);
+        string destFullPath = GetFullPath(destFileName, destFolderPath);
+
+        using FileStream output = File.Create(destFullPath);
+        await input.CopyToAsync(output);
+    }
+
+    public async Task CopyFileAsync(string sourceFileName, string sourceFolderFullPath, string destFileName, string destFolderPath)
+    {
+        string sourceFullPath = GetFullPath(sourceFileName, sourceFolderFullPath);
+        string destFullPath = GetFullPath(destFileName, destFolderPath);
+
+        if (!File.Exists(sourceFullPath))
+            throw new FileNotFoundException($"File not found: {sourceFullPath}");
+
+        await Task.Run(() => File.Copy(sourceFullPath, destFullPath, true));
+    }
+
     public async Task<byte[]> ReadFileAsync(string fileName, string folderPath)
     {
         string fullPath = GetFullPath(fileName, folderPath);

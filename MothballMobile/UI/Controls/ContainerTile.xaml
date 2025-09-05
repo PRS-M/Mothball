@@ -58,14 +58,7 @@
                 Grid.Row="0"
                 Grid.Column="1"
                 FontSize="{StaticResource fontSize}"
-                Text="{Binding Description, Source={x:Reference this}}"
-                VerticalOptions="Center"
-                HorizontalOptions="Start" />
-            <Label
-                Grid.Row="1"
-                Grid.Column="0"
-                FontSize="{StaticResource fontSize}"
-                Text="{Binding LocationDescription, Source={x:Reference this}}"
+                Text="{Binding Notes, Source={x:Reference this}}"
                 VerticalOptions="Center"
                 HorizontalOptions="Start" />
             <Label

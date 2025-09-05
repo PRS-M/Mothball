@@ -1,4 +1,6 @@
 using System;
+using CoreApp.Interfaces;
+using CoreApp.Utilities;
 using Infrastructure.Interfaces;
 using MothballMobile.Infrastructure.DatabaseModels;
 
@@ -12,11 +14,13 @@ public class DemoDataSeeder
 {
     private readonly IRepository<DbContainer> _containers;
     private readonly IRepository<DbImage> _photos;
+    private readonly IFileHandler _fileHandler;
 
-    public DemoDataSeeder(IRepository<DbContainer> containers, IRepository<DbImage> photos)
+    public DemoDataSeeder(IRepository<DbContainer> containers, IRepository<DbImage> photos, IFileHandler fileHandler)
     {
         _containers = containers;
         _photos = photos;
+        _fileHandler = fileHandler;
     }
 
     /// <summary>
@@ -52,7 +56,9 @@ public class DemoDataSeeder
                     OwnerUniqueId = id,
                     ImageData = null // keep on disk only; UI will fallback if file isn't present
                 };
+
                 await _photos.InsertAsync(img);
+                await _fileHandler.CopyFileFromRawToAppDataAsync("container.png", img.FileName, Constants.PathToContainerPhotos);
             }
         }
     }
