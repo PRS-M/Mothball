@@ -46,6 +46,9 @@ public static class MauiProgram
 		services.AddSingleton<MothballDatabase>();
 		services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
 		services.AddSingleton<IInventoryDomainRepository, InventoryDomainRepository>();
+#if DEBUG
+		services.AddSingleton<DemoDataSeeder>();
+#endif
 	services.AddTransient<AddContainerViewModel>();
 	services.AddTransient<ContainerListViewModel>();
 	}

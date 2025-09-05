@@ -19,7 +19,7 @@
                         VerticalOptions="Center"
                         Margin="5"
             RemainingItemsThreshold="2"
-            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageAsyncCommand}">
+            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
             <CollectionView.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical"
                                  Span="1"
@@ -29,8 +29,7 @@
                 <DataTemplate x:DataType="local:ContainerViewModel">
                     <controls:ContainerTile
                         Name="{Binding Name}"
-                        Description="{Binding Description}"
-                        LocationDescription="{Binding LocationDescription}"
+                        Notes="{Binding Notes}"
                         ItemCount="{Binding ItemCount}"
                         ImageSource="{Binding ImageSource}" />
                 </DataTemplate>
