@@ -9,7 +9,7 @@
     <x:Double x:Key="Radius">14</x:Double>
     <x:Double x:Key="Pad">14</x:Double>
 
-    <Color x:Key="ColorSurface">#111827</Color>
+    <Color x:Key="ColorSurface">#FF2D3D62</Color>
     <Color x:Key="ColorBorder">#243041</Color>
     <Color x:Key="ColorPrimary">#3B82F6</Color>
     <Color x:Key="ColorPrimaryText">#E5E7EB</Color>

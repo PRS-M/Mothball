@@ -6,7 +6,7 @@
              x:Class="MothballMobile.UI.Views.ContainersList"
              x:DataType="local:ContainerListViewModel"
              Title="Containers"
-             BackgroundColor="#0F172A">
+             BackgroundColor="#FF182441">
 
     <Grid Padding="20" RowDefinitions="Auto,*">
         <VerticalStackLayout Grid.Row="0" Spacing="6" Margin="0,0,0,10">
