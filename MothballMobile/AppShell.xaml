@@ -34,4 +34,16 @@
             </ShellContent>
         </Tab>
     </FlyoutItem>
+    <FlyoutItem Title="Items">
+        <Tab Title="Items List">
+            <ShellContent
+                Title="Items"
+                ContentTemplate="{DataTemplate ui:ItemsList}"
+                Route="ItemsList">
+                <ShellContent.Icon>
+                    <FontImageSource Glyph="&#xf02c;" FontFamily="FontAwesome" Size="24" Color="{AppThemeBinding Light=Black, Dark=White}" />
+                </ShellContent.Icon>
+            </ShellContent>
+        </Tab>
+    </FlyoutItem>
 </Shell>

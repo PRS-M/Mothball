@@ -5,36 +5,41 @@
              xmlns:local="clr-namespace:MothballMobile.UI.ViewModels"
              x:Class="MothballMobile.UI.Views.ContainersList"
              x:DataType="local:ContainerListViewModel"
-             Title="ContainersList">
-    <VerticalStackLayout
-        Spacing="10"
-        Padding="20">
-        <Label
-            Text="Lista kontenerów"
-            VerticalOptions="Center"
-            HorizontalOptions="Center" />
-    <CollectionView x:Name="ContainersCollectionView"
+             Title="Containers"
+             BackgroundColor="#0F172A">
+
+    <Grid Padding="20" RowDefinitions="Auto,*">
+        <VerticalStackLayout Grid.Row="0" Spacing="6" Margin="0,0,0,10">
+            <Label Text="Containers" FontSize="24" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
+            <Label Text="Browse your storage" TextColor="{StaticResource ColorMuted}"/>
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1" x:Name="ContainersCollectionView"
                         ItemsSource="{Binding Containers}"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center"
-                        Margin="5"
-            RemainingItemsThreshold="2"
-            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
+                        Margin="0,10,0,0"
+                        SelectionMode="None"
+                        RemainingItemsThreshold="2"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
             <CollectionView.ItemsLayout>
-                <GridItemsLayout Orientation="Vertical"
-                                 Span="1"
-                                 VerticalItemSpacing="10" />
+                <GridItemsLayout Orientation="Vertical" Span="1" VerticalItemSpacing="12" />
             </CollectionView.ItemsLayout>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="40" Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="No containers yet" TextColor="{StaticResource ColorMuted}"/>
+                    <Label Text="Tap + to add your first container" TextColor="{StaticResource ColorMuted}" FontSize="12"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="local:ContainerViewModel">
-                    <controls:ContainerTile
-                        Name="{Binding Name}"
-                        Notes="{Binding Notes}"
-                        ItemCount="{Binding ItemCount}"
-                        ImageSource="{Binding ImageSource}" />
+                    <Border Style="{StaticResource Card}">
+                        <controls:ContainerTile
+                            Name="{Binding Name}"
+                            Notes="{Binding Notes}"
+                            ItemCount="{Binding ItemCount}"
+                            ImageSource="{Binding ImageSource}" />
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-        <!-- Sample controls removed; use real list above -->
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>

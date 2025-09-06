@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:self="clr-namespace:MothballMobile.UI.Controls"
              x:Class="MothballMobile.UI.Controls.ContainerTile"
-             x:Name="this">
+             x:Name="this"
+             x:DataType="self:ContainerTile"
+             BindingContext="{x:Reference this}">
     <ContentView.Resources>
         <x:Double x:Key="fontSize">12</x:Double>
     </ContentView.Resources>
-    <Border>
+    <!-- Apply card-like visuals for readability on dark backgrounds -->
+    <Border Style="{StaticResource Card}">
         <Border.StrokeShape>
             <RoundRectangle CornerRadius="10" />
         </Border.StrokeShape>
@@ -14,16 +18,12 @@
             <VisualStateGroup>
                 <VisualState x:Name="Normal">
                     <VisualState.Setters>
-                        <Setter Property="BackgroundColor" Value="White" />
                         <Setter Property="Scale" Value="1" />
-                        <Setter Property="Stroke" Value="LightGray" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="Pressed">
                     <VisualState.Setters>
-                        <Setter Property="BackgroundColor" Value="LightGray" />
-                        <Setter Property="Scale" Value="0.95" />
-                        <Setter Property="Stroke" Value="LightBlue" />
+                        <Setter Property="Scale" Value="0.98" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -31,7 +31,7 @@
         <Border.GestureRecognizers>
             <TapGestureRecognizer
                 Tapped="Border_OnTapped"
-                Command="{Binding Command, Source={RelativeSource AncestorType={x:Type ContentView}}}" />
+                Command="{Binding Command}" />
             <PointerGestureRecognizer
                 PointerPressed="Border_PointerPressed"
                 PointerReleased="Border_PointerReleased"
@@ -51,21 +51,24 @@
                 Grid.Row="0"
                 Grid.Column="0"
                 FontSize="{StaticResource fontSize}"
-                Text="{Binding Name, Source={x:Reference this}}"
+                Text="{Binding Name}"
+                TextColor="{StaticResource ColorPrimaryText}"
                 VerticalOptions="Center"
                 HorizontalOptions="Start" />
             <Label
                 Grid.Row="0"
                 Grid.Column="1"
                 FontSize="{StaticResource fontSize}"
-                Text="{Binding Notes, Source={x:Reference this}}"
+                Text="{Binding Notes}"
+                TextColor="{StaticResource ColorMuted}"
                 VerticalOptions="Center"
                 HorizontalOptions="Start" />
             <Label
                 Grid.Row="1"
                 Grid.Column="1"
                 FontSize="{StaticResource fontSize}"
-                Text="{Binding ItemCount, Source={x:Reference this}}"
+                Text="{Binding ItemCount}"
+                TextColor="{StaticResource ColorPrimaryText}"
                 VerticalOptions="Center"
                 HorizontalOptions="Start" />
             <Border Grid.RowSpan="3"
@@ -74,7 +77,13 @@
                     HorizontalOptions="Fill">
                 <Image
                     Source="{Binding ImageSource}"
-                    Aspect="AspectFit"/>
+                    Aspect="AspectFill"
+                    HeightRequest="72"
+                    WidthRequest="72">
+                    <Image.Clip>
+                        <RoundRectangleGeometry CornerRadius="10" Rect="0,0,72,72"/>
+                    </Image.Clip>
+                </Image>
             </Border>
         </Grid>
     </Border>

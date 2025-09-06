@@ -32,7 +32,7 @@ public partial class AddContainerViewModel : ObservableObject
     Container Container { get; set; }
 
     [RelayCommand]
-    public async Task AddContainer()
+    public void AddContainer()
     {
         Container = new Container(
             uniqueId: Guid.NewGuid().ToString(),
