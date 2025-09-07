@@ -104,7 +104,7 @@ public partial class ContainerListViewModel : ObservableObject
     [RelayCommand]
     private static async Task NavigateToAddContainerAsync()
     {
-        await Shell.Current.GoToAsync("//AddContainer");
+        await Shell.Current.GoToAsync("AddContainer");
     }
 }
 
