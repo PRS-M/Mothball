@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
@@ -6,6 +5,7 @@ using CoreApp.Interfaces;
 using Infrastructure.Interfaces;
 using MothballMobile.Infrastructure.DatabaseModels;
 using MothballMobile.Infrastructure.Mappers;
+using Microsoft.Extensions.Logging;
 
 namespace MothballMobile.Infrastructure;
 
@@ -15,27 +15,31 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     private readonly IRepository<DbItem> _items;
     private readonly IRepository<DbImage> _photos;
     private readonly IRepository<DbItemContainerRelation> _itemContainerRelations;
+    private readonly ILogger<InventoryDomainRepository> _logger;
 
     public InventoryDomainRepository(
         IRepository<DbContainer> containers,
         IRepository<DbItem> items,
         IRepository<DbImage> photos,
-        IRepository<DbItemContainerRelation> itemContainerRelations)
+        IRepository<DbItemContainerRelation> itemContainerRelations,
+        ILogger<InventoryDomainRepository> logger)
     {
         _containers = containers;
         _items = items;
         _photos = photos;
         _itemContainerRelations = itemContainerRelations;
+        _logger = logger;
     }
 
     /// <inheritdoc />
     public async Task<Container?> GetContainerAsync(string containerId)
     {
+        _logger.LogDebug("GetContainerAsync: containerId={ContainerId}", containerId);
         var db = await _containers.GetAsync(containerId);
         if (db is null) return null;
 
         // Load container photo if any
-        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId.ToString() == containerId);
+        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId == db.ContainerId);
         return db.ToDomain(dbPhotos);
     }
 
@@ -53,8 +57,15 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     /// <inheritdoc />
     public async Task<List<Item>> GetItemsForContainerAsync(string containerId)
     {
+        // Compare using Guid to leverage indexes and avoid string conversions
+        if (!Guid.TryParse(containerId, out var cid))
+        {
+            _logger.LogWarning("GetItemsForContainerAsync: invalid containerId format: {ContainerId}", containerId);
+            return new List<Item>();
+        }
+
         IEnumerable<DbItemContainerRelation> dbItemContainerRelations =
-            await _itemContainerRelations.WhereAsync(r => r.ContainerId.ToString() == containerId);
+            await _itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
 
         var itemIds = dbItemContainerRelations.Select(r => (object)r.ItemId).ToList();
 
@@ -77,10 +88,11 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     /// <inheritdoc />
     public async Task<Item?> GetItemWithPhotosAsync(string itemId)
     {
+    _logger.LogDebug("GetItemWithPhotosAsync: itemId={ItemId}", itemId);
         var dbItem = await _items.GetAsync(itemId);
         if (dbItem is null) return null;
 
-        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId.ToString() == itemId);
+        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId == dbItem.ItemId);
         return dbItem.ToDomain(dbPhotos);
     }
 
@@ -97,7 +109,11 @@ public class InventoryDomainRepository : IInventoryDomainRepository
 
     public async Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm)
     {
-        var items = await _items.WhereAsync(i => i.Name.Contains(searchTerm));
+        // Case-insensitive search with index support using SQLite LIKE and NOCASE collation
+        var pattern = $"%{searchTerm}%";
+        var table = nameof(DbItem); // default table name used by sqlite-net
+        var items = await _items.QueryAsync($"SELECT * FROM {table} WHERE Name LIKE ? COLLATE NOCASE", pattern);
+        _logger.LogDebug("GetItemsWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, items.Count);
         var itemIds = items.Select(i => (object)i.ItemId).ToList();
         var photos = await _photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
 

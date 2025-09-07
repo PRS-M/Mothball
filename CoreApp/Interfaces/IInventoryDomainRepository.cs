@@ -64,6 +64,13 @@ public interface IInventoryDomainRepository
 
     Task InsertImageItemAsync(ImageItem imageItem, Guid ownerId);
 
+    /// <summary>
+    /// Creates a relation between an Item and a Container.
+    /// </summary>
+    /// <param name="itemId">Item unique id (Guid).</param>
+    /// <param name="containerId">Container unique id (Guid).</param>
+    Task InsertItemContainerRelation(Guid itemId, Guid containerId);
+
     Task UpdateContainerAsync(Container container);
 
     Task UpdateItemAsync(Item item);

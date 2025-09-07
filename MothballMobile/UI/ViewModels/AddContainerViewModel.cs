@@ -39,7 +39,10 @@ public partial class AddContainerViewModel : ObservableObject
 
         await cameraHandler.CaptureContainerPhotoAsync(Container);
         await inventoryDomainRepository.InsertContainerAsync(Container);
-        await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
+        if (Container.Photos is { Count: > 0 })
+        {
+            await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
+        }
         await Shell.Current.GoToAsync("..");
     }
 }
