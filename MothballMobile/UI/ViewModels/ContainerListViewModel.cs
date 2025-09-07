@@ -101,11 +101,10 @@ public partial class ContainerListViewModel : ObservableObject
         _currentPage++;
     }
 
-    // Optional: placeholder navigate command
     [RelayCommand]
-    private Task NavigateAsync(ContainerViewModel? vm)
+    private static async Task NavigateToAddContainerAsync()
     {
-        return Task.CompletedTask;
+        await Shell.Current.GoToAsync("//AddContainer");
     }
 }
 

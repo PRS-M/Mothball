@@ -13,7 +13,7 @@
             <Label Text="Containers" FontSize="24" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
             <Label Text="Browse your storage" TextColor="{StaticResource ColorMuted}"/>
         </VerticalStackLayout>
-        <Button Margin="10" Grid.Column="1" Command="{Binding AddContainerCommand}" Text="Add a container +" />
+        <Button Margin="10" Grid.Column="1" Command="{Binding NavigateToAddContainerCommand}" Text="Add a container +" />
         <CollectionView x:Name="ContainersCollectionView"
                         Grid.Row="1"
                         Grid.ColumnSpan="2"
