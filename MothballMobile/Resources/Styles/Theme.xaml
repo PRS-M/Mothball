@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- React-like dark theme tokens -->
+    <x:Double x:Key="WidthM">320</x:Double>
+    <x:Double x:Key="Radius">14</x:Double>
+    <x:Double x:Key="Pad">14</x:Double>
+
+    <Color x:Key="ColorSurface">#FF2D3D62</Color>
+    <Color x:Key="ColorBorder">#243041</Color>
+    <Color x:Key="ColorPrimary">#3B82F6</Color>
+    <Color x:Key="ColorPrimaryText">#E5E7EB</Color>
+    <Color x:Key="ColorMuted">#94A3B8</Color>
+
+    <!-- Cards -->
+    <Style TargetType="Border" x:Key="Card">
+        <Setter Property="Padding" Value="{StaticResource Pad}"/>
+        <Setter Property="Background" Value="{StaticResource ColorSurface}"/>
+        <Setter Property="Stroke" Value="{StaticResource ColorBorder}"/>
+        <Setter Property="StrokeThickness" Value="1"/>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#00000066" Opacity="0.25" Radius="8"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="{StaticResource Radius}"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Inputs -->
+    <Style TargetType="Border" x:Key="InputWrapper">
+        <Setter Property="Stroke" Value="{StaticResource ColorBorder}"/>
+        <Setter Property="StrokeThickness" Value="1"/>
+        <Setter Property="Background" Value="{StaticResource ColorSurface}"/>
+        <Setter Property="Padding" Value="12"/>
+        <Setter Property="Margin" Value="0,6"/>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#00000066" Opacity="0.3" Radius="8"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="{StaticResource Radius}"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Entry" x:Key="Input">
+        <Setter Property="TextColor" Value="{StaticResource ColorPrimaryText}"/>
+        <Setter Property="PlaceholderColor" Value="{StaticResource ColorMuted}"/>
+        <Setter Property="ClearButtonVisibility" Value="WhileEditing"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="BackgroundColor" Value="Transparent"/>
+    </Style>
+
+    <!-- Buttons -->
+    <Style TargetType="Button" x:Key="PrimaryButton">
+        <Setter Property="BackgroundColor" Value="{StaticResource ColorPrimary}"/>
+        <Setter Property="TextColor" Value="White"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="HeightRequest" Value="48"/>
+        <Setter Property="FontAttributes" Value="Bold"/>
+    </Style>
+</ResourceDictionary>

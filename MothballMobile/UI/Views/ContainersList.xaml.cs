@@ -4,7 +4,7 @@ namespace MothballMobile.UI.Views;
 
 public partial class ContainersList : ContentPage
 {
-    private ContainerListViewModel ViewModel => BindingContext as ContainerListViewModel;
+    private ContainerListViewModel ViewModel => (ContainerListViewModel)BindingContext;
 
     public ContainersList(ContainerListViewModel containerListViewModel)
     {
@@ -31,9 +31,6 @@ public partial class ContainersList : ContentPage
 
     private async void ContainersList_Loaded(object? sender, EventArgs e)
     {
-        if (ViewModel != null)
-        {
-            await ViewModel.InitializeAsync();
-        }
+        await ViewModel.InitializeAsync();
     }
 }

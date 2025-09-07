@@ -4,42 +4,39 @@
              xmlns:local="clr-namespace:MothballMobile.UI.ViewModels"
              x:Class="MothballMobile.UI.Views.AddContainer"
              x:DataType="local:AddContainerViewModel"
-             Title="Add Container">
-             <ContentPage.Resources>
-                <x:Double x:Key="width">250</x:Double>
-            </ContentPage.Resources>
-    <VerticalStackLayout Padding="10"
-                         Spacing="20"
-                         Margin="20"
-                         VerticalOptions="Start"
-                         HorizontalOptions="Center">
-        <Label
-            Text="Enter container details."
-            VerticalOptions="Center"
-            HorizontalOptions="Center" />
-        <Entry
-            Placeholder="Enter container name"
-            Text="{Binding Name}"
-            WidthRequest="{StaticResource width}"
-            VerticalOptions="Center"
-            HorizontalOptions="Center" />
-        <Entry
-            Placeholder="Enter container description"
-            Text="{Binding Description}"
-            WidthRequest="{StaticResource width}"
-            VerticalOptions="Center"
-            HorizontalOptions="Center" />
-        <Entry
-            Placeholder="Enter container location"
-            Text="{Binding LocationDescription}"
-            WidthRequest="{StaticResource width}"
-            VerticalOptions="Center"
-            HorizontalOptions="Center" />
-        <Button
-            Text="Add Container"
-            Command="{Binding AddContainerCommand}"
-            WidthRequest="{StaticResource width}"
-            VerticalOptions="Center"
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             Title="Add Container"
+             BackgroundColor="#0F172A">
+
+    <ScrollView>
+        <Grid Padding="20" RowDefinitions="Auto,Auto" ColumnDefinitions="*">
+            <VerticalStackLayout Grid.Row="0" Spacing="6" Margin="0,6,0,14">
+                <Label Text="Create a new container" FontSize="24" FontAttributes="Bold"
+                       TextColor="{StaticResource ColorPrimaryText}"/>
+                <Label Text="Enter the details below"
+                       TextColor="{StaticResource ColorMuted}"/>
+            </VerticalStackLayout>
+
+            <Border Grid.Row="1" Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <!-- Name -->
+                    <Label Text="Name" TextColor="{StaticResource ColorMuted}" Margin="4,0"/>
+                    <Entry Style="{StaticResource Input}"
+                            Placeholder="Enter container name"
+                            Text="{Binding Name}"/>
+
+                    <!-- Notes -->
+                    <Label Text="Notes" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
+                    <Entry Style="{StaticResource Input}"
+                            Placeholder="Enter a description or notes."
+                            Text="{Binding Notes}"/>
+
+                    <!-- Action -->
+                    <Button Text="Add Container (Choose Photo)"
+                        Style="{StaticResource PrimaryButton}"
+                        WidthRequest="{StaticResource WidthM}"
+                        Command="{Binding AddContainerCommand}"/>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ScrollView>
 </ContentPage>

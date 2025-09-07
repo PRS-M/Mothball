@@ -23,13 +23,15 @@
                 </ShellContent.Icon>
             </ShellContent>
         </Tab>
-        <Tab Title="Add Container">
+    </FlyoutItem>
+    <FlyoutItem Title="Items">
+        <Tab Title="Items List">
             <ShellContent
-                Title="Add Container"
-                ContentTemplate="{DataTemplate ui:AddContainer}"
-                Route="AddContainer">
+                Title="Items"
+                ContentTemplate="{DataTemplate ui:ItemsList}"
+                Route="ItemsList">
                 <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf196;" FontFamily="FontAwesome" Size="24" Color="{AppThemeBinding Light=Black, Dark=White}" />
+                    <FontImageSource Glyph="&#xf02c;" FontFamily="FontAwesome" Size="24" Color="{AppThemeBinding Light=Black, Dark=White}" />
                 </ShellContent.Icon>
             </ShellContent>
         </Tab>

@@ -2,39 +2,44 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
-             xmlns:local="clr-namespace:MothballMobile.UI.ViewModels"
+             xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
              x:Class="MothballMobile.UI.Views.ContainersList"
-             x:DataType="local:ContainerListViewModel"
-             Title="ContainersList">
-    <VerticalStackLayout
-        Spacing="10"
-        Padding="20">
-        <Label
-            Text="Lista kontenerów"
-            VerticalOptions="Center"
-            HorizontalOptions="Center" />
-    <CollectionView x:Name="ContainersCollectionView"
+             x:DataType="vm:ContainerListViewModel"
+             Title="Containers"
+             BackgroundColor="#FF182441">
+
+    <Grid Padding="20" RowDefinitions="Auto,*" ColumnDefinitions="1*, 1*">
+        <VerticalStackLayout Grid.Row="0" Spacing="6" Margin="0,0,0,10">
+            <Label Text="Containers" FontSize="24" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
+            <Label Text="Browse your storage" TextColor="{StaticResource ColorMuted}"/>
+        </VerticalStackLayout>
+        <Button Margin="10" Grid.Column="1" Command="{Binding NavigateToAddContainerCommand}" Text="Add a container +" />
+        <CollectionView x:Name="ContainersCollectionView"
+                        Grid.Row="1"
+                        Grid.ColumnSpan="2"
                         ItemsSource="{Binding Containers}"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center"
-                        Margin="5"
-            RemainingItemsThreshold="2"
-            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
+                        Margin="0,10,0,0"
+                        SelectionMode="None"
+                        RemainingItemsThreshold="2"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
             <CollectionView.ItemsLayout>
-                <GridItemsLayout Orientation="Vertical"
-                                 Span="1"
-                                 VerticalItemSpacing="10" />
+                <GridItemsLayout Orientation="Vertical" Span="1" VerticalItemSpacing="12" />
             </CollectionView.ItemsLayout>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="40" Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="No containers yet" TextColor="{StaticResource ColorMuted}"/>
+                    <Label Text="Tap + to add your first container" TextColor="{StaticResource ColorMuted}" FontSize="12"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="local:ContainerViewModel">
-                    <controls:ContainerTile
-                        Name="{Binding Name}"
-                        Notes="{Binding Notes}"
-                        ItemCount="{Binding ItemCount}"
-                        ImageSource="{Binding ImageSource}" />
+                <DataTemplate x:DataType="vm:ContainerViewModel">
+                        <controls:ContainerTile
+                            Name="{Binding Name}"
+                            Notes="{Binding Notes}"
+                            ItemCount="{Binding ItemCount}"
+                            ImageSources="{Binding ImageSources}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-        <!-- Sample controls removed; use real list above -->
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>

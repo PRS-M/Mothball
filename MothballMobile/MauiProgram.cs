@@ -37,8 +37,8 @@ public static class MauiProgram
 		// Register your services here
 		services.AddSingleton<ICameraHandler, CameraHandler>();
 		services.AddSingleton<IFileHandler, MobileFileHandler>();
-	services.AddSingleton<JsonHandler>();
-	services.AddSingleton<InventoryJsonHandler>();
+		services.AddSingleton<JsonHandler>();
+		services.AddSingleton<InventoryJsonHandler>();
 		services.AddSingleton(typeof(IFileSystem), FileSystem.Current);
 		services.AddSingleton(typeof(IMediaPicker), MediaPicker.Default);
 
@@ -49,7 +49,8 @@ public static class MauiProgram
 #if DEBUG
 		services.AddSingleton<DemoDataSeeder>();
 #endif
-	services.AddTransient<AddContainerViewModel>();
-	services.AddTransient<ContainerListViewModel>();
+		services.AddTransient<AddContainerViewModel>();
+		services.AddTransient<ContainerListViewModel>();
+		services.AddTransient<ItemsListViewModel>();
 	}
 }

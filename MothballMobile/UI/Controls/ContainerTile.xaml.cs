@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 
@@ -8,6 +10,9 @@ public partial class ContainerTile : ContentView
 	public ContainerTile()
 	{
 		InitializeComponent();
+
+		// Ensure the collection exists to allow XAML binding immediately
+		ImageSources = new ObservableCollection<ImageSource>();
 	}
 
 	public static readonly BindableProperty CommandProperty =
@@ -20,10 +25,10 @@ public partial class ContainerTile : ContentView
 		BindableProperty.Create(nameof(Notes), typeof(string), typeof(ContainerTile), "Container Description");
 
 	public static readonly BindableProperty ItemCountProperty =
-		BindableProperty.Create(nameof(ItemCount), typeof(int), typeof(ContainerTile), 99);
+		BindableProperty.Create(nameof(ItemCount), typeof(string), typeof(ContainerTile), "Items Count: 99");
 
-	public static readonly BindableProperty ImageSourceProperty =
-		BindableProperty.Create(nameof(ImageSource), typeof(ImageSource), typeof(ContainerTile), default(ImageSource));
+	public static readonly BindableProperty ImageSourcesProperty =
+		BindableProperty.Create(nameof(ImageSources), typeof(ObservableCollection<ImageSource>), typeof(ContainerTile), default(ObservableCollection<ImageSource>));
 
 	public ICommand Command
 	{
@@ -43,16 +48,16 @@ public partial class ContainerTile : ContentView
 		set => SetValue(NameProperty, value);
 	}
 
-	public int ItemCount
+	public string ItemCount
 	{
-		get => (int)GetValue(ItemCountProperty);
+		get => (string)GetValue(ItemCountProperty);
 		set => SetValue(ItemCountProperty, value);
 	}
 
-	public ImageSource ImageSource
+	public ObservableCollection<ImageSource> ImageSources
 	{
-		get => (ImageSource)GetValue(ImageSourceProperty);
-		set => SetValue(ImageSourceProperty, value);
+		get => (ObservableCollection<ImageSource>)GetValue(ImageSourcesProperty);
+		set => SetValue(ImageSourcesProperty, value);
 	}
 
 	private void Border_OnTapped(object sender, EventArgs e)

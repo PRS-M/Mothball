@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp;
@@ -12,32 +13,36 @@ namespace MothballMobile.UI.ViewModels;
 public partial class AddContainerViewModel : ObservableObject
 {
     private readonly ICameraHandler cameraHandler;
+    private readonly IInventoryDomainRepository inventoryDomainRepository;
 
-    public AddContainerViewModel(ICameraHandler cameraHandler)
+    public AddContainerViewModel(ICameraHandler cameraHandler, IInventoryDomainRepository inventoryDomainRepository)
     {
         this.cameraHandler = cameraHandler ?? throw new ArgumentNullException(nameof(cameraHandler));
+        this.inventoryDomainRepository = inventoryDomainRepository ?? throw new ArgumentNullException(nameof(inventoryDomainRepository));
         Name = string.Empty;
-        Description = string.Empty;
-        LocationDescription = string.Empty;
-        UniqueId = string.Empty;
-        Photo = null!;
+        Notes = string.Empty;
         Container = null!;
     }
 
     public string Name { get; set; }
-    public string Description { get; set; }
-    public string LocationDescription { get; set; }
-    public string UniqueId { get; set; }
-    public ImageItem Photo { get; set; }
+    public string Notes { get; set; }
     Container Container { get; set; }
 
     [RelayCommand]
     public async Task AddContainer()
     {
         Container = new Container(
-            uniqueId: Guid.NewGuid().ToString(),
+            containerId: Guid.NewGuid(),
             name: Name,
-            description: Description
+            notes: Notes
         );
+
+        await cameraHandler.CaptureContainerPhotoAsync(Container);
+        await inventoryDomainRepository.InsertContainerAsync(Container);
+        if (Container.Photos is { Count: > 0 })
+        {
+            await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
+        }
+        await Shell.Current.GoToAsync("..");
     }
 }

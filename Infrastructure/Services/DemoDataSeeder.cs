@@ -26,7 +26,7 @@ public class DemoDataSeeder
     /// <summary>
     /// Ensures at least <paramref name="minContainers"/> containers exist, optionally with one photo each.
     /// </summary>
-    public async Task EnsureContainersAsync(int minContainers = 25, bool withPhotos = true)
+    public async Task EnsureContainersAsync(int minContainers = 5, bool withPhotos = true)
     {
         await _containers.InitializeAsync();
         await _photos.InitializeAsync();
