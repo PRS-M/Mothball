@@ -43,7 +43,7 @@ public partial class ContainerListViewModel : ObservableObject
             // Seed demo data in dev if repo is empty
             if (_demoSeeder is not null)
             {
-                await _demoSeeder.EnsureContainersAsync(minContainers: 25, withPhotos: true);
+                await _demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
             }
 
             // Domain repository returns rich aggregates (with ImageItem lists populated)
@@ -129,7 +129,7 @@ public class ContainerViewModel : ObservableObject
     {
         Container = container;
         _fileHandler = fileHandler;
-        _imageSources = new ObservableCollection<ImageSource> { "dotnet_bot.png" };
+        _imageSources = new ObservableCollection<ImageSource>();
     }
 
     public async Task LoadImageAsync()

@@ -25,7 +25,7 @@ public class ImageService
         ArgumentNullException.ThrowIfNull(container);
         ImageItem capturedPhoto = await cameraHandler.CaptureContainerPhotoAsync(container);
 
-        await inventoryRepository.InsertImageItem(capturedPhoto);
+        await inventoryRepository.InsertImageItemAsync(capturedPhoto, container.ContainerId);
         await inventoryRepository.UpdateContainerAsync(container);
     }
 
@@ -34,7 +34,7 @@ public class ImageService
         ArgumentNullException.ThrowIfNull(item);
         ImageItem capturedPhoto = await cameraHandler.CaptureItemPhotoAsync(item);
 
-        await inventoryRepository.InsertImageItem(capturedPhoto);
+        await inventoryRepository.InsertImageItemAsync(capturedPhoto, item.ItemId);
         await inventoryRepository.UpdateItemAsync(item);
     }
 }

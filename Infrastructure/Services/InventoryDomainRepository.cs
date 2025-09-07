@@ -120,10 +120,10 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _items.InsertAsync(dbItem);
     }
 
-    public async Task InsertImageItem(ImageItem imageItem)
+    public async Task InsertImageItemAsync(ImageItem imageItem, Guid ownerId)
     {
         ArgumentNullException.ThrowIfNull(imageItem);
-        var dbImage = imageItem.ToDb(imageItem.FileName);
+        var dbImage = imageItem.ToDb(ownerId);
         await _photos.InsertAsync(dbImage);
     }
 
@@ -152,7 +152,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _items.UpdateAsync(dbItem);
     }
 
-    public async Task UpdateImageItemAsync(ImageItem image, string ownerId)
+    public async Task UpdateImageItemAsync(ImageItem image, Guid ownerId)
     {
         ArgumentNullException.ThrowIfNull(image);
         var dbImage = image.ToDb(ownerId);

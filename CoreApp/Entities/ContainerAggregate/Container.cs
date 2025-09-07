@@ -15,14 +15,14 @@ public class Container : BaseEntity, IAggregateRoot
         Items = new List<StoredItem>();
     }
 
-    public Container(string uniqueId, string name, string description)
+    public Container(Guid containerId, string name, string notes)
     {
-        ContainerId = string.IsNullOrEmpty(uniqueId) ?
+        ContainerId = containerId == Guid.Empty ?
             Guid.NewGuid() :
-            Guid.Parse(uniqueId);
+            containerId;
 
         Name = name;
-        Notes = description;
+        Notes = notes;
         Photos = new List<ImageItem>();
         Items = new List<StoredItem>();
     }

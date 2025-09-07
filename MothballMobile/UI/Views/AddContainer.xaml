@@ -20,33 +20,27 @@
                 <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
                     <!-- Name -->
                     <Label Text="Name" TextColor="{StaticResource ColorMuted}" Margin="4,0"/>
-                    <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">
-                        <Entry Style="{StaticResource Input}"
-                               Placeholder="Enter container name"
-                               Text="{Binding Name}"/>
-                    </Border>
+                    <Entry Style="{StaticResource Input}"
+                            Placeholder="Enter container name"
+                            Text="{Binding Name}"/>
 
                     <!-- Description -->
                     <Label Text="Description" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
-                    <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">
-                        <Entry Style="{StaticResource Input}"
-                               Placeholder="Enter container description"
-                               Text="{Binding Description}"/>
-                    </Border>
+                    <Entry Style="{StaticResource Input}"
+                            Placeholder="Enter a description or notes."
+                            Text="{Binding Notes}"/>
 
                     <!-- Location -->
                     <Label Text="Location" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
-                    <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">
-                        <Entry Style="{StaticResource Input}"
-                               Placeholder="Enter container location"
-                               Text="{Binding LocationDescription}"/>
-                    </Border>
+                    <Entry Style="{StaticResource Input}"
+                           Placeholder="Enter container location"
+                           Text="{Binding LocationDescription}"/>
 
                     <!-- Action -->
-            <Button Text="Add Container"
-                Style="{StaticResource PrimaryButton}"
-                WidthRequest="{StaticResource WidthM}"
-                Command="{Binding AddContainerCommand}"/>
+                    <Button Text="Add Container"
+                        Style="{StaticResource PrimaryButton}"
+                        WidthRequest="{StaticResource WidthM}"
+                        Command="{Binding AddContainerCommand}"/>
                 </VerticalStackLayout>
             </Border>
         </Grid>

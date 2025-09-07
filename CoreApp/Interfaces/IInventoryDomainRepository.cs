@@ -62,11 +62,11 @@ public interface IInventoryDomainRepository
 
     Task InsertItemAsync(Item item);
 
-    Task InsertImageItem(ImageItem imageItem);
+    Task InsertImageItemAsync(ImageItem imageItem, Guid ownerId);
 
     Task UpdateContainerAsync(Container container);
 
     Task UpdateItemAsync(Item item);
 
-    Task UpdateImageItemAsync(ImageItem image, string ownerId);
+    Task UpdateImageItemAsync(ImageItem image, Guid ownerId);
 }

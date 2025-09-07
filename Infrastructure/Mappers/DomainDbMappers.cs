@@ -23,7 +23,7 @@ public static class ContainerMapper
     {
         ArgumentNullException.ThrowIfNull(dbContainer);
         var result = new Container(
-            dbContainer.ContainerId.ToString(),
+            dbContainer.ContainerId,
             dbContainer.Name,
             dbContainer.Notes
         );
@@ -73,13 +73,18 @@ public static class ItemMapper
 
 public static class ImageMapper
 {
-    public static DbImage ToDb(this ImageItem photo, string ownerId)
+    public static DbImage ToDb(this ImageItem photo, Guid ownerId)
     {
         ArgumentNullException.ThrowIfNull(photo);
-        ArgumentNullException.ThrowIfNull(ownerId);
+        if (ownerId == Guid.Empty)
+        {
+            throw new ArgumentException("Owner ID cannot be empty.", nameof(ownerId));
+        }
+
         return new DbImage
         {
-            OwnerUniqueId = Guid.Parse(ownerId),
+            ImageId = photo.ImageId,
+            OwnerUniqueId = ownerId,
         };
     }
 
