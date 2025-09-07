@@ -114,23 +114,23 @@ public class ContainerViewModel : ObservableObject
     public Container Container { get; }
     public Dictionary<string, List<string>> ItemIdsByContainerId { get; } = new();
     private readonly IFileHandler _fileHandler;
-    private ImageSource _imageSource;
+    private ObservableCollection<ImageSource> _imageSources;
 
-    public ImageSource ImageSource
+    public ObservableCollection<ImageSource> ImageSources
     {
-        get => _imageSource;
-        set => SetProperty(ref _imageSource, value);
+        get => _imageSources;
+        set => SetProperty(ref _imageSources, value);
     }
 
     public string Name => Container.Name;
     public string Notes => Container.Notes;
-    public int ItemCount => Container.ItemCount;
+    public string ItemCount => $"Items stored: {Container.ItemCount}";
 
     public ContainerViewModel(Container container, IFileHandler fileHandler)
     {
         Container = container;
         _fileHandler = fileHandler;
-        _imageSource = "dotnet_bot.png";
+        _imageSources = new ObservableCollection<ImageSource> { "dotnet_bot.png" };
     }
 
     public async Task LoadImageAsync()
@@ -143,16 +143,16 @@ public class ContainerViewModel : ObservableObject
                 // Copy to a byte[] so the stream factory can create a fresh stream on demand.
                 var bytes = ms.ToArray();
                 await ms.DisposeAsync();
-                ImageSource = ImageSource.FromStream(() => new MemoryStream(bytes));
+                ImageSources.Add(ImageSource.FromStream(() => new MemoryStream(bytes)));
             }
             catch
             {
-                ImageSource = "dotnet_bot.png";
+                ImageSources.Add("dotnet_bot.png");
             }
         }
         else
         {
-            ImageSource = "dotnet_bot.png";
+            ImageSources.Add("dotnet_bot.png");
         }
     }
 }

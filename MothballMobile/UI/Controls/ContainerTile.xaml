@@ -2,14 +2,18 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:self="clr-namespace:MothballMobile.UI.Controls"
+             xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
              x:Class="MothballMobile.UI.Controls.ContainerTile"
              x:Name="this"
              x:DataType="self:ContainerTile">
     <ContentView.Resources>
-        <x:Double x:Key="fontSize">12</x:Double>
+        <x:Double x:Key="fontSize">14</x:Double>
     </ContentView.Resources>
     <!-- Apply card-like visuals for readability on dark backgrounds -->
-    <Border Style="{StaticResource Card}">
+    <Border Style="{StaticResource Card}"
+        Padding="10"
+        Margin="10,0,10,0"
+        MaximumWidthRequest="600">
         <Border.StrokeShape>
             <RoundRectangle CornerRadius="10" />
         </Border.StrokeShape>
@@ -22,7 +26,7 @@
                 </VisualState>
                 <VisualState x:Name="Pressed">
                     <VisualState.Setters>
-                        <Setter Property="Scale" Value="0.98" />
+                        <Setter Property="Scale" Value="0.95" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -36,15 +40,15 @@
                 PointerReleased="Border_PointerReleased"
                 PointerExited="Border_PointerReleased" />
         </Border.GestureRecognizers>
-        <Grid Padding="5" Margin="5" RowSpacing="5" ColumnSpacing="5">
+        <Grid Padding="5" Margin="5" RowSpacing="5" ColumnSpacing="5" MinimumWidthRequest="300">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
             <Label
                 Grid.Row="0"
@@ -52,37 +56,48 @@
                 FontSize="{StaticResource fontSize}"
                 Text="{Binding Source={x:Reference this}, Path=Name}"
                 TextColor="{StaticResource ColorPrimaryText}"
-                VerticalOptions="Center"
+                VerticalOptions="Start"
                 HorizontalOptions="Start" />
             <Label
-                Grid.Row="0"
-                Grid.Column="1"
+                Grid.Row="2"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
                 FontSize="{StaticResource fontSize}"
                 Text="{Binding Source={x:Reference this}, Path=Notes}"
                 TextColor="{StaticResource ColorMuted}"
-                VerticalOptions="Center"
-                HorizontalOptions="Start" />
+                VerticalOptions="End"
+                HorizontalOptions="Center" />
             <Label
                 Grid.Row="1"
-                Grid.Column="1"
+                Grid.Column="0"
                 FontSize="{StaticResource fontSize}"
                 Text="{Binding Source={x:Reference this}, Path=ItemCount}"
                 TextColor="{StaticResource ColorPrimaryText}"
-                VerticalOptions="Center"
+                VerticalOptions="Start"
                 HorizontalOptions="Start" />
             <Border Grid.RowSpan="2"
-                    Grid.Column="2"
+                    Grid.Column="1"
                     StrokeShape="RoundRectangle 10"
-                    HorizontalOptions="Fill">
-                <Image
-                    Source="{Binding Source={x:Reference this}, Path=ImageSource}"
-                    Aspect="AspectFill"
-                    HeightRequest="72"
-                    WidthRequest="72">
-                    <Image.Clip>
-                        <RoundRectangleGeometry CornerRadius="10" Rect="0,0,72,72"/>
-                    </Image.Clip>
-                </Image>
+                    HorizontalOptions="End"
+                    VerticalOptions="Center">
+                <CarouselView
+                    ItemsSource="{Binding Source={x:Reference this}, Path=ImageSources}"
+                    HeightRequest="125"
+                    WidthRequest="125">
+                    <CarouselView.ItemTemplate>
+                        <DataTemplate>
+                            <Image x:DataType="maui:ImageSource"
+                                Source="{Binding .}"
+                                Aspect="AspectFill"
+                                HeightRequest="125"
+                                WidthRequest="125">
+                                <Image.Clip>
+                                    <RoundRectangleGeometry CornerRadius="10" Rect="0,0,125,125" />
+                                </Image.Clip>
+                            </Image>
+                        </DataTemplate>
+                    </CarouselView.ItemTemplate>
+                </CarouselView>
             </Border>
         </Grid>
     </Border>
