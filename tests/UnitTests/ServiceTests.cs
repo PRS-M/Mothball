@@ -1,0 +1,26 @@
+using CoreApp.Interfaces;
+using CoreApp.Services;
+using Moq;
+
+namespace UnitTests;
+
+[TestFixture]
+public class ServiceTests
+{
+    [Test]
+    public void ImageService_CaptureContainerPhotoAsync_ThrowsOnNull()
+    {
+        var cameraMock = new Mock<ICameraHandler>();
+        var repoMock = new Mock<IInventoryDomainRepository>();
+        var service = new ImageService(cameraMock.Object, repoMock.Object);
+        Assert.ThrowsAsync<ArgumentNullException>(() => service.CaptureContainerPhotoAsync(null!));
+    }
+
+    [Test]
+    public void JsonHandler_SerializeToFile_ThrowsOnNullFileName()
+    {
+        var fileHandlerMock = new Mock<IFileHandler>();
+        var handler = new JsonHandler(fileHandlerMock.Object);
+        Assert.ThrowsAsync<ArgumentNullException>(() => handler.SerializeToFile<object>(null!, "folder", new object()));
+    }
+}
