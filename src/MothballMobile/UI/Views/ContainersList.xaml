@@ -8,17 +8,29 @@
              Title="Containers"
              BackgroundColor="#FF182441">
 
-    <Grid Padding="20" RowDefinitions="Auto,*" ColumnDefinitions="1*, 1*">
-        <VerticalStackLayout Grid.Row="0" Spacing="6" Margin="0,0,0,10">
-            <Label Text="Containers" FontSize="24" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
-            <Label Text="Browse your storage" TextColor="{StaticResource ColorMuted}"/>
+    <Grid Padding="16" RowDefinitions="Auto,*" ColumnDefinitions="*,Auto">
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4" Margin="0,0,0,10" VerticalOptions="Center">
+            <Label Text="Containers" FontSize="28" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
+            <Label Text="Browse your storage" TextColor="{StaticResource ColorMuted}" FontSize="14"/>
         </VerticalStackLayout>
-        <Button Margin="10" Grid.Column="1" Command="{Binding NavigateToAddContainerCommand}" Text="Add a container +" />
+
+        <!-- Add button (Material-like mini FAB) -->
+        <Button Grid.Row="0"
+                Grid.Column="1"
+                Command="{Binding NavigateToAddContainerCommand}"
+                Text="+"
+                Style="{StaticResource PrimaryButton}"
+                WidthRequest="48"
+                HeightRequest="48"
+                CornerRadius="24"
+                HorizontalOptions="End"
+                VerticalOptions="Center" />
         <CollectionView x:Name="ContainersCollectionView"
                         Grid.Row="1"
                         Grid.ColumnSpan="2"
                         ItemsSource="{Binding Containers}"
-                        Margin="0,10,0,0"
+                        Margin="0,8,0,0"
                         SelectionMode="None"
                         RemainingItemsThreshold="2"
                         RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
@@ -33,11 +45,12 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:ContainerViewModel">
-                        <controls:ContainerTile
-                            Name="{Binding Name}"
-                            Notes="{Binding Notes}"
-                            ItemCount="{Binding ItemCount}"
-                            ImageSources="{Binding ImageSources}" />
+                    <controls:ContainerTile
+                        Command="{Binding NavigateCommand}"
+                        Name="{Binding Name}"
+                        Notes="{Binding Notes}"
+                        ItemCount="{Binding ItemCount}"
+                        ImageSources="{Binding ImageSources}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

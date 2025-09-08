@@ -52,5 +52,6 @@ public static class MauiProgram
 		services.AddTransient<AddContainerViewModel>();
 		services.AddTransient<ContainerListViewModel>();
 		services.AddTransient<ItemsListViewModel>();
+		services.AddTransient<ContainerDetailsViewModel>();
 	}
 }

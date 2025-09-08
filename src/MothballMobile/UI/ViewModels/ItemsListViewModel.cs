@@ -104,3 +104,46 @@ public class ItemViewModel : ObservableObject
         }
     }
 }
+
+public class ItemWithPhotosViewModel : ObservableObject
+{
+    public Item Item { get; }
+    private readonly IFileHandler _fileHandler;
+
+    public ObservableCollection<ImageSource> ImageSources { get; } = new();
+
+    public ItemWithPhotosViewModel(Item item, IFileHandler fileHandler)
+    {
+        Item = item;
+        _fileHandler = fileHandler;
+    }
+
+    public string Name => Item.Name;
+    public string Description => Item.Description;
+
+    public async Task LoadImagesAsync()
+    {
+        ImageSources.Clear();
+        if (Item.Photos != null && Item.Photos.Any(p => !string.IsNullOrEmpty(p.FileName)))
+        {
+            foreach (var photo in Item.Photos)
+            {
+                try
+                {
+                    var ms = await _fileHandler.GetImageMemoryStream(photo.FileName, Constants.PathToItemPhotos);
+                    var bytes = ms.ToArray();
+                    await ms.DisposeAsync();
+                    ImageSources.Add(ImageSource.FromStream(() => new MemoryStream(bytes)));
+                }
+                catch
+                {
+                    ImageSources.Add("dotnet_bot.png");
+                }
+            }
+        }
+        else
+        {
+            ImageSources.Add("dotnet_bot.png");
+        }
+    }
+}

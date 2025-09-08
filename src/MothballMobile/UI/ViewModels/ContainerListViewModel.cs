@@ -108,7 +108,7 @@ public partial class ContainerListViewModel : ObservableObject
     }
 }
 
-public class ContainerViewModel : ObservableObject
+public partial class ContainerViewModel : ObservableObject
 {
     public Container Container { get; }
     public Dictionary<string, List<string>> ItemIdsByContainerId { get; } = new();
@@ -153,5 +153,16 @@ public class ContainerViewModel : ObservableObject
         {
             ImageSources.Add("dotnet_bot.png");
         }
+    }
+
+    [RelayCommand]
+    private async Task NavigateAsync()
+    {
+        // Navigate to details, passing the ContainerId as a query parameter
+        var id = Container.ContainerId.ToString();
+        await Shell.Current.GoToAsync("ContainerDetails", new Dictionary<string, object>
+        {
+            ["ContainerId"] = id
+        });
     }
 }
