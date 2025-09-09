@@ -4,12 +4,15 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Utilities;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
+using System.IO;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MothballMobile.UI.ViewModels;
 public partial class ContainerListViewModel : ObservableObject
 {
     private ObservableCollection<ContainerViewModel> containers = new();
     private readonly IFileHandler _fileHandler;
+    private readonly Infrastructure.INavigationService _nav;
     private readonly IInventoryDomainRepository _inventoryRepository;
     private readonly int _pageSize = 10;
     private int _currentPage = 0;
@@ -19,10 +22,11 @@ public partial class ContainerListViewModel : ObservableObject
 
     private readonly Infrastructure.DemoDataSeeder? _demoSeeder; // optional in debug
 
-    public ContainerListViewModel(IFileHandler fileHandler, IInventoryDomainRepository inventoryRepository, Infrastructure.DemoDataSeeder? demoSeeder = null)
+    public ContainerListViewModel(IFileHandler fileHandler, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, Infrastructure.DemoDataSeeder? demoSeeder = null)
     {
         _fileHandler = fileHandler;
         _inventoryRepository = inventoryRepository;
+        _nav = nav;
         _demoSeeder = demoSeeder;
         Containers = new ObservableCollection<ContainerViewModel>();
         _allContainerIds = new List<string>();
@@ -34,6 +38,7 @@ public partial class ContainerListViewModel : ObservableObject
         set => SetProperty(ref containers, value);
     }
 
+    [RelayCommand]
     public async Task InitializeAsync()
     {
         if (_isLoading) return;
@@ -102,10 +107,7 @@ public partial class ContainerListViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private static async Task NavigateToAddContainerAsync()
-    {
-        await Shell.Current.GoToAsync("AddContainer");
-    }
+    private Task NavigateToAddContainerAsync() => _nav.GoToAsync("AddContainer");
 }
 
 public partial class ContainerViewModel : ObservableObject
@@ -113,12 +115,12 @@ public partial class ContainerViewModel : ObservableObject
     public Container Container { get; }
     public Dictionary<string, List<string>> ItemIdsByContainerId { get; } = new();
     private readonly IFileHandler _fileHandler;
-    private ObservableCollection<ImageSource> _imageSources;
+    private ObservableCollection<string> _imagePaths;
 
-    public ObservableCollection<ImageSource> ImageSources
+    public ObservableCollection<string> ImagePaths
     {
-        get => _imageSources;
-        set => SetProperty(ref _imageSources, value);
+        get => _imagePaths;
+        set => SetProperty(ref _imagePaths, value);
     }
 
     public string Name => Container.Name;
@@ -129,40 +131,38 @@ public partial class ContainerViewModel : ObservableObject
     {
         Container = container;
         _fileHandler = fileHandler;
-        _imageSources = new ObservableCollection<ImageSource>();
+        _imagePaths = new ObservableCollection<string>();
     }
 
-    public async Task LoadImageAsync()
+    public Task LoadImageAsync()
     {
         if (Container.Photos != null && Container.Photos.Any(p => !string.IsNullOrEmpty(p.FileName)))
         {
             try
             {
-                var ms = await _fileHandler.GetImageMemoryStream(Container.Photos[0].FileName, Constants.PathToContainerPhotos);
-                // Copy to a byte[] so the stream factory can create a fresh stream on demand.
-                var bytes = ms.ToArray();
-                await ms.DisposeAsync();
-                ImageSources.Add(ImageSource.FromStream(() => new MemoryStream(bytes)));
+                // Provide a file path the View can convert to an ImageSource
+                var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToContainerPhotos, Container.Photos[0].FileName);
+                ImagePaths.Add(path);
             }
             catch
             {
-                ImageSources.Add("dotnet_bot.png");
+                ImagePaths.Add("dotnet_bot.png");
             }
         }
         else
         {
-            ImageSources.Add("dotnet_bot.png");
+            ImagePaths.Add("dotnet_bot.png");
         }
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
-    private async Task NavigateAsync()
+    private Task NavigateAsync()
     {
-        // Navigate to details, passing the ContainerId as a query parameter
         var id = Container.ContainerId.ToString();
-        await Shell.Current.GoToAsync("ContainerDetails", new Dictionary<string, object>
-        {
-            ["ContainerId"] = id
-        });
+        // Resolve from the service provider associated with the App
+        var nav = Application.Current?.Handler?.MauiContext?.Services?.GetService<Infrastructure.INavigationService>();
+        return nav?.GoToAsync("ContainerDetails", new Dictionary<string, object> { ["ContainerId"] = id })
+               ?? Task.CompletedTask;
     }
 }

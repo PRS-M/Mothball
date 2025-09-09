@@ -10,11 +10,11 @@ public partial class ItemsList : ContentPage
 	{
 		InitializeComponent();
 		BindingContext = vm;
-		this.Loaded += OnLoaded;
 	}
 
-	private async void OnLoaded(object? sender, EventArgs e)
+	protected override async void OnAppearing()
 	{
+		base.OnAppearing();
 		await ViewModel.InitializeAsync();
 	}
 }

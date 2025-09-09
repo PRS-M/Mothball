@@ -7,6 +7,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Services;
+using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.ViewModels;
 
@@ -14,11 +15,13 @@ public partial class AddContainerViewModel : ObservableObject
 {
     private readonly ICameraHandler cameraHandler;
     private readonly IInventoryDomainRepository inventoryDomainRepository;
+    private readonly INavigationService navigationService;
 
-    public AddContainerViewModel(ICameraHandler cameraHandler, IInventoryDomainRepository inventoryDomainRepository)
+    public AddContainerViewModel(ICameraHandler cameraHandler, IInventoryDomainRepository inventoryDomainRepository, INavigationService navigationService)
     {
         this.cameraHandler = cameraHandler ?? throw new ArgumentNullException(nameof(cameraHandler));
         this.inventoryDomainRepository = inventoryDomainRepository ?? throw new ArgumentNullException(nameof(inventoryDomainRepository));
+        this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         Name = string.Empty;
         Notes = string.Empty;
         Container = null!;
@@ -43,6 +46,7 @@ public partial class AddContainerViewModel : ObservableObject
         {
             await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
         }
-        await Shell.Current.GoToAsync("..");
+
+        await navigationService.GoBackAsync();
     }
 }

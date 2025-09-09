@@ -12,7 +12,7 @@ public partial class ContainerTile : ContentView
 		InitializeComponent();
 
 		// Ensure the collection exists to allow XAML binding immediately
-		ImageSources = new ObservableCollection<ImageSource>();
+	ImagePaths = new ObservableCollection<string>();
 	}
 
 	public static readonly BindableProperty CommandProperty =
@@ -27,8 +27,8 @@ public partial class ContainerTile : ContentView
 	public static readonly BindableProperty ItemCountProperty =
 		BindableProperty.Create(nameof(ItemCount), typeof(string), typeof(ContainerTile), "Items Count: 99");
 
-	public static readonly BindableProperty ImageSourcesProperty =
-		BindableProperty.Create(nameof(ImageSources), typeof(ObservableCollection<ImageSource>), typeof(ContainerTile), default(ObservableCollection<ImageSource>));
+	public static readonly BindableProperty ImagePathsProperty =
+		BindableProperty.Create(nameof(ImagePaths), typeof(ObservableCollection<string>), typeof(ContainerTile), default(ObservableCollection<string>));
 
 	public ICommand Command
 	{
@@ -54,10 +54,10 @@ public partial class ContainerTile : ContentView
 		set => SetValue(ItemCountProperty, value);
 	}
 
-	public ObservableCollection<ImageSource> ImageSources
+	public ObservableCollection<string> ImagePaths
 	{
-		get => (ObservableCollection<ImageSource>)GetValue(ImageSourcesProperty);
-		set => SetValue(ImageSourcesProperty, value);
+		get => (ObservableCollection<string>)GetValue(ImagePathsProperty);
+		set => SetValue(ImagePathsProperty, value);
 	}
 
 	private void Border_OnTapped(object sender, EventArgs e)

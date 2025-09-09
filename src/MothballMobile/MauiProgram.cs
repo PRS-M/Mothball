@@ -49,6 +49,8 @@ public static class MauiProgram
 #if DEBUG
 		services.AddSingleton<DemoDataSeeder>();
 #endif
+		// Navigation abstraction
+		services.AddSingleton<Infrastructure.INavigationService, Infrastructure.ShellNavigationService>();
 		services.AddTransient<AddContainerViewModel>();
 		services.AddTransient<ContainerListViewModel>();
 		services.AddTransient<ItemsListViewModel>();

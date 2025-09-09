@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using CoreApp.Entities.Shared;
+﻿using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 
 namespace CoreApp.Entities.ContainerAggregate;

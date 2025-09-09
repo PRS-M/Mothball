@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
-using Microsoft.Maui.Controls;
 
 namespace MothballMobile.UI.ViewModels;
 
@@ -24,7 +24,7 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     [ObservableProperty]
     private string itemCount = string.Empty;
 
-    public ObservableCollection<ImageSource> ContainerImageSources { get; } = new();
+    public ObservableCollection<string> ContainerImagePaths { get; } = new();
     public ObservableCollection<ItemWithPhotosViewModel> Items { get; } = new();
 
     public ContainerDetailsViewModel(IInventoryDomainRepository inventoryRepository, IFileHandler fileHandler)
@@ -50,8 +50,8 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
 
         ContainerId = containerId;
 
-        Items.Clear();
-        ContainerImageSources.Clear();
+    Items.Clear();
+    ContainerImagePaths.Clear();
 
         var result = await _inventoryRepository.GetContainerWithItemsAndPhotosAsync(containerId);
         if (result is null)
@@ -59,7 +59,7 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
             Name = "Container not found";
             Notes = string.Empty;
             ItemCount = string.Empty;
-            ContainerImageSources.Add("dotnet_bot.png");
+            ContainerImagePaths.Add("dotnet_bot.png");
             return;
         }
 
@@ -69,26 +69,17 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
         ItemCount = $"Items stored: {container.ItemCount}";
 
         // Load container photos (all, as a small carousel)
-        if (container.Photos?.Count > 0)
+    if (container.Photos?.Count > 0)
         {
             foreach (var photo in container.Photos)
             {
-                try
-                {
-                    var ms = await _fileHandler.GetImageMemoryStream(photo.FileName, Constants.PathToContainerPhotos);
-                    var bytes = ms.ToArray();
-                    await ms.DisposeAsync();
-                    ContainerImageSources.Add(ImageSource.FromStream(() => new MemoryStream(bytes)));
-                }
-                catch
-                {
-                    ContainerImageSources.Add("dotnet_bot.png");
-                }
+        var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToContainerPhotos, photo.FileName);
+        ContainerImagePaths.Add(path);
             }
         }
         else
         {
-            ContainerImageSources.Add("dotnet_bot.png");
+        ContainerImagePaths.Add("dotnet_bot.png");
         }
 
         // Map items and load their images (carousel per item)

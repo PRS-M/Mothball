@@ -50,7 +50,7 @@
                         Name="{Binding Name}"
                         Notes="{Binding Notes}"
                         ItemCount="{Binding ItemCount}"
-                        ImageSources="{Binding ImageSources}" />
+                        ImagePaths="{Binding ImagePaths}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
