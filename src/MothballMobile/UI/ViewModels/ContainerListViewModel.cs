@@ -49,6 +49,7 @@ public partial class ContainerListViewModel : ObservableObject
             if (_demoSeeder is not null)
             {
                 await _demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
+                await _demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
             }
 
             // Domain repository returns rich aggregates (with ImageItem lists populated)

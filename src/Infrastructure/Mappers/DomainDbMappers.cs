@@ -63,7 +63,8 @@ public static class ItemMapper
         {
             foreach (var p in dbPhotos.Where(p => !string.IsNullOrWhiteSpace(p.FileName)))
             {
-                item.Photos.Add(new ImageItem(Guid.Parse(p.FileName)));
+                // Use the ImageId directly; FileName includes an extension and is not a valid GUID string
+                item.Photos.Add(p.ToDomain());
             }
         }
 
