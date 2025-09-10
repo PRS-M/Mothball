@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
              xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
              x:Class="MothballMobile.UI.Views.ItemsList"
+             x:Name="ItemsPage"
              x:DataType="vm:ItemsListViewModel"
              Title="Items"
              BackgroundColor="#0F172A">
@@ -12,20 +13,37 @@
         <conv:PathToImageSourceConverter x:Key="PathToImage" />
     </ContentPage.Resources>
 
-    <Grid Padding="20" RowDefinitions="Auto,*">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*">
         <VerticalStackLayout Grid.Row="0" Spacing="6" Margin="0,0,0,10">
             <Label Text="Items" FontSize="24" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
             <Label Text="All items across containers" TextColor="{StaticResource ColorMuted}"/>
         </VerticalStackLayout>
 
-    <RefreshView Grid.Row="1"
+        <!-- Search -->
+    <Border Grid.Row="1" Style="{StaticResource SearchWrapper}">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <SearchBar
+                    Grid.Column="0"
+                    Placeholder="Search items..."
+                    Text="{Binding Query}"
+                    SearchCommand="{Binding SearchCommand}"
+                    TextColor="{StaticResource ColorPrimaryText}"
+                    PlaceholderColor="{StaticResource ColorMuted}"
+                    BackgroundColor="Transparent"
+                    CancelButtonColor="{StaticResource ColorMuted}"
+                    />
+                <Button Grid.Column="1" Text="Clear" Style="{StaticResource PrimaryButton}" Command="{Binding ClearSearchCommand}" />
+            </Grid>
+        </Border>
+
+    <RefreshView Grid.Row="2"
               IsRefreshing="{Binding IsRefreshing}"
               Command="{Binding RefreshCommand}">
-            <CollectionView
+        <CollectionView
                 ItemsSource="{Binding Items}"
                 SelectionMode="None">
                 <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical" Span="2" VerticalItemSpacing="12" />
+                    <GridItemsLayout Orientation="Vertical" Span="{OnIdiom Phone=1, Tablet=2, Desktop=2}" VerticalItemSpacing="16" HorizontalItemSpacing="16" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.EmptyView>
                     <VerticalStackLayout Padding="40" Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
@@ -35,6 +53,9 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:ItemViewModel">
                         <Border Style="{StaticResource Card}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NavigateToItemDetailsCommand}" />
+                            </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                                 <Image Source="{Binding ImagePath, Converter={StaticResource PathToImage}}" Aspect="AspectFill" HeightRequest="72" WidthRequest="72">
                                     <Image.Clip>

@@ -58,6 +58,13 @@ public interface IInventoryDomainRepository
     /// <returns>The Item or null if not found.</returns>
     Task<Item?> GetItemWithPhotosAsync(string itemId);
 
+    /// <summary>
+    /// Finds the container that contains the specified item, if any.
+    /// </summary>
+    /// <param name="itemId">The item UniqueId.</param>
+    /// <returns>The Container or null if the item is not related to any container.</returns>
+    Task<Container?> GetContainerForItemAsync(string itemId);
+
     Task InsertContainerAsync(Container container);
 
     Task InsertItemAsync(Item item);

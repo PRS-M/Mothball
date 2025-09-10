@@ -2,8 +2,12 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
+using System.Linq;
+using System.Threading;
+using Microsoft.Maui.ApplicationModel;
 
 namespace MothballMobile.UI.ViewModels;
 
@@ -11,6 +15,7 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
 {
     private readonly IInventoryDomainRepository _inventoryRepository;
     private readonly IFileHandler _fileHandler;
+    private CancellationTokenSource? _searchCts;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -26,6 +31,11 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
     public ObservableCollection<ItemWithPhotosViewModel> Items { get; } = new();
+
+    private readonly List<ItemWithPhotosViewModel> _allItems = new();
+
+    [ObservableProperty]
+    private string searchQuery = string.Empty;
 
     public ContainerDetailsViewModel(IInventoryDomainRepository inventoryRepository, IFileHandler fileHandler)
     {
@@ -83,11 +93,59 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
         }
 
         // Map items and load their images (carousel per item)
+        _allItems.Clear();
         foreach (var item in items)
         {
             var itemVm = new ItemWithPhotosViewModel(item, _fileHandler);
-            Items.Add(itemVm);
+            _allItems.Add(itemVm);
             _ = itemVm.LoadImagesAsync();
+        }
+        ApplyFilter();
+    }
+
+    [RelayCommand]
+    private void ApplySearch()
+    {
+        ApplyFilter();
+    }
+
+    // Called automatically by MVVM Toolkit when SearchQuery changes
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Called by MVVM Toolkit source generator")]
+    partial void OnSearchQueryChanged(string value)
+    {
+        // Debounce user typing to avoid excessive filtering on fast input
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = new CancellationTokenSource();
+        var token = _searchCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(250, token);
+                if (token.IsCancellationRequested) return;
+                await MainThread.InvokeOnMainThreadAsync(ApplyFilter);
+            }
+            catch (TaskCanceledException)
+            {
+                // ignore
+            }
+        }, token);
+    }
+
+    private void ApplyFilter()
+    {
+        Items.Clear();
+        IEnumerable<ItemWithPhotosViewModel> source = _allItems;
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            var q = SearchQuery.Trim();
+            source = source.Where(vm => vm.Name?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+        foreach (var vm in source)
+        {
+            Items.Add(vm);
         }
     }
 }

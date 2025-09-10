@@ -39,6 +39,15 @@
 
             <!-- Items in the container -->
             <Label Text="Items in this container" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
+            <Border Style="{StaticResource SearchWrapper}">
+                <SearchBar Placeholder="Search within container..."
+                           TextColor="{StaticResource ColorPrimaryText}"
+                           PlaceholderColor="{StaticResource ColorMuted}"
+                           BackgroundColor="Transparent"
+                           CancelButtonColor="{StaticResource ColorMuted}"
+                           Text="{Binding SearchQuery}"
+                           SearchCommand="{Binding ApplySearchCommand}" />
+            </Border>
             <CollectionView ItemsSource="{Binding Items}" SelectionMode="None">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" />

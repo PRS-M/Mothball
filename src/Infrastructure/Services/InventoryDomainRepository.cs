@@ -96,6 +96,22 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         return dbItem.ToDomain(dbPhotos);
     }
 
+    public async Task<Container?> GetContainerForItemAsync(string itemId)
+    {
+        _logger.LogDebug("GetContainerForItemAsync: itemId={ItemId}", itemId);
+        if (!Guid.TryParse(itemId, out var iid)) return null;
+
+        // Find relation
+        var relation = (await _itemContainerRelations.WhereAsync(r => r.ItemId == iid)).FirstOrDefault();
+        if (relation is null) return null;
+
+        // Load the container and its photo(s)
+        var dbContainer = await _containers.GetAsync(relation.ContainerId.ToString());
+        if (dbContainer is null) return null;
+        var dbPhotos = await _photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
+        return dbContainer.ToDomain(dbPhotos);
+    }
+
     public async Task<List<Item>> GetAllItemsWithPhotosAsync()
     {
         var items = await _items.GetAllAsync();

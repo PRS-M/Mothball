@@ -10,6 +10,7 @@
     <x:Double x:Key="Pad">14</x:Double>
 
     <Color x:Key="ColorSurface">#FF2D3D62</Color>
+    <Color x:Key="ColorSurfaceElevated">#3A4B75</Color>
     <Color x:Key="ColorBorder">#243041</Color>
     <Color x:Key="ColorPrimary">#3B82F6</Color>
     <Color x:Key="ColorPrimaryText">#E5E7EB</Color>
@@ -50,6 +51,11 @@
                 <RoundRectangle CornerRadius="{StaticResource Radius}"/>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Slightly lighter input wrapper for search bars to increase contrast -->
+    <Style TargetType="Border" x:Key="SearchWrapper" BasedOn="{StaticResource InputWrapper}">
+        <Setter Property="Background" Value="{StaticResource ColorSurfaceElevated}"/>
     </Style>
 
     <Style TargetType="Entry" x:Key="Input">

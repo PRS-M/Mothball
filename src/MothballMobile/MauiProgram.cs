@@ -7,6 +7,10 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
+using Microsoft.Maui.Handlers;
+#if IOS
+using UIKit;
+#endif
 
 namespace MothballMobile;
 
@@ -28,6 +32,24 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 		ConfigureServices(builder.Services);
+
+		// Platform tweaks
+		builder.ConfigureMauiHandlers(handlers =>
+		{
+#if IOS
+			SearchBarHandler.Mapper.AppendToMapping("TransparentBackground", (handler, view) =>
+			{
+				var sb = handler.PlatformView;
+				if (sb is null) return;
+				sb.SearchBarStyle = UISearchBarStyle.Minimal;
+				sb.BackgroundColor = UIColor.Clear;
+				sb.BarTintColor = UIColor.Clear;
+				sb.BackgroundImage = new UIImage();
+				sb.Layer.BackgroundColor = UIColor.Clear.CGColor;
+				sb.Layer.BorderWidth = 0;
+			});
+#endif
+		});
 
 		return builder.Build();
 	}
@@ -55,5 +77,6 @@ public static class MauiProgram
 		services.AddTransient<ContainerListViewModel>();
 		services.AddTransient<ItemsListViewModel>();
 		services.AddTransient<ContainerDetailsViewModel>();
+		services.AddTransient<ItemDetailsViewModel>();
 	}
 }

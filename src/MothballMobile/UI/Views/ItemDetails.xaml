@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+             xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+             x:Class="MothballMobile.UI.Views.ItemDetails"
+             x:DataType="vm:ItemDetailsViewModel"
+             Title="Item"
+             BackgroundColor="#0F172A">
+
+    <ContentPage.Resources>
+        <conv:PathToImageSourceConverter x:Key="PathToImage" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+            <!-- Title and optional container jump -->
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto" ColumnSpacing="12">
+                <Label Text="{Binding Name}" FontSize="22" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
+                <Button Grid.Column="1"
+                        Text="Go to container"
+                        Style="{StaticResource PrimaryButton}"
+                        IsVisible="{Binding HasContainerRelation}"
+                        Command="{Binding NavigateToContainerCommand}" />
+            </Grid>
+
+            <!-- Photos carousel -->
+            <Border Style="{StaticResource Card}" Padding="12">
+                <CarouselView ItemsSource="{Binding ImagePaths}" HeightRequest="220">
+                    <CarouselView.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Image Source="{Binding ., Converter={StaticResource PathToImage}}" Aspect="AspectFill" HeightRequest="220">
+                                <Image.Clip>
+                                    <RoundRectangleGeometry CornerRadius="10" Rect="0,0,400,220" />
+                                </Image.Clip>
+                            </Image>
+                        </DataTemplate>
+                    </CarouselView.ItemTemplate>
+                </CarouselView>
+            </Border>
+
+            <!-- Details -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Description" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
+                    <Label Text="{Binding Description}" TextColor="{StaticResource ColorMuted}"/>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
