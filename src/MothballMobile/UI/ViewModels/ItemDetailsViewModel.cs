@@ -63,15 +63,8 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
         Name = item.Name;
         Description = item.Description;
 
-        if (item.Photos is { Count: > 0 })
-        {
-            foreach (var p in item.Photos)
-                ImagePaths.Add(_paths.GetItemPhotoPath(p));
-        }
-        else
-        {
-            ImagePaths.Add(_paths.GetFallbackImagePath());
-        }
+        foreach (var path in _paths.GetItemPhotoPaths(item))
+            ImagePaths.Add(path);
 
         // Use repository to find related container, if any
         var container = await _inventoryRepository.GetContainerForItemAsync(item.ItemId.ToString());

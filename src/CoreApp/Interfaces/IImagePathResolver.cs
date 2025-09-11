@@ -1,4 +1,5 @@
-using CoreApp.Entities.Shared;
+using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.ItemAggregate;
 
 namespace CoreApp.Interfaces;
 
@@ -8,20 +9,14 @@ namespace CoreApp.Interfaces;
 /// </summary>
 public interface IImagePathResolver
 {
-    /// <summary>
-    /// Returns a full path suitable for binding to an <see cref="Image"/> control for a container photo.
-    /// If the underlying file is missing, a fallback path is returned.
-    /// </summary>
-    string GetContainerPhotoPath(ImageItem photo);
+    // Container helpers
+    string GetPrimaryContainerPhotoPath(Container container);
+    IEnumerable<string> GetContainerPhotoPaths(Container container);
 
-    /// <summary>
-    /// Returns a full path suitable for binding to an <see cref="Image"/> control for an item photo.
-    /// If the underlying file is missing, a fallback path is returned.
-    /// </summary>
-    string GetItemPhotoPath(ImageItem photo);
+    // Item helpers
+    string GetPrimaryItemPhotoPath(Item item);
+    IEnumerable<string> GetItemPhotoPaths(Item item);
 
-    /// <summary>
-    /// Returns the fallback image path used when an entity has no photos.
-    /// </summary>
+    // Fallback
     string GetFallbackImagePath();
 }

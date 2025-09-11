@@ -33,15 +33,8 @@ public partial class ContainerViewModel : ObservableObject
 
     public Task LoadImageAsync()
     {
-        if (Container.Photos != null && Container.Photos.Count > 0)
-        {
-            var path = _paths.GetContainerPhotoPath(Container.Photos[0]);
+        foreach (var path in _paths.GetContainerPhotoPaths(Container))
             ImagePaths.Add(path);
-        }
-        else
-        {
-            ImagePaths.Add(_paths.GetFallbackImagePath());
-        }
         return Task.CompletedTask;
     }
 

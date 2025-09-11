@@ -1,3 +1,5 @@
+using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
@@ -17,13 +19,31 @@ public sealed class ImagePathResolver : IImagePathResolver
         _fileHandler = fileHandler;
     }
 
-    public string GetContainerPhotoPath(ImageItem photo)
-        => BuildPath(Constants.PathToContainerPhotos, photo.FileName);
+    public string GetPrimaryContainerPhotoPath(Container container)
+        => FirstOrFallback(container?.Photos, Constants.PathToContainerPhotos);
 
-    public string GetItemPhotoPath(ImageItem photo)
-        => BuildPath(Constants.PathToItemPhotos, photo.FileName);
+    public IEnumerable<string> GetContainerPhotoPaths(Container container)
+        => PathsOrFallback(container?.Photos, Constants.PathToContainerPhotos);
+
+    public string GetPrimaryItemPhotoPath(Item item)
+        => FirstOrFallback(item?.Photos, Constants.PathToItemPhotos);
+
+    public IEnumerable<string> GetItemPhotoPaths(Item item)
+        => PathsOrFallback(item?.Photos, Constants.PathToItemPhotos);
 
     public string GetFallbackImagePath() => "dotnet_bot.png"; // central fallback
+
+    private string FirstOrFallback(IEnumerable<ImageItem>? photos, string folder)
+        => photos != null && photos.Any() ? BuildPath(folder, photos.First().FileName) : GetFallbackImagePath();
+
+    private IEnumerable<string> PathsOrFallback(IEnumerable<ImageItem>? photos, string folder)
+    {
+        if (photos != null && photos.Any())
+            foreach (var p in photos)
+                yield return BuildPath(folder, p.FileName);
+        else
+            yield return GetFallbackImagePath();
+    }
 
     private string BuildPath(string folder, string fileName)
     {

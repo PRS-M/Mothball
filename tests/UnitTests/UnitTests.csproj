@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/CoreApp/CoreApp.csproj" />
+    <ProjectReference Include="../../src/Infrastructure/Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

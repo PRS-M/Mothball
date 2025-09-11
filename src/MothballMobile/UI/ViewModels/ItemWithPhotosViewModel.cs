@@ -25,11 +25,8 @@ public class ItemWithPhotosViewModel : ObservableObject
     public Task LoadImagesAsync()
     {
         ImagePaths.Clear();
-        if (Item.Photos != null && Item.Photos.Any())
-            foreach (var photo in Item.Photos)
-                ImagePaths.Add(_paths.GetItemPhotoPath(photo));
-        else
-            ImagePaths.Add(_paths.GetFallbackImagePath());
+        foreach (var path in _paths.GetItemPhotoPaths(Item))
+            ImagePaths.Add(path);
         return Task.CompletedTask;
     }
 }

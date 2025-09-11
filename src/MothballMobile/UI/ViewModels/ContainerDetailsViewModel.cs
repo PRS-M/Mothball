@@ -77,11 +77,8 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
         ItemCount = $"Items stored: {container.ItemCount}";
 
         // Load container photos (all, as a small carousel)
-        if (container.Photos?.Count > 0)
-            foreach (var photo in container.Photos)
-                ContainerImagePaths.Add(_paths.GetContainerPhotoPath(photo));
-        else
-            ContainerImagePaths.Add(_paths.GetFallbackImagePath());
+        foreach (var path in _paths.GetContainerPhotoPaths(container))
+            ContainerImagePaths.Add(path);
 
         // Map items and load their images (carousel per item)
         _allItems.Clear();
