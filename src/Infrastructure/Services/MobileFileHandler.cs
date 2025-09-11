@@ -3,6 +3,9 @@ using CoreApp.Utilities;
 
 namespace Infrastructure.Services;
 
+/// <summary>
+/// Mobile platform implementation of file handling operations using MAUI's IFileSystem.
+/// </summary>
 public class MobileFileHandler : IFileHandler
 {
     private readonly IFileSystem fileSystem;
@@ -12,8 +15,10 @@ public class MobileFileHandler : IFileHandler
         this.fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
     }
 
+    /// <inheritdoc />
     public string GetAppDataPath() => fileSystem.AppDataDirectory;
 
+    /// <inheritdoc />
     public async Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
     {
         string fullPath = GetFullPath(fileName, folderPath);
@@ -21,6 +26,7 @@ public class MobileFileHandler : IFileHandler
         return fullPath;
     }
 
+    /// <inheritdoc />
     public async Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath)
     {
         using Stream input = await FileSystem.OpenAppPackageFileAsync(rawFileName);
@@ -41,6 +47,7 @@ public class MobileFileHandler : IFileHandler
         await Task.Run(() => File.Copy(sourceFullPath, destFullPath, true));
     }
 
+    /// <inheritdoc />
     public async Task<byte[]> ReadFileAsync(string fileName, string folderPath)
     {
         string fullPath = GetFullPath(fileName, folderPath);
@@ -50,6 +57,7 @@ public class MobileFileHandler : IFileHandler
         return await File.ReadAllBytesAsync(fullPath);
     }
 
+    /// <inheritdoc />
     public async Task DeleteFileAsync(string fileName, string folderPath)
     {
         string fullPath = GetFullPath(fileName, folderPath);
@@ -59,6 +67,7 @@ public class MobileFileHandler : IFileHandler
         await Task.Run(() => File.Delete(fullPath));
     }
 
+    /// <inheritdoc />
     public async Task<string> SaveTextFileAsync(string fileName, string folderPath, string content)
     {
         string fullPath = GetFullPath(fileName, folderPath);
@@ -66,6 +75,7 @@ public class MobileFileHandler : IFileHandler
         return fullPath;
     }
 
+    /// <inheritdoc />
     public async Task<string> ReadTextFileAsync(string fileName, string folderPath)
     {
         string fullPath = GetFullPath(fileName, folderPath);
@@ -75,6 +85,7 @@ public class MobileFileHandler : IFileHandler
         return await File.ReadAllTextAsync(fullPath);
     }
 
+    /// <inheritdoc />
     public async Task<MemoryStream> GetImageMemoryStream(string fileName, string folderPath)
     {
         string fullPath = GetFullPath(fileName, folderPath);
@@ -94,6 +105,7 @@ public class MobileFileHandler : IFileHandler
         return new MemoryStream(imageBytes);
     }
 
+    /// <inheritdoc />
     public IEnumerable<string> EnumerateFiles(string folderPath, string searchPattern = "*.*")
     {
         string directoryPath = Path.Combine(GetAppDataPath(), folderPath);

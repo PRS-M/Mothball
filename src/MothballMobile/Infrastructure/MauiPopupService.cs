@@ -1,7 +1,11 @@
 namespace MothballMobile.Infrastructure;
 
+/// <summary>
+/// MAUI-based implementation of popup services using DisplayAlert functionality.
+/// </summary>
 public sealed class MauiPopupService : IPopupService
 {
+    /// <inheritdoc />
     public Task ShowAlertAsync(string title, string message, string cancel = "OK")
     {
         var page = TryGetCurrentPage();
@@ -10,6 +14,7 @@ public sealed class MauiPopupService : IPopupService
         return page.DisplayAlert(title, message, cancel);
     }
 
+    /// <inheritdoc />
     public Task<bool> ConfirmAsync(string title, string message, string accept, string cancel)
     {
         var page = TryGetCurrentPage();
