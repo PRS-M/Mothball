@@ -33,7 +33,11 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     [ObservableProperty]
     private string searchQuery = string.Empty;
 
-    public ContainerDetailsViewModel(IInventoryDomainRepository inventoryRepository, IImagePathResolver paths, Infrastructure.IPopupService popup, Infrastructure.INavigationService? nav = null)
+    public ContainerDetailsViewModel(
+        IInventoryDomainRepository inventoryRepository,
+        IImagePathResolver paths,
+        Infrastructure.IPopupService popup,
+        Infrastructure.INavigationService? nav = null)
     {
         _inventoryRepository = inventoryRepository;
         _paths = paths;

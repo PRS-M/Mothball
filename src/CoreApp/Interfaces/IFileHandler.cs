@@ -62,16 +62,6 @@ public interface IFileHandler
     Task<string> ReadTextFileAsync(string fileName, string folderPath);
 
     /// <summary>
-    /// Creates a memory stream containing the contents of an image file.
-    /// Useful for displaying images or processing image data.
-    /// </summary>
-    /// <param name="fileName">The name of the image file.</param>
-    /// <param name="folderPath">The folder path within the app data directory.</param>
-    /// <returns>A memory stream containing the image data.</returns>
-    /// <exception cref="FileNotFoundException">Thrown when the file does not exist.</exception>
-    Task<MemoryStream> GetImageMemoryStream(string fileName, string folderPath);
-
-    /// <summary>
     /// Enumerates files in a directory that match the specified search pattern.
     /// Returns an empty collection if the directory doesn't exist.
     /// </summary>
