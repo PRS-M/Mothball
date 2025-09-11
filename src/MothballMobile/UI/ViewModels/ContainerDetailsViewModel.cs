@@ -1,13 +1,8 @@
 using System.Collections.ObjectModel;
-using System.Collections.Generic;
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
-using System.Linq;
-using System.Threading;
-using Microsoft.Maui.ApplicationModel;
 
 namespace MothballMobile.UI.ViewModels;
 
@@ -16,6 +11,8 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     private readonly IInventoryDomainRepository _inventoryRepository;
     private readonly IFileHandler _fileHandler;
     private CancellationTokenSource? _searchCts;
+    private readonly Infrastructure.INavigationService? _nav;
+    private readonly Infrastructure.IPopupService _popup;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -37,10 +34,12 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     [ObservableProperty]
     private string searchQuery = string.Empty;
 
-    public ContainerDetailsViewModel(IInventoryDomainRepository inventoryRepository, IFileHandler fileHandler)
+    public ContainerDetailsViewModel(IInventoryDomainRepository inventoryRepository, IFileHandler fileHandler, Infrastructure.IPopupService popup, Infrastructure.INavigationService? nav = null)
     {
         _inventoryRepository = inventoryRepository;
         _fileHandler = fileHandler;
+        _popup = popup;
+        _nav = nav;
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -60,8 +59,8 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
 
         ContainerId = containerId;
 
-    Items.Clear();
-    ContainerImagePaths.Clear();
+        Items.Clear();
+        ContainerImagePaths.Clear();
 
         var result = await _inventoryRepository.GetContainerWithItemsAndPhotosAsync(containerId);
         if (result is null)
@@ -79,17 +78,17 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
         ItemCount = $"Items stored: {container.ItemCount}";
 
         // Load container photos (all, as a small carousel)
-    if (container.Photos?.Count > 0)
+        if (container.Photos?.Count > 0)
         {
             foreach (var photo in container.Photos)
             {
-        var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToContainerPhotos, photo.FileName);
-        ContainerImagePaths.Add(path);
+            var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToContainerPhotos, photo.FileName);
+            ContainerImagePaths.Add(path);
             }
         }
         else
         {
-        ContainerImagePaths.Add("dotnet_bot.png");
+            ContainerImagePaths.Add("dotnet_bot.png");
         }
 
         // Map items and load their images (carousel per item)
@@ -100,6 +99,7 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
             _allItems.Add(itemVm);
             _ = itemVm.LoadImagesAsync();
         }
+
         ApplyFilter();
     }
 
@@ -143,9 +143,28 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
             var q = SearchQuery.Trim();
             source = source.Where(vm => vm.Name?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false);
         }
+
         foreach (var vm in source)
         {
             Items.Add(vm);
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteContainerAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ContainerId)) return;
+        var confirmed = await _popup.ConfirmAsync(
+            title: "Delete container",
+            message: "Delete this container? Items inside will not be deleted, only the relation.",
+            accept: "Delete",
+            cancel: "Cancel");
+        if (!confirmed) return;
+
+        await _inventoryRepository.DeleteContainerAsync(ContainerId);
+        if (_nav is not null)
+        {
+            await _nav.GoBackAsync();
         }
     }
 }

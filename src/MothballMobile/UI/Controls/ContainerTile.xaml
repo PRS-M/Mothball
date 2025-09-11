@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:self="clr-namespace:MothballMobile.UI.Controls"
              xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
            xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
              x:Class="MothballMobile.UI.Controls.ContainerTile"
              x:Name="this"
@@ -87,8 +88,8 @@
                     HeightRequest="125"
                     WidthRequest="125">
                     <CarouselView.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                            <Image
+                        <DataTemplate>
+                            <Image x:DataType="sys:String"
                                 Source="{Binding ., Converter={StaticResource PathToImage}}"
                                 Aspect="AspectFill"
                                 HeightRequest="125"

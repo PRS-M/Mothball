@@ -191,6 +191,58 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _photos.UpdateAsync(dbImage);
     }
 
+    public async Task DeleteItemAsync(string itemId)
+    {
+        if (!Guid.TryParse(itemId, out var iid)) return;
+
+        // Delete item images
+        var images = await _photos.WhereAsync(p => p.OwnerUniqueId == iid);
+        foreach (var img in images)
+        {
+            await _photos.DeleteAsync(img);
+        }
+
+        // Delete relations
+        var relations = await _itemContainerRelations.WhereAsync(r => r.ItemId == iid);
+        foreach (var rel in relations)
+        {
+            await _itemContainerRelations.DeleteAsync(rel);
+        }
+
+        // Delete item
+        var dbItem = await _items.GetAsync(itemId);
+        if (dbItem is not null)
+        {
+            await _items.DeleteAsync(dbItem);
+        }
+    }
+
+    public async Task DeleteContainerAsync(string containerId)
+    {
+        if (!Guid.TryParse(containerId, out var cid)) return;
+
+        // Delete container images
+        var images = await _photos.WhereAsync(p => p.OwnerUniqueId == cid);
+        foreach (var img in images)
+        {
+            await _photos.DeleteAsync(img);
+        }
+
+        // Delete relations (items remain)
+        var relations = await _itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
+        foreach (var rel in relations)
+        {
+            await _itemContainerRelations.DeleteAsync(rel);
+        }
+
+        // Delete container
+        var dbContainer = await _containers.GetAsync(containerId);
+        if (dbContainer is not null)
+        {
+            await _containers.DeleteAsync(dbContainer);
+        }
+    }
+
     private static List<Item> MapDbItemsToDomain(List<DbItem> items, Dictionary<Guid, IEnumerable<DbImage>> photosByItem)
     {
         var domain = new List<Item>(items.Count);

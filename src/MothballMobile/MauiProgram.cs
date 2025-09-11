@@ -26,6 +26,8 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 				fonts.AddFont("Font Awesome 7 Free-Regular-400.otf", "FontAwesome");
+				// Solid face for Font Awesome icons
+				fonts.AddFont("Font Awesome 7 Free-Solid-900.otf", "FontAwesomeSolid");
 			});
 
 #if DEBUG
@@ -73,10 +75,13 @@ public static class MauiProgram
 #endif
 		// Navigation abstraction
 		services.AddSingleton<Infrastructure.INavigationService, Infrastructure.ShellNavigationService>();
+		// Popup abstraction
+		services.AddSingleton<Infrastructure.IPopupService, Infrastructure.MauiPopupService>();
 		services.AddTransient<AddContainerViewModel>();
 		services.AddTransient<ContainerListViewModel>();
 		services.AddTransient<ItemsListViewModel>();
 		services.AddTransient<ContainerDetailsViewModel>();
 		services.AddTransient<ItemDetailsViewModel>();
+		services.AddTransient<AddItemViewModel>();
 	}
 }

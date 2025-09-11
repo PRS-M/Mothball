@@ -5,9 +5,9 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Utilities;
 using CoreApp.Interfaces;
-using System.IO;
 using System.Threading;
 using Microsoft.Maui.ApplicationModel;
+using MothballMobile.UI.ViewModels;
 
 namespace MothballMobile.UI.ViewModels;
 
@@ -92,6 +92,12 @@ public partial class ItemsListViewModel : ObservableObject
         return _nav.GoToAsync("ItemDetails", new Dictionary<string, object> { ["ItemId"] = id });
     }
 
+    [RelayCommand]
+    private Task NavigateToAddItemAsync()
+    {
+        return _nav.GoToAsync("AddItem");
+    }
+
     private async Task LoadAsync(string? query)
     {
         Items.Clear();
@@ -135,87 +141,4 @@ public partial class ItemsListViewModel : ObservableObject
     }
     #pragma warning restore IDE0051
 
-}
-
-    public partial class ItemViewModel : ObservableObject
-{
-    public Item Item { get; }
-    private readonly IFileHandler _fileHandler;
-        private readonly Infrastructure.INavigationService _nav;
-        private string _imagePath;
-
-        public ItemViewModel(Item item, IFileHandler fileHandler, Infrastructure.INavigationService nav)
-    {
-        Item = item;
-        _fileHandler = fileHandler;
-            _nav = nav;
-            _imagePath = "dotnet_bot.png";
-    }
-
-    public string Name => Item.Name;
-    public string Description => Item.Description;
-
-        public string ImagePath
-        {
-            get => _imagePath;
-            set => SetProperty(ref _imagePath, value);
-        }
-
-        public Task LoadImageAsync()
-    {
-        if (Item.Photos != null && Item.Photos.Any(p => !string.IsNullOrEmpty(p.FileName)))
-        {
-                var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToItemPhotos, Item.Photos[0].FileName);
-                ImagePath = path;
-        }
-        else
-        {
-                ImagePath = "dotnet_bot.png";
-        }
-            return Task.CompletedTask;
-    }
-
-        [RelayCommand]
-        private Task NavigateToItemDetailsAsync()
-        {
-            return _nav.GoToAsync("ItemDetails", new Dictionary<string, object>
-            {
-                ["ItemId"] = Item.ItemId.ToString()
-            });
-        }
-}
-
-public class ItemWithPhotosViewModel : ObservableObject
-{
-    public Item Item { get; }
-    private readonly IFileHandler _fileHandler;
-
-        public ObservableCollection<string> ImagePaths { get; } = new();
-
-    public ItemWithPhotosViewModel(Item item, IFileHandler fileHandler)
-    {
-        Item = item;
-        _fileHandler = fileHandler;
-    }
-
-    public string Name => Item.Name;
-    public string Description => Item.Description;
-
-        public Task LoadImagesAsync()
-    {
-            ImagePaths.Clear();
-        if (Item.Photos != null && Item.Photos.Any(p => !string.IsNullOrEmpty(p.FileName)))
-        {
-                foreach (var photo in Item.Photos)
-                {
-                    var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToItemPhotos, photo.FileName);
-                    ImagePaths.Add(path);
-                }
-        }
-        else
-        {
-                ImagePaths.Add("dotnet_bot.png");
-        }
-            return Task.CompletedTask;
-    }
 }

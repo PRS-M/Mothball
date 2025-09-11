@@ -83,4 +83,15 @@ public interface IInventoryDomainRepository
     Task UpdateItemAsync(Item item);
 
     Task UpdateImageItemAsync(ImageItem image, Guid ownerId);
+
+    /// <summary>
+    /// Deletes an item and any related images and container relations.
+    /// </summary>
+    Task DeleteItemAsync(string itemId);
+
+    /// <summary>
+    /// Deletes a container and any related images and item relations.
+    /// Items themselves are not deleted.
+    /// </summary>
+    Task DeleteContainerAsync(string containerId);
 }

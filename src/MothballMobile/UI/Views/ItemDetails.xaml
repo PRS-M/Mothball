@@ -2,11 +2,20 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
              x:Class="MothballMobile.UI.Views.ItemDetails"
              x:DataType="vm:ItemDetailsViewModel"
              Title="Item"
              BackgroundColor="#0F172A">
+
+    <ContentPage.ToolbarItems>
+    <ToolbarItem Priority="0" Order="Primary" Command="{Binding DeleteItemCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1F8;" Color="{StaticResource ColorPrimaryIcon}" Size="22" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
 
     <ContentPage.Resources>
         <conv:PathToImageSourceConverter x:Key="PathToImage" />
@@ -28,8 +37,8 @@
             <Border Style="{StaticResource Card}" Padding="12">
                 <CarouselView ItemsSource="{Binding ImagePaths}" HeightRequest="220">
                     <CarouselView.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                            <Image Source="{Binding ., Converter={StaticResource PathToImage}}" Aspect="AspectFill" HeightRequest="220">
+                        <DataTemplate>
+                            <Image x:DataType="sys:String" Source="{Binding ., Converter={StaticResource PathToImage}}" Aspect="AspectFill" HeightRequest="220">
                                 <Image.Clip>
                                     <RoundRectangleGeometry CornerRadius="10" Rect="0,0,400,220" />
                                 </Image.Clip>
@@ -46,6 +55,7 @@
                     <Label Text="{Binding Description}" TextColor="{StaticResource ColorMuted}"/>
                 </VerticalStackLayout>
             </Border>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

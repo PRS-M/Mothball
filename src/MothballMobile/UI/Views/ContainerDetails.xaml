@@ -3,11 +3,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
              xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
              x:Class="MothballMobile.UI.Views.ContainerDetails"
              x:DataType="vm:ContainerDetailsViewModel"
              Title="Container"
              BackgroundColor="#0F172A">
+
+    <ContentPage.ToolbarItems>
+    <ToolbarItem Priority="0" Order="Primary" Command="{Binding DeleteContainerCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1F8;" Color="{StaticResource ColorPrimaryIcon}" Size="22" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
 
     <ContentPage.Resources>
         <conv:PathToImageSourceConverter x:Key="PathToImage" />
@@ -24,8 +33,8 @@
                     <Border Grid.RowSpan="3" Grid.Column="1" StrokeShape="RoundRectangle 10" HorizontalOptions="End" VerticalOptions="Center">
             <CarouselView ItemsSource="{Binding ContainerImagePaths}" HeightRequest="110" WidthRequest="110">
                             <CarouselView.ItemTemplate>
-                <DataTemplate x:DataType="x:String">
-                                    <Image Source="{Binding ., Converter={StaticResource PathToImage}}" Aspect="AspectFill" HeightRequest="110" WidthRequest="110">
+                <DataTemplate>
+                                    <Image x:DataType="sys:String" Source="{Binding ., Converter={StaticResource PathToImage}}" Aspect="AspectFill" HeightRequest="110" WidthRequest="110">
                                         <Image.Clip>
                                             <RoundRectangleGeometry CornerRadius="10" Rect="0,0,110,110" />
                                         </Image.Clip>
@@ -40,7 +49,7 @@
             <!-- Items in the container -->
             <Label Text="Items in this container" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
             <Border Style="{StaticResource SearchWrapper}">
-                <SearchBar Placeholder="Search within container..."
+                <SearchBar x:DataType="vm:ContainerDetailsViewModel" Placeholder="Search within container..."
                            TextColor="{StaticResource ColorPrimaryText}"
                            PlaceholderColor="{StaticResource ColorMuted}"
                            BackgroundColor="Transparent"
@@ -48,7 +57,7 @@
                            Text="{Binding SearchQuery}"
                            SearchCommand="{Binding ApplySearchCommand}" />
             </Border>
-            <CollectionView ItemsSource="{Binding Items}" SelectionMode="None">
+            <CollectionView x:DataType="vm:ContainerDetailsViewModel" ItemsSource="{Binding Items}" SelectionMode="None">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" />
                 </CollectionView.ItemsLayout>
@@ -65,8 +74,8 @@
                                     <Border StrokeShape="RoundRectangle 10" HorizontalOptions="Start" VerticalOptions="Start">
                     <CarouselView ItemsSource="{Binding ImagePaths}" HeightRequest="92" WidthRequest="92">
                                             <CarouselView.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                                                    <Image Source="{Binding ., Converter={StaticResource PathToImage}}" Aspect="AspectFill" HeightRequest="92" WidthRequest="92">
+                        <DataTemplate>
+                                                    <Image x:DataType="sys:String" Source="{Binding ., Converter={StaticResource PathToImage}}" Aspect="AspectFill" HeightRequest="92" WidthRequest="92">
                                                         <Image.Clip>
                                                             <RoundRectangleGeometry CornerRadius="10" Rect="0,0,92,92" />
                                                         </Image.Clip>
@@ -85,6 +94,7 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

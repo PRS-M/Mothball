@@ -13,6 +13,7 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
     private readonly IInventoryDomainRepository _inventoryRepository;
     private readonly Infrastructure.INavigationService _nav;
     private readonly IFileHandler _fileHandler;
+    private readonly Infrastructure.IPopupService _popup;
 
     [ObservableProperty]
     private string itemId = string.Empty;
@@ -30,11 +31,12 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IFileHandler fileHandler)
+    public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IFileHandler fileHandler, Infrastructure.IPopupService popup)
     {
         _inventoryRepository = inventoryRepository;
         _nav = nav;
         _fileHandler = fileHandler;
+        _popup = popup;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -89,5 +91,20 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
         return _nav.GoToAsync("ContainerDetails", new Dictionary<string, object> { ["ContainerId"] = ContainerId! });
+    }
+
+    [RelayCommand]
+    private async Task DeleteItemAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ItemId)) return;
+        var confirmed = await _popup.ConfirmAsync(
+            title: "Delete item",
+            message: "Are you sure you want to delete this item? This cannot be undone.",
+            accept: "Delete",
+            cancel: "Cancel");
+        if (!confirmed) return;
+
+        await _inventoryRepository.DeleteItemAsync(ItemId);
+        await _nav.GoBackAsync();
     }
 }

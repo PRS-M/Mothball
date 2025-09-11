@@ -8,6 +8,14 @@
              Title="Containers"
              BackgroundColor="#FF182441">
 
+    <ContentPage.ToolbarItems>
+    <ToolbarItem Priority="0" Order="Primary" Command="{Binding NavigateToAddContainerCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF067;" Color="{StaticResource ColorPrimaryIcon}" Size="22" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+
     <Grid Padding="16" RowDefinitions="Auto,*" ColumnDefinitions="*,Auto">
         <!-- Header -->
         <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4" Margin="0,0,0,10" VerticalOptions="Center">
@@ -15,17 +23,7 @@
             <Label Text="Browse your storage" TextColor="{StaticResource ColorMuted}" FontSize="14"/>
         </VerticalStackLayout>
 
-        <!-- Add button (Material-like mini FAB) -->
-        <Button Grid.Row="0"
-                Grid.Column="1"
-                Command="{Binding NavigateToAddContainerCommand}"
-                Text="+"
-                Style="{StaticResource PrimaryButton}"
-                WidthRequest="48"
-                HeightRequest="48"
-                CornerRadius="24"
-                HorizontalOptions="End"
-                VerticalOptions="Center" />
+    <!-- Toolbar button replaces inline add button -->
         <CollectionView x:Name="ContainersCollectionView"
                         Grid.Row="1"
                         Grid.ColumnSpan="2"

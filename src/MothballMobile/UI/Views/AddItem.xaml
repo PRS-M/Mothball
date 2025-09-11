@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
              x:Class="MothballMobile.UI.Views.AddItem"
+             x:DataType="vm:AddItemViewModel"
              Title="Add Item"
              BackgroundColor="#0F172A">
 
@@ -18,20 +20,19 @@
                 <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
                     <Label Text="Name" TextColor="{StaticResource ColorMuted}" Margin="4,0"/>
                     <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">
-                        <Entry Style="{StaticResource Input}" Placeholder="Item name"/>
+                        <Entry Style="{StaticResource Input}" Placeholder="Item name" Text="{Binding Name}"/>
                     </Border>
 
                     <Label Text="Description" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
                     <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">
-                        <Entry Style="{StaticResource Input}" Placeholder="Short description"/>
+                        <Entry Style="{StaticResource Input}" Placeholder="Short description" Text="{Binding Description}"/>
                     </Border>
 
                     <Label Text="Quantity" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
                     <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">
-                        <Entry Style="{StaticResource Input}" Keyboard="Numeric" Placeholder="e.g. 1"/>
+                        <Entry Style="{StaticResource Input}" Keyboard="Numeric" Placeholder="e.g. 1" Text="{Binding Quantity}"/>
                     </Border>
-
-                    <Button Text="Add Item" Style="{StaticResource PrimaryButton}" WidthRequest="{StaticResource WidthM}"/>
+                    <Button Text="Add Item" Style="{StaticResource PrimaryButton}" WidthRequest="{StaticResource WidthM}" Command="{Binding AddCommand}"/>
                 </VerticalStackLayout>
             </Border>
         </Grid>
