@@ -7,42 +7,67 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Services;
+using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class AddContainerViewModel : ObservableObject
+public partial class AddContainerViewModel : BaseViewModel
 {
     private readonly ICameraHandler cameraHandler;
     private readonly IInventoryDomainRepository inventoryDomainRepository;
+    private readonly INavigationService navigationService;
 
-    public AddContainerViewModel(ICameraHandler cameraHandler, IInventoryDomainRepository inventoryDomainRepository)
+    public AddContainerViewModel(
+        ICameraHandler cameraHandler,
+        IInventoryDomainRepository inventoryDomainRepository,
+        INavigationService navigationService)
     {
         this.cameraHandler = cameraHandler ?? throw new ArgumentNullException(nameof(cameraHandler));
         this.inventoryDomainRepository = inventoryDomainRepository ?? throw new ArgumentNullException(nameof(inventoryDomainRepository));
-        Name = string.Empty;
-        Notes = string.Empty;
+        this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         Container = null!;
     }
 
-    public string Name { get; set; }
-    public string Notes { get; set; }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddContainerCommand))]
+    private string name = string.Empty;
+
+    [ObservableProperty]
+    private string notes = string.Empty;
+
+    [ObservableProperty]
+    private string? validationMessage;
+
     Container Container { get; set; }
 
-    [RelayCommand]
+    private bool CanAddContainer() => !string.IsNullOrWhiteSpace(Name);
+
+    [RelayCommand(CanExecute = nameof(CanAddContainer))]
     public async Task AddContainer()
     {
-        Container = new Container(
-            containerId: Guid.NewGuid(),
-            name: Name,
-            notes: Notes
-        );
-
-        await cameraHandler.CaptureContainerPhotoAsync(Container);
-        await inventoryDomainRepository.InsertContainerAsync(Container);
-        if (Container.Photos is { Count: > 0 })
+        if (string.IsNullOrWhiteSpace(Name?.Trim()))
         {
-            await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
+            ValidationMessage = "Name is required.";
+            return;
         }
-        await Shell.Current.GoToAsync("..");
+
+        await RunCommandAsync(async () =>
+        {
+            Container = new Container(
+                containerId: Guid.NewGuid(),
+                name: Name.Trim(),
+                notes: Notes?.Trim() ?? string.Empty
+            );
+
+            await cameraHandler.CaptureContainerPhotoAsync(Container);
+            await inventoryDomainRepository.InsertContainerAsync(Container);
+            if (Container.Photos is { Count: > 0 })
+            {
+                await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
+            }
+
+            ValidationMessage = null;
+            await navigationService.GoBackAsync();
+        });
     }
 }

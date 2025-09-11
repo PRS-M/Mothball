@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using SQLite;
 
-namespace MothballMobile.Infrastructure.DatabaseModels;
+namespace Infrastructure.Services.DatabaseModels;
 
 public class DbItemContainerRelation
 {

@@ -2,85 +2,151 @@ using CoreApp.Interfaces;
 using SQLite;
 using System.Linq.Expressions;
 
-namespace MothballMobile.Infrastructure;
+namespace Infrastructure.Services;
 
 public class Repository<T> : IRepositoryExtended<T> where T : new()
 {
-    private readonly MothballDatabase _db;
+    private readonly MothballDatabase db;
+    private Task? initTask;
 
     public Repository(MothballDatabase db)
     {
-        _db = db;
+        this.db = db;
     }
 
     /// <inheritdoc />
-    public Task InitializeAsync() => _db.InitializeAsync();
+    public Task InitializeAsync() => db.InitializeAsync();
 
-    private SQLiteAsyncConnection Connection => _db.Connection;
+    private Task EnsureInitializedAsync()
+        => initTask ??= db.InitializeAsync();
 
-    /// <inheritdoc />
-    public Task<int> InsertAsync(T entity) => Connection.InsertAsync(entity);
-
-    /// <inheritdoc />
-    public Task<int> InsertAllAsync(IEnumerable<T> entities) => Connection.InsertAllAsync(entities);
+    private SQLiteAsyncConnection Connection => db.Connection;
 
     /// <inheritdoc />
-    public Task<int> UpdateAsync(T entity) => Connection.UpdateAsync(entity);
+    public async Task<int> InsertAsync(T entity)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.InsertAsync(entity);
+    }
 
     /// <inheritdoc />
-    public Task<int> DeleteAsync(T entity) => Connection.DeleteAsync(entity);
+    public async Task<int> InsertAllAsync(IEnumerable<T> entities)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.InsertAllAsync(entities);
+    }
+
+    /// <inheritdoc />
+    public async Task<int> UpdateAsync(T entity)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.UpdateAsync(entity);
+    }
+
+    /// <inheritdoc />
+    public async Task<int> DeleteAsync(T entity)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.DeleteAsync(entity);
+    }
 
     /// <inheritdoc />
     public async Task<int> UpsertAsync(T entity)
     {
+        await EnsureInitializedAsync();
         // sqlite-net InsertOrReplaceAsync is convenient for simple PK entities
         return await Connection.InsertOrReplaceAsync(entity);
     }
 
     /// <inheritdoc />
-    public Task<T> GetAsync(object primaryKey) => Connection.FindAsync<T>(primaryKey);
+    public async Task<T> GetAsync(object primaryKey)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.FindAsync<T>(primaryKey);
+    }
 
     /// <inheritdoc />
-    public Task<List<T>> GetAllAsync() => Connection.Table<T>().ToListAsync();
+    public async Task<List<T>> GetAllAsync()
+    {
+        await EnsureInitializedAsync();
+        return await Connection.Table<T>().ToListAsync();
+    }
 
     /// <inheritdoc />
-    public Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
-        => Connection.Table<T>().FirstOrDefaultAsync(predicate);
+    public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        => await (await Task.Run(async () =>
+        {
+            await EnsureInitializedAsync();
+            return Connection.Table<T>().FirstOrDefaultAsync(predicate);
+        }))
+        ;
 
     /// <inheritdoc />
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
-        => (await Connection.Table<T>().CountAsync(predicate)) > 0;
+    {
+        await EnsureInitializedAsync();
+        return (await Connection.Table<T>().CountAsync(predicate)) > 0;
+    }
 
     /// <inheritdoc />
-    public Task<int> CountAsync(Expression<Func<T, bool>> predicate)
-        => Connection.Table<T>().CountAsync(predicate);
+    public async Task<int> CountAsync(Expression<Func<T, bool>> predicate)
+        => await (await Task.Run(async () =>
+        {
+            await EnsureInitializedAsync();
+            return Connection.Table<T>().CountAsync(predicate);
+        }))
+        ;
 
     /// <inheritdoc />
-    public Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate, int skip, int take)
-        => Connection.Table<T>().Where(predicate).Skip(skip).Take(take).ToListAsync();
+    public async Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate, int skip, int take)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.Table<T>().Where(predicate).Skip(skip).Take(take).ToListAsync();
+    }
 
     /// <inheritdoc />
-    public Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate)
-        => Connection.Table<T>().Where(predicate).ToListAsync();
+    public async Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.Table<T>().Where(predicate).ToListAsync();
+    }
 
     /// <inheritdoc />
-    public Task<List<T>> WhereInAsync(string propertyName, IEnumerable<object> values)
+    public async Task<List<T>> WhereInAsync(string propertyName, IEnumerable<object> values)
     {
         // Build a dynamic IN clause: SELECT * FROM T WHERE propertyName IN (?, ?, ...)
         var list = values?.ToList() ?? new List<object>();
         if (list.Count == 0)
-            return Task.FromResult(new List<T>());
+            return new List<T>();
+
+        await EnsureInitializedAsync();
+
+        // Validate property name against actual public instance properties of T
+        var prop = typeof(T).GetProperties()
+            .FirstOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.Ordinal));
+        if (prop is null)
+            throw new ArgumentException($"Property '{propertyName}' does not exist on {typeof(T).Name}.", nameof(propertyName));
+
+        var safePropertyName = prop.Name;
 
         var placeholders = string.Join(",", Enumerable.Repeat("?", list.Count));
         var table = typeof(T).Name;
-        var query = $"SELECT * FROM {table} WHERE {propertyName} IN ({placeholders})";
+        var query = $"SELECT * FROM {table} WHERE {safePropertyName} IN ({placeholders})";
 
-        return Connection.QueryAsync<T>(query, list.ToArray());
+        return await Connection.QueryAsync<T>(query, list.ToArray());
     }
 
     /// <inheritdoc />
-    public Task<List<T>> QueryAsync(string query, params object[] args) => Connection.QueryAsync<T>(query, args);
+    public async Task<List<T>> QueryAsync(string query, params object[] args)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.QueryAsync<T>(query, args);
+    }
 
     /// <inheritdoc />
-    public AsyncTableQuery<T> Table() => Connection.Table<T>();
+    public AsyncTableQuery<T> Table()
+    {
+        // Caller should have ensured initialization; keep for advanced scenarios
+        return Connection.Table<T>();
+    }
 }

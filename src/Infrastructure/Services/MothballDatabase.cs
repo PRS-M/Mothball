@@ -1,33 +1,42 @@
 using System;
 using SQLite;
-using MothballMobile.Infrastructure.DatabaseModels;
+using Infrastructure.Services.DatabaseModels;
 
-namespace MothballMobile.Infrastructure;
+namespace Infrastructure.Services;
 
 public class MothballDatabase
 {
-    private SQLiteAsyncConnection? _database;
+    private SQLiteAsyncConnection? database;
+    private readonly string? customPath;
+
+    public MothballDatabase(string? databasePath = null)
+    {
+        customPath = databasePath;
+    }
 
     public SQLiteAsyncConnection Connection
     {
         get
         {
-            if (_database is null)
+            if (database is null)
                 throw new InvalidOperationException("Database not initialized. Call InitializeAsync() first.");
-            return _database;
+            return database;
         }
     }
 
     public async Task InitializeAsync()
     {
-        if (_database != null) return;
+        if (database != null) return;
 
-        _database = new SQLiteAsyncConnection(SQLiteConstants.DatabasePath, SQLiteConstants.OpenFlags);
+        var path = string.IsNullOrWhiteSpace(customPath)
+            ? SQLiteConstants.DatabasePath
+            : customPath!;
+        database = new SQLiteAsyncConnection(path, SQLiteConstants.OpenFlags);
 
         // Create tables for DB models
-        await _database.CreateTableAsync<DbContainer>();
-        await _database.CreateTableAsync<DbItem>();
-        await _database.CreateTableAsync<DbImage>();
-        await _database.CreateTableAsync<DbItemContainerRelation>();
+        await database.CreateTableAsync<DbContainer>();
+        await database.CreateTableAsync<DbItem>();
+        await database.CreateTableAsync<DbImage>();
+        await database.CreateTableAsync<DbItemContainerRelation>();
     }
 }

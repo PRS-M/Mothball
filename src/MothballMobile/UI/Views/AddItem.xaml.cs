@@ -1,9 +1,12 @@
+using MothballMobile.UI.ViewModels;
+
 namespace MothballMobile.UI.Views;
 
-public partial class AddItem : ContentPage
+public partial class AddItem : BasePage
 {
-	public AddItem()
+	public AddItem(AddItemViewModel vm)
 	{
 		InitializeComponent();
+		BindingContext = vm;
 	}
 }

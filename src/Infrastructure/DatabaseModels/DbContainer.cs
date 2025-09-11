@@ -1,7 +1,7 @@
 using System;
 using SQLite;
 
-namespace MothballMobile.Infrastructure.DatabaseModels;
+namespace Infrastructure.Services.DatabaseModels;
 
 public class DbContainer
 {

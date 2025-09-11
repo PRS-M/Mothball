@@ -5,6 +5,22 @@
              x:Class="MothballMobile.App">
     <Application.Resources>
         <ResourceDictionary>
+            <ResourceDictionary xmlns:conv="clr-namespace:MothballMobile.UI.Converters">
+                <conv:StringNotNullOrEmptyConverter x:Key="StringNotNullOrEmptyConverter" />
+                <Style x:Key="InvalidWrapperStyle" TargetType="Border">
+                    <Setter Property="Stroke" Value="{StaticResource ColorBorder}" />
+                    <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+                </Style>
+                <Style x:Key="ValidatedInputWrapper" TargetType="Border" BasedOn="{StaticResource InputWrapper}">
+                    <Style.Triggers>
+                        <DataTrigger TargetType="Border"
+                                     Binding="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"
+                                     Value="True">
+                            <Setter Property="Stroke" Value="{StaticResource ColorDanger}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Theme.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />

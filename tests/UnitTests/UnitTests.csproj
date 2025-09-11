@@ -14,10 +14,22 @@
     <PackageReference Include="NUnit" Version="4.2.2" />
     <PackageReference Include="NUnit.Analyzers" Version="4.4.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="Moq" Version="4.20.70" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/CoreApp/CoreApp.csproj" />
+    <ProjectReference Include="../../src/Infrastructure/Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!-- Bring in UI-only Debouncer source directly to allow testing on net9.0 -->
+  <ItemGroup>
+    <Compile Include="../../src/MothballMobile/Infrastructure/IDebouncer.cs" Link="Infrastructure/IDebouncer.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Debouncer.cs" Link="Infrastructure/Debouncer.cs" />
   </ItemGroup>
 
 </Project>

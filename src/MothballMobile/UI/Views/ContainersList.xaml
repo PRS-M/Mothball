@@ -1,24 +1,35 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
              xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+             xmlns:views="clr-namespace:MothballMobile.UI.Views"
              x:Class="MothballMobile.UI.Views.ContainersList"
              x:DataType="vm:ContainerListViewModel"
              Title="Containers"
              BackgroundColor="#FF182441">
 
-    <Grid Padding="20" RowDefinitions="Auto,*" ColumnDefinitions="1*, 1*">
-        <VerticalStackLayout Grid.Row="0" Spacing="6" Margin="0,0,0,10">
-            <Label Text="Containers" FontSize="24" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
-            <Label Text="Browse your storage" TextColor="{StaticResource ColorMuted}"/>
+    <ContentPage.ToolbarItems>
+    <ToolbarItem Priority="0" Order="Primary" Command="{Binding NavigateToAddContainerCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF067;" Color="{StaticResource ColorPrimaryIcon}" Size="22" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="16" RowDefinitions="Auto,*" ColumnDefinitions="*,Auto">
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4" Margin="0,0,0,10" VerticalOptions="Center">
+            <Label Text="Containers" FontSize="28" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
+            <Label Text="Browse your storage" TextColor="{StaticResource ColorMuted}" FontSize="14"/>
         </VerticalStackLayout>
-        <Button Margin="10" Grid.Column="1" Command="{Binding NavigateToAddContainerCommand}" Text="Add a container +" />
+
+    <!-- Toolbar button replaces inline add button -->
         <CollectionView x:Name="ContainersCollectionView"
                         Grid.Row="1"
                         Grid.ColumnSpan="2"
                         ItemsSource="{Binding Containers}"
-                        Margin="0,10,0,0"
+                        Margin="0,8,0,0"
                         SelectionMode="None"
                         RemainingItemsThreshold="2"
                         RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
@@ -33,13 +44,14 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:ContainerViewModel">
-                        <controls:ContainerTile
-                            Name="{Binding Name}"
-                            Notes="{Binding Notes}"
-                            ItemCount="{Binding ItemCount}"
-                            ImageSources="{Binding ImageSources}" />
+                    <controls:ContainerTile
+                        Command="{Binding NavigateCommand}"
+                        Name="{Binding Name}"
+                        Notes="{Binding Notes}"
+                        ItemCount="{Binding ItemCount}"
+                        ImagePaths="{Binding ImagePaths}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
     </Grid>
-</ContentPage>
+</views:BasePage>

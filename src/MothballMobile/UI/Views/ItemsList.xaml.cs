@@ -2,19 +2,11 @@ using MothballMobile.UI.ViewModels;
 
 namespace MothballMobile.UI.Views;
 
-public partial class ItemsList : ContentPage
+public partial class ItemsList : BasePage
 {
-	private ItemsListViewModel ViewModel => (ItemsListViewModel)BindingContext;
-
-	public ItemsList(ItemsListViewModel vm)
-	{
-		InitializeComponent();
-		BindingContext = vm;
-		this.Loaded += OnLoaded;
-	}
-
-	private async void OnLoaded(object? sender, EventArgs e)
-	{
-		await ViewModel.InitializeAsync();
-	}
+    public ItemsList(ItemsListViewModel vm)
+    {
+        InitializeComponent();
+        BindingContext = vm;
+    }
 }

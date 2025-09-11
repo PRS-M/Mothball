@@ -1,7 +1,7 @@
 using System;
 using SQLite;
 
-namespace MothballMobile.Infrastructure;
+namespace Infrastructure.Services;
 
 public static class SQLiteConstants
 {

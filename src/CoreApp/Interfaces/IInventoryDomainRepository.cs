@@ -58,6 +58,13 @@ public interface IInventoryDomainRepository
     /// <returns>The Item or null if not found.</returns>
     Task<Item?> GetItemWithPhotosAsync(string itemId);
 
+    /// <summary>
+    /// Finds the container that contains the specified item, if any.
+    /// </summary>
+    /// <param name="itemId">The item UniqueId.</param>
+    /// <returns>The Container or null if the item is not related to any container.</returns>
+    Task<Container?> GetContainerForItemAsync(string itemId);
+
     Task InsertContainerAsync(Container container);
 
     Task InsertItemAsync(Item item);
@@ -76,4 +83,15 @@ public interface IInventoryDomainRepository
     Task UpdateItemAsync(Item item);
 
     Task UpdateImageItemAsync(ImageItem image, Guid ownerId);
+
+    /// <summary>
+    /// Deletes an item and any related images and container relations.
+    /// </summary>
+    Task DeleteItemAsync(string itemId);
+
+    /// <summary>
+    /// Deletes a container and any related images and item relations.
+    /// Items themselves are not deleted.
+    /// </summary>
+    Task DeleteContainerAsync(string containerId);
 }

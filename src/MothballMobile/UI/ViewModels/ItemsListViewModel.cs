@@ -3,50 +3,62 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Utilities;
 using CoreApp.Interfaces;
+using System.Threading;
+using MothballMobile.Infrastructure;
+using Microsoft.Maui.ApplicationModel;
+using MothballMobile.UI.ViewModels;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ItemsListViewModel : ObservableObject
+public partial class ItemsListViewModel : BaseViewModel, IDisposable, MothballMobile.Infrastructure.IInitializable
 {
-    private readonly IFileHandler _fileHandler;
-    private readonly IInventoryDomainRepository _inventoryRepository;
+    private readonly IImagePathResolver paths;
+    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly Infrastructure.INavigationService nav;
 
     public ObservableCollection<ItemViewModel> Items { get; } = new();
 
-    private bool _isLoading;
+    private readonly IDebouncer debouncer;
 
     [ObservableProperty]
     private bool isRefreshing;
 
-    public ItemsListViewModel(IFileHandler fileHandler, IInventoryDomainRepository inventoryRepository)
+    [ObservableProperty]
+    private string query = string.Empty;
+
+    public ItemsListViewModel(IImagePathResolver paths, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IDebouncer? debouncer = null)
     {
-        _fileHandler = fileHandler;
-        _inventoryRepository = inventoryRepository;
+        this.paths = paths;
+        this.inventoryRepository = inventoryRepository;
+        this.nav = nav;
+    this.debouncer = debouncer ?? new Debouncer(300);
+    }
+
+    private bool disposed;
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed) return;
+        if (disposing && debouncer is IDisposable d)
+        {
+            d.Dispose();
+        }
+        disposed = true;
     }
 
     public async Task InitializeAsync()
     {
-        if (_isLoading) return;
-        _isLoading = true;
         IsRefreshing = true;
-        try
+        await RunCommandAsync(async () =>
         {
-            Items.Clear();
-            var items = await _inventoryRepository.GetAllItemsWithPhotosAsync();
-            foreach (var item in items)
-            {
-                var vm = new ItemViewModel(item, _fileHandler);
-                Items.Add(vm);
-                _ = vm.LoadImageAsync();
-            }
-        }
-        finally
-        {
-            _isLoading = false;
-            IsRefreshing = false;
-        }
+            await LoadAsync(Query);
+        }, showRefreshing: true);
     }
 
     [RelayCommand]
@@ -55,52 +67,65 @@ public partial class ItemsListViewModel : ObservableObject
         return InitializeAsync();
     }
 
-    // Provide a passthrough for bindings expecting the older name
-    // Generated command (for RefreshAsync) is RefreshCommand; expose both.
-    public ICommand RefreshAsyncCommand => RefreshCommand;
-}
-
-public class ItemViewModel : ObservableObject
-{
-    public Item Item { get; }
-    private readonly IFileHandler _fileHandler;
-    private ImageSource _imageSource;
-
-    public ItemViewModel(Item item, IFileHandler fileHandler)
+    [RelayCommand]
+    private async Task SearchAsync()
     {
-        Item = item;
-        _fileHandler = fileHandler;
-        _imageSource = "dotnet_bot.png";
-    }
-
-    public string Name => Item.Name;
-    public string Description => Item.Description;
-
-    public ImageSource ImageSource
-    {
-        get => _imageSource;
-        set => SetProperty(ref _imageSource, value);
-    }
-
-    public async Task LoadImageAsync()
-    {
-        if (Item.Photos != null && Item.Photos.Any(p => !string.IsNullOrEmpty(p.FileName)))
+        await RunCommandAsync(async () =>
         {
-            try
-            {
-                var ms = await _fileHandler.GetImageMemoryStream(Item.Photos[0].FileName, Constants.PathToItemPhotos);
-                var bytes = ms.ToArray();
-                await ms.DisposeAsync();
-                ImageSource = ImageSource.FromStream(() => new MemoryStream(bytes));
-            }
-            catch
-            {
-                ImageSource = "dotnet_bot.png";
-            }
-        }
-        else
+            await LoadAsync(Query);
+        });
+    }
+
+    [RelayCommand]
+    private async Task ClearSearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Query))
         {
-            ImageSource = "dotnet_bot.png";
+            await SearchAsync();
+            return;
+        }
+        Query = string.Empty;
+        await SearchAsync();
+    }
+
+    [RelayCommand]
+    private Task NavigateToItemDetailsAsync(Guid itemId)
+    {
+        var id = itemId.ToString();
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemDetails,
+            new Dictionary<string, object> { [Infrastructure.NavigationParams.ItemId] = id });
+    }
+
+    [RelayCommand]
+    private Task NavigateToAddItemAsync()
+    {
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
+    }
+
+    private async Task LoadAsync(string? query)
+    {
+        Items.Clear();
+        var items = string.IsNullOrWhiteSpace(query)
+            ? await inventoryRepository.GetAllItemsWithPhotosAsync()
+            : await inventoryRepository.GetItemsWithPhotosAsync(query);
+
+        foreach (var item in items)
+        {
+            var vm = new ItemViewModel(item, paths, nav);
+            Items.Add(vm);
+            _ = vm.LoadImageAsync();
         }
     }
+
+    // MVVM Toolkit hook: raised when Query changes
+    // Source generator hook from [ObservableProperty]
+    // The CommunityToolkit.Mvvm generator invokes this partial method
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Called by MVVM Toolkit source generator")]
+    partial void OnQueryChanged(string value)
+    {
+        // Debounce user typing
+        debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(() => _ = SearchAsync()));
+    }
+    #pragma warning restore IDE0051
+
 }

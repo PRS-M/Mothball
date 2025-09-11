@@ -19,7 +19,7 @@
                 ContentTemplate="{DataTemplate ui:ContainersList}"
                 Route="ContainersList">
                 <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf080;" FontFamily="FontAwesome" Size="24" Color="{AppThemeBinding Light=Black, Dark=White}" />
+                    <FontImageSource Glyph="&#xf080;" FontFamily="FontAwesomeSolid" Size="26" Color="{StaticResource ColorPrimaryIcon}" />
                 </ShellContent.Icon>
             </ShellContent>
         </Tab>
@@ -31,7 +31,7 @@
                 ContentTemplate="{DataTemplate ui:ItemsList}"
                 Route="ItemsList">
                 <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf02c;" FontFamily="FontAwesome" Size="24" Color="{AppThemeBinding Light=Black, Dark=White}" />
+                    <FontImageSource Glyph="&#xf02c;" FontFamily="FontAwesomeSolid" Size="26" Color="{StaticResource ColorPrimaryIcon}" />
                 </ShellContent.Icon>
             </ShellContent>
         </Tab>
