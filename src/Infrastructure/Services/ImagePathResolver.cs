@@ -4,7 +4,7 @@ using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
 
-namespace MothballMobile.Infrastructure;
+namespace Infrastructure.Services;
 
 /// <summary>
 /// Translates image value objects into concrete file-system paths. Centralizes

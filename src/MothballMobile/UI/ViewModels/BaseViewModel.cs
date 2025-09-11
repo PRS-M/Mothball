@@ -28,6 +28,7 @@ public abstract class BaseViewModel : ObservableObject
         IsBusy = true;
         if (showRefreshing)
             IsRefreshing = true;
+
         try
         {
             await action();
@@ -36,6 +37,7 @@ public abstract class BaseViewModel : ObservableObject
         {
             if (showRefreshing)
                 IsRefreshing = false;
+
             IsBusy = false;
         }
     }

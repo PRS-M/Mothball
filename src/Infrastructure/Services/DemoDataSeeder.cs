@@ -2,9 +2,9 @@ using System;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
 using Infrastructure.Interfaces;
-using MothballMobile.Infrastructure.DatabaseModels;
+using Infrastructure.Services.DatabaseModels;
 
-namespace MothballMobile.Infrastructure;
+namespace Infrastructure.Services;
 
 /// <summary>
 /// Development-only data seeder to populate the SQLite database with demo content.

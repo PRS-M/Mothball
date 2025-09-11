@@ -1,4 +1,4 @@
-using Infrastructure.Utilities;
+using MothballMobile.Infrastructure;
 
 namespace UnitTests;
 

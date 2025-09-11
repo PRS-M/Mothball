@@ -2,12 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Utilities;
+namespace MothballMobile.Infrastructure;
 
 public sealed class Debouncer : IDebouncer, IDisposable
 {
     private CancellationTokenSource? cts;
     private readonly int delayMs;
+    private bool isDisposed;
 
     public Debouncer(int delayMs)
     {
@@ -16,7 +17,20 @@ public sealed class Debouncer : IDebouncer, IDisposable
 
     public void Debounce(Action action)
     {
-        cts?.Cancel();
+        if (isDisposed)
+        {
+            return;
+        }
+
+        try
+        {
+            cts?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // If previously disposed, ignore and proceed with a fresh CTS
+        }
+
         cts?.Dispose();
         cts = new CancellationTokenSource();
         var token = cts.Token;
@@ -38,7 +52,24 @@ public sealed class Debouncer : IDebouncer, IDisposable
 
     public void Dispose()
     {
-        cts?.Cancel();
-        cts?.Dispose();
+        if (isDisposed)
+        {
+            return;
+        }
+
+        isDisposed = true;
+        try
+        {
+            cts?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // already disposed
+        }
+        finally
+        {
+            cts?.Dispose();
+            cts = null;
+        }
     }
 }

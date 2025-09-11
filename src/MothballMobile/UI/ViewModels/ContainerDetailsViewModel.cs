@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Infrastructure.Utilities;
+using MothballMobile.Infrastructure;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 
@@ -11,8 +11,8 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
     private readonly IInventoryDomainRepository inventoryRepository;
     private readonly IImagePathResolver paths;
     private readonly IDebouncer debouncer;
-    private readonly Infrastructure.INavigationService? nav;
-    private readonly Infrastructure.IPopupService popup;
+    private readonly INavigationService? nav;
+    private readonly IPopupService popup;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -37,15 +37,15 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
     public ContainerDetailsViewModel(
         IInventoryDomainRepository inventoryRepository,
         IImagePathResolver paths,
-        Infrastructure.IPopupService popup,
-    Infrastructure.INavigationService? nav = null,
-    IDebouncer? debouncer = null)
+        IPopupService popup,
+        INavigationService? nav = null,
+        IDebouncer? debouncer = null)
     {
         this.inventoryRepository = inventoryRepository;
         this.paths = paths;
         this.popup = popup;
         this.nav = nav;
-    this.debouncer = debouncer ?? new Debouncer(250);
+        this.debouncer = debouncer ?? new Debouncer(250);
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -116,7 +116,7 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
     private void ApplyFilter()
     {
         Items.Clear();
-    IEnumerable<ItemWithPhotosViewModel> source = allItems;
+        IEnumerable<ItemWithPhotosViewModel> source = allItems;
         if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
             var q = SearchQuery.Trim();
@@ -133,7 +133,8 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
     private async Task DeleteContainerAsync()
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return;
-    var confirmed = await popup.ConfirmAsync(
+
+        var confirmed = await popup.ConfirmAsync(
             title: "Delete container",
             message: "Delete this container? Items inside will not be deleted, only the relation.",
             accept: "Delete",

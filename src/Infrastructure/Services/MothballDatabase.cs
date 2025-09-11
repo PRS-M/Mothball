@@ -1,12 +1,18 @@
 using System;
 using SQLite;
-using MothballMobile.Infrastructure.DatabaseModels;
+using Infrastructure.Services.DatabaseModels;
 
-namespace MothballMobile.Infrastructure;
+namespace Infrastructure.Services;
 
 public class MothballDatabase
 {
     private SQLiteAsyncConnection? database;
+    private readonly string? customPath;
+
+    public MothballDatabase(string? databasePath = null)
+    {
+        customPath = databasePath;
+    }
 
     public SQLiteAsyncConnection Connection
     {
@@ -22,7 +28,10 @@ public class MothballDatabase
     {
         if (database != null) return;
 
-        database = new SQLiteAsyncConnection(SQLiteConstants.DatabasePath, SQLiteConstants.OpenFlags);
+        var path = string.IsNullOrWhiteSpace(customPath)
+            ? SQLiteConstants.DatabasePath
+            : customPath!;
+        database = new SQLiteAsyncConnection(path, SQLiteConstants.OpenFlags);
 
         // Create tables for DB models
         await database.CreateTableAsync<DbContainer>();

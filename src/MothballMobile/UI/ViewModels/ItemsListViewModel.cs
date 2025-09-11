@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using System.Threading;
-using Infrastructure.Utilities;
+using MothballMobile.Infrastructure;
 using Microsoft.Maui.ApplicationModel;
 using MothballMobile.UI.ViewModels;
 

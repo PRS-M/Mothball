@@ -26,4 +26,10 @@
     <ProjectReference Include="../../src/Infrastructure/Infrastructure.csproj" />
   </ItemGroup>
 
+  <!-- Bring in UI-only Debouncer source directly to allow testing on net9.0 -->
+  <ItemGroup>
+    <Compile Include="../../src/MothballMobile/Infrastructure/IDebouncer.cs" Link="Infrastructure/IDebouncer.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Debouncer.cs" Link="Infrastructure/Debouncer.cs" />
+  </ItemGroup>
+
 </Project>

@@ -3,17 +3,19 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
+using MothballMobile.Infrastructure;
+using Infrastructure.Services;
 
 namespace MothballMobile.UI.ViewModels;
 public partial class ContainerListViewModel : PagedListViewModelBase<Container, ContainerViewModel>
 {
     private readonly IImagePathResolver imagePaths;
-    private readonly Infrastructure.INavigationService nav;
+    private readonly INavigationService nav;
     private readonly IInventoryDomainRepository inventoryRepository;
 
-    private readonly Infrastructure.DemoDataSeeder? demoSeeder; // optional in debug
+    private readonly DemoDataSeeder? demoSeeder; // optional in debug
 
-    public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, Infrastructure.DemoDataSeeder? demoSeeder = null)
+    public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryDomainRepository inventoryRepository, INavigationService nav, DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
     {
         this.imagePaths = imagePaths;
@@ -43,7 +45,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         => _ = vm.LoadImageAsync();
 
     [RelayCommand]
-    private Task NavigateToAddContainerAsync() => nav.GoToAsync(Infrastructure.NavigationRoutes.AddContainer);
+    private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
 }
 
 // Moved ContainerViewModel to its own file for SRP and clarity.

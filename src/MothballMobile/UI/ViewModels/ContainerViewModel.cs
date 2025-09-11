@@ -9,7 +9,6 @@ namespace MothballMobile.UI.ViewModels;
 public partial class ContainerViewModel : ObservableObject
 {
     public Container Container { get; }
-    public Dictionary<string, List<string>> ItemIdsByContainerId { get; } = new();
     private readonly IImagePathResolver paths;
     private readonly Infrastructure.INavigationService nav;
     private ObservableCollection<string> imagePaths;
@@ -43,7 +42,9 @@ public partial class ContainerViewModel : ObservableObject
     private Task NavigateAsync()
     {
         var id = Container.ContainerId.ToString();
-        return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails,
-            new Dictionary<string, object> { [Infrastructure.NavigationParams.ContainerId] = id });
+        return nav.GoToAsync(
+            Infrastructure.NavigationRoutes.ContainerDetails,
+            new Dictionary<string, object> { [Infrastructure.NavigationParams.ContainerId] = id }
+        );
     }
 }

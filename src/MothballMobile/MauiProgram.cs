@@ -2,13 +2,11 @@
 using Microsoft.Maui.Media;
 using MothballMobile.Infrastructure;
 using MothballMobile.UI.ViewModels;
-using MothballMobile.Infrastructure.DatabaseModels;
+using Infrastructure.Services;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using Infrastructure.Interfaces;
-using Infrastructure.Services;
 using Microsoft.Maui.Handlers;
-using Infrastructure.Utilities;
 #if IOS
 using UIKit;
 #endif
@@ -59,7 +57,7 @@ public static class MauiProgram
 	private static void ConfigureServices(IServiceCollection services)
 	{
 		// Register your services here
-	services.AddTransient<global::Infrastructure.Utilities.IDebouncer>(_ => new global::Infrastructure.Utilities.Debouncer(300));
+	services.AddTransient<MothballMobile.Infrastructure.IDebouncer>(_ => new MothballMobile.Infrastructure.Debouncer(300));
 		services.AddSingleton<ICameraHandler, CameraHandler>();
 		services.AddSingleton<IFileHandler, MobileFileHandler>();
 		services.AddSingleton<JsonHandler>();

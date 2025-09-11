@@ -2,7 +2,7 @@ using System;
 using Infrastructure.Interfaces;
 using SQLite;
 
-namespace MothballMobile.Infrastructure;
+namespace Infrastructure.Services;
 
 public interface IRepositoryExtended<T> : IRepository<T> where T : new()
 {

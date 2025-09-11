@@ -2,9 +2,9 @@ using System.Linq;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
-using MothballMobile.Infrastructure.DatabaseModels;
+using Infrastructure.Services.DatabaseModels;
 
-namespace MothballMobile.Infrastructure.Mappers;
+namespace Infrastructure.Services.Mappers;
 
 public static class ContainerMapper
 {

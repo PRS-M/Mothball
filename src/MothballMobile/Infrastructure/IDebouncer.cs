@@ -1,6 +1,6 @@
 using System;
 
-namespace Infrastructure.Utilities;
+namespace MothballMobile.Infrastructure;
 
 public interface IDebouncer
 {

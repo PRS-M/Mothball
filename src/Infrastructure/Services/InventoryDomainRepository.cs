@@ -3,11 +3,11 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using Infrastructure.Interfaces;
-using MothballMobile.Infrastructure.DatabaseModels;
-using MothballMobile.Infrastructure.Mappers;
+using Infrastructure.Services.DatabaseModels;
+using Infrastructure.Services.Mappers;
 using Microsoft.Extensions.Logging;
 
-namespace MothballMobile.Infrastructure;
+namespace Infrastructure.Services;
 
 public class InventoryDomainRepository : IInventoryDomainRepository
 {
@@ -100,30 +100,30 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     /// <inheritdoc />
     public async Task<Container?> GetContainerForItemAsync(string itemId)
     {
-    logger.LogDebug("GetContainerForItemAsync: itemId={ItemId}", itemId);
+        logger.LogDebug("GetContainerForItemAsync: itemId={ItemId}", itemId);
         if (!Guid.TryParse(itemId, out var iid)) return null;
 
         // Find relation
-    var relation = (await itemContainerRelations.WhereAsync(r => r.ItemId == iid)).FirstOrDefault();
+        var relation = (await itemContainerRelations.WhereAsync(r => r.ItemId == iid)).FirstOrDefault();
         if (relation is null) return null;
 
         // Load the container and its photo(s)
-    var dbContainer = await containers.GetAsync(relation.ContainerId.ToString());
+        var dbContainer = await containers.GetAsync(relation.ContainerId.ToString());
         if (dbContainer is null) return null;
-    var dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
+        var dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
         return dbContainer.ToDomain(dbPhotos);
     }
 
     /// <inheritdoc />
     public async Task<List<Item>> GetAllItemsWithPhotosAsync()
     {
-    var itemsAll = await items.GetAllAsync();
-    var itemIds = itemsAll.Select(i => (object)i.ItemId).ToList();
-    var photosAll = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
+        var itemsAll = await items.GetAllAsync();
+        var itemIds = itemsAll.Select(i => (object)i.ItemId).ToList();
+        var photosAll = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
 
-    var photosByItem = GroupPhotosByOwnerUniqueId(photosAll);
+        var photosByItem = GroupPhotosByOwnerUniqueId(photosAll);
 
-    return MapDbItemsToDomain(itemsAll, photosByItem);
+        return MapDbItemsToDomain(itemsAll, photosByItem);
     }
 
     /// <inheritdoc />
@@ -132,14 +132,14 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         // Case-insensitive search with index support using SQLite LIKE and NOCASE collation
         var pattern = $"%{searchTerm}%";
         var table = nameof(DbItem); // default table name used by sqlite-net
-    var itemsQuery = await items.QueryAsync($"SELECT * FROM {table} WHERE Name LIKE ? COLLATE NOCASE", pattern);
-    logger.LogDebug("GetItemsWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
-    var itemIds = itemsQuery.Select(i => (object)i.ItemId).ToList();
-    var photosForQuery = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
+        var itemsQuery = await items.QueryAsync($"SELECT * FROM {table} WHERE Name LIKE ? COLLATE NOCASE", pattern);
+        logger.LogDebug("GetItemsWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
+        var itemIds = itemsQuery.Select(i => (object)i.ItemId).ToList();
+        var photosForQuery = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
 
-    var photosByItem = GroupPhotosByOwnerUniqueId(photosForQuery);
+        var photosByItem = GroupPhotosByOwnerUniqueId(photosForQuery);
 
-    return MapDbItemsToDomain(itemsQuery, photosByItem);
+        return MapDbItemsToDomain(itemsQuery, photosByItem);
     }
 
     /// <inheritdoc />
@@ -147,7 +147,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     {
         ArgumentNullException.ThrowIfNull(container);
         var dbContainer = container.ToDb();
-    await containers.InsertAsync(dbContainer);
+        await containers.InsertAsync(dbContainer);
     }
 
     /// <inheritdoc />
@@ -155,7 +155,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     {
         ArgumentNullException.ThrowIfNull(item);
         var dbItem = item.ToDb();
-    await items.InsertAsync(dbItem);
+        await items.InsertAsync(dbItem);
     }
 
     /// <inheritdoc />
@@ -163,7 +163,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     {
         ArgumentNullException.ThrowIfNull(imageItem);
         var dbImage = imageItem.ToDb(ownerId);
-    await photos.InsertAsync(dbImage);
+        await photos.InsertAsync(dbImage);
     }
 
     /// <inheritdoc />
@@ -175,7 +175,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
             ContainerId = containerId
         };
 
-    await itemContainerRelations.InsertAsync(relation);
+        await itemContainerRelations.InsertAsync(relation);
     }
 
     /// <inheritdoc />
@@ -183,7 +183,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     {
         ArgumentNullException.ThrowIfNull(container);
         var dbContainer = container.ToDb();
-    await containers.UpdateAsync(dbContainer);
+        await containers.UpdateAsync(dbContainer);
     }
 
     /// <inheritdoc />
@@ -191,7 +191,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     {
         ArgumentNullException.ThrowIfNull(item);
         var dbItem = item.ToDb();
-    await items.UpdateAsync(dbItem);
+        await items.UpdateAsync(dbItem);
     }
 
     /// <inheritdoc />
@@ -199,7 +199,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     {
         ArgumentNullException.ThrowIfNull(image);
         var dbImage = image.ToDb(ownerId);
-    await photos.UpdateAsync(dbImage);
+        await photos.UpdateAsync(dbImage);
     }
 
     /// <inheritdoc />
@@ -208,21 +208,21 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         if (!Guid.TryParse(itemId, out var iid)) return;
 
         // Delete item images
-    var images = await photos.WhereAsync(p => p.OwnerUniqueId == iid);
+        var images = await photos.WhereAsync(p => p.OwnerUniqueId == iid);
         foreach (var img in images)
         {
             await photos.DeleteAsync(img);
         }
 
         // Delete relations
-    var relations = await itemContainerRelations.WhereAsync(r => r.ItemId == iid);
+        var relations = await itemContainerRelations.WhereAsync(r => r.ItemId == iid);
         foreach (var rel in relations)
         {
             await itemContainerRelations.DeleteAsync(rel);
         }
 
         // Delete item
-    var dbItem = await items.GetAsync(itemId);
+        var dbItem = await items.GetAsync(itemId);
         if (dbItem is not null)
         {
             await items.DeleteAsync(dbItem);
@@ -235,21 +235,21 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         if (!Guid.TryParse(containerId, out var cid)) return;
 
         // Delete container images
-    var images = await photos.WhereAsync(p => p.OwnerUniqueId == cid);
+        var images = await photos.WhereAsync(p => p.OwnerUniqueId == cid);
         foreach (var img in images)
         {
             await photos.DeleteAsync(img);
         }
 
         // Delete relations (items remain)
-    var relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
+        var relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
         foreach (var rel in relations)
         {
             await itemContainerRelations.DeleteAsync(rel);
         }
 
         // Delete container
-    var dbContainer = await containers.GetAsync(containerId);
+        var dbContainer = await containers.GetAsync(containerId);
         if (dbContainer is not null)
         {
             await containers.DeleteAsync(dbContainer);
