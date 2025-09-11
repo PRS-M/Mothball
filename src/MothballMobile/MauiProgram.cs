@@ -8,6 +8,7 @@ using CoreApp.Services;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Microsoft.Maui.Handlers;
+using Infrastructure.Utilities;
 #if IOS
 using UIKit;
 #endif
@@ -29,7 +30,6 @@ public static class MauiProgram
 				// Solid face for Font Awesome icons
 				fonts.AddFont("Font Awesome 7 Free-Solid-900.otf", "FontAwesomeSolid");
 			});
-
 #if DEBUG
 		builder.Logging.AddDebug();
 #endif

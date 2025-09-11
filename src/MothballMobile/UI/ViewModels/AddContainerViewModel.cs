@@ -31,11 +31,17 @@ public partial class AddContainerViewModel : BaseViewModel
     public string Notes { get; set; }
     Container Container { get; set; }
 
+    [ObservableProperty]
+    private string? validationMessage;
+
     [RelayCommand]
     public async Task AddContainer()
     {
         if (string.IsNullOrWhiteSpace(Name?.Trim()))
+        {
+            ValidationMessage = "Name is required.";
             return;
+        }
 
         await RunCommandAsync(async () =>
         {
@@ -52,6 +58,7 @@ public partial class AddContainerViewModel : BaseViewModel
                 await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
             }
 
+            ValidationMessage = null;
             await navigationService.GoBackAsync();
         });
     }

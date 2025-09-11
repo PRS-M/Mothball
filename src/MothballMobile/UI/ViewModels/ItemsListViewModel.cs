@@ -5,12 +5,13 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using System.Threading;
+using Infrastructure.Utilities;
 using Microsoft.Maui.ApplicationModel;
 using MothballMobile.UI.ViewModels;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ItemsListViewModel : BaseViewModel
+public partial class ItemsListViewModel : BaseViewModel, IDisposable
 {
     private readonly IImagePathResolver paths;
     private readonly IInventoryDomainRepository inventoryRepository;
@@ -31,7 +32,24 @@ public partial class ItemsListViewModel : BaseViewModel
         this.paths = paths;
         this.inventoryRepository = inventoryRepository;
         this.nav = nav;
-        this.debouncer = debouncer ?? new Debouncer(300);
+    this.debouncer = debouncer ?? new Debouncer(300);
+    }
+
+    private bool disposed;
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed) return;
+        if (disposing && debouncer is IDisposable d)
+        {
+            d.Dispose();
+        }
+        disposed = true;
     }
 
     public async Task InitializeAsync()
@@ -74,7 +92,8 @@ public partial class ItemsListViewModel : BaseViewModel
     private Task NavigateToItemDetailsAsync(Guid itemId)
     {
         var id = itemId.ToString();
-    return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemDetails, new Dictionary<string, object> { ["ItemId"] = id });
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemDetails,
+            new Dictionary<string, object> { [Infrastructure.NavigationParams.ItemId] = id });
     }
 
     [RelayCommand]

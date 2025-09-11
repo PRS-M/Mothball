@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MothballMobile.UI.ViewModels;
+namespace Infrastructure.Utilities;
 
 public sealed class Debouncer : IDebouncer, IDisposable
 {

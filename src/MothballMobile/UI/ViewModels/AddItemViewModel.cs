@@ -19,6 +19,9 @@ public partial class AddItemViewModel : BaseViewModel
     [ObservableProperty]
     private string quantity = "1"; // reserved for future relation quantity use
 
+    [ObservableProperty]
+    private string? validationMessage;
+
     public AddItemViewModel(IInventoryDomainRepository repo, Infrastructure.INavigationService nav)
     {
         this.repo = repo;
@@ -29,7 +32,11 @@ public partial class AddItemViewModel : BaseViewModel
     private async Task AddAsync()
     {
         var trimmed = Name?.Trim();
-        if (string.IsNullOrWhiteSpace(trimmed)) return;
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            ValidationMessage = "Name is required.";
+            return;
+        }
 
         await RunCommandAsync(async () =>
         {
@@ -40,6 +47,7 @@ public partial class AddItemViewModel : BaseViewModel
             };
 
             await repo.InsertItemAsync(item);
+            ValidationMessage = null;
             await nav.GoBackAsync();
         });
     }

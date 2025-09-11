@@ -20,9 +20,12 @@
                 <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
                     <!-- Name -->
                     <Label Text="Name" TextColor="{StaticResource ColorMuted}" Margin="4,0"/>
-                    <Entry Style="{StaticResource Input}"
-                            Placeholder="Enter container name"
-                            Text="{Binding Name}"/>
+            <Entry Style="{StaticResource Input}"
+                Placeholder="Enter container name"
+                Text="{Binding Name}"/>
+            <Label Text="{Binding ValidationMessage}"
+               TextColor="{StaticResource ColorDanger}"
+               IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
 
                     <!-- Notes -->
                     <Label Text="Notes" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>

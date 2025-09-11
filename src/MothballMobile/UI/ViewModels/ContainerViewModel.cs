@@ -43,6 +43,7 @@ public partial class ContainerViewModel : ObservableObject
     private Task NavigateAsync()
     {
         var id = Container.ContainerId.ToString();
-        return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails, new Dictionary<string, object> { ["ContainerId"] = id });
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails,
+            new Dictionary<string, object> { [Infrastructure.NavigationParams.ContainerId] = id });
     }
 }

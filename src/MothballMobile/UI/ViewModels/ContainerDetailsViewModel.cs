@@ -1,11 +1,12 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Infrastructure.Utilities;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributable
+public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributable, IDisposable
 {
     private readonly IInventoryDomainRepository inventoryRepository;
     private readonly IImagePathResolver paths;
@@ -37,14 +38,14 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         IInventoryDomainRepository inventoryRepository,
         IImagePathResolver paths,
         Infrastructure.IPopupService popup,
-        Infrastructure.INavigationService? nav = null,
-        IDebouncer? debouncer = null)
+    Infrastructure.INavigationService? nav = null,
+    IDebouncer? debouncer = null)
     {
         this.inventoryRepository = inventoryRepository;
         this.paths = paths;
         this.popup = popup;
         this.nav = nav;
-        this.debouncer = debouncer ?? new Debouncer(250);
+    this.debouncer = debouncer ?? new Debouncer(250);
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -144,5 +145,22 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         {
             await nav.GoBackAsync();
         }
+    }
+
+    private bool disposed;
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed) return;
+        if (disposing && debouncer is IDisposable d)
+        {
+            d.Dispose();
+        }
+        disposed = true;
     }
 }

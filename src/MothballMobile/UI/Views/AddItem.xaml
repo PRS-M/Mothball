@@ -22,6 +22,9 @@
                     <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">
                         <Entry Style="{StaticResource Input}" Placeholder="Item name" Text="{Binding Name}"/>
                     </Border>
+                    <Label Text="{Binding ValidationMessage}"
+                           TextColor="{StaticResource ColorDanger}"
+                           IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
 
                     <Label Text="Description" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
                     <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">

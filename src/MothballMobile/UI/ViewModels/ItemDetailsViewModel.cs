@@ -81,7 +81,8 @@ public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
     private Task NavigateToContainerAsync()
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
-        return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails, new Dictionary<string, object> { ["ContainerId"] = ContainerId! });
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails,
+            new Dictionary<string, object> { [Infrastructure.NavigationParams.ContainerId] = ContainerId! });
     }
 
     [RelayCommand]
