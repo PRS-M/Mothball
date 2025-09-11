@@ -11,7 +11,7 @@ using MothballMobile.UI.ViewModels;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ItemsListViewModel : BaseViewModel, IDisposable
+public partial class ItemsListViewModel : BaseViewModel, IDisposable, MothballMobile.Infrastructure.IInitializable
 {
     private readonly IImagePathResolver paths;
     private readonly IInventoryDomainRepository inventoryRepository;

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
              xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+             xmlns:views="clr-namespace:MothballMobile.UI.Views"
              x:Class="MothballMobile.UI.Views.ItemsList"
              x:Name="ItemsPage"
              x:DataType="vm:ItemsListViewModel"
@@ -84,4 +85,4 @@
             </CollectionView>
         </RefreshView>
     </Grid>
-</ContentPage>
+</views:BasePage>

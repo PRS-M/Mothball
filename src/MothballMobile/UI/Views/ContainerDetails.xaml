@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
              xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+             xmlns:views="clr-namespace:MothballMobile.UI.Views"
              x:Class="MothballMobile.UI.Views.ContainerDetails"
              x:DataType="vm:ContainerDetailsViewModel"
              Title="Container"
@@ -97,4 +98,4 @@
 
         </VerticalStackLayout>
     </ScrollView>
-</ContentPage>
+</views:BasePage>

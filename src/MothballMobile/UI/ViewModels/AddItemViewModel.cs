@@ -28,7 +28,15 @@ public partial class AddItemViewModel : BaseViewModel
         this.nav = nav;
     }
 
-    [RelayCommand]
+    private bool CanAdd() => !string.IsNullOrWhiteSpace(Name);
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Called by MVVM Toolkit source generator")]
+    partial void OnNameChanged(string value)
+    {
+        AddCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAdd))]
     private async Task AddAsync()
     {
         var trimmed = Name?.Trim();

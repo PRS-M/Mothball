@@ -12,6 +12,7 @@
     <Color x:Key="ColorSurface">#FF2D3D62</Color>
     <Color x:Key="ColorSurfaceElevated">#3A4B75</Color>
     <Color x:Key="ColorBorder">#243041</Color>
+    <Color x:Key="ColorDanger">#EF4444</Color>
     <Color x:Key="ColorPrimary">#3B82F6</Color>
     <Color x:Key="ColorPrimaryText">#E5E7EB</Color>
     <Color x:Key="ColorMuted">#94A3B8</Color>

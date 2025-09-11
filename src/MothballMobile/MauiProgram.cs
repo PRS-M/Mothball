@@ -59,7 +59,7 @@ public static class MauiProgram
 	private static void ConfigureServices(IServiceCollection services)
 	{
 		// Register your services here
-		services.AddTransient<IDebouncer>(_ => new Debouncer(300));
+	services.AddTransient<global::Infrastructure.Utilities.IDebouncer>(_ => new global::Infrastructure.Utilities.Debouncer(300));
 		services.AddSingleton<ICameraHandler, CameraHandler>();
 		services.AddSingleton<IFileHandler, MobileFileHandler>();
 		services.AddSingleton<JsonHandler>();

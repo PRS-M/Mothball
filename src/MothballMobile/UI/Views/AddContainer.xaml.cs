@@ -2,7 +2,7 @@ using MothballMobile.UI.ViewModels;
 
 namespace MothballMobile.UI.Views;
 
-public partial class AddContainer : ContentPage
+public partial class AddContainer : BasePage
 {
 	public AddContainer(AddContainerViewModel viewModel)
 	{

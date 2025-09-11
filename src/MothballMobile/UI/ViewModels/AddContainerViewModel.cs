@@ -17,24 +17,32 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly IInventoryDomainRepository inventoryDomainRepository;
     private readonly INavigationService navigationService;
 
-    public AddContainerViewModel(ICameraHandler cameraHandler, IInventoryDomainRepository inventoryDomainRepository, INavigationService navigationService)
+    public AddContainerViewModel(
+        ICameraHandler cameraHandler,
+        IInventoryDomainRepository inventoryDomainRepository,
+        INavigationService navigationService)
     {
         this.cameraHandler = cameraHandler ?? throw new ArgumentNullException(nameof(cameraHandler));
         this.inventoryDomainRepository = inventoryDomainRepository ?? throw new ArgumentNullException(nameof(inventoryDomainRepository));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-        Name = string.Empty;
-        Notes = string.Empty;
         Container = null!;
     }
 
-    public string Name { get; set; }
-    public string Notes { get; set; }
-    Container Container { get; set; }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddContainerCommand))]
+    private string name = string.Empty;
+
+    [ObservableProperty]
+    private string notes = string.Empty;
 
     [ObservableProperty]
     private string? validationMessage;
 
-    [RelayCommand]
+    Container Container { get; set; }
+
+    private bool CanAddContainer() => !string.IsNullOrWhiteSpace(Name);
+
+    [RelayCommand(CanExecute = nameof(CanAddContainer))]
     public async Task AddContainer()
     {
         if (string.IsNullOrWhiteSpace(Name?.Trim()))
