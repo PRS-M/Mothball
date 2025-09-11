@@ -10,7 +10,7 @@ using MothballMobile.UI.ViewModels;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ItemsListViewModel : ObservableObject
+public partial class ItemsListViewModel : BaseViewModel
 {
     private readonly IImagePathResolver paths;
     private readonly IInventoryDomainRepository inventoryRepository;
@@ -18,7 +18,7 @@ public partial class ItemsListViewModel : ObservableObject
 
     public ObservableCollection<ItemViewModel> Items { get; } = new();
 
-    private bool isLoading;
+    private readonly IDebouncer debouncer;
 
     [ObservableProperty]
     private bool isRefreshing;
@@ -26,29 +26,21 @@ public partial class ItemsListViewModel : ObservableObject
     [ObservableProperty]
     private string query = string.Empty;
 
-    private CancellationTokenSource? searchCts;
-
-    public ItemsListViewModel(IImagePathResolver paths, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav)
+    public ItemsListViewModel(IImagePathResolver paths, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IDebouncer? debouncer = null)
     {
         this.paths = paths;
         this.inventoryRepository = inventoryRepository;
         this.nav = nav;
+        this.debouncer = debouncer ?? new Debouncer(300);
     }
 
     public async Task InitializeAsync()
     {
-        if (isLoading) return;
-        isLoading = true;
         IsRefreshing = true;
-        try
+        await RunCommandAsync(async () =>
         {
             await LoadAsync(Query);
-        }
-        finally
-        {
-            isLoading = false;
-            IsRefreshing = false;
-        }
+        }, showRefreshing: true);
     }
 
     [RelayCommand]
@@ -60,16 +52,10 @@ public partial class ItemsListViewModel : ObservableObject
     [RelayCommand]
     private async Task SearchAsync()
     {
-        if (isLoading) return;
-        isLoading = true;
-        try
+        await RunCommandAsync(async () =>
         {
             await LoadAsync(Query);
-        }
-        finally
-        {
-            isLoading = false;
-        }
+        });
     }
 
     [RelayCommand]
@@ -88,13 +74,13 @@ public partial class ItemsListViewModel : ObservableObject
     private Task NavigateToItemDetailsAsync(Guid itemId)
     {
         var id = itemId.ToString();
-        return nav.GoToAsync("ItemDetails", new Dictionary<string, object> { ["ItemId"] = id });
+    return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemDetails, new Dictionary<string, object> { ["ItemId"] = id });
     }
 
     [RelayCommand]
     private Task NavigateToAddItemAsync()
     {
-        return nav.GoToAsync("AddItem");
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
     }
 
     private async Task LoadAsync(string? query)
@@ -119,24 +105,7 @@ public partial class ItemsListViewModel : ObservableObject
     partial void OnQueryChanged(string value)
     {
         // Debounce user typing
-    searchCts?.Cancel();
-    searchCts?.Dispose();
-    searchCts = new CancellationTokenSource();
-    var token = searchCts.Token;
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await Task.Delay(300, token);
-                if (token.IsCancellationRequested) return;
-                await MainThread.InvokeOnMainThreadAsync(() => SearchAsync());
-            }
-            catch (TaskCanceledException)
-            {
-                // ignore
-            }
-        }, token);
+        debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(() => _ = SearchAsync()));
     }
     #pragma warning restore IDE0051
 

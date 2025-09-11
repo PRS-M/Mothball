@@ -7,6 +7,13 @@ namespace CoreApp.Interfaces;
 public interface IFileHandler
 {
     /// <summary>
+    /// Gets the platform-specific app data directory path.
+    /// This is the root directory for all application file operations.
+    /// </summary>
+    /// <returns>The full path to the app data directory.</returns>
+    string AppDataPath { get; }
+
+    /// <summary>
     /// Saves binary data to a file in the specified folder.
     /// Creates the folder structure if it doesn't exist.
     /// </summary>
@@ -69,11 +76,4 @@ public interface IFileHandler
     /// <param name="searchPattern">The search pattern to match files (default: "*.*").</param>
     /// <returns>An enumerable of file names (without path) that match the pattern.</returns>
     IEnumerable<string> EnumerateFiles(string folderPath, string searchPattern = "*.*");
-
-    /// <summary>
-    /// Gets the platform-specific app data directory path.
-    /// This is the root directory for all application file operations.
-    /// </summary>
-    /// <returns>The full path to the app data directory.</returns>
-    string GetAppDataPath();
 }

@@ -5,7 +5,7 @@ using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.ViewModels;
-public partial class ContainerListViewModel : ObservableObject
+public partial class ContainerListViewModel : BaseViewModel
 {
     private ObservableCollection<ContainerViewModel> containers = new();
     private readonly IImagePathResolver imagePaths;
@@ -13,7 +13,6 @@ public partial class ContainerListViewModel : ObservableObject
     private readonly IInventoryDomainRepository inventoryRepository;
     private readonly int pageSize = 10;
     private int currentPage = 0;
-    private bool isLoading;
     private List<string> allContainerIds;
     private List<Container> allContainers = new();
 
@@ -38,9 +37,7 @@ public partial class ContainerListViewModel : ObservableObject
     [RelayCommand]
     public async Task InitializeAsync()
     {
-        if (isLoading) return;
-        isLoading = true;
-        try
+        await RunCommandAsync(async () =>
         {
             // Seed demo data in dev if repo is empty
             if (demoSeeder is not null)
@@ -59,28 +56,15 @@ public partial class ContainerListViewModel : ObservableObject
 
             // Load first page without re-checking the loading flag
             LoadNextPageCore();
-        }
-        finally
-        {
-            isLoading = false;
-        }
+        });
     }
 
     [RelayCommand]
     public void LoadNextPage()
     {
-        if (isLoading) return;
+        if (IsBusy) return;
         if (allContainerIds.Count == 0) return;
-
-        isLoading = true;
-        try
-        {
-            LoadNextPageCore();
-        }
-        finally
-        {
-            isLoading = false;
-        }
+        LoadNextPageCore();
     }
 
     private void LoadNextPageCore()
@@ -95,7 +79,7 @@ public partial class ContainerListViewModel : ObservableObject
 
         foreach (var container in pageContainers)
         {
-            var vm = new ContainerViewModel(container, imagePaths);
+            var vm = new ContainerViewModel(container, imagePaths, nav);
             Containers.Add(vm);
             // Kick off image load without blocking the UI thread.
             _ = vm.LoadImageAsync();
@@ -105,7 +89,7 @@ public partial class ContainerListViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task NavigateToAddContainerAsync() => nav.GoToAsync("AddContainer");
+    private Task NavigateToAddContainerAsync() => nav.GoToAsync(Infrastructure.NavigationRoutes.AddContainer);
 }
 
 // Moved ContainerViewModel to its own file for SRP and clarity.

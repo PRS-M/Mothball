@@ -5,7 +5,7 @@ using CoreApp.Interfaces;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class AddItemViewModel : ObservableObject
+public partial class AddItemViewModel : BaseViewModel
 {
     private readonly IInventoryDomainRepository repo;
     private readonly Infrastructure.INavigationService nav;
@@ -31,13 +31,16 @@ public partial class AddItemViewModel : ObservableObject
         var trimmed = Name?.Trim();
         if (string.IsNullOrWhiteSpace(trimmed)) return;
 
-        var item = new Item
+        await RunCommandAsync(async () =>
         {
-            Name = trimmed,
-            Description = Description?.Trim() ?? string.Empty
-        };
+            var item = new Item
+            {
+                Name = trimmed,
+                Description = Description?.Trim() ?? string.Empty
+            };
 
-        await repo.InsertItemAsync(item);
-        await nav.GoBackAsync();
+            await repo.InsertItemAsync(item);
+            await nav.GoBackAsync();
+        });
     }
 }

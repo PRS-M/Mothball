@@ -12,7 +12,7 @@ public class ImagePathResolverTests
 
     public ImagePathResolverTests()
     {
-        _fileHandler.Setup(f => f.GetAppDataPath()).Returns("/root");
+    _fileHandler.SetupGet(f => f.AppDataPath).Returns("/root");
         _resolver = new MothballMobile.Infrastructure.ImagePathResolver(_fileHandler.Object);
     }
 
@@ -55,7 +55,7 @@ public class ImagePathResolverTests
     public void BuildPath_SwallowsExceptions_ReturnsFallback()
     {
         var badMock = new Mock<IFileHandler>();
-        badMock.Setup(f => f.GetAppDataPath()).Throws(new Exception("nope"));
+    badMock.SetupGet(f => f.AppDataPath).Throws(new Exception("nope"));
         var badResolver = new MothballMobile.Infrastructure.ImagePathResolver(badMock.Object);
         var item = new Item();
         item.AddImageItem();

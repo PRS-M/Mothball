@@ -20,14 +20,14 @@ public class MothballDatabase
 
     public async Task InitializeAsync()
     {
-    if (database != null) return;
+        if (database != null) return;
 
-    database = new SQLiteAsyncConnection(SQLiteConstants.DatabasePath, SQLiteConstants.OpenFlags);
+        database = new SQLiteAsyncConnection(SQLiteConstants.DatabasePath, SQLiteConstants.OpenFlags);
 
         // Create tables for DB models
-    await database.CreateTableAsync<DbContainer>();
-    await database.CreateTableAsync<DbItem>();
-    await database.CreateTableAsync<DbImage>();
-    await database.CreateTableAsync<DbItemContainerRelation>();
+        await database.CreateTableAsync<DbContainer>();
+        await database.CreateTableAsync<DbItem>();
+        await database.CreateTableAsync<DbImage>();
+        await database.CreateTableAsync<DbItemContainerRelation>();
     }
 }

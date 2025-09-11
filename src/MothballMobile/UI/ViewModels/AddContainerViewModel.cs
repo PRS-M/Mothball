@@ -11,7 +11,7 @@ using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class AddContainerViewModel : ObservableObject
+public partial class AddContainerViewModel : BaseViewModel
 {
     private readonly ICameraHandler cameraHandler;
     private readonly IInventoryDomainRepository inventoryDomainRepository;
@@ -34,19 +34,25 @@ public partial class AddContainerViewModel : ObservableObject
     [RelayCommand]
     public async Task AddContainer()
     {
-        Container = new Container(
-            containerId: Guid.NewGuid(),
-            name: Name,
-            notes: Notes
-        );
+        if (string.IsNullOrWhiteSpace(Name?.Trim()))
+            return;
 
-        await cameraHandler.CaptureContainerPhotoAsync(Container);
-        await inventoryDomainRepository.InsertContainerAsync(Container);
-        if (Container.Photos is { Count: > 0 })
+        await RunCommandAsync(async () =>
         {
-            await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
-        }
+            Container = new Container(
+                containerId: Guid.NewGuid(),
+                name: Name.Trim(),
+                notes: Notes?.Trim() ?? string.Empty
+            );
 
-        await navigationService.GoBackAsync();
+            await cameraHandler.CaptureContainerPhotoAsync(Container);
+            await inventoryDomainRepository.InsertContainerAsync(Container);
+            if (Container.Photos is { Count: > 0 })
+            {
+                await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
+            }
+
+            await navigationService.GoBackAsync();
+        });
     }
 }

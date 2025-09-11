@@ -26,30 +26,29 @@ public class CameraHandler : ICameraHandler
     public async Task<ImageItem> CaptureContainerPhotoAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
-        ImageItem imageItem = container.AddImageItem();
-
-        try
-        {
-            await CaptureAndSavePhoto(imageItem.FileName, Constants.PathToContainerPhotos);
-        }
-        catch (Exception ex)
-        {
-            // Handle exceptions (e.g., user cancels, permissions denied)
-            Console.WriteLine($"Error capturing photo: {ex.Message}");
-        }
-
-        return imageItem;
+        return await CaptureAndSavePhotoAsync(container.AddImageItem, Constants.PathToContainerPhotos);
     }
 
     /// <inheritdoc />
     public async Task<ImageItem> CaptureItemPhotoAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
-        ImageItem imageItem = item.AddImageItem();
+        return await CaptureAndSavePhotoAsync(item.AddImageItem, Constants.PathToItemPhotos);
+    }
+
+    // Consolidated helper: creates the ImageItem, captures bytes, and saves if non-empty.
+    private async Task<ImageItem> CaptureAndSavePhotoAsync(Func<ImageItem> imageItemFactory, string pathPrefix)
+    {
+        ArgumentNullException.ThrowIfNull(imageItemFactory);
+        ImageItem imageItem = imageItemFactory();
 
         try
         {
-            await CaptureAndSavePhoto(imageItem.FileName, Constants.PathToItemPhotos);
+            byte[] bytes = await CapturePhotoAsync();
+            if (bytes.Length > 0)
+            {
+                await fileHandler.SaveFileAsync(imageItem.FileName, pathPrefix, bytes);
+            }
         }
         catch (Exception ex)
         {
@@ -60,30 +59,27 @@ public class CameraHandler : ICameraHandler
         return imageItem;
     }
 
-    private async Task CaptureAndSavePhoto(string imageFileName, string pathPrefix)
+    private async Task<byte[]> CapturePhotoAsync()
     {
-        byte[] bytes = await CapturePhoto();
-        await SavePhoto(imageFileName, pathPrefix, bytes);
-    }
-
-    private async Task SavePhoto(string imageFileName, string pathPrefix, byte[] bytes)
-    {
-        await fileHandler.SaveFileAsync(imageFileName, pathPrefix, bytes);
-    }
-
-    private async Task<byte[]> CapturePhoto()
-    {
-        byte[] bytes;
         FileResult? photo = await mediaPicker.PickPhotoAsync();
-        if (photo != null)
-        {
-            using Stream stream = await photo.OpenReadAsync();
-            bytes = new byte[stream.Length];
-            await stream.ReadExactlyAsync(bytes, 0, (int)stream.Length);
+        if (photo == null) return Array.Empty<byte>();
 
-            return bytes;
+        using Stream stream = await photo.OpenReadAsync();
+
+        // If the stream is seekable and the length is known, read directly into a pre-sized buffer.
+        if (stream.CanSeek)
+        {
+            long length = stream.Length;
+            if (length <= 0) return Array.Empty<byte>();
+
+            byte[] buffer = new byte[length];
+            await stream.ReadExactlyAsync(buffer, 0, (int)length);
+            return buffer;
         }
 
-        return Array.Empty<byte>();
+        // Fallback for non-seekable streams.
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        return ms.ToArray();
     }
 }

@@ -3,11 +3,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 using Microsoft.Maui.ApplicationModel;
-using System.IO;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
+public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly IInventoryDomainRepository inventoryRepository;
     private readonly Infrastructure.INavigationService nav;
@@ -48,38 +47,41 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
 
     public async Task InitializeAsync(string itemId)
     {
-        ItemId = itemId;
-        ImagePaths.Clear();
-
-    var item = await inventoryRepository.GetItemWithPhotosAsync(itemId);
-        if (item is null)
+        await RunCommandAsync(async () =>
         {
-            Name = "Item not found";
-            Description = string.Empty;
-            ImagePaths.Add(paths.GetFallbackImagePath());
-            return;
-        }
+            ItemId = itemId;
+            ImagePaths.Clear();
 
-        Name = item.Name;
-        Description = item.Description;
+            var item = await inventoryRepository.GetItemWithPhotosAsync(itemId);
+            if (item is null)
+            {
+                Name = "Item not found";
+                Description = string.Empty;
+                ImagePaths.Add(paths.GetFallbackImagePath());
+                return;
+            }
 
-        foreach (var path in paths.GetItemPhotoPaths(item))
-            ImagePaths.Add(path);
+            Name = item.Name;
+            Description = item.Description;
 
-        // Use repository to find related container, if any
-    var container = await inventoryRepository.GetContainerForItemAsync(item.ItemId.ToString());
-        if (container is not null)
-        {
-            ContainerId = container.ContainerId.ToString();
-            OnPropertyChanged(nameof(HasContainerRelation));
-        }
+            foreach (var path in paths.GetItemPhotoPaths(item))
+                ImagePaths.Add(path);
+
+            // Use repository to find related container, if any
+            var container = await inventoryRepository.GetContainerForItemAsync(item.ItemId.ToString());
+            if (container is not null)
+            {
+                ContainerId = container.ContainerId.ToString();
+                OnPropertyChanged(nameof(HasContainerRelation));
+            }
+        });
     }
 
     [RelayCommand]
     private Task NavigateToContainerAsync()
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
-    return nav.GoToAsync("ContainerDetails", new Dictionary<string, object> { ["ContainerId"] = ContainerId! });
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails, new Dictionary<string, object> { ["ContainerId"] = ContainerId! });
     }
 
     [RelayCommand]

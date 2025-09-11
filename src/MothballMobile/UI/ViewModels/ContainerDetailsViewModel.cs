@@ -5,11 +5,11 @@ using CoreApp.Interfaces;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttributable
+public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly IInventoryDomainRepository inventoryRepository;
     private readonly IImagePathResolver paths;
-    private CancellationTokenSource? searchCts;
+    private readonly IDebouncer debouncer;
     private readonly Infrastructure.INavigationService? nav;
     private readonly Infrastructure.IPopupService popup;
 
@@ -37,12 +37,14 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
         IInventoryDomainRepository inventoryRepository,
         IImagePathResolver paths,
         Infrastructure.IPopupService popup,
-        Infrastructure.INavigationService? nav = null)
+        Infrastructure.INavigationService? nav = null,
+        IDebouncer? debouncer = null)
     {
-    this.inventoryRepository = inventoryRepository;
-    this.paths = paths;
-    this.popup = popup;
-    this.nav = nav;
+        this.inventoryRepository = inventoryRepository;
+        this.paths = paths;
+        this.popup = popup;
+        this.nav = nav;
+        this.debouncer = debouncer ?? new Debouncer(250);
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -65,7 +67,7 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
         Items.Clear();
         ContainerImagePaths.Clear();
 
-    var result = await inventoryRepository.GetContainerWithItemsAndPhotosAsync(containerId);
+        var result = await inventoryRepository.GetContainerWithItemsAndPhotosAsync(containerId);
         if (result is null)
         {
             Name = "Container not found";
@@ -107,24 +109,7 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     partial void OnSearchQueryChanged(string value)
     {
         // Debounce user typing to avoid excessive filtering on fast input
-    searchCts?.Cancel();
-    searchCts?.Dispose();
-    searchCts = new CancellationTokenSource();
-    var token = searchCts.Token;
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await Task.Delay(250, token);
-                if (token.IsCancellationRequested) return;
-                await MainThread.InvokeOnMainThreadAsync(ApplyFilter);
-            }
-            catch (TaskCanceledException)
-            {
-                // ignore
-            }
-        }, token);
+        debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(ApplyFilter));
     }
 
     private void ApplyFilter()
