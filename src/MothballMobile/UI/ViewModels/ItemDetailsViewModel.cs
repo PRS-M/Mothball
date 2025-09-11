@@ -9,10 +9,10 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
 {
-    private readonly IInventoryDomainRepository _inventoryRepository;
-    private readonly Infrastructure.INavigationService _nav;
-    private readonly IImagePathResolver _paths;
-    private readonly Infrastructure.IPopupService _popup;
+    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly Infrastructure.INavigationService nav;
+    private readonly IImagePathResolver paths;
+    private readonly Infrastructure.IPopupService popup;
 
     [ObservableProperty]
     private string itemId = string.Empty;
@@ -32,10 +32,10 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
 
     public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IImagePathResolver paths, Infrastructure.IPopupService popup)
     {
-        _inventoryRepository = inventoryRepository;
-        _nav = nav;
-        _paths = paths;
-        _popup = popup;
+        this.inventoryRepository = inventoryRepository;
+        this.nav = nav;
+        this.paths = paths;
+        this.popup = popup;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -51,23 +51,23 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
         ItemId = itemId;
         ImagePaths.Clear();
 
-        var item = await _inventoryRepository.GetItemWithPhotosAsync(itemId);
+    var item = await inventoryRepository.GetItemWithPhotosAsync(itemId);
         if (item is null)
         {
             Name = "Item not found";
             Description = string.Empty;
-            ImagePaths.Add(_paths.GetFallbackImagePath());
+            ImagePaths.Add(paths.GetFallbackImagePath());
             return;
         }
 
         Name = item.Name;
         Description = item.Description;
 
-        foreach (var path in _paths.GetItemPhotoPaths(item))
+        foreach (var path in paths.GetItemPhotoPaths(item))
             ImagePaths.Add(path);
 
         // Use repository to find related container, if any
-        var container = await _inventoryRepository.GetContainerForItemAsync(item.ItemId.ToString());
+    var container = await inventoryRepository.GetContainerForItemAsync(item.ItemId.ToString());
         if (container is not null)
         {
             ContainerId = container.ContainerId.ToString();
@@ -79,21 +79,21 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
     private Task NavigateToContainerAsync()
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
-        return _nav.GoToAsync("ContainerDetails", new Dictionary<string, object> { ["ContainerId"] = ContainerId! });
+    return nav.GoToAsync("ContainerDetails", new Dictionary<string, object> { ["ContainerId"] = ContainerId! });
     }
 
     [RelayCommand]
     private async Task DeleteItemAsync()
     {
         if (string.IsNullOrWhiteSpace(ItemId)) return;
-        var confirmed = await _popup.ConfirmAsync(
+    var confirmed = await popup.ConfirmAsync(
             title: "Delete item",
             message: "Are you sure you want to delete this item? This cannot be undone.",
             accept: "Delete",
             cancel: "Cancel");
         if (!confirmed) return;
 
-        await _inventoryRepository.DeleteItemAsync(ItemId);
-        await _nav.GoBackAsync();
+        await inventoryRepository.DeleteItemAsync(ItemId);
+        await nav.GoBackAsync();
     }
 }

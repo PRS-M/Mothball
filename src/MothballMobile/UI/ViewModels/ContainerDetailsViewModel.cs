@@ -7,11 +7,11 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttributable
 {
-    private readonly IInventoryDomainRepository _inventoryRepository;
-    private readonly IImagePathResolver _paths;
-    private CancellationTokenSource? _searchCts;
-    private readonly Infrastructure.INavigationService? _nav;
-    private readonly Infrastructure.IPopupService _popup;
+    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly IImagePathResolver paths;
+    private CancellationTokenSource? searchCts;
+    private readonly Infrastructure.INavigationService? nav;
+    private readonly Infrastructure.IPopupService popup;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -28,7 +28,7 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
     public ObservableCollection<ItemWithPhotosViewModel> Items { get; } = new();
 
-    private readonly List<ItemWithPhotosViewModel> _allItems = new();
+    private readonly List<ItemWithPhotosViewModel> allItems = new();
 
     [ObservableProperty]
     private string searchQuery = string.Empty;
@@ -39,10 +39,10 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
         Infrastructure.IPopupService popup,
         Infrastructure.INavigationService? nav = null)
     {
-        _inventoryRepository = inventoryRepository;
-        _paths = paths;
-        _popup = popup;
-        _nav = nav;
+    this.inventoryRepository = inventoryRepository;
+    this.paths = paths;
+    this.popup = popup;
+    this.nav = nav;
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -65,13 +65,13 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
         Items.Clear();
         ContainerImagePaths.Clear();
 
-        var result = await _inventoryRepository.GetContainerWithItemsAndPhotosAsync(containerId);
+    var result = await inventoryRepository.GetContainerWithItemsAndPhotosAsync(containerId);
         if (result is null)
         {
             Name = "Container not found";
             Notes = string.Empty;
             ItemCount = string.Empty;
-            ContainerImagePaths.Add(_paths.GetFallbackImagePath());
+            ContainerImagePaths.Add(paths.GetFallbackImagePath());
             return;
         }
 
@@ -81,15 +81,15 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
         ItemCount = $"Items stored: {container.ItemCount}";
 
         // Load container photos (all, as a small carousel)
-        foreach (var path in _paths.GetContainerPhotoPaths(container))
+        foreach (var path in paths.GetContainerPhotoPaths(container))
             ContainerImagePaths.Add(path);
 
         // Map items and load their images (carousel per item)
-        _allItems.Clear();
+        allItems.Clear();
         foreach (var item in items)
         {
-            var itemVm = new ItemWithPhotosViewModel(item, _paths);
-            _allItems.Add(itemVm);
+            var itemVm = new ItemWithPhotosViewModel(item, paths);
+            allItems.Add(itemVm);
             _ = itemVm.LoadImagesAsync();
         }
 
@@ -107,10 +107,10 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     partial void OnSearchQueryChanged(string value)
     {
         // Debounce user typing to avoid excessive filtering on fast input
-        _searchCts?.Cancel();
-        _searchCts?.Dispose();
-        _searchCts = new CancellationTokenSource();
-        var token = _searchCts.Token;
+    searchCts?.Cancel();
+    searchCts?.Dispose();
+    searchCts = new CancellationTokenSource();
+    var token = searchCts.Token;
 
         _ = Task.Run(async () =>
         {
@@ -130,7 +130,7 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     private void ApplyFilter()
     {
         Items.Clear();
-        IEnumerable<ItemWithPhotosViewModel> source = _allItems;
+    IEnumerable<ItemWithPhotosViewModel> source = allItems;
         if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
             var q = SearchQuery.Trim();
@@ -147,17 +147,17 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     private async Task DeleteContainerAsync()
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return;
-        var confirmed = await _popup.ConfirmAsync(
+    var confirmed = await popup.ConfirmAsync(
             title: "Delete container",
             message: "Delete this container? Items inside will not be deleted, only the relation.",
             accept: "Delete",
             cancel: "Cancel");
         if (!confirmed) return;
 
-        await _inventoryRepository.DeleteContainerAsync(ContainerId);
-        if (_nav is not null)
+        await inventoryRepository.DeleteContainerAsync(ContainerId);
+        if (nav is not null)
         {
-            await _nav.GoBackAsync();
+            await nav.GoBackAsync();
         }
     }
 }

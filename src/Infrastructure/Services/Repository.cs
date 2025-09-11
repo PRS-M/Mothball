@@ -6,17 +6,17 @@ namespace MothballMobile.Infrastructure;
 
 public class Repository<T> : IRepositoryExtended<T> where T : new()
 {
-    private readonly MothballDatabase _db;
+    private readonly MothballDatabase db;
 
     public Repository(MothballDatabase db)
     {
-        _db = db;
+        this.db = db;
     }
 
     /// <inheritdoc />
-    public Task InitializeAsync() => _db.InitializeAsync();
+    public Task InitializeAsync() => db.InitializeAsync();
 
-    private SQLiteAsyncConnection Connection => _db.Connection;
+    private SQLiteAsyncConnection Connection => db.Connection;
 
     /// <inheritdoc />
     public Task<int> InsertAsync(T entity) => Connection.InsertAsync(entity);

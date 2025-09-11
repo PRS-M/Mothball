@@ -6,28 +6,28 @@ namespace MothballMobile.Infrastructure;
 
 public class MothballDatabase
 {
-    private SQLiteAsyncConnection? _database;
+    private SQLiteAsyncConnection? database;
 
     public SQLiteAsyncConnection Connection
     {
         get
         {
-            if (_database is null)
+            if (database is null)
                 throw new InvalidOperationException("Database not initialized. Call InitializeAsync() first.");
-            return _database;
+            return database;
         }
     }
 
     public async Task InitializeAsync()
     {
-        if (_database != null) return;
+    if (database != null) return;
 
-        _database = new SQLiteAsyncConnection(SQLiteConstants.DatabasePath, SQLiteConstants.OpenFlags);
+    database = new SQLiteAsyncConnection(SQLiteConstants.DatabasePath, SQLiteConstants.OpenFlags);
 
         // Create tables for DB models
-        await _database.CreateTableAsync<DbContainer>();
-        await _database.CreateTableAsync<DbItem>();
-        await _database.CreateTableAsync<DbImage>();
-        await _database.CreateTableAsync<DbItemContainerRelation>();
+    await database.CreateTableAsync<DbContainer>();
+    await database.CreateTableAsync<DbItem>();
+    await database.CreateTableAsync<DbImage>();
+    await database.CreateTableAsync<DbItemContainerRelation>();
     }
 }

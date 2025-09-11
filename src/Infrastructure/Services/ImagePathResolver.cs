@@ -12,11 +12,11 @@ namespace MothballMobile.Infrastructure;
 /// </summary>
 public sealed class ImagePathResolver : IImagePathResolver
 {
-    private readonly IFileHandler _fileHandler;
+    private readonly IFileHandler fileHandler;
 
     public ImagePathResolver(IFileHandler fileHandler)
     {
-        _fileHandler = fileHandler;
+        this.fileHandler = fileHandler;
     }
 
     /// <inheritdoc />
@@ -54,7 +54,7 @@ public sealed class ImagePathResolver : IImagePathResolver
     {
         try
         {
-            var root = _fileHandler.GetAppDataPath();
+            var root = fileHandler.GetAppDataPath();
             return System.IO.Path.Combine(root, folder, fileName);
         }
         catch

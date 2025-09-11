@@ -8,25 +8,25 @@ namespace MothballMobile.UI.ViewModels;
 public partial class ContainerListViewModel : ObservableObject
 {
     private ObservableCollection<ContainerViewModel> containers = new();
-    private readonly IImagePathResolver _imagePaths;
-    private readonly Infrastructure.INavigationService _nav;
-    private readonly IInventoryDomainRepository _inventoryRepository;
-    private readonly int _pageSize = 10;
-    private int _currentPage = 0;
-    private bool _isLoading;
-    private List<string> _allContainerIds;
-    private List<Container> _allContainers = new();
+    private readonly IImagePathResolver imagePaths;
+    private readonly Infrastructure.INavigationService nav;
+    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly int pageSize = 10;
+    private int currentPage = 0;
+    private bool isLoading;
+    private List<string> allContainerIds;
+    private List<Container> allContainers = new();
 
-    private readonly Infrastructure.DemoDataSeeder? _demoSeeder; // optional in debug
+    private readonly Infrastructure.DemoDataSeeder? demoSeeder; // optional in debug
 
     public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, Infrastructure.DemoDataSeeder? demoSeeder = null)
     {
-        _imagePaths = imagePaths;
-        _inventoryRepository = inventoryRepository;
-        _nav = nav;
-        _demoSeeder = demoSeeder;
+        this.imagePaths = imagePaths;
+        this.inventoryRepository = inventoryRepository;
+        this.nav = nav;
+        this.demoSeeder = demoSeeder;
         Containers = new ObservableCollection<ContainerViewModel>();
-        _allContainerIds = new List<string>();
+        allContainerIds = new List<string>();
     }
 
     public ObservableCollection<ContainerViewModel> Containers
@@ -38,23 +38,23 @@ public partial class ContainerListViewModel : ObservableObject
     [RelayCommand]
     public async Task InitializeAsync()
     {
-        if (_isLoading) return;
-        _isLoading = true;
+        if (isLoading) return;
+        isLoading = true;
         try
         {
             // Seed demo data in dev if repo is empty
-            if (_demoSeeder is not null)
+            if (demoSeeder is not null)
             {
-                await _demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
-                await _demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
+                await demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
+                await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
             }
 
             // Domain repository returns rich aggregates (with ImageItem lists populated)
-            _allContainers = await _inventoryRepository.GetAllContainersAsync();
-            _allContainerIds = _allContainers.Select(c => c.ContainerId.ToString()).ToList();
+            allContainers = await inventoryRepository.GetAllContainersAsync();
+            allContainerIds = allContainers.Select(c => c.ContainerId.ToString()).ToList();
 
             // Reset existing state
-            _currentPage = 0;
+            currentPage = 0;
             Containers.Clear();
 
             // Load first page without re-checking the loading flag
@@ -62,50 +62,50 @@ public partial class ContainerListViewModel : ObservableObject
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 
     [RelayCommand]
     public void LoadNextPage()
     {
-        if (_isLoading) return;
-        if (_allContainerIds.Count == 0) return;
+        if (isLoading) return;
+        if (allContainerIds.Count == 0) return;
 
-        _isLoading = true;
+        isLoading = true;
         try
         {
             LoadNextPageCore();
         }
         finally
         {
-            _isLoading = false;
+            isLoading = false;
         }
     }
 
     private void LoadNextPageCore()
     {
-        if (_allContainerIds.Count == 0) return;
+        if (allContainerIds.Count == 0) return;
 
-        int start = _currentPage * _pageSize;
-        if (start >= _allContainerIds.Count) return;
+        int start = currentPage * pageSize;
+        if (start >= allContainerIds.Count) return;
 
-        int count = Math.Min(_pageSize, _allContainerIds.Count - start);
-        var pageContainers = _allContainers.Skip(start).Take(count).ToList();
+        int count = Math.Min(pageSize, allContainerIds.Count - start);
+        var pageContainers = allContainers.Skip(start).Take(count).ToList();
 
         foreach (var container in pageContainers)
         {
-            var vm = new ContainerViewModel(container, _imagePaths);
+            var vm = new ContainerViewModel(container, imagePaths);
             Containers.Add(vm);
             // Kick off image load without blocking the UI thread.
             _ = vm.LoadImageAsync();
         }
 
-        _currentPage++;
+        currentPage++;
     }
 
     [RelayCommand]
-    private Task NavigateToAddContainerAsync() => _nav.GoToAsync("AddContainer");
+    private Task NavigateToAddContainerAsync() => nav.GoToAsync("AddContainer");
 }
 
 // Moved ContainerViewModel to its own file for SRP and clarity.

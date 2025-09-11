@@ -7,8 +7,8 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class AddItemViewModel : ObservableObject
 {
-    private readonly IInventoryDomainRepository _repo;
-    private readonly Infrastructure.INavigationService _nav;
+    private readonly IInventoryDomainRepository repo;
+    private readonly Infrastructure.INavigationService nav;
 
     [ObservableProperty]
     private string name = string.Empty;
@@ -21,8 +21,8 @@ public partial class AddItemViewModel : ObservableObject
 
     public AddItemViewModel(IInventoryDomainRepository repo, Infrastructure.INavigationService nav)
     {
-        _repo = repo;
-        _nav = nav;
+        this.repo = repo;
+        this.nav = nav;
     }
 
     [RelayCommand]
@@ -37,7 +37,7 @@ public partial class AddItemViewModel : ObservableObject
             Description = Description?.Trim() ?? string.Empty
         };
 
-        await _repo.InsertItemAsync(item);
-        await _nav.GoBackAsync();
+        await repo.InsertItemAsync(item);
+        await nav.GoBackAsync();
     }
 }

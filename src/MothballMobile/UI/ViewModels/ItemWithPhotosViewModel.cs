@@ -9,14 +9,14 @@ namespace MothballMobile.UI.ViewModels;
 public class ItemWithPhotosViewModel : ObservableObject
 {
     public Item Item { get; }
-    private readonly IImagePathResolver _paths;
+    private readonly IImagePathResolver paths;
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
     public ItemWithPhotosViewModel(Item item, IImagePathResolver paths)
     {
         Item = item;
-        _paths = paths;
+        this.paths = paths;
     }
 
     public string Name => Item.Name;
@@ -25,7 +25,7 @@ public class ItemWithPhotosViewModel : ObservableObject
     public Task LoadImagesAsync()
     {
         ImagePaths.Clear();
-        foreach (var path in _paths.GetItemPhotoPaths(Item))
+        foreach (var path in paths.GetItemPhotoPaths(Item))
             ImagePaths.Add(path);
         return Task.CompletedTask;
     }

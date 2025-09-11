@@ -11,13 +11,13 @@ public partial class ContainerViewModel : ObservableObject
 {
     public Container Container { get; }
     public Dictionary<string, List<string>> ItemIdsByContainerId { get; } = new();
-    private readonly IImagePathResolver _paths;
-    private ObservableCollection<string> _imagePaths;
+    private readonly IImagePathResolver paths;
+    private ObservableCollection<string> imagePaths;
 
     public ObservableCollection<string> ImagePaths
     {
-        get => _imagePaths;
-        set => SetProperty(ref _imagePaths, value);
+        get => imagePaths;
+        set => SetProperty(ref imagePaths, value);
     }
 
     public string Name => Container.Name;
@@ -27,13 +27,13 @@ public partial class ContainerViewModel : ObservableObject
     public ContainerViewModel(Container container, IImagePathResolver paths)
     {
         Container = container;
-        _paths = paths;
-        _imagePaths = new ObservableCollection<string>();
+        this.paths = paths;
+        this.imagePaths = new ObservableCollection<string>();
     }
 
     public Task LoadImageAsync()
     {
-        foreach (var path in _paths.GetContainerPhotoPaths(Container))
+        foreach (var path in paths.GetContainerPhotoPaths(Container))
             ImagePaths.Add(path);
         return Task.CompletedTask;
     }
