@@ -70,6 +70,7 @@ public static class MauiProgram
 		services.AddSingleton<MothballDatabase>();
 		services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
 		services.AddSingleton<IInventoryDomainRepository, InventoryDomainRepository>();
+		services.AddSingleton<IImagePathResolver, ImagePathResolver>();
 #if DEBUG
 		services.AddSingleton<DemoDataSeeder>();
 #endif

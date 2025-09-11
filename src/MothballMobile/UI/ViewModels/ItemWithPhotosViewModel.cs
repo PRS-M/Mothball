@@ -2,8 +2,6 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
-using CoreApp.Utilities;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace MothballMobile.UI.ViewModels;
@@ -11,14 +9,14 @@ namespace MothballMobile.UI.ViewModels;
 public class ItemWithPhotosViewModel : ObservableObject
 {
     public Item Item { get; }
-    private readonly IFileHandler _fileHandler;
+    private readonly IImagePathResolver _paths;
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemWithPhotosViewModel(Item item, IFileHandler fileHandler)
+    public ItemWithPhotosViewModel(Item item, IImagePathResolver paths)
     {
         Item = item;
-        _fileHandler = fileHandler;
+        _paths = paths;
     }
 
     public string Name => Item.Name;
@@ -27,18 +25,11 @@ public class ItemWithPhotosViewModel : ObservableObject
     public Task LoadImagesAsync()
     {
         ImagePaths.Clear();
-        if (Item.Photos != null && Item.Photos.Any(p => !string.IsNullOrEmpty(p.FileName)))
-        {
+        if (Item.Photos != null && Item.Photos.Any())
             foreach (var photo in Item.Photos)
-            {
-                var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToItemPhotos, photo.FileName);
-                ImagePaths.Add(path);
-            }
-        }
+                ImagePaths.Add(_paths.GetItemPhotoPath(photo));
         else
-        {
-            ImagePaths.Add("dotnet_bot.png");
-        }
+            ImagePaths.Add(_paths.GetFallbackImagePath());
         return Task.CompletedTask;
     }
 }

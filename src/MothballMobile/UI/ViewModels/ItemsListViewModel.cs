@@ -3,7 +3,6 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Utilities;
 using CoreApp.Interfaces;
 using System.Threading;
 using Microsoft.Maui.ApplicationModel;
@@ -13,7 +12,7 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class ItemsListViewModel : ObservableObject
 {
-    private readonly IFileHandler _fileHandler;
+    private readonly IImagePathResolver _paths;
     private readonly IInventoryDomainRepository _inventoryRepository;
     private readonly Infrastructure.INavigationService _nav;
 
@@ -29,9 +28,9 @@ public partial class ItemsListViewModel : ObservableObject
 
     private CancellationTokenSource? _searchCts;
 
-    public ItemsListViewModel(IFileHandler fileHandler, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav)
+    public ItemsListViewModel(IImagePathResolver paths, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav)
     {
-        _fileHandler = fileHandler;
+        _paths = paths;
         _inventoryRepository = inventoryRepository;
         _nav = nav;
     }
@@ -107,7 +106,7 @@ public partial class ItemsListViewModel : ObservableObject
 
         foreach (var item in items)
         {
-            var vm = new ItemViewModel(item, _fileHandler, _nav);
+            var vm = new ItemViewModel(item, _paths, _nav);
             Items.Add(vm);
             _ = vm.LoadImageAsync();
         }

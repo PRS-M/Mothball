@@ -1,17 +1,14 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Utilities;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
-using System.IO;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MothballMobile.UI.ViewModels;
 public partial class ContainerListViewModel : ObservableObject
 {
     private ObservableCollection<ContainerViewModel> containers = new();
-    private readonly IFileHandler _fileHandler;
+    private readonly IImagePathResolver _imagePaths;
     private readonly Infrastructure.INavigationService _nav;
     private readonly IInventoryDomainRepository _inventoryRepository;
     private readonly int _pageSize = 10;
@@ -22,9 +19,9 @@ public partial class ContainerListViewModel : ObservableObject
 
     private readonly Infrastructure.DemoDataSeeder? _demoSeeder; // optional in debug
 
-    public ContainerListViewModel(IFileHandler fileHandler, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, Infrastructure.DemoDataSeeder? demoSeeder = null)
+    public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, Infrastructure.DemoDataSeeder? demoSeeder = null)
     {
-        _fileHandler = fileHandler;
+        _imagePaths = imagePaths;
         _inventoryRepository = inventoryRepository;
         _nav = nav;
         _demoSeeder = demoSeeder;
@@ -98,7 +95,7 @@ public partial class ContainerListViewModel : ObservableObject
 
         foreach (var container in pageContainers)
         {
-            var vm = new ContainerViewModel(container, _fileHandler);
+            var vm = new ContainerViewModel(container, _imagePaths);
             Containers.Add(vm);
             // Kick off image load without blocking the UI thread.
             _ = vm.LoadImageAsync();
@@ -111,59 +108,4 @@ public partial class ContainerListViewModel : ObservableObject
     private Task NavigateToAddContainerAsync() => _nav.GoToAsync("AddContainer");
 }
 
-public partial class ContainerViewModel : ObservableObject
-{
-    public Container Container { get; }
-    public Dictionary<string, List<string>> ItemIdsByContainerId { get; } = new();
-    private readonly IFileHandler _fileHandler;
-    private ObservableCollection<string> _imagePaths;
-
-    public ObservableCollection<string> ImagePaths
-    {
-        get => _imagePaths;
-        set => SetProperty(ref _imagePaths, value);
-    }
-
-    public string Name => Container.Name;
-    public string Notes => Container.Notes;
-    public string ItemCount => $"Items stored: {Container.ItemCount}";
-
-    public ContainerViewModel(Container container, IFileHandler fileHandler)
-    {
-        Container = container;
-        _fileHandler = fileHandler;
-        _imagePaths = new ObservableCollection<string>();
-    }
-
-    public Task LoadImageAsync()
-    {
-        if (Container.Photos != null && Container.Photos.Any(p => !string.IsNullOrEmpty(p.FileName)))
-        {
-            try
-            {
-                // Provide a file path the View can convert to an ImageSource
-                var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToContainerPhotos, Container.Photos[0].FileName);
-                ImagePaths.Add(path);
-            }
-            catch
-            {
-                ImagePaths.Add("dotnet_bot.png");
-            }
-        }
-        else
-        {
-            ImagePaths.Add("dotnet_bot.png");
-        }
-        return Task.CompletedTask;
-    }
-
-    [RelayCommand]
-    private Task NavigateAsync()
-    {
-        var id = Container.ContainerId.ToString();
-        // Resolve from the service provider associated with the App
-        var nav = Application.Current?.Handler?.MauiContext?.Services?.GetService<Infrastructure.INavigationService>();
-        return nav?.GoToAsync("ContainerDetails", new Dictionary<string, object> { ["ContainerId"] = id })
-               ?? Task.CompletedTask;
-    }
-}
+// Moved ContainerViewModel to its own file for SRP and clarity.

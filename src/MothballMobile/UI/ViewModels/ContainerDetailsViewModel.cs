@@ -2,14 +2,13 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
-using CoreApp.Utilities;
 
 namespace MothballMobile.UI.ViewModels;
 
 public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IInventoryDomainRepository _inventoryRepository;
-    private readonly IFileHandler _fileHandler;
+    private readonly IImagePathResolver _paths;
     private CancellationTokenSource? _searchCts;
     private readonly Infrastructure.INavigationService? _nav;
     private readonly Infrastructure.IPopupService _popup;
@@ -34,10 +33,10 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
     [ObservableProperty]
     private string searchQuery = string.Empty;
 
-    public ContainerDetailsViewModel(IInventoryDomainRepository inventoryRepository, IFileHandler fileHandler, Infrastructure.IPopupService popup, Infrastructure.INavigationService? nav = null)
+    public ContainerDetailsViewModel(IInventoryDomainRepository inventoryRepository, IImagePathResolver paths, Infrastructure.IPopupService popup, Infrastructure.INavigationService? nav = null)
     {
         _inventoryRepository = inventoryRepository;
-        _fileHandler = fileHandler;
+        _paths = paths;
         _popup = popup;
         _nav = nav;
     }
@@ -68,7 +67,7 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
             Name = "Container not found";
             Notes = string.Empty;
             ItemCount = string.Empty;
-            ContainerImagePaths.Add("dotnet_bot.png");
+            ContainerImagePaths.Add(_paths.GetFallbackImagePath());
             return;
         }
 
@@ -79,23 +78,16 @@ public partial class ContainerDetailsViewModel : ObservableObject, IQueryAttribu
 
         // Load container photos (all, as a small carousel)
         if (container.Photos?.Count > 0)
-        {
             foreach (var photo in container.Photos)
-            {
-            var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToContainerPhotos, photo.FileName);
-            ContainerImagePaths.Add(path);
-            }
-        }
+                ContainerImagePaths.Add(_paths.GetContainerPhotoPath(photo));
         else
-        {
-            ContainerImagePaths.Add("dotnet_bot.png");
-        }
+            ContainerImagePaths.Add(_paths.GetFallbackImagePath());
 
         // Map items and load their images (carousel per item)
         _allItems.Clear();
         foreach (var item in items)
         {
-            var itemVm = new ItemWithPhotosViewModel(item, _fileHandler);
+            var itemVm = new ItemWithPhotosViewModel(item, _paths);
             _allItems.Add(itemVm);
             _ = itemVm.LoadImagesAsync();
         }

@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
-using CoreApp.Utilities;
 using Microsoft.Maui.ApplicationModel;
 using System.IO;
 
@@ -12,7 +11,7 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IInventoryDomainRepository _inventoryRepository;
     private readonly Infrastructure.INavigationService _nav;
-    private readonly IFileHandler _fileHandler;
+    private readonly IImagePathResolver _paths;
     private readonly Infrastructure.IPopupService _popup;
 
     [ObservableProperty]
@@ -27,15 +26,15 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private string? containerId;
 
-    public bool HasContainerRelation => !string.IsNullOrWhiteSpace(ContainerId);
+    public bool HasContainerRelation => !string.IsNullOrWhiteSpace(this.ContainerId);
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IFileHandler fileHandler, Infrastructure.IPopupService popup)
+    public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IImagePathResolver paths, Infrastructure.IPopupService popup)
     {
         _inventoryRepository = inventoryRepository;
         _nav = nav;
-        _fileHandler = fileHandler;
+        _paths = paths;
         _popup = popup;
     }
 
@@ -57,7 +56,7 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
         {
             Name = "Item not found";
             Description = string.Empty;
-            ImagePaths.Add("dotnet_bot.png");
+            ImagePaths.Add(_paths.GetFallbackImagePath());
             return;
         }
 
@@ -67,14 +66,11 @@ public partial class ItemDetailsViewModel : ObservableObject, IQueryAttributable
         if (item.Photos is { Count: > 0 })
         {
             foreach (var p in item.Photos)
-            {
-                var path = Path.Combine(_fileHandler.GetAppDataPath(), Constants.PathToItemPhotos, p.FileName);
-                ImagePaths.Add(path);
-            }
+                ImagePaths.Add(_paths.GetItemPhotoPath(p));
         }
         else
         {
-            ImagePaths.Add("dotnet_bot.png");
+            ImagePaths.Add(_paths.GetFallbackImagePath());
         }
 
         // Use repository to find related container, if any
