@@ -8,6 +8,9 @@ using CoreApp.Utilities;
 
 namespace Infrastructure.Services;
 
+/// <summary>
+/// Mobile implementation of camera functionality using MAUI's media picker.
+/// </summary>
 public class CameraHandler : ICameraHandler
 {
     private readonly IMediaPicker mediaPicker;
@@ -19,6 +22,7 @@ public class CameraHandler : ICameraHandler
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
+    /// <inheritdoc />
     public async Task<ImageItem> CaptureContainerPhotoAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
@@ -37,6 +41,7 @@ public class CameraHandler : ICameraHandler
         return imageItem;
     }
 
+    /// <inheritdoc />
     public async Task<ImageItem> CaptureItemPhotoAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);

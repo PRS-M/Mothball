@@ -32,7 +32,7 @@ public partial class ItemViewModel : ObservableObject
 
     public Task LoadImageAsync()
     {
-    ImagePath = _paths.GetPrimaryItemPhotoPath(Item);
+        ImagePath = _paths.GetPrimaryItemPhotoPath(Item);
         return Task.CompletedTask;
     }
 

@@ -43,6 +43,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         return db.ToDomain(dbPhotos);
     }
 
+    /// <inheritdoc />
     public async Task<List<Container>> GetAllContainersAsync()
     {
         var dbContainers = await _containers.GetAllAsync();
@@ -96,6 +97,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         return dbItem.ToDomain(dbPhotos);
     }
 
+    /// <inheritdoc />
     public async Task<Container?> GetContainerForItemAsync(string itemId)
     {
         _logger.LogDebug("GetContainerForItemAsync: itemId={ItemId}", itemId);
@@ -112,6 +114,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         return dbContainer.ToDomain(dbPhotos);
     }
 
+    /// <inheritdoc />
     public async Task<List<Item>> GetAllItemsWithPhotosAsync()
     {
         var items = await _items.GetAllAsync();
@@ -123,6 +126,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         return MapDbItemsToDomain(items, photosByItem);
     }
 
+    /// <inheritdoc />
     public async Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm)
     {
         // Case-insensitive search with index support using SQLite LIKE and NOCASE collation
@@ -138,6 +142,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         return MapDbItemsToDomain(items, photosByItem);
     }
 
+    /// <inheritdoc />
     public async Task InsertContainerAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
@@ -145,6 +150,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _containers.InsertAsync(dbContainer);
     }
 
+    /// <inheritdoc />
     public async Task InsertItemAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -152,6 +158,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _items.InsertAsync(dbItem);
     }
 
+    /// <inheritdoc />
     public async Task InsertImageItemAsync(ImageItem imageItem, Guid ownerId)
     {
         ArgumentNullException.ThrowIfNull(imageItem);
@@ -159,6 +166,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _photos.InsertAsync(dbImage);
     }
 
+    /// <inheritdoc />
     public async Task InsertItemContainerRelation(Guid itemId, Guid containerId)
     {
         var relation = new DbItemContainerRelation
@@ -170,6 +178,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _itemContainerRelations.InsertAsync(relation);
     }
 
+    /// <inheritdoc />
     public async Task UpdateContainerAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
@@ -177,6 +186,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _containers.UpdateAsync(dbContainer);
     }
 
+    /// <inheritdoc />
     public async Task UpdateItemAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -184,6 +194,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _items.UpdateAsync(dbItem);
     }
 
+    /// <inheritdoc />
     public async Task UpdateImageItemAsync(ImageItem image, Guid ownerId)
     {
         ArgumentNullException.ThrowIfNull(image);
@@ -191,6 +202,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         await _photos.UpdateAsync(dbImage);
     }
 
+    /// <inheritdoc />
     public async Task DeleteItemAsync(string itemId)
     {
         if (!Guid.TryParse(itemId, out var iid)) return;
@@ -217,6 +229,7 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         }
     }
 
+    /// <inheritdoc />
     public async Task DeleteContainerAsync(string containerId)
     {
         if (!Guid.TryParse(containerId, out var cid)) return;

@@ -19,18 +19,23 @@ public sealed class ImagePathResolver : IImagePathResolver
         _fileHandler = fileHandler;
     }
 
+    /// <inheritdoc />
     public string GetPrimaryContainerPhotoPath(Container container)
         => FirstOrFallback(container?.Photos, Constants.PathToContainerPhotos);
 
+    /// <inheritdoc />
     public IEnumerable<string> GetContainerPhotoPaths(Container container)
         => PathsOrFallback(container?.Photos, Constants.PathToContainerPhotos);
 
+    /// <inheritdoc />
     public string GetPrimaryItemPhotoPath(Item item)
         => FirstOrFallback(item?.Photos, Constants.PathToItemPhotos);
 
+    /// <inheritdoc />
     public IEnumerable<string> GetItemPhotoPaths(Item item)
         => PathsOrFallback(item?.Photos, Constants.PathToItemPhotos);
 
+    /// <inheritdoc />
     public string GetFallbackImagePath() => "dotnet_bot.png"; // central fallback
 
     private string FirstOrFallback(IEnumerable<ImageItem>? photos, string folder)
