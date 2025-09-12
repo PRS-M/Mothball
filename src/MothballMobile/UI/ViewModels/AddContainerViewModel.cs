@@ -13,16 +13,16 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class AddContainerViewModel : BaseViewModel
 {
-    private readonly ICameraHandler cameraHandler;
+    private readonly ImageService imageService;
     private readonly IInventoryDomainRepository inventoryDomainRepository;
     private readonly INavigationService navigationService;
 
     public AddContainerViewModel(
-        ICameraHandler cameraHandler,
+        ImageService imageService,
         IInventoryDomainRepository inventoryDomainRepository,
         INavigationService navigationService)
     {
-        this.cameraHandler = cameraHandler ?? throw new ArgumentNullException(nameof(cameraHandler));
+        this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryDomainRepository = inventoryDomainRepository ?? throw new ArgumentNullException(nameof(inventoryDomainRepository));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         Container = null!;
@@ -40,7 +40,7 @@ public partial class AddContainerViewModel : BaseViewModel
 
     Container Container { get; set; }
 
-    private bool CanAddContainer() => !string.IsNullOrWhiteSpace(Name);
+    private bool CanAddContainer() => !string.IsNullOrWhiteSpace(this.Name);
 
     [RelayCommand(CanExecute = nameof(CanAddContainer))]
     public async Task AddContainer()
@@ -59,12 +59,8 @@ public partial class AddContainerViewModel : BaseViewModel
                 notes: Notes?.Trim() ?? string.Empty
             );
 
-            await cameraHandler.CaptureContainerPhotoAsync(Container);
+            await imageService.CaptureContainerPhotoAsync(Container);
             await inventoryDomainRepository.InsertContainerAsync(Container);
-            if (Container.Photos is { Count: > 0 })
-            {
-                await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
-            }
 
             ValidationMessage = null;
             await navigationService.GoBackAsync();

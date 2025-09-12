@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
+using CoreApp.Services;
+using CoreApp.Entities.ItemAggregate;
 using Microsoft.Maui.ApplicationModel;
 
 namespace MothballMobile.UI.ViewModels;
@@ -12,6 +14,8 @@ public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
     private readonly Infrastructure.INavigationService nav;
     private readonly IImagePathResolver paths;
     private readonly Infrastructure.IPopupService popup;
+    private readonly ImageService imageService;
+    private Item? currentItem;
 
     [ObservableProperty]
     private string itemId = string.Empty;
@@ -29,12 +33,13 @@ public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IImagePathResolver paths, Infrastructure.IPopupService popup)
+    public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IImagePathResolver paths, Infrastructure.IPopupService popup, ImageService imageService)
     {
         this.inventoryRepository = inventoryRepository;
         this.nav = nav;
         this.paths = paths;
         this.popup = popup;
+        this.imageService = imageService;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -61,6 +66,7 @@ public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
                 return;
             }
 
+            currentItem = item;
             Name = item.Name;
             Description = item.Description;
 
@@ -89,7 +95,7 @@ public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
     private async Task DeleteItemAsync()
     {
         if (string.IsNullOrWhiteSpace(ItemId)) return;
-    var confirmed = await popup.ConfirmAsync(
+        var confirmed = await popup.ConfirmAsync(
             title: "Delete item",
             message: "Are you sure you want to delete this item? This cannot be undone.",
             accept: "Delete",
@@ -98,5 +104,20 @@ public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
 
         await inventoryRepository.DeleteItemAsync(ItemId);
         await nav.GoBackAsync();
+    }
+
+    [RelayCommand]
+    private async Task AddPhotoAsync()
+    {
+        if (currentItem is null) return;
+
+        await RunCommandAsync(async () =>
+        {
+            await imageService.CaptureItemPhotoAsync(currentItem);
+            // Refresh image paths
+            ImagePaths.Clear();
+            foreach (var path in paths.GetItemPhotoPaths(currentItem))
+                ImagePaths.Add(path);
+        });
     }
 }

@@ -1,10 +1,6 @@
 using System;
 using CoreApp;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
-using CoreApp.Utilities;
 
 namespace Infrastructure.Services;
 
@@ -14,52 +10,13 @@ namespace Infrastructure.Services;
 public class CameraHandler : ICameraHandler
 {
     private readonly IMediaPicker mediaPicker;
-    private readonly IFileHandler fileHandler;
 
-    public CameraHandler(IMediaPicker mediaPicker, IFileHandler fileHandler)
+    public CameraHandler(IMediaPicker mediaPicker)
     {
         this.mediaPicker = mediaPicker ?? throw new ArgumentNullException(nameof(mediaPicker));
-        this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
-    /// <inheritdoc />
-    public async Task<ImageItem> CaptureContainerPhotoAsync(Container container)
-    {
-        ArgumentNullException.ThrowIfNull(container);
-        return await CaptureAndSavePhotoAsync(container.AddImageItem, Constants.PathToContainerPhotos);
-    }
-
-    /// <inheritdoc />
-    public async Task<ImageItem> CaptureItemPhotoAsync(Item item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-        return await CaptureAndSavePhotoAsync(item.AddImageItem, Constants.PathToItemPhotos);
-    }
-
-    // Consolidated helper: creates the ImageItem, captures bytes, and saves if non-empty.
-    private async Task<ImageItem> CaptureAndSavePhotoAsync(Func<ImageItem> imageItemFactory, string pathPrefix)
-    {
-        ArgumentNullException.ThrowIfNull(imageItemFactory);
-        ImageItem imageItem = imageItemFactory();
-
-        try
-        {
-            byte[] bytes = await CapturePhotoAsync();
-            if (bytes.Length > 0)
-            {
-                await fileHandler.SaveFileAsync(imageItem.FileName, pathPrefix, bytes);
-            }
-        }
-        catch (Exception ex)
-        {
-            // Handle exceptions (e.g., user cancels, permissions denied)
-            Console.WriteLine($"Error capturing photo: {ex.Message}");
-        }
-
-        return imageItem;
-    }
-
-    private async Task<byte[]> CapturePhotoAsync()
+    public async Task<byte[]> CapturePhotoAsync()
     {
         FileResult? photo = await mediaPicker.PickPhotoAsync();
         if (photo == null) return Array.Empty<byte>();

@@ -60,6 +60,7 @@ public static class MauiProgram
 	services.AddTransient<MothballMobile.Infrastructure.IDebouncer>(_ => new MothballMobile.Infrastructure.Debouncer(300));
 		services.AddSingleton<ICameraHandler, CameraHandler>();
 		services.AddSingleton<IFileHandler, MobileFileHandler>();
+		services.AddSingleton<ImageService>();
 		services.AddSingleton<JsonHandler>();
 		services.AddSingleton<InventoryJsonHandler>();
 		services.AddSingleton(typeof(IFileSystem), FileSystem.Current);

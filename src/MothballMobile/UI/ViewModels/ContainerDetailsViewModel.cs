@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using MothballMobile.Infrastructure;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
+using CoreApp.Services;
+using CoreApp.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.ViewModels;
 
@@ -13,6 +15,8 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
     private readonly IDebouncer debouncer;
     private readonly INavigationService? nav;
     private readonly IPopupService popup;
+    private readonly ImageService imageService;
+    private Container? currentContainer;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -38,12 +42,14 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         IInventoryDomainRepository inventoryRepository,
         IImagePathResolver paths,
         IPopupService popup,
+        ImageService imageService,
         INavigationService? nav = null,
         IDebouncer? debouncer = null)
     {
         this.inventoryRepository = inventoryRepository;
         this.paths = paths;
         this.popup = popup;
+        this.imageService = imageService;
         this.nav = nav;
         this.debouncer = debouncer ?? new Debouncer(250);
     }
@@ -78,7 +84,8 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
             return;
         }
 
-        var (container, items) = result.Value;
+    var (container, items) = result.Value;
+    currentContainer = container;
         Name = container.Name;
         Notes = container.Notes;
         ItemCount = $"Items stored: {container.ItemCount}";
@@ -146,6 +153,19 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         {
             await nav.GoBackAsync();
         }
+    }
+
+    [RelayCommand]
+    private async Task AddPhotoAsync()
+    {
+        if (currentContainer is null) return;
+        await RunCommandAsync(async () =>
+        {
+            await imageService.CaptureContainerPhotoAsync(currentContainer);
+            ContainerImagePaths.Clear();
+            foreach (var path in paths.GetContainerPhotoPaths(currentContainer))
+                ContainerImagePaths.Add(path);
+        });
     }
 
     private bool disposed;
