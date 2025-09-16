@@ -78,6 +78,8 @@ public static class MauiProgram
 		services.AddSingleton<Infrastructure.INavigationService, Infrastructure.ShellNavigationService>();
 		// Popup abstraction
 		services.AddSingleton<Infrastructure.IPopupService, Infrastructure.MauiPopupService>();
+		// Retry abstraction
+		services.AddSingleton<Infrastructure.IRetryService, Infrastructure.RetryService>();
 		services.AddTransient<AddContainerViewModel>();
 		services.AddTransient<ContainerListViewModel>();
 		services.AddTransient<ItemsListViewModel>();

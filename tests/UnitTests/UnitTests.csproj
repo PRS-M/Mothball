@@ -30,6 +30,9 @@
   <ItemGroup>
     <Compile Include="../../src/MothballMobile/Infrastructure/IDebouncer.cs" Link="Infrastructure/IDebouncer.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Debouncer.cs" Link="Infrastructure/Debouncer.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/IPopupService.cs" Link="Infrastructure/IPopupService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/IRetryService.cs" Link="Infrastructure/IRetryService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/RetryService.cs" Link="Infrastructure/RetryService.cs" />
   </ItemGroup>
 
 </Project>

@@ -33,6 +33,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
             await demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
             await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
         }
+
         var allContainers = await inventoryRepository.GetAllContainersAsync();
         allItems.Clear();
         allItems.AddRange(allContainers);
@@ -47,5 +48,3 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     [RelayCommand]
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
 }
-
-// Moved ContainerViewModel to its own file for SRP and clarity.

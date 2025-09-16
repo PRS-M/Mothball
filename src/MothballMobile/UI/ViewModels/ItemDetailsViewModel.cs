@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Entities.ItemAggregate;
-using Microsoft.Maui.ApplicationModel;
 
 namespace MothballMobile.UI.ViewModels;
 
@@ -15,6 +14,7 @@ public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
     private readonly IImagePathResolver paths;
     private readonly Infrastructure.IPopupService popup;
     private readonly ImageService imageService;
+    private readonly Infrastructure.IRetryService retryService;
     private Item? currentItem;
 
     [ObservableProperty]
@@ -33,13 +33,14 @@ public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IImagePathResolver paths, Infrastructure.IPopupService popup, ImageService imageService)
+    public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IImagePathResolver paths, Infrastructure.IPopupService popup, ImageService imageService, Infrastructure.IRetryService retryService)
     {
         this.inventoryRepository = inventoryRepository;
         this.nav = nav;
         this.paths = paths;
         this.popup = popup;
         this.imageService = imageService;
+        this.retryService = retryService;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -113,11 +114,21 @@ public partial class ItemDetailsViewModel : BaseViewModel, IQueryAttributable
 
         await RunCommandAsync(async () =>
         {
-            await imageService.CaptureItemPhotoAsync(currentItem);
-            // Refresh image paths
-            ImagePaths.Clear();
-            foreach (var path in paths.GetItemPhotoPaths(currentItem))
-                ImagePaths.Add(path);
+            var captured = await retryService.RetryAsync(
+                attempt: async () => (await imageService.CaptureItemPhotoAsync(currentItem)) > 0,
+                canceledTitle: "Photo capture canceled",
+                canceledMessage: "Please try again or continue without a photo.",
+                retryButton: "Retry",
+                continueButton: "Continue",
+                continueAlertTitle: "No photo",
+                continueAlertMessage: "Continuing without a photo.");
+
+            if (captured)
+            {
+                ImagePaths.Clear();
+                foreach (var path in paths.GetItemPhotoPaths(currentItem))
+                    ImagePaths.Add(path);
+            }
         });
     }
 }

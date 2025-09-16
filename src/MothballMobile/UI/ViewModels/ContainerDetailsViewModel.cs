@@ -16,6 +16,7 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
     private readonly INavigationService? nav;
     private readonly IPopupService popup;
     private readonly ImageService imageService;
+    private readonly IRetryService retryService;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -43,6 +44,7 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         IImagePathResolver paths,
         IPopupService popup,
         ImageService imageService,
+        IRetryService retryService,
         INavigationService? nav = null,
         IDebouncer? debouncer = null)
     {
@@ -50,6 +52,7 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         this.paths = paths;
         this.popup = popup;
         this.imageService = imageService;
+        this.retryService = retryService;
         this.nav = nav;
         this.debouncer = debouncer ?? new Debouncer(250);
     }
@@ -84,8 +87,8 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
             return;
         }
 
-    var (container, items) = result.Value;
-    currentContainer = container;
+        var (container, items) = result.Value;
+        currentContainer = container;
         Name = container.Name;
         Notes = container.Notes;
         ItemCount = $"Items stored: {container.ItemCount}";
@@ -112,8 +115,6 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         ApplyFilter();
     }
 
-    // Called automatically by MVVM Toolkit when SearchQuery changes
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Called by MVVM Toolkit source generator")]
     partial void OnSearchQueryChanged(string value)
     {
         // Debounce user typing to avoid excessive filtering on fast input
@@ -124,6 +125,7 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
     {
         Items.Clear();
         IEnumerable<ItemWithPhotosViewModel> source = allItems;
+
         if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
             var q = SearchQuery.Trim();
@@ -146,6 +148,7 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
             message: "Delete this container? Items inside will not be deleted, only the relation.",
             accept: "Delete",
             cancel: "Cancel");
+
         if (!confirmed) return;
 
         await inventoryRepository.DeleteContainerAsync(ContainerId);
@@ -159,12 +162,24 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
     private async Task AddPhotoAsync()
     {
         if (currentContainer is null) return;
+
         await RunCommandAsync(async () =>
         {
-            await imageService.CaptureContainerPhotoAsync(currentContainer);
-            ContainerImagePaths.Clear();
-            foreach (var path in paths.GetContainerPhotoPaths(currentContainer))
-                ContainerImagePaths.Add(path);
+            var captured = await retryService.RetryAsync(
+                attempt: async () => (await imageService.CaptureContainerPhotoAsync(currentContainer)) > 0,
+                canceledTitle: "Photo capture canceled",
+                canceledMessage: "Please try again or continue without a photo.",
+                retryButton: "Retry",
+                continueButton: "Continue",
+                continueAlertTitle: "No photo",
+                continueAlertMessage: "Continuing without a photo.");
+
+            if (captured)
+            {
+                ContainerImagePaths.Clear();
+                foreach (var path in paths.GetContainerPhotoPaths(currentContainer))
+                    ContainerImagePaths.Add(path);
+            }
         });
     }
 

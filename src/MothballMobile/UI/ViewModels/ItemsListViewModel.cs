@@ -32,7 +32,7 @@ public partial class ItemsListViewModel : BaseViewModel, IDisposable, MothballMo
         this.paths = paths;
         this.inventoryRepository = inventoryRepository;
         this.nav = nav;
-    this.debouncer = debouncer ?? new Debouncer(300);
+        this.debouncer = debouncer ?? new Debouncer(300);
     }
 
     private bool disposed;
@@ -117,15 +117,9 @@ public partial class ItemsListViewModel : BaseViewModel, IDisposable, MothballMo
         }
     }
 
-    // MVVM Toolkit hook: raised when Query changes
-    // Source generator hook from [ObservableProperty]
-    // The CommunityToolkit.Mvvm generator invokes this partial method
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Called by MVVM Toolkit source generator")]
     partial void OnQueryChanged(string value)
     {
         // Debounce user typing
         debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(() => _ = SearchAsync()));
     }
-    #pragma warning restore IDE0051
-
 }

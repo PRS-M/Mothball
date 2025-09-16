@@ -21,22 +21,22 @@
                 <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
                     <!-- Name -->
                     <Label Text="Name" TextColor="{StaticResource ColorMuted}" Margin="4,0"/>
-            <Border Style="{StaticResource ValidatedInputWrapper}" WidthRequest="{StaticResource WidthM}">
-                <Entry Style="{StaticResource Input}"
-                       Placeholder="Enter container name"
-                       Text="{Binding Name}"
-                       ReturnType="Done"
-                       ReturnCommand="{Binding AddContainerCommand}"/>
-            </Border>
-            <Label Text="{Binding ValidationMessage}"
-               TextColor="{StaticResource ColorDanger}"
-               IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+                    <Border Padding="0" Style="{StaticResource ValidatedInputWrapper}" WidthRequest="{StaticResource WidthM}">
+                        <Entry Style="{StaticResource Input}"
+                            Placeholder="Enter container name"
+                            Text="{Binding Name}"
+                            ReturnType="Done"
+                            ReturnCommand="{Binding AddContainerCommand}"/>
+                    </Border>
+                    <Label Text="{Binding ValidationMessage}"
+                        TextColor="{StaticResource ColorDanger}"
+                        IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
 
                     <!-- Notes -->
                     <Label Text="Notes" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
-            <Entry Style="{StaticResource Input}"
-                            Placeholder="Enter a description or notes."
-                            Text="{Binding Notes}"/>
+                    <Entry Style="{StaticResource Input}"
+                        Placeholder="Enter a description or notes."
+                        Text="{Binding Notes}"/>
 
                     <!-- Action -->
                     <Button Text="Add Container (Choose Photo)"

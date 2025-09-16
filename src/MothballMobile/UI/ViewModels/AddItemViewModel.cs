@@ -30,7 +30,6 @@ public partial class AddItemViewModel : BaseViewModel
 
     private bool CanAdd() => !string.IsNullOrWhiteSpace(Name);
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Called by MVVM Toolkit source generator")]
     partial void OnNameChanged(string value)
     {
         AddCommand.NotifyCanExecuteChanged();

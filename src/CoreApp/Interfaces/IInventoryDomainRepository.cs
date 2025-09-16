@@ -43,11 +43,10 @@ public interface IInventoryDomainRepository
     Task<List<Item>> GetAllItemsWithPhotosAsync();
 
     /// <summary>
-    /// Loads items with their photos filtered by a domain-level predicate.
-    /// The predicate is defined on the domain model and must only reference
-    /// properties that are persisted (e.g., UniqueId, Name).
+    /// Loads items with their photos filtered by a search term applied to persisted properties
+    /// (for example, name or other searchable fields).
     /// </summary>
-    /// <param name="predicate">Domain predicate for filtering items.</param>
+    /// <param name="searchTerm">The search term used to filter items.</param>
     /// <returns>A list of Items with their photos loaded.</returns>
     Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm);
 
@@ -65,10 +64,23 @@ public interface IInventoryDomainRepository
     /// <returns>The Container or null if the item is not related to any container.</returns>
     Task<Container?> GetContainerForItemAsync(string itemId);
 
+    /// <summary>
+    /// Inserts a new container into the data store.
+    /// </summary>
+    /// <param name="container">The domain container to insert.</param>
     Task InsertContainerAsync(Container container);
 
+    /// <summary>
+    /// Inserts a new item into the data store.
+    /// </summary>
+    /// <param name="item">The domain item to insert.</param>
     Task InsertItemAsync(Item item);
 
+    /// <summary>
+    /// Inserts a new image and associates it with the owning aggregate (container or item).
+    /// </summary>
+    /// <param name="imageItem">The image to insert.</param>
+    /// <param name="ownerId">The unique identifier of the owner aggregate.</param>
     Task InsertImageItemAsync(ImageItem imageItem, Guid ownerId);
 
     /// <summary>
@@ -78,10 +90,23 @@ public interface IInventoryDomainRepository
     /// <param name="containerId">Container unique id (Guid).</param>
     Task InsertItemContainerRelation(Guid itemId, Guid containerId);
 
+    /// <summary>
+    /// Updates an existing container in the data store.
+    /// </summary>
+    /// <param name="container">The container with updated state.</param>
     Task UpdateContainerAsync(Container container);
 
+    /// <summary>
+    /// Updates an existing item in the data store.
+    /// </summary>
+    /// <param name="item">The item with updated state.</param>
     Task UpdateItemAsync(Item item);
 
+    /// <summary>
+    /// Updates an existing image associated with the specified owner aggregate.
+    /// </summary>
+    /// <param name="image">The image with updated state.</param>
+    /// <param name="ownerId">The unique identifier of the owner aggregate.</param>
     Task UpdateImageItemAsync(ImageItem image, Guid ownerId);
 
     /// <summary>
