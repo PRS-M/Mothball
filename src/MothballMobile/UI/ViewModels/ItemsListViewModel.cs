@@ -7,16 +7,13 @@ using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewModel>, IDisposable, IInitializable
+public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewModel>, IDisposable
 {
     private readonly IImagePathResolver paths;
     private readonly IInventoryDomainRepository inventoryRepository;
     private readonly INavigationService nav;
     private readonly IDebouncer debouncer;
     private readonly DemoDataSeeder? demoSeeder;
-
-    [ObservableProperty]
-    private bool isRefreshing;
 
     [ObservableProperty]
     private string query = string.Empty;
@@ -66,10 +63,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     }
 
     [RelayCommand]
-    private Task RefreshAsync()
-    {
-        return InitializeAsync();
-    }
+    private Task RefreshAsync() => InitializeAsync();
 
     [RelayCommand]
     private async Task SearchAsync()
@@ -109,30 +103,21 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
 
     private async Task LoadQuerySearchAsync(string? query)
     {
-        Items.Clear();
-        List<Item>? items;
-
         if (string.IsNullOrWhiteSpace(query))
         {
-            currentPage = 0;
-            items = await inventoryRepository.GetAllItemsWithPhotosAsync(currentPage, pageSize);
+            // restore normal paging
+            await ReplaceWithFirstPagedAsync();
         }
         else
         {
-            items = await inventoryRepository.GetItemsWithPhotosAsync(query);
-        }
-
-        foreach (var item in items)
-        {
-            var vm = new ItemViewModel(item, paths, nav);
-            Items.Add(vm);
-            _ = vm.LoadImageAsync();
+            var items = await inventoryRepository.GetItemsWithPhotosAsync(query);
+            ReplaceWithFullResultSet(items);
         }
     }
 
     partial void OnQueryChanged(string value)
     {
-        // Debounce user typing
+        // Debounce user typing to avoid flooding search
         debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(() => _ = SearchAsync()));
     }
 
