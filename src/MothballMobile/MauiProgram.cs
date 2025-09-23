@@ -55,17 +55,34 @@ public static class MauiProgram
 	}
 
 	private static void ConfigureServices(IServiceCollection services)
+    {
+        RegisterServices(services);
+        RegisterDatabase(services);
+        RegisterViewModels(services);
+    }
+
+    private static void RegisterServices(IServiceCollection services)
 	{
 		// Register your services here
-	services.AddTransient<MothballMobile.Infrastructure.IDebouncer>(_ => new MothballMobile.Infrastructure.Debouncer(300));
+		services.AddTransient<IDebouncer>(_ => new Debouncer(300));
 		services.AddSingleton<ICameraHandler, CameraHandler>();
 		services.AddSingleton<IFileHandler, MobileFileHandler>();
 		services.AddSingleton<ImageService>();
 		services.AddSingleton<JsonHandler>();
 		services.AddSingleton<InventoryJsonHandler>();
-		services.AddSingleton(typeof(IFileSystem), FileSystem.Current);
-		services.AddSingleton(typeof(IMediaPicker), MediaPicker.Default);
+		services.AddSingleton(FileSystem.Current);
+		services.AddSingleton(MediaPicker.Default);
 
+		// Navigation abstraction
+		services.AddSingleton<INavigationService, ShellNavigationService>();
+		// Popup abstraction
+		services.AddSingleton<IPopupService, MauiPopupService>();
+		// Retry abstraction
+		services.AddSingleton<IRetryService, RetryService>();
+	}
+
+    private static void RegisterDatabase(IServiceCollection services)
+	{
 		// Database and repositories
 		services.AddSingleton<MothballDatabase>();
 		services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
@@ -74,17 +91,16 @@ public static class MauiProgram
 #if DEBUG
 		services.AddSingleton<DemoDataSeeder>();
 #endif
-		// Navigation abstraction
-		services.AddSingleton<Infrastructure.INavigationService, Infrastructure.ShellNavigationService>();
-		// Popup abstraction
-		services.AddSingleton<Infrastructure.IPopupService, Infrastructure.MauiPopupService>();
-		// Retry abstraction
-		services.AddSingleton<Infrastructure.IRetryService, Infrastructure.RetryService>();
-		services.AddTransient<AddContainerViewModel>();
-		services.AddTransient<ContainerListViewModel>();
-		services.AddTransient<ItemsListViewModel>();
-		services.AddTransient<ContainerDetailsViewModel>();
-		services.AddTransient<ItemDetailsViewModel>();
-		services.AddTransient<AddItemViewModel>();
 	}
+
+    private static void RegisterViewModels(IServiceCollection services)
+    {
+        // ViewModels
+        services.AddTransient<AddContainerViewModel>();
+        services.AddTransient<ContainerListViewModel>();
+        services.AddTransient<ItemsListViewModel>();
+        services.AddTransient<ContainerDetailsViewModel>();
+        services.AddTransient<ItemDetailsViewModel>();
+        services.AddTransient<AddItemViewModel>();
+    }
 }

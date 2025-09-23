@@ -63,6 +63,14 @@ public interface IRepository<T> where T : new()
     /// <returns>List of entities.</returns>
     Task<List<T>> GetAllAsync();
 
+    /// <summary>
+    /// Returns rows from the table with paging.
+    /// </summary>
+    /// <param name="skip">Number of rows to skip.</param>
+    /// <param name="take">Number of rows to take.</param>
+    /// <returns>Rows for the requested page.</returns>
+    Task<List<T>> GetAllAsync(int skip, int take);
+
     // Predicate-based queries
     /// <summary>
     /// Filters rows by predicate.

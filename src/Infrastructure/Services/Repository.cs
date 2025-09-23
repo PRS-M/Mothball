@@ -73,6 +73,13 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
     }
 
     /// <inheritdoc />
+    public async Task<List<T>> GetAllAsync(int skip, int take)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.Table<T>().Skip(skip).Take(take).ToListAsync();
+    }
+
+    /// <inheritdoc />
     public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
         => await (await Task.Run(async () =>
         {

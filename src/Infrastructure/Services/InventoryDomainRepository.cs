@@ -34,23 +34,39 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     /// <inheritdoc />
     public async Task<Container?> GetContainerAsync(string containerId)
     {
-    logger.LogDebug("GetContainerAsync: containerId={ContainerId}", containerId);
-    var db = await containers.GetAsync(containerId);
-        if (db is null) return null;
+        logger.LogDebug("GetContainerAsync: containerId={ContainerId}", containerId);
+        DbContainer? dbContainer = await containers.GetAsync(containerId);
+        if (dbContainer is null) return null;
 
         // Load container photo if any
-    var dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == db.ContainerId);
-        return db.ToDomain(dbPhotos);
+        var dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
+        return dbContainer.ToDomain(dbPhotos);
     }
 
     /// <inheritdoc />
     public async Task<List<Container>> GetAllContainersAsync()
     {
-    var dbContainers = await containers.GetAllAsync();
-        var containerIds = dbContainers.Select(c => (object)c.ContainerId).ToList();
-    var photosList = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), containerIds);
+        List<DbContainer> dbContainers = await containers.GetAllAsync();
+        List<object> containerIds = dbContainers.Select(c => (object)c.ContainerId).ToList();
+        List<DbImage> photosList = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), containerIds);
 
-    var photosByContainer = GroupPhotosByOwnerUniqueId(photosList);
+        Dictionary<Guid, IEnumerable<DbImage>> photosByContainer = GroupPhotosByOwnerUniqueId(photosList);
+
+        return MapDbContainersToDomain(dbContainers, photosByContainer);
+    }
+
+    public async Task<List<Container>> GetAllContainersAsync(int pageNumber, int pageSize)
+    {
+        if (pageNumber < 0) throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be greater than or equal to 0.");
+        if (pageSize < 1) throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than 0.");
+
+        // Zero-based page index
+        int offset = pageNumber * pageSize;
+        List<DbContainer> dbContainers = await containers.GetAllAsync(offset, pageSize);
+        List<object> containerIds = dbContainers.Select(c => (object)c.ContainerId).ToList();
+        List<DbImage> photosList = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), containerIds);
+
+        Dictionary<Guid, IEnumerable<DbImage>> photosByContainer = GroupPhotosByOwnerUniqueId(photosList);
 
         return MapDbContainersToDomain(dbContainers, photosByContainer);
     }
@@ -70,11 +86,11 @@ public class InventoryDomainRepository : IInventoryDomainRepository
 
         var itemIds = dbItemContainerRelations.Select(r => (object)r.ItemId).ToList();
 
-    List<DbItem> itemsList = await items.WhereInAsync(nameof(DbItem.ItemId), itemIds);
-    List<DbImage> photosForItems = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
-    Dictionary<Guid, IEnumerable<DbImage>> photosByItem = GroupPhotosByOwnerUniqueId(photosForItems);
+        List<DbItem> itemsList = await items.WhereInAsync(nameof(DbItem.ItemId), itemIds);
+        List<DbImage> photosForItems = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
+        Dictionary<Guid, IEnumerable<DbImage>> photosByItem = GroupPhotosByOwnerUniqueId(photosForItems);
 
-    return MapDbItemsToDomain(itemsList, photosByItem);
+        return MapDbItemsToDomain(itemsList, photosByItem);
     }
 
     /// <inheritdoc />
@@ -82,18 +98,18 @@ public class InventoryDomainRepository : IInventoryDomainRepository
     {
         var container = await GetContainerAsync(containerId);
         if (container is null) return null;
-    var itemsForContainer = await GetItemsForContainerAsync(containerId);
-    return (container, itemsForContainer);
+        var itemsForContainer = await GetItemsForContainerAsync(containerId);
+        return (container, itemsForContainer);
     }
 
     /// <inheritdoc />
     public async Task<Item?> GetItemWithPhotosAsync(string itemId)
     {
         logger.LogDebug("GetItemWithPhotosAsync: itemId={ItemId}", itemId);
-    var dbItem = await items.GetAsync(itemId);
+        var dbItem = await items.GetAsync(itemId);
         if (dbItem is null) return null;
 
-    var dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbItem.ItemId);
+        var dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbItem.ItemId);
         return dbItem.ToDomain(dbPhotos);
     }
 
@@ -122,6 +138,22 @@ public class InventoryDomainRepository : IInventoryDomainRepository
         var photosAll = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
 
         var photosByItem = GroupPhotosByOwnerUniqueId(photosAll);
+
+        return MapDbItemsToDomain(itemsAll, photosByItem);
+    }
+
+    public async Task<List<Item>> GetAllItemsWithPhotosAsync(int pageNumber, int pageSize)
+    {
+        if (pageNumber < 0) throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be greater than or equal to 0.");
+        if (pageSize < 1) throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than 0.");
+
+        // Zero-based page index
+        int offset = pageNumber * pageSize;
+        List<DbItem> itemsAll = await items.GetAllAsync(offset, pageSize);
+        List<object> itemIds = itemsAll.Select(i => (object)i.ItemId).ToList();
+        List<DbImage> photosAll = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
+
+        Dictionary<Guid, IEnumerable<DbImage>> photosByItem = GroupPhotosByOwnerUniqueId(photosAll);
 
         return MapDbItemsToDomain(itemsAll, photosByItem);
     }

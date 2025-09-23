@@ -23,6 +23,14 @@ public interface IInventoryDomainRepository
     Task<List<Container>> GetAllContainersAsync();
 
     /// <summary>
+    /// Loads Containers with their photos (if any) using paging.
+    /// </summary>
+    /// <param name="pageNumber">The page number to load.</param>
+    /// <param name="pageSize">The number of containers per page.</param>
+    /// <returns>List of Containers for the requested page.</returns>
+    Task<List<Container>> GetAllContainersAsync(int pageNumber, int pageSize);
+
+    /// <summary>
     /// Loads domain Items for a container, each with its photos (filenames and any stored image data).
     /// </summary>
     /// <param name="containerId">The container UniqueId.</param>
@@ -41,6 +49,8 @@ public interface IInventoryDomainRepository
     /// </summary>
     /// <returns>A list of Items with their photos loaded.</returns>
     Task<List<Item>> GetAllItemsWithPhotosAsync();
+
+    Task<List<Item>> GetAllItemsWithPhotosAsync(int pageNumber, int pageSize);
 
     /// <summary>
     /// Loads items with their photos filtered by a search term applied to persisted properties

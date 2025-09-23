@@ -49,7 +49,9 @@
                       IsRefreshing="{Binding IsRefreshing}"
                       Command="{Binding RefreshCommand}">
             <CollectionView ItemsSource="{Binding Items}"
-                            SelectionMode="None">
+                            SelectionMode="None"
+                            RemainingItemsThreshold="4"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical"
                                      Span="{OnIdiom Phone=1, Tablet=2, Desktop=2}"

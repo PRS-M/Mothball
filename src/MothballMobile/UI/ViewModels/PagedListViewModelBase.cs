@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MothballMobile.Infrastructure;
@@ -7,7 +8,6 @@ namespace MothballMobile.UI.ViewModels;
 
 public abstract partial class PagedListViewModelBase<TSource, TViewModel> : BaseViewModel, IInitializable
 {
-    protected readonly List<TSource> allItems = new();
     protected int currentPage = 0;
     protected readonly int pageSize;
 
@@ -22,39 +22,39 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     {
         await RunCommandAsync(async () =>
         {
-            await LoadAllAsync();
+            await EnsureDummyData();
+
             currentPage = 0;
             Items.Clear();
-            LoadNextPageCore();
+
+            await LoadNextPageCore();
         }, showRefreshing: true);
     }
 
     [RelayCommand]
-    public void LoadNextPage()
+    public async Task LoadNextPage()
     {
         if (IsBusy) return;
-        if (allItems.Count == 0) return;
-        LoadNextPageCore();
+        await LoadNextPageCore();
     }
 
-    private void LoadNextPageCore()
+    private async Task LoadNextPageCore()
     {
-        if (allItems.Count == 0) return;
-        int start = currentPage * pageSize;
-        if (start >= allItems.Count) return;
-        int count = Math.Min(pageSize, allItems.Count - start);
-        var page = allItems.Skip(start).Take(count).ToList();
+        var page = await LoadAsync(currentPage, pageSize);
+
+        if (page.Count == 0) return;
         foreach (var s in page)
         {
             var vm = MapToViewModel(s);
             Items.Add(vm);
             OnViewModelAdded(vm);
         }
+
         currentPage++;
     }
 
     protected virtual void OnViewModelAdded(TViewModel vm) { }
-
-    protected abstract Task LoadAllAsync();
+    protected abstract Task EnsureDummyData();
+    protected abstract Task<List<TSource>> LoadAsync(int pageNumber, int pageSize);
     protected abstract TViewModel MapToViewModel(TSource source);
 }
