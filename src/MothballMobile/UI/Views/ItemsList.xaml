@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
              xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
              xmlns:views="clr-namespace:MothballMobile.UI.Views"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              x:Class="MothballMobile.UI.Views.ItemsList"
              x:Name="ItemsPage"
              x:DataType="vm:ItemsListViewModel"
@@ -70,12 +71,31 @@
                                 <TapGestureRecognizer Command="{Binding NavigateToItemDetailsCommand}" />
                             </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                                <Image Source="{Binding ImagePath, Converter={StaticResource PathToImage}}"
+                                <CarouselView
+                                    Grid.Column="0"
+                                    ItemsSource="{Binding ImagePaths}"
+                                    HeightRequest="72"
+                                    WidthRequest="72">
+                                    <CarouselView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Image x:DataType="sys:String"
+                                                Source="{Binding ., Converter={StaticResource PathToImage}}"
+                                                Aspect="AspectFill"
+                                                HeightRequest="72"
+                                                WidthRequest="72">
+                                                <Image.Clip>
+                                                    <RoundRectangleGeometry CornerRadius="10" Rect="0,0,72,72" />
+                                                </Image.Clip>
+                                            </Image>
+                                        </DataTemplate>
+                                    </CarouselView.ItemTemplate>
+                                </CarouselView>
+                                <!-- <Image Source="{Binding ImagePath, Converter={StaticResource PathToImage}}"
                                        Aspect="AspectFill" HeightRequest="72" WidthRequest="72">
                                     <Image.Clip>
                                         <RoundRectangleGeometry CornerRadius="10" Rect="0,0,72,72" />
                                     </Image.Clip>
-                                </Image>
+                                </Image> -->
                                 <VerticalStackLayout Grid.Column="1" Spacing="4">
                                     <Label Text="{Binding Name}" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}" />
                                     <Label Text="{Binding Description}" TextColor="{StaticResource ColorMuted}" FontSize="12" LineBreakMode="TailTruncation" />

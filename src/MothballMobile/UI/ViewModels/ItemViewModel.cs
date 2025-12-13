@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace MothballMobile.UI.ViewModels;
@@ -11,28 +12,33 @@ public partial class ItemViewModel : ObservableObject
     public Item Item { get; }
     private readonly IImagePathResolver paths;
     private readonly Infrastructure.INavigationService nav;
-    private string imagePath;
+    private ObservableCollection<string> imagePaths;
 
     public ItemViewModel(Item item, IImagePathResolver paths, Infrastructure.INavigationService nav)
     {
         Item = item;
         this.paths = paths;
         this.nav = nav;
-        this.imagePath = "dotnet_bot.png";
+        this.imagePaths = new ObservableCollection<string>();
     }
 
     public string Name => Item.Name;
     public string Description => Item.Description;
 
-    public string ImagePath
+    public ObservableCollection<string> ImagePaths
     {
-        get => imagePath;
-        set => SetProperty(ref imagePath, value);
+        get => imagePaths;
+        set => SetProperty(ref imagePaths, value);
     }
 
     public Task LoadImageAsync()
     {
-        ImagePath = paths.GetPrimaryItemPhotoPath(Item);
+        IEnumerable<string> itemPhotoPaths = paths.GetItemPhotoPaths(Item);
+        foreach (var imagePath in itemPhotoPaths)
+        {
+            ImagePaths.Add(imagePath);
+        }
+
         return Task.CompletedTask;
     }
 
