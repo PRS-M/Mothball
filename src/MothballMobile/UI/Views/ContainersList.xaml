@@ -1,30 +1,46 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
-             xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
-             xmlns:views="clr-namespace:MothballMobile.UI.Views"
-             x:Class="MothballMobile.UI.Views.ContainersList"
-             x:DataType="vm:ContainerListViewModel"
-             Title="Containers"
-             BackgroundColor="#FF182441">
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:views="clr-namespace:MothballMobile.UI.Views"
+                x:Class="MothballMobile.UI.Views.ContainersList"
+                x:DataType="vm:ContainerListViewModel"
+                Title="Containers"
+                BackgroundColor="#FF182441">
 
     <ContentPage.ToolbarItems>
-    <ToolbarItem Priority="0" Order="Primary" Command="{Binding NavigateToAddContainerCommand}">
+        <ToolbarItem Priority="0"
+                Order="Primary"
+                Command="{Binding NavigateToAddContainerCommand}">
             <ToolbarItem.IconImageSource>
-                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF067;" Color="{StaticResource ColorPrimaryIcon}" Size="22" />
+                <FontImageSource FontFamily="FontAwesomeSolid"
+                        Glyph="&#xF067;"
+                        Color="{StaticResource ColorPrimaryIcon}"
+                        Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
     </ContentPage.ToolbarItems>
 
-    <Grid Padding="16" RowDefinitions="Auto,*" ColumnDefinitions="*,Auto">
+    <Grid Padding="16"
+            RowDefinitions="Auto,*"
+            ColumnDefinitions="*,Auto">
         <!-- Header -->
-        <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4" Margin="0,0,0,10" VerticalOptions="Center">
-            <Label Text="Containers" FontSize="28" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
-            <Label Text="Browse your storage" TextColor="{StaticResource ColorMuted}" FontSize="14"/>
+        <VerticalStackLayout Grid.Row="0"
+                Grid.Column="0"
+                Spacing="4"
+                Margin="0,0,0,10"
+                VerticalOptions="Center">
+            <Label Text="Containers"
+                    FontSize="28"
+                    FontAttributes="Bold"
+                    TextColor="{StaticResource ColorPrimaryText}"/>
+            <Label Text="Browse your storage"
+                    TextColor="{StaticResource ColorMuted}"
+                    FontSize="14"/>
         </VerticalStackLayout>
 
-    <!-- Toolbar button replaces inline add button -->
+        <!-- Toolbar button replaces inline add button -->
         <CollectionView x:Name="ContainersCollectionView"
                         Grid.Row="1"
                         Grid.ColumnSpan="2"
@@ -34,12 +50,20 @@
                         RemainingItemsThreshold="2"
                         RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
             <CollectionView.ItemsLayout>
-                <GridItemsLayout Orientation="Vertical" Span="1" VerticalItemSpacing="12" />
+                <GridItemsLayout Orientation="Vertical"
+                        Span="1"
+                        VerticalItemSpacing="12"/>
             </CollectionView.ItemsLayout>
             <CollectionView.EmptyView>
-                <VerticalStackLayout Padding="40" Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
-                    <Label Text="No containers yet" TextColor="{StaticResource ColorMuted}"/>
-                    <Label Text="Tap + to add your first container" TextColor="{StaticResource ColorMuted}" FontSize="12"/>
+                <VerticalStackLayout Padding="40"
+                        Spacing="10"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center">
+                    <Label Text="No containers yet"
+                            TextColor="{StaticResource ColorMuted}"/>
+                    <Label Text="Tap + to add your first container"
+                            TextColor="{StaticResource ColorMuted}"
+                            FontSize="12"/>
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
@@ -49,7 +73,7 @@
                         Name="{Binding Name}"
                         Notes="{Binding Notes}"
                         ItemCount="{Binding ItemCount}"
-                        ImagePaths="{Binding ImagePaths}" />
+                        ImagePaths="{Binding ImagePaths}"/>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

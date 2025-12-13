@@ -1,48 +1,62 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:MothballMobile.UI.ViewModels"
-             xmlns:views="clr-namespace:MothballMobile.UI.Views"
-             x:Class="MothballMobile.UI.Views.AddContainer"
-             x:DataType="local:AddContainerViewModel"
-             Title="Add Container"
-             BackgroundColor="#0F172A">
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:local="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:views="clr-namespace:MothballMobile.UI.Views"
+                x:Class="MothballMobile.UI.Views.AddContainer"
+                x:DataType="local:AddContainerViewModel"
+                Title="Add Container"
+                BackgroundColor="#0F172A">
 
     <ScrollView>
-        <Grid Padding="20" RowDefinitions="Auto,Auto" ColumnDefinitions="*">
-            <VerticalStackLayout Grid.Row="0" Spacing="6" Margin="0,6,0,14">
-                <Label Text="Create a new container" FontSize="24" FontAttributes="Bold"
+        <Grid Padding="20"
+                RowDefinitions="Auto,Auto"
+                ColumnDefinitions="*">
+            <VerticalStackLayout Grid.Row="0"
+                    Spacing="6"
+                    Margin="0,6,0,14">
+                <Label Text="Create a new container"
+                        FontSize="24"
+                        FontAttributes="Bold"
                        TextColor="{StaticResource ColorPrimaryText}"/>
                 <Label Text="Enter the details below"
                        TextColor="{StaticResource ColorMuted}"/>
             </VerticalStackLayout>
 
-            <Border Grid.Row="1" Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+            <Border Grid.Row="1"
+                    Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12"
+                        HorizontalOptions="Center">
                     <!-- Name -->
-                    <Label Text="Name" TextColor="{StaticResource ColorMuted}" Margin="4,0"/>
-                    <Border Padding="0" Style="{StaticResource ValidatedInputWrapper}" WidthRequest="{StaticResource WidthM}">
+                    <Label Text="Name"
+                            TextColor="{StaticResource ColorMuted}"
+                            Margin="4,0"/>
+                    <Border Padding="0"
+                            Style="{StaticResource ValidatedInputWrapper}"
+                            WidthRequest="{StaticResource WidthM}">
                         <Entry Style="{StaticResource Input}"
-                            Placeholder="Enter container name"
-                            Text="{Binding Name}"
-                            ReturnType="Done"
-                            ReturnCommand="{Binding AddContainerCommand}"/>
+                               Placeholder="Enter container name"
+                               Text="{Binding Name}"
+                               ReturnType="Done"
+                               ReturnCommand="{Binding AddContainerCommand}"/>
                     </Border>
                     <Label Text="{Binding ValidationMessage}"
-                        TextColor="{StaticResource ColorDanger}"
-                        IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+                           TextColor="{StaticResource ColorDanger}"
+                           IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
 
                     <!-- Notes -->
-                    <Label Text="Notes" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
+                    <Label Text="Notes"
+                            TextColor="{StaticResource ColorMuted}"
+                            Margin="4,8,4,0"/>
                     <Entry Style="{StaticResource Input}"
-                        Placeholder="Enter a description or notes."
-                        Text="{Binding Notes}"/>
+                           Placeholder="Enter a description or notes."
+                           Text="{Binding Notes}"/>
 
                     <!-- Action -->
                     <Button Text="Add Container (Choose Photo)"
-                        Style="{StaticResource PrimaryButton}"
-                        WidthRequest="{StaticResource WidthM}"
-                        Command="{Binding AddContainerCommand}"/>
+                            Style="{StaticResource PrimaryButton}"
+                            WidthRequest="{StaticResource WidthM}"
+                            Command="{Binding AddContainerCommand}"/>
                 </VerticalStackLayout>
             </Border>
         </Grid>
