@@ -14,5 +14,7 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute("ContainerDetails", typeof(UI.Views.ContainerDetails));
 		Routing.RegisterRoute("ItemDetails", typeof(UI.Views.ItemDetails));
 		Routing.RegisterRoute("AddItem", typeof(UI.Views.AddItem));
+		Routing.RegisterRoute("AddExistingItemToContainer", typeof(UI.Views.AddExistingItemToContainer));
+		Routing.RegisterRoute("AssociateItemWithContainer", typeof(UI.Views.AssociateItemWithContainer));
 	}
 }

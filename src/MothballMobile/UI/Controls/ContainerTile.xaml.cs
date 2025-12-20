@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
@@ -12,7 +11,7 @@ public partial class ContainerTile : ContentView
 		InitializeComponent();
 
 		// Ensure the collection exists to allow XAML binding immediately
-	ImagePaths = new ObservableCollection<string>();
+		ImagePaths = new ObservableCollection<string>();
 	}
 
 	public static readonly BindableProperty CommandProperty =

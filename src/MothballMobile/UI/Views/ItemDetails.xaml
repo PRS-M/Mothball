@@ -12,13 +12,13 @@
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
-                Order="Primary"
-                Command="{Binding DeleteItemCommand}">
+                     Order="Primary"
+                     Command="{Binding DeleteItemCommand}">
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontAwesomeSolid"
-                        Glyph="&#xF1F8;"
-                        Color="{StaticResource ColorPrimaryIcon}"
-                        Size="22"/>
+                                 Glyph="&#xF1F8;"
+                                 Color="{StaticResource ColorPrimaryIcon}"
+                                 Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
     </ContentPage.ToolbarItems>
@@ -29,36 +29,41 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="16"
-                Spacing="16">
+                             Spacing="16">
             <!-- Title and optional container jump -->
             <Grid ColumnDefinitions="*,Auto"
-                    RowDefinitions="Auto"
-                    ColumnSpacing="12">
+                  RowDefinitions="Auto"
+                  ColumnSpacing="12">
                 <Label Text="{Binding Name}"
-                        FontSize="22"
-                        FontAttributes="Bold"
-                        TextColor="{StaticResource ColorPrimaryText}"/>
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource ColorPrimaryText}"/>
                 <Button Grid.Column="1"
-                        Text="Go to container"
+                        Text="Go to the container"
                         Style="{StaticResource PrimaryButton}"
                         IsVisible="{Binding HasContainerRelation}"
                         Command="{Binding NavigateToContainerCommand}"/>
+                <Button Grid.Column="1"
+                        Text="Associate with a container"
+                        Style="{StaticResource PrimaryButton}"
+                    IsVisible="{Binding HasNoContainerRelation}"
+                    Command="{Binding NavigateToAssociateWithContainerCommand}"/>
             </Grid>
 
             <!-- Photos carousel -->
             <Border Style="{StaticResource Card}"
                     Padding="12">
                 <CarouselView ItemsSource="{Binding ImagePaths}"
-                        HeightRequest="220">
+                              HeightRequest="220">
                     <CarouselView.ItemTemplate>
                         <DataTemplate>
                             <Image x:DataType="sys:String"
-                                    Source="{Binding ., Converter={StaticResource PathToImage}}"
-                                    Aspect="AspectFill"
-                                    HeightRequest="220">
+                                   Source="{Binding ., Converter={StaticResource PathToImage}}"
+                                   Aspect="AspectFill"
+                                   HeightRequest="220">
                                 <Image.Clip>
                                     <RoundRectangleGeometry CornerRadius="10"
-                                            Rect="0,0,400,220"/>
+                                                            Rect="0,0,400,220"/>
                                 </Image.Clip>
                             </Image>
                         </DataTemplate>
@@ -70,10 +75,10 @@
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Description"
-                            FontAttributes="Bold"
-                            TextColor="{StaticResource ColorPrimaryText}"/>
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource ColorPrimaryText}"/>
                     <Label Text="{Binding Description}"
-                            TextColor="{StaticResource ColorMuted}"/>
+                           TextColor="{StaticResource ColorMuted}"/>
                 </VerticalStackLayout>
             </Border>
 

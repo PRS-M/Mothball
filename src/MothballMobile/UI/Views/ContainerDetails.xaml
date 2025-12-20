@@ -13,13 +13,13 @@
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
-                Order="Primary"
-                Command="{Binding DeleteContainerCommand}">
+                     Order="Primary"
+                     Command="{Binding DeleteContainerCommand}">
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontAwesomeSolid"
-                        Glyph="&#xF1F8;"
-                        Color="{StaticResource ColorPrimaryIcon}"
-                        Size="22"/>
+                                 Glyph="&#xF1F8;"
+                                 Color="{StaticResource ColorPrimaryIcon}"
+                                 Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
     </ContentPage.ToolbarItems>
@@ -30,47 +30,47 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="16"
-                Spacing="16">
+                             Spacing="16">
             <!-- Top: condensed container details (similar to ContainerTile) -->
             <Border Style="{StaticResource Card}"
                     Padding="12">
                 <Grid ColumnDefinitions="*,Auto"
-                        RowDefinitions="Auto,Auto,Auto"
-                        ColumnSpacing="12"
-                        RowSpacing="6">
+                      RowDefinitions="Auto,Auto,Auto"
+                      ColumnSpacing="12"
+                      RowSpacing="6">
                     <Label Grid.Row="0"
-                            Grid.ColumnSpan="2"
-                            Text="{Binding Name}"
-                            FontSize="22"
-                            FontAttributes="Bold"
-                            TextColor="{StaticResource ColorPrimaryText}"/>
+                           Grid.ColumnSpan="2"
+                           Text="{Binding Name}"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource ColorPrimaryText}"/>
                     <Label Grid.Row="1"
-                            Grid.Column="0"
-                            Text="{Binding ItemCount}"
-                            TextColor="{StaticResource ColorPrimaryText}"/>
+                           Grid.Column="0"
+                           Text="{Binding ItemCount}"
+                           TextColor="{StaticResource ColorPrimaryText}"/>
                     <Label Grid.Row="2"
-                            Grid.Column="0"
-                            Text="{Binding Notes}"
-                            TextColor="{StaticResource ColorMuted}"
-                            FontSize="12"/>
+                           Grid.Column="0"
+                           Text="{Binding Notes}"
+                           TextColor="{StaticResource ColorMuted}"
+                           FontSize="12"/>
                     <Border Grid.RowSpan="3"
                             Grid.Column="1"
                             StrokeShape="RoundRectangle 10"
                             HorizontalOptions="End"
                             VerticalOptions="Center">
                         <CarouselView ItemsSource="{Binding ContainerImagePaths}"
-                                HeightRequest="110"
-                                WidthRequest="110">
+                                      HeightRequest="110"
+                                      WidthRequest="110">
                             <CarouselView.ItemTemplate>
                                 <DataTemplate>
                                     <Image x:DataType="sys:String"
-                                            Source="{Binding ., Converter={StaticResource PathToImage}}"
-                                            Aspect="AspectFill"
-                                            HeightRequest="110"
-                                            WidthRequest="110">
+                                           Source="{Binding ., Converter={StaticResource PathToImage}}"
+                                           Aspect="AspectFill"
+                                           HeightRequest="110"
+                                           WidthRequest="110">
                                         <Image.Clip>
                                             <RoundRectangleGeometry CornerRadius="10"
-                                                    Rect="0,0,110,110"/>
+                                                                    Rect="0,0,110,110"/>
                                         </Image.Clip>
                                     </Image>
                                 </DataTemplate>
@@ -81,13 +81,51 @@
             </Border>
 
             <!-- Items in the container -->
-            <Label Text="Items in this container"
-                    FontSize="18"
-                    FontAttributes="Bold"
-                    TextColor="{StaticResource ColorPrimaryText}"/>
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12"
+                  VerticalOptions="Center">
+                <Label Grid.Column="0"
+                       Text="Items in this container"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource ColorPrimaryText}"
+                       VerticalOptions="Center"/>
+
+                <HorizontalStackLayout Grid.Column="1"
+                                       Spacing="8"
+                                       HorizontalOptions="End"
+                                       VerticalOptions="Center">
+                    <Button Text="Add a new item"
+                            Style="{StaticResource PrimaryButton}"
+                            HeightRequest="36"
+                            FontSize="12"
+                            Padding="12,0"
+                            Command="{Binding NavigateToAddNewItemCommand}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF067;"
+                                             Color="{StaticResource ColorPrimaryIcon}"
+                                             Size="16"/>
+                        </Button.ImageSource>
+                    </Button>
+                    <Button Text="Add an existing item"
+                            Style="{StaticResource PrimaryButton}"
+                            HeightRequest="36"
+                            FontSize="12"
+                            Padding="12,0"
+                            Command="{Binding NavigateToAddExistingItemCommand}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF067;"
+                                             Color="{StaticResource ColorPrimaryIcon}"
+                                             Size="16"/>
+                        </Button.ImageSource>
+                    </Button>
+                </HorizontalStackLayout>
+            </Grid>
             <Border Style="{StaticResource SearchWrapper}">
                 <SearchBar x:DataType="vm:ContainerDetailsViewModel"
-                        Placeholder="Search within container..."
+                           Placeholder="Search within container..."
                            TextColor="{StaticResource ColorPrimaryText}"
                            PlaceholderColor="{StaticResource ColorMuted}"
                            BackgroundColor="Transparent"
@@ -96,43 +134,43 @@
                            SearchCommand="{Binding ApplySearchCommand}"/>
             </Border>
             <CollectionView x:DataType="vm:ContainerDetailsViewModel"
-                    ItemsSource="{Binding Items}"
-                    SelectionMode="None">
+                            ItemsSource="{Binding Items}"
+                            SelectionMode="None">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical"/>
                 </CollectionView.ItemsLayout>
                 <CollectionView.EmptyView>
                     <VerticalStackLayout Padding="40"
-                            Spacing="10"
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center">
+                                         Spacing="10"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center">
                         <Label Text="No items in this container"
-                                TextColor="{StaticResource ColorMuted}"/>
+                               TextColor="{StaticResource ColorMuted}"/>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:ItemWithPhotosViewModel">
                         <Border Style="{StaticResource Card}">
                             <Grid ColumnDefinitions="Auto,*"
-                                    ColumnSpacing="12">
+                                  ColumnSpacing="12">
                                 <Grid RowDefinitions="Auto,Auto"
-                                        RowSpacing="6">
+                                      RowSpacing="6">
                                     <Border StrokeShape="RoundRectangle 10"
                                             HorizontalOptions="Start"
                                             VerticalOptions="Start">
                                         <CarouselView ItemsSource="{Binding ImagePaths}"
-                                                HeightRequest="92"
-                                                WidthRequest="92">
+                                                      HeightRequest="92"
+                                                      WidthRequest="92">
                                             <CarouselView.ItemTemplate>
                                                 <DataTemplate>
                                                     <Image x:DataType="sys:String"
-                                                            Source="{Binding ., Converter={StaticResource PathToImage}}"
-                                                            Aspect="AspectFill"
-                                                            HeightRequest="92"
-                                                            WidthRequest="92">
+                                                           Source="{Binding ., Converter={StaticResource PathToImage}}"
+                                                           Aspect="AspectFill"
+                                                           HeightRequest="92"
+                                                           WidthRequest="92">
                                                         <Image.Clip>
                                                             <RoundRectangleGeometry CornerRadius="10"
-                                                                    Rect="0,0,92,92"/>
+                                                                                    Rect="0,0,92,92"/>
                                                         </Image.Clip>
                                                     </Image>
                                                 </DataTemplate>
@@ -141,15 +179,15 @@
                                     </Border>
                                 </Grid>
                                 <VerticalStackLayout Grid.Column="1"
-                                        Spacing="4"
-                                        VerticalOptions="Center">
+                                                     Spacing="4"
+                                                     VerticalOptions="Center">
                                     <Label Text="{Binding Name}"
-                                            FontAttributes="Bold"
-                                            TextColor="{StaticResource ColorPrimaryText}"/>
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource ColorPrimaryText}"/>
                                     <Label Text="{Binding Description}"
-                                            TextColor="{StaticResource ColorMuted}"
-                                            FontSize="12"
-                                            LineBreakMode="TailTruncation"/>
+                                           TextColor="{StaticResource ColorMuted}"
+                                           FontSize="12"
+                                           LineBreakMode="TailTruncation"/>
                                 </VerticalStackLayout>
                             </Grid>
                         </Border>

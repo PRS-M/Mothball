@@ -51,14 +51,15 @@ public class CoreAppTests
     }
 
     [Test]
-    public void StoredItem_Defaults()
+    public void StoredItem_Requires_Valid_ItemId_And_Quantity()
     {
-        var stored = new StoredItem();
-        Assert.Multiple(() =>
-        {
-            Assert.That(stored.ItemId, Is.EqualTo(Guid.Empty));
-            Assert.That(stored.Quantity, Is.EqualTo(0));
-        });
+        Assert.That(() => new StoredItem(Guid.Empty, 1), Throws.ArgumentException);
+        Assert.That(() => new StoredItem(Guid.NewGuid(), 0), Throws.TypeOf<ArgumentOutOfRangeException>());
+        Assert.That(() => new StoredItem(Guid.NewGuid(), -1), Throws.TypeOf<ArgumentOutOfRangeException>());
+
+        var stored = new StoredItem(Guid.NewGuid(), 1);
+        stored.AddQuantity(2);
+        Assert.That(stored.Quantity, Is.EqualTo(3));
 
     }
 

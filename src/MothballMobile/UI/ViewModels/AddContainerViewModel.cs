@@ -4,7 +4,6 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using MothballMobile.Infrastructure;
-using System.Diagnostics.CodeAnalysis;
 
 namespace MothballMobile.UI.ViewModels;
 
@@ -39,16 +38,7 @@ public partial class AddContainerViewModel : BaseViewModel
 
     private bool CanAddContainer() => !string.IsNullOrWhiteSpace(Name);
 
-    partial void OnNameChanged(string value)
-    {
-        // Clear validation when user edits the name
-        if (!string.IsNullOrEmpty(ValidationMessage))
-        {
-            ValidationMessage = null;
-        }
-    }
-
-    [RelayCommand()]
+    [RelayCommand(CanExecute = nameof(CanAddContainer))]
     public async Task AddContainer()
     {
         var trimmedName = Name?.Trim();

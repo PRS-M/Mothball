@@ -10,14 +10,14 @@
 
     <ScrollView>
         <Grid Padding="20"
-                RowDefinitions="Auto,Auto"
-                ColumnDefinitions="*">
+              RowDefinitions="Auto,Auto"
+              ColumnDefinitions="*">
             <VerticalStackLayout Grid.Row="0"
-                    Spacing="6"
-                    Margin="0,6,0,14">
+                                 Spacing="6"
+                                 Margin="0,6,0,14">
                 <Label Text="Add a new item"
-                        FontSize="24"
-                        FontAttributes="Bold"
+                       FontSize="24"
+                       FontAttributes="Bold"
                        TextColor="{StaticResource ColorPrimaryText}"/>
                 <Label Text="Fill in the fields below"
                        TextColor="{StaticResource ColorMuted}"/>
@@ -26,10 +26,10 @@
             <Border Grid.Row="1"
                     Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12"
-                        HorizontalOptions="Center">
+                                     HorizontalOptions="Center">
                     <Label Text="Name"
-                            TextColor="{StaticResource ColorMuted}"
-                            Margin="4,0"/>
+                           TextColor="{StaticResource ColorMuted}"
+                           Margin="4,0"/>
                     <Border Style="{StaticResource ValidatedInputWrapper}"
                             WidthRequest="{StaticResource WidthM}">
                         <Entry Style="{StaticResource Input}"
@@ -43,24 +43,24 @@
                            IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
 
                     <Label Text="Description"
-                            TextColor="{StaticResource ColorMuted}"
-                            Margin="4,8,4,0"/>
+                           TextColor="{StaticResource ColorMuted}"
+                           Margin="4,8,4,0"/>
                     <Border Style="{StaticResource InputWrapper}"
                             WidthRequest="{StaticResource WidthM}">
                         <Entry Style="{StaticResource Input}"
-                                Placeholder="Short description"
-                                Text="{Binding Description}"/>
+                               Placeholder="Short description"
+                               Text="{Binding Description}"/>
                     </Border>
 
                     <Label Text="Quantity"
-                            TextColor="{StaticResource ColorMuted}"
-                            Margin="4,8,4,0"/>
+                           TextColor="{StaticResource ColorMuted}"
+                           Margin="4,8,4,0"/>
                     <Border Style="{StaticResource InputWrapper}"
                             WidthRequest="{StaticResource WidthM}">
                         <Entry Style="{StaticResource Input}"
-                                Keyboard="Numeric"
-                                Placeholder="e.g. 1"
-                                Text="{Binding Quantity}"/>
+                               Keyboard="Numeric"
+                               Placeholder="e.g. 1"
+                               Text="{Binding Quantity}"/>
                     </Border>
                     <Button Text="Add Item"
                             Style="{StaticResource PrimaryButton}"

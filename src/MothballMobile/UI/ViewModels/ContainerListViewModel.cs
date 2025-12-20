@@ -26,7 +26,6 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 
     public ObservableCollection<ContainerViewModel> Containers => Items;
 
-    // TODO: Remove loading all, use paged loads.
     protected override async Task EnsureDummyData()
     {
         if (demoSeeder is not null)

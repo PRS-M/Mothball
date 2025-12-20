@@ -16,4 +16,7 @@ public class DbItemContainerRelation
     // Foreign key to DbContainer.UniqueId
     [Indexed, ForeignKey(nameof(DbContainer))]
     public Guid ContainerId { get; set; }
+
+    [NotNull]
+    public int Quantity { get; set; } = 1;
 }

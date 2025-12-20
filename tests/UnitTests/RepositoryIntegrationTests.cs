@@ -63,12 +63,13 @@ public class RepositoryIntegrationTests
     {
         var c = new Container(Guid.NewGuid(), "C1", "");
         await domainRepo.InsertContainerAsync(c);
-        var i = new Item { Name = "ItemA" };
+        var i = new Item { Name = "ItemA", Description = "DescA" };
         await domainRepo.InsertItemAsync(i);
-        await domainRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId);
+        await domainRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId, quantity: 2);
 
         var itemsForContainer = await domainRepo.GetItemsForContainerAsync(c.ContainerId.ToString());
         Assert.That(itemsForContainer.Count, Is.EqualTo(1));
         Assert.That(itemsForContainer[0].Name, Is.EqualTo("ItemA"));
+        Assert.That(itemsForContainer[0].Description, Is.EqualTo("DescA"));
     }
 }

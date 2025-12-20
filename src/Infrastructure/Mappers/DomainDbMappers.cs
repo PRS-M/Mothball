@@ -19,7 +19,31 @@ public static class ContainerMapper
         };
     }
 
+    public static Container ToDomain(this DbContainer dbContainer, IEnumerable<DbItemContainerRelation>? relations = null)
+    {
+        Container result = CreateContainer(dbContainer);
+        ConvertAndAddRelations(relations, result);
+
+        return result;
+    }
+
+    public static Container ToDomain(this DbContainer dbContainer, IEnumerable<DbImage>? photos, IEnumerable<DbItemContainerRelation>? relations)
+    {
+        Container result = CreateContainer(dbContainer);
+        ConvertAndAddPhotos(photos, result);
+        ConvertAndAddRelations(relations, result);
+        return result;
+    }
+
     public static Container ToDomain(this DbContainer dbContainer, IEnumerable<DbImage>? photos = null)
+    {
+        Container result = CreateContainer(dbContainer);
+        ConvertAndAddPhotos(photos, result);
+
+        return result;
+    }
+
+    private static Container CreateContainer(DbContainer dbContainer)
     {
         ArgumentNullException.ThrowIfNull(dbContainer);
         var result = new Container(
@@ -28,13 +52,26 @@ public static class ContainerMapper
             dbContainer.Notes
         );
 
+        return result;
+    }
+
+    private static void ConvertAndAddPhotos(IEnumerable<DbImage>? photos, Container result)
+    {
         if (photos is not null && photos.Any())
         {
             List<ImageItem> convertedPhotos = [.. photos.Select(p => p.ToDomain())];
             result.Photos.AddRange(convertedPhotos);
         }
+    }
 
-        return result;
+    private static void ConvertAndAddRelations(IEnumerable<DbItemContainerRelation>? relations, Container result)
+    {
+        if (relations is null) return;
+
+        foreach (var group in relations.Where(r => r.Quantity > 0).GroupBy(r => r.ItemId))
+        {
+            result.AddItem(group.Key, group.Sum(r => r.Quantity));
+        }
     }
 }
 
@@ -47,6 +84,7 @@ public static class ItemMapper
         {
             ItemId = item.ItemId,
             Name = item.Name,
+            Description = item.Description,
         };
     }
 
@@ -57,6 +95,7 @@ public static class ItemMapper
         {
             ItemId = dbItem.ItemId,
             Name = dbItem.Name,
+            Description = dbItem.Description,
         };
 
         if (dbPhotos is not null)

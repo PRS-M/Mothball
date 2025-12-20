@@ -102,5 +102,7 @@ public static class MauiProgram
         services.AddTransient<ContainerDetailsViewModel>();
         services.AddTransient<ItemDetailsViewModel>();
         services.AddTransient<AddItemViewModel>();
+		services.AddTransient<AddExistingItemToContainerViewModel>();
+		services.AddTransient<AssociateItemWithContainerViewModel>();
     }
 }

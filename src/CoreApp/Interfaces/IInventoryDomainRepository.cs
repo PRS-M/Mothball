@@ -53,6 +53,11 @@ public interface IInventoryDomainRepository
     Task<List<Item>> GetAllItemsWithPhotosAsync(int pageNumber, int pageSize);
 
     /// <summary>
+    /// Loads items that are not related to any container, with their photos, using paging.
+    /// </summary>
+    Task<List<Item>> GetUnassignedItemsWithPhotosAsync(int pageNumber, int pageSize);
+
+    /// <summary>
     /// Loads items with their photos filtered by a search term applied to persisted properties
     /// (for example, name or other searchable fields).
     /// </summary>
@@ -98,7 +103,8 @@ public interface IInventoryDomainRepository
     /// </summary>
     /// <param name="itemId">Item unique id (Guid).</param>
     /// <param name="containerId">Container unique id (Guid).</param>
-    Task InsertItemContainerRelation(Guid itemId, Guid containerId);
+    /// <param name="quantity">Quantity of the item stored in the container.</param>
+    Task InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity);
 
     /// <summary>
     /// Updates an existing container in the data store.

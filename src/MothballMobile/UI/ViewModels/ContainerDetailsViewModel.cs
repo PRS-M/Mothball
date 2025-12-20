@@ -8,15 +8,12 @@ using CoreApp.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributable, IDisposable
+public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
 {
     private readonly IInventoryDomainRepository inventoryRepository;
-    private readonly IImagePathResolver paths;
     private readonly IDebouncer debouncer;
-    private readonly INavigationService? nav;
+    private readonly INavigationService nav;
     private readonly IPopupService popup;
-    private readonly ImageService imageService;
-    private readonly IRetryService retryService;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -45,14 +42,12 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         IPopupService popup,
         ImageService imageService,
         IRetryService retryService,
-        INavigationService? nav = null,
+        INavigationService nav,
         IDebouncer? debouncer = null)
+        : base(paths, imageService, retryService)
     {
         this.inventoryRepository = inventoryRepository;
-        this.paths = paths;
         this.popup = popup;
-        this.imageService = imageService;
-        this.retryService = retryService;
         this.nav = nav;
         this.debouncer = debouncer ?? new Debouncer(250);
     }
@@ -63,10 +58,12 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         if (query is null) return;
         if (query.TryGetValue(nameof(ContainerId), out var value) && value is string id && !string.IsNullOrWhiteSpace(id))
         {
-            // fire-and-forget; navigation flow shouldn't be blocked
-            _ = InitializeAsync(id);
+            ContainerId = id;
         }
     }
+
+    public Task InitializeAsync()
+        => InitializeAsync(ContainerId);
 
     public async Task InitializeAsync(string containerId)
     {
@@ -94,8 +91,7 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         ItemCount = $"Items stored: {container.ItemCount}";
 
         // Load container photos (all, as a small carousel)
-        foreach (var path in paths.GetContainerPhotoPaths(container))
-            ContainerImagePaths.Add(path);
+        ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
 
         // Map items and load their images (carousel per item)
         allItems.Clear();
@@ -152,10 +148,7 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
         if (!confirmed) return;
 
         await inventoryRepository.DeleteContainerAsync(ContainerId);
-        if (nav is not null)
-        {
-            await nav.GoBackAsync();
-        }
+        await nav.GoBackAsync();
     }
 
     [RelayCommand]
@@ -165,22 +158,32 @@ public partial class ContainerDetailsViewModel : BaseViewModel, IQueryAttributab
 
         await RunCommandAsync(async () =>
         {
-            var captured = await retryService.RetryAsync(
-                attempt: async () => (await imageService.CaptureContainerPhotoAsync(currentContainer)) > 0,
-                canceledTitle: "Photo capture canceled",
-                canceledMessage: "Please try again or continue without a photo.",
-                retryButton: "Retry",
-                continueButton: "Continue",
-                continueAlertTitle: "No photo",
-                continueAlertMessage: "Continuing without a photo.");
+            var captured = await CaptureWithDefaultRetryAsync(
+                attempt: async () => (await imageService.CaptureContainerPhotoAsync(currentContainer)) > 0);
 
             if (captured)
             {
-                ContainerImagePaths.Clear();
-                foreach (var path in paths.GetContainerPhotoPaths(currentContainer))
-                    ContainerImagePaths.Add(path);
+                ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(currentContainer));
             }
         });
+    }
+
+    [RelayCommand]
+    private Task NavigateToAddExistingItemAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
+
+        return nav.GoToAsync(NavigationRoutes.AddExistingItemToContainer,
+            new Dictionary<string, object> { [NavigationParams.ContainerId] = ContainerId });
+    }
+
+    [RelayCommand]
+    private Task NavigateToAddNewItemAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
+
+        return nav.GoToAsync(NavigationRoutes.AddItem,
+            new Dictionary<string, object> { [NavigationParams.ContainerId] = ContainerId });
     }
 
     private bool disposed;

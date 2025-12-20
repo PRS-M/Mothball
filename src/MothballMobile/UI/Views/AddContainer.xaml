@@ -10,14 +10,14 @@
 
     <ScrollView>
         <Grid Padding="20"
-                RowDefinitions="Auto,Auto"
-                ColumnDefinitions="*">
+              RowDefinitions="Auto,Auto"
+              ColumnDefinitions="*">
             <VerticalStackLayout Grid.Row="0"
-                    Spacing="6"
-                    Margin="0,6,0,14">
+                                 Spacing="6"
+                                 Margin="0,6,0,14">
                 <Label Text="Create a new container"
-                        FontSize="24"
-                        FontAttributes="Bold"
+                       FontSize="24"
+                       FontAttributes="Bold"
                        TextColor="{StaticResource ColorPrimaryText}"/>
                 <Label Text="Enter the details below"
                        TextColor="{StaticResource ColorMuted}"/>
@@ -26,11 +26,11 @@
             <Border Grid.Row="1"
                     Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12"
-                        HorizontalOptions="Center">
+                                     HorizontalOptions="Center">
                     <!-- Name -->
                     <Label Text="Name"
-                            TextColor="{StaticResource ColorMuted}"
-                            Margin="4,0"/>
+                           TextColor="{StaticResource ColorMuted}"
+                           Margin="4,0"/>
                     <Border Padding="0"
                             Style="{StaticResource ValidatedInputWrapper}"
                             WidthRequest="{StaticResource WidthM}">
@@ -46,8 +46,8 @@
 
                     <!-- Notes -->
                     <Label Text="Notes"
-                            TextColor="{StaticResource ColorMuted}"
-                            Margin="4,8,4,0"/>
+                           TextColor="{StaticResource ColorMuted}"
+                           Margin="4,8,4,0"/>
                     <Entry Style="{StaticResource Input}"
                            Placeholder="Enter a description or notes."
                            Text="{Binding Notes}"/>
