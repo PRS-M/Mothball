@@ -3,398 +3,152 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using Infrastructure.Interfaces;
-using Infrastructure.Services.DatabaseModels;
-using Infrastructure.Services.Mappers;
-using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
+/// <summary>
+/// Thin facade that composes focused repositories for a cohesive domain-oriented API.
+/// </summary>
 public class InventoryDomainRepository : IInventoryDomainRepository
 {
-    private readonly IRepository<DbContainer> containers;
-    private readonly IRepository<DbItem> items;
-    private readonly IRepository<DbImage> photos;
-    private readonly IRepository<DbItemContainerRelation> itemContainerRelations;
-    private readonly ILogger<InventoryDomainRepository> logger;
+    private readonly IContainerRepository containerRepo;
+    private readonly IItemRepository itemRepo;
+    private readonly IImageRepository imageRepo;
+    private readonly IRelationRepository relationRepo;
 
     public InventoryDomainRepository(
-        IRepository<DbContainer> containers,
-        IRepository<DbItem> items,
-        IRepository<DbImage> photos,
-        IRepository<DbItemContainerRelation> itemContainerRelations,
-        ILogger<InventoryDomainRepository> logger)
+        IContainerRepository containerRepo,
+        IItemRepository itemRepo,
+        IImageRepository imageRepo,
+        IRelationRepository relationRepo)
     {
-        this.containers = containers;
-        this.items = items;
-        this.photos = photos;
-        this.itemContainerRelations = itemContainerRelations;
-        this.logger = logger;
+        this.containerRepo = containerRepo;
+        this.itemRepo = itemRepo;
+        this.imageRepo = imageRepo;
+        this.relationRepo = relationRepo;
     }
+
+    #region Container Operations
 
     /// <inheritdoc />
-    public async Task<Container?> GetContainerAsync(string containerId)
-    {
-        logger.LogDebug("GetContainerAsync: containerId={ContainerId}", containerId);
-        DbContainer? dbContainer = await containers.GetAsync(containerId);
-        if (dbContainer is null) return null;
-
-        // Load container photo(s) and relations (for item counts/quantities)
-        var dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
-        var relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == dbContainer.ContainerId);
-        return dbContainer.ToDomain(dbPhotos, relations);
-    }
+    public Task<Container?> GetContainerAsync(string containerId)
+        => containerRepo.GetAsync(containerId);
 
     /// <inheritdoc />
-    public async Task<List<Container>> GetAllContainersAsync()
-    {
-        List<DbContainer> dbContainers = await containers.GetAllAsync();
-        return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
-    }
-
-    public async Task<List<Container>> GetAllContainersAsync(int pageNumber, int pageSize)
-    {
-        ValidatePaging(pageNumber, pageSize);
-
-        // Zero-based page index
-        int offset = pageNumber * pageSize;
-        List<DbContainer> dbContainers = await containers.GetAllAsync(offset, pageSize);
-        return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
-    }
+    public Task<List<Container>> GetAllContainersAsync()
+        => containerRepo.GetAllAsync();
 
     /// <inheritdoc />
-    public async Task<List<Item>> GetItemsForContainerAsync(string containerId)
-    {
-        // Compare using Guid to leverage indexes and avoid string conversions
-        if (!Guid.TryParse(containerId, out var cid))
-        {
-            logger.LogWarning("GetItemsForContainerAsync: invalid containerId format: {ContainerId}", containerId);
-            return new List<Item>();
-        }
-
-        IEnumerable<DbItemContainerRelation> dbItemContainerRelations =
-            await itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
-
-        var itemIds = dbItemContainerRelations.Select(r => (object)r.ItemId).ToList();
-        return await LoadItemsWithPhotosByIdsAsync(itemIds);
-    }
+    public Task<List<Container>> GetAllContainersAsync(int pageNumber, int pageSize)
+        => containerRepo.GetAllAsync(pageNumber, pageSize);
 
     /// <inheritdoc />
     public async Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId)
     {
-        logger.LogDebug("GetContainerWithItemsAndPhotosAsync: containerId={ContainerId}", containerId);
+        var container = await containerRepo.GetWithItemsAndPhotosAsync(containerId);
+        if (container is null) return null;
 
-        if (!Guid.TryParse(containerId, out var cid))
-        {
-            return null;
-        }
-
-        DbContainer? dbContainer = await containers.GetAsync(containerId);
-        if (dbContainer is null) return null;
-
-        var dbContainerPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
-        var relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
-        var container = dbContainer.ToDomain(dbContainerPhotos, relations);
-
-        var itemIds = relations.Select(r => (object)r.ItemId).ToList();
-        if (itemIds.Count == 0)
-        {
-            return (container, new List<Item>());
-        }
-
-        var itemsList = await items.WhereInAsync(nameof(DbItem.ItemId), itemIds);
-        var photosForItems = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), itemIds);
-        var photosByItem = GroupPhotosByOwnerUniqueId(photosForItems);
-
-        return (container, MapDbItemsToDomain(itemsList, photosByItem));
+        // Avoid re-querying relations; use IDs already hydrated into the container aggregate
+        var itemIds = container.Items.Select(s => s.ItemId);
+        var items = await itemRepo.GetByIdsWithPhotosAsync(itemIds);
+        return (container, items);
     }
 
     /// <inheritdoc />
-    public async Task<Item?> GetItemWithPhotosAsync(string itemId)
+    public async Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId, int pageNumber, int pageSize)
     {
-        logger.LogDebug("GetItemWithPhotosAsync: itemId={ItemId}", itemId);
-        var dbItem = await items.GetAsync(itemId);
-        if (dbItem is null) return null;
+        var container = await containerRepo.GetWithItemsAndPhotosAsync(containerId, pageNumber, pageSize);
+        if (container is null) return null;
 
-        var dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbItem.ItemId);
-        return dbItem.ToDomain(dbPhotos);
+        // Avoid re-querying relations; use IDs already hydrated into the container aggregate
+        var itemIds = container.Items.Select(s => s.ItemId);
+        var items = await itemRepo.GetByIdsWithPhotosAsync(itemIds);
+        return (container, items);
     }
 
     /// <inheritdoc />
-    public async Task<Container?> GetContainerForItemAsync(string itemId)
-    {
-        logger.LogDebug("GetContainerForItemAsync: itemId={ItemId}", itemId);
-        if (!Guid.TryParse(itemId, out var iid)) return null;
-
-        // Find relation
-        var relation = (await itemContainerRelations.WhereAsync(r => r.ItemId == iid)).FirstOrDefault();
-        if (relation is null) return null;
-
-        // Load the container and its photo(s)
-        var dbContainer = await containers.GetAsync(relation.ContainerId.ToString());
-        if (dbContainer is null) return null;
-        var dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
-
-        // Include relations to keep ItemCount consistent if the container is displayed.
-        var relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == dbContainer.ContainerId);
-        return dbContainer.ToDomain(dbPhotos, relations);
-    }
+    public Task<int> GetItemCountInContainerAsync(string containerId)
+        => containerRepo.GetItemCountInContainerAsync(containerId);
 
     /// <inheritdoc />
-    public async Task<List<Item>> GetAllItemsWithPhotosAsync()
-    {
-        var itemsAll = await items.GetAllAsync();
-        return await MapItemsWithPhotosAsync(itemsAll);
-    }
-
-    public async Task<List<Item>> GetAllItemsWithPhotosAsync(int pageNumber, int pageSize)
-    {
-        ValidatePaging(pageNumber, pageSize);
-
-        // Zero-based page index
-        int offset = pageNumber * pageSize;
-        List<DbItem> itemsAll = await items.GetAllAsync(offset, pageSize);
-        return await MapItemsWithPhotosAsync(itemsAll);
-    }
+    public Task<Container?> GetContainerForItemAsync(string itemId)
+        => containerRepo.GetContainerForItemAsync(itemId);
 
     /// <inheritdoc />
-    public async Task<List<Item>> GetUnassignedItemsWithPhotosAsync(int pageNumber, int pageSize)
-    {
-        ValidatePaging(pageNumber, pageSize);
-
-        int offset = pageNumber * pageSize;
-        var itemTable = nameof(DbItem);
-        var relTable = nameof(DbItemContainerRelation);
-
-        // NOTE: no uniqueness constraints are enforced; an item may have multiple relations.
-        // This query treats any presence in the relation table as "assigned".
-        var unassigned = await items.QueryAsync(
-            $"SELECT * FROM {itemTable} " +
-            $"WHERE ItemId NOT IN (SELECT ItemId FROM {relTable}) " +
-            $"ORDER BY Name COLLATE NOCASE " +
-            $"LIMIT ? OFFSET ?",
-            pageSize,
-            offset);
-
-        var itemIds = unassigned.Select(i => (object)i.ItemId).ToList();
-        if (itemIds.Count == 0)
-        {
-            return new List<Item>();
-        }
-
-        return await MapItemsWithPhotosAsync(unassigned);
-    }
+    public Task InsertContainerAsync(Container container)
+        => containerRepo.InsertAsync(container);
 
     /// <inheritdoc />
-    public async Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm)
-    {
-        // Case-insensitive search with index support using SQLite LIKE and NOCASE collation
-        var pattern = $"%{searchTerm}%";
-        var table = nameof(DbItem); // default table name used by sqlite-net
-        var itemsQuery = await items.QueryAsync($"SELECT * FROM {table} WHERE Name LIKE ? COLLATE NOCASE", pattern);
-        logger.LogDebug("GetItemsWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
-
-        return await MapItemsWithPhotosAsync(itemsQuery);
-    }
+    public Task UpdateContainerAsync(Container container)
+        => containerRepo.UpdateAsync(container);
 
     /// <inheritdoc />
-    public async Task InsertContainerAsync(Container container)
-    {
-        ArgumentNullException.ThrowIfNull(container);
-        var dbContainer = container.ToDb();
-        await containers.InsertAsync(dbContainer);
-    }
+    public Task DeleteContainerAsync(string containerId)
+        => containerRepo.DeleteAsync(containerId);
+
+    #endregion
+
+    #region Item Operations
 
     /// <inheritdoc />
-    public async Task InsertItemAsync(Item item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-        var dbItem = item.ToDb();
-        await items.InsertAsync(dbItem);
-    }
+    public Task<List<Item>> GetItemsForContainerAsync(string containerId)
+        => itemRepo.GetItemsForContainerAsync(containerId);
 
     /// <inheritdoc />
-    public async Task InsertImageItemAsync(ImageItem imageItem, Guid ownerId)
-    {
-        ArgumentNullException.ThrowIfNull(imageItem);
-        var dbImage = imageItem.ToDb(ownerId);
-        await photos.InsertAsync(dbImage);
-    }
+    public Task<Item?> GetItemWithPhotosAsync(string itemId)
+        => itemRepo.GetWithPhotosAsync(itemId);
 
     /// <inheritdoc />
-    public async Task InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity)
-    {
-        if (quantity <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be greater than zero.");
-        }
-
-        var relation = new DbItemContainerRelation
-        {
-            ItemId = itemId,
-            ContainerId = containerId,
-            Quantity = quantity,
-        };
-
-        await itemContainerRelations.InsertAsync(relation);
-    }
+    public Task<List<Item>> GetAllItemsWithPhotosAsync()
+        => itemRepo.GetAllWithPhotosAsync();
 
     /// <inheritdoc />
-    public async Task UpdateContainerAsync(Container container)
-    {
-        ArgumentNullException.ThrowIfNull(container);
-        var dbContainer = container.ToDb();
-        await containers.UpdateAsync(dbContainer);
-    }
+    public Task<List<Item>> GetAllItemsWithPhotosAsync(int pageNumber, int pageSize)
+        => itemRepo.GetAllWithPhotosAsync(pageNumber, pageSize);
 
     /// <inheritdoc />
-    public async Task UpdateItemAsync(Item item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-        var dbItem = item.ToDb();
-        await items.UpdateAsync(dbItem);
-    }
+    public Task<List<Item>> GetUnassignedItemsWithPhotosAsync(int pageNumber, int pageSize)
+        => itemRepo.GetUnassignedWithPhotosAsync(pageNumber, pageSize);
 
     /// <inheritdoc />
-    public async Task UpdateImageItemAsync(ImageItem image, Guid ownerId)
-    {
-        ArgumentNullException.ThrowIfNull(image);
-        var dbImage = image.ToDb(ownerId);
-        await photos.UpdateAsync(dbImage);
-    }
+    public Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm)
+        => itemRepo.SearchWithPhotosAsync(searchTerm);
 
     /// <inheritdoc />
-    public async Task DeleteItemAsync(string itemId)
-    {
-        if (!Guid.TryParse(itemId, out var iid)) return;
-
-        // Delete item images
-        var images = await photos.WhereAsync(p => p.OwnerUniqueId == iid);
-        foreach (var img in images)
-        {
-            await photos.DeleteAsync(img);
-        }
-
-        // Delete relations
-        var relations = await itemContainerRelations.WhereAsync(r => r.ItemId == iid);
-        foreach (var rel in relations)
-        {
-            await itemContainerRelations.DeleteAsync(rel);
-        }
-
-        // Delete item
-        var dbItem = await items.GetAsync(itemId);
-        if (dbItem is not null)
-        {
-            await items.DeleteAsync(dbItem);
-        }
-    }
+    public Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
+        => itemRepo.SearchItemsInContainerAsync(containerId, searchTerm, pageNumber, pageSize);
 
     /// <inheritdoc />
-    public async Task DeleteContainerAsync(string containerId)
-    {
-        if (!Guid.TryParse(containerId, out var cid)) return;
+    public Task InsertItemAsync(Item item)
+        => itemRepo.InsertAsync(item);
 
-        // Delete container images
-        var images = await photos.WhereAsync(p => p.OwnerUniqueId == cid);
-        foreach (var img in images)
-        {
-            await photos.DeleteAsync(img);
-        }
+    /// <inheritdoc />
+    public Task UpdateItemAsync(Item item)
+        => itemRepo.UpdateAsync(item);
 
-        // Delete relations (items remain)
-        var relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
-        foreach (var rel in relations)
-        {
-            await itemContainerRelations.DeleteAsync(rel);
-        }
+    /// <inheritdoc />
+    public Task DeleteItemAsync(string itemId)
+        => itemRepo.DeleteAsync(itemId);
 
-        // Delete container
-        var dbContainer = await containers.GetAsync(containerId);
-        if (dbContainer is not null)
-        {
-            await containers.DeleteAsync(dbContainer);
-        }
-    }
+    #endregion
 
-    private static List<Item> MapDbItemsToDomain(List<DbItem> items, Dictionary<Guid, IEnumerable<DbImage>> photosByItem)
-    {
-        var domain = new List<Item>(items.Count);
-        foreach (var dbItem in items)
-        {
-            photosByItem.TryGetValue(dbItem.ItemId, out var dbPhotosForItem);
-            domain.Add(dbItem.ToDomain(dbPhotosForItem));
-        }
+    #region Image Operations
 
-        return domain;
-    }
+    /// <inheritdoc />
+    public Task InsertImageItemAsync(ImageItem imageItem, Guid ownerId)
+        => imageRepo.InsertAsync(imageItem, ownerId);
 
-    private static void ValidatePaging(int pageNumber, int pageSize)
-    {
-        if (pageNumber < 0) throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be greater than or equal to 0.");
-        if (pageSize < 1) throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than 0.");
-    }
+    /// <inheritdoc />
+    public Task UpdateImageItemAsync(ImageItem image, Guid ownerId)
+        => imageRepo.UpdateAsync(image, ownerId);
 
-    private async Task<List<Item>> LoadItemsWithPhotosByIdsAsync(List<object> itemIds)
-    {
-        if (itemIds.Count == 0) return new List<Item>();
+    #endregion
 
-        List<DbItem> itemsList = await items.WhereInAsync(nameof(DbItem.ItemId), itemIds);
-        return await MapItemsWithPhotosAsync(itemsList);
-    }
+    #region Relation Operations
 
-    private async Task<List<Item>> MapItemsWithPhotosAsync(List<DbItem> dbItems)
-    {
-        if (dbItems.Count == 0) return new List<Item>();
+    /// <inheritdoc />
+    public Task InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity)
+        => relationRepo.InsertItemContainerRelationAsync(itemId, containerId, quantity);
 
-        List<object> itemIds = dbItems.Select(i => (object)i.ItemId).ToList();
-        Dictionary<Guid, IEnumerable<DbImage>> photosByItem = await LoadPhotosByOwnerIdsAsync(itemIds);
-        return MapDbItemsToDomain(dbItems, photosByItem);
-    }
-
-    private async Task<List<Container>> MapContainersWithPhotosAndRelationsAsync(List<DbContainer> dbContainers)
-    {
-        if (dbContainers.Count == 0)
-        {
-            return new List<Container>();
-        }
-
-        List<object> containerIds = [.. dbContainers.Select(c => (object)c.ContainerId)];
-        Dictionary<Guid, IEnumerable<DbImage>> photosByContainer = await LoadPhotosByOwnerIdsAsync(containerIds);
-        Dictionary<Guid, IEnumerable<DbItemContainerRelation>> relByContainer = await LoadRelationsByContainerIdsAsync(containerIds);
-
-        var mapped = new List<Container>(dbContainers.Count);
-        foreach (var dbContainer in dbContainers)
-        {
-            photosByContainer.TryGetValue(dbContainer.ContainerId, out var dbPhotosForContainer);
-            relByContainer.TryGetValue(dbContainer.ContainerId, out var relsForContainer);
-            mapped.Add(dbContainer.ToDomain(dbPhotosForContainer, relsForContainer));
-        }
-
-        return mapped;
-    }
-
-    private async Task<Dictionary<Guid, IEnumerable<DbItemContainerRelation>>> LoadRelationsByContainerIdsAsync(List<object> containerIds)
-    {
-        if (containerIds.Count == 0) return new Dictionary<Guid, IEnumerable<DbItemContainerRelation>>();
-
-        List<DbItemContainerRelation> relations = await itemContainerRelations.WhereInAsync(nameof(DbItemContainerRelation.ContainerId), containerIds);
-        return relations
-            .GroupBy(r => r.ContainerId)
-            .ToDictionary(g => g.Key, g => g.AsEnumerable());
-    }
-
-    private async Task<Dictionary<Guid, IEnumerable<DbImage>>> LoadPhotosByOwnerIdsAsync(List<object> ownerIds)
-    {
-        if (ownerIds.Count == 0) return new Dictionary<Guid, IEnumerable<DbImage>>();
-
-        List<DbImage> photosList = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), ownerIds);
-        return GroupPhotosByOwnerUniqueId(photosList);
-    }
-
-    private static Dictionary<Guid, IEnumerable<DbImage>> GroupPhotosByOwnerUniqueId(List<DbImage> photos)
-    {
-        return photos
-            .GroupBy(p => p.OwnerUniqueId)
-            .ToDictionary(g => g.Key, g => g.AsEnumerable());
-    }
+    #endregion
 }

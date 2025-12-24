@@ -86,6 +86,12 @@ public static class MauiProgram
 		// Database and repositories
 		services.AddSingleton<MothballDatabase>();
 		services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
+		// Focused domain repositories
+		services.AddSingleton<IContainerRepository, ContainerRepository>();
+		services.AddSingleton<IItemRepository, ItemRepository>();
+		services.AddSingleton<IImageRepository, ImageRepository>();
+		services.AddSingleton<IRelationRepository, RelationRepository>();
+		// Domain facade composing focused repositories
 		services.AddSingleton<IInventoryDomainRepository, InventoryDomainRepository>();
 		services.AddSingleton<IImagePathResolver, ImagePathResolver>();
 #if DEBUG

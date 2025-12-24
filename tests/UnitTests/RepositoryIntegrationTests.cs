@@ -28,16 +28,39 @@ public class RepositoryIntegrationTests
         photos = new Repository<DbImage>(db);
         relations = new Repository<DbItemContainerRelation>(db);
         await db.InitializeAsync();
-        var logger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<InventoryDomainRepository>();
-        domainRepo = new InventoryDomainRepository(containers, items, photos, relations, logger);
+
+        var containerLogger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<ContainerRepository>();
+        var itemLogger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<ItemRepository>();
+
+        var containerRepo = new ContainerRepository(containers, photos, relations, containerLogger);
+        var itemRepo = new ItemRepository(items, photos, relations, itemLogger);
+        var imageRepo = new ImageRepository(photos);
+        var relationRepo = new RelationRepository(relations);
+
+        domainRepo = new InventoryDomainRepository(containerRepo, itemRepo, imageRepo, relationRepo);
     }
 
     [TearDown]
-    public void Teardown()
+    public async Task Teardown()
     {
         try
         {
-            if (File.Exists(dbPath)) File.Delete(dbPath);
+            if (db != null)
+            {
+                await db.DisposeAsync();
+            }
+        }
+        catch
+        {
+            // ignore disposal issues in tests
+        }
+
+        try
+        {
+            if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath))
+            {
+                File.Delete(dbPath);
+            }
         }
         catch (IOException)
         {

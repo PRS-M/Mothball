@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.ItemAggregate;
 
 namespace MothballMobile.UI.ViewModels;
 
@@ -26,15 +27,18 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private string notes = string.Empty;
 
     [ObservableProperty]
-    private string itemCount = string.Empty;
+    private int totalItemCount = 0;
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
     public ObservableCollection<ItemWithPhotosViewModel> Items { get; } = new();
 
-    private readonly List<ItemWithPhotosViewModel> allItems = new();
-
     [ObservableProperty]
     private string searchQuery = string.Empty;
+
+    private const int PageSize = 5;
+    private int currentPage = 0;
+    private bool hasMoreItems = true;
+    private bool isSearchActive = false;
 
     public ContainerDetailsViewModel(
         IInventoryDomainRepository inventoryRepository,
@@ -50,6 +54,27 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.popup = popup;
         this.nav = nav;
         this.debouncer = debouncer ?? new Debouncer(250);
+
+        // Debounce search query changes
+        PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(SearchQuery))
+            {
+                this.debouncer?.Debounce(() =>
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        try
+                        {
+                            await PerformSearchAsync();
+                        }
+                        catch
+                        {
+                            // Swallow exceptions to prevent unobserved task exceptions from crashing the app.
+                            // Consider adding logging here if a logging mechanism is available.
+                        }
+                    }));
+            }
+        };
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -70,17 +95,22 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (string.IsNullOrWhiteSpace(containerId)) return;
 
         ContainerId = containerId;
+        currentPage = 0;
+        hasMoreItems = true;
+        isSearchActive = false;
+        SearchQuery = string.Empty;
 
         Items.Clear();
         ContainerImagePaths.Clear();
 
-        var result = await inventoryRepository.GetContainerWithItemsAndPhotosAsync(containerId);
+        var result = await inventoryRepository.GetContainerWithItemsAndPhotosAsync(containerId, currentPage, PageSize);
         if (result is null)
         {
             Name = "Container not found";
             Notes = string.Empty;
-            ItemCount = string.Empty;
+            TotalItemCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
+            hasMoreItems = false;
             return;
         }
 
@@ -88,50 +118,109 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         currentContainer = container;
         Name = container.Name;
         Notes = container.Notes;
-        ItemCount = $"Items stored: {container.ItemCount}";
+
+        // Get the total count from repository (sums all quantities, not just this page)
+        TotalItemCount = await inventoryRepository.GetItemCountInContainerAsync(containerId);
 
         // Load container photos (all, as a small carousel)
         ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
 
         // Map items and load their images (carousel per item)
-        allItems.Clear();
+        AddItemsToCollectionAsync(items, clearExisting: false);
+
+        // Check if we have more items to load
+        hasMoreItems = items.Count == PageSize;
+    }
+
+    private void AddItemsToCollectionAsync(List<Item> items, bool clearExisting = false)
+    {
+        if (clearExisting)
+        {
+            Items.Clear();
+        }
+
         foreach (var item in items)
         {
             var itemVm = new ItemWithPhotosViewModel(item, paths);
-            allItems.Add(itemVm);
+            Items.Add(itemVm);
             _ = itemVm.LoadImagesAsync();
         }
 
-        ApplyFilter();
+        // Force collection update notification to recalculate RemainingItemsThreshold
+        OnPropertyChanged(nameof(Items));
     }
 
     [RelayCommand]
-    private void ApplySearch()
+    private async Task LoadMoreItemsAsync()
     {
-        ApplyFilter();
+        // Use RunCommandAsync to prevent concurrent loads and manage busy state
+        await RunCommandAsync(async () =>
+        {
+            // Guard against attempting to load when no more items exist
+            if (!hasMoreItems || string.IsNullOrWhiteSpace(ContainerId)) return;
+
+            currentPage++;
+            List<Item> items = new();
+
+            if (isSearchActive && !string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                // Load more search results
+                items = await inventoryRepository.SearchItemsInContainerAsync(
+                    ContainerId, SearchQuery.Trim(), currentPage, PageSize);
+            }
+            else
+            {
+                // Load more regular items
+                var result = await inventoryRepository.GetContainerWithItemsAndPhotosAsync(
+                    ContainerId, currentPage, PageSize);
+
+                if (result is null)
+                {
+                    hasMoreItems = false;
+                    return;
+                }
+
+                items = result.Value.items;
+            }
+
+            // Only add items if we got any
+            if (items.Count > 0)
+            {
+                AddItemsToCollectionAsync(items, clearExisting: false);
+            }
+
+            // Check if there are more items to load
+            // If we got fewer items than the page size, we've reached the end
+            hasMoreItems = items.Count == PageSize;
+        });
     }
 
-    partial void OnSearchQueryChanged(string value)
+    private async Task PerformSearchAsync()
     {
-        // Debounce user typing to avoid excessive filtering on fast input
-        debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(ApplyFilter));
+        if (string.IsNullOrWhiteSpace(ContainerId)) return;
+
+        currentPage = 0;
+
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            // Clear search - reload all items from beginning
+            isSearchActive = false;
+            await InitializeAsync(ContainerId);
+        }
+        else
+        {
+            // Perform search
+            isSearchActive = true;
+            var searchResults = await inventoryRepository.SearchItemsInContainerAsync(ContainerId, SearchQuery.Trim(), currentPage, PageSize);
+            AddItemsToCollectionAsync(searchResults, clearExisting: true);
+            hasMoreItems = searchResults.Count == PageSize;
+        }
     }
 
-    private void ApplyFilter()
+    [RelayCommand]
+    private async Task ApplySearch()
     {
-        Items.Clear();
-        IEnumerable<ItemWithPhotosViewModel> source = allItems;
-
-        if (!string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            var q = SearchQuery.Trim();
-            source = source.Where(vm => vm.Name?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false);
-        }
-
-        foreach (var vm in source)
-        {
-            Items.Add(vm);
-        }
+        await PerformSearchAsync();
     }
 
     [RelayCommand]

@@ -45,6 +45,22 @@ public interface IInventoryDomainRepository
     Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId);
 
     /// <summary>
+    /// Loads a Container and a paginated list of its Items (with photos).
+    /// </summary>
+    /// <param name="containerId">The container UniqueId.</param>
+    /// <param name="pageNumber">The page number to load.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <returns>Tuple of container and paginated items, or null if container not found.</returns>
+    Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId, int pageNumber, int pageSize);
+
+    /// <summary>
+    /// Gets the total count of items in a specific container.
+    /// </summary>
+    /// <param name="containerId">The container UniqueId.</param>
+    /// <returns>The total number of items in the container.</returns>
+    Task<int> GetItemCountInContainerAsync(string containerId);
+
+    /// <summary>
     /// Loads all Items with their photos.
     /// </summary>
     /// <returns>A list of Items with their photos loaded.</returns>
@@ -64,6 +80,16 @@ public interface IInventoryDomainRepository
     /// <param name="searchTerm">The search term used to filter items.</param>
     /// <returns>A list of Items with their photos loaded.</returns>
     Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm);
+
+    /// <summary>
+    /// Searches items within a specific container with pagination.
+    /// </summary>
+    /// <param name="containerId">The container UniqueId.</param>
+    /// <param name="searchTerm">The search term to filter items.</param>
+    /// <param name="pageNumber">The page number to load.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <returns>A list of Items with their photos loaded.</returns>
+    Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize);
 
     /// <summary>
     /// Loads a domain Item together with its photos.

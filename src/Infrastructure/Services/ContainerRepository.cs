@@ -1,0 +1,284 @@
+using System.Diagnostics;
+using System.Linq.Expressions;
+using CoreApp.Entities.ContainerAggregate;
+using Infrastructure.Interfaces;
+using Infrastructure.Services.DatabaseModels;
+using Infrastructure.Services.Mappers;
+using Microsoft.Extensions.Logging;
+
+namespace Infrastructure.Services;
+
+public class ContainerRepository : IContainerRepository
+{
+    private readonly IRepository<DbContainer> containers;
+    private readonly IRepository<DbImage> photos;
+    private readonly IRepository<DbItemContainerRelation> itemContainerRelations;
+    private readonly ILogger<ContainerRepository> logger;
+
+    public ContainerRepository(
+        IRepository<DbContainer> containers,
+        IRepository<DbImage> photos,
+        IRepository<DbItemContainerRelation> itemContainerRelations,
+        ILogger<ContainerRepository> logger)
+    {
+        this.containers = containers;
+        this.photos = photos;
+        this.itemContainerRelations = itemContainerRelations;
+        this.logger = logger;
+    }
+
+    public async Task<Container?> GetAsync(string containerId)
+    {
+        logger.LogDebug("GetAsync: containerId={ContainerId}", containerId);
+
+        DbContainer? dbContainer = await containers.GetAsync(containerId);
+        if (dbContainer is null) return null;
+
+        return await MapContainerWithPhotosAndRelationsAsync(dbContainer);
+    }
+
+    public Task<List<Container>> GetAllAsync()
+        => GetContainersInternalAsync();
+
+    public Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
+        => GetContainersInternalAsync(pageNumber, pageSize);
+
+    public async Task<Container?> GetWithItemsAndPhotosAsync(string containerId)
+    {
+        logger.LogDebug("GetWithItemsAndPhotosAsync: containerId={ContainerId}", containerId);
+
+        DbContainer? dbContainer = await containers.GetAsync(containerId);
+        if (dbContainer is null) return null;
+
+        var sw = Stopwatch.StartNew();
+        (IEnumerable<DbImage> dbContainerPhotosEnum, IEnumerable<DbItemContainerRelation> relationsEnum) =
+            await LoadContainerPhotosAndRelationsAsync(dbContainer.ContainerId);
+        var dbContainerPhotos = dbContainerPhotosEnum.ToList();
+        var relations = relationsEnum.ToList();
+        sw.Stop();
+
+        logger.LogInformation(
+            "GetWithItemsAndPhotosAsync: containerId={ContainerId}, photos={PhotoCount}, relations={RelationCount}, elapsedMs={Elapsed}",
+            containerId,
+            dbContainerPhotos.Count,
+            relations.Count,
+            sw.ElapsedMilliseconds);
+
+        return dbContainer.ToDomain(dbContainerPhotos, relations);
+    }
+
+    public async Task<Container?> GetWithItemsAndPhotosAsync(string containerId, int pageNumber, int pageSize)
+    {
+        logger.LogDebug("GetWithItemsAndPhotosAsync (paginated): containerId={ContainerId}, page={PageNumber}, size={PageSize}",
+            containerId, pageNumber, pageSize);
+
+        DbContainer? dbContainer = await containers.GetAsync(containerId);
+        if (dbContainer is null) return null;
+
+        ValidatePaging(pageNumber, pageSize);
+        int offset = CalculateOffset(pageNumber, pageSize);
+
+        var sw = Stopwatch.StartNew();
+        IEnumerable<DbImage> dbContainerPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
+
+        // Get paginated relations
+        List<DbItemContainerRelation> allRelations = await itemContainerRelations.WhereAsync(r => r.ContainerId == dbContainer.ContainerId);
+        var paginatedRelations = allRelations.Skip(offset).Take(pageSize).ToList();
+
+        sw.Stop();
+
+        logger.LogInformation(
+            "GetWithItemsAndPhotosAsync (paginated): containerId={ContainerId}, photos={PhotoCount}, totalRelations={TotalRelations}, pageRelations={PageRelations}, elapsedMs={Elapsed}",
+            containerId,
+            dbContainerPhotos.Count(),
+            allRelations.Count,
+            paginatedRelations.Count,
+            sw.ElapsedMilliseconds);
+
+        return dbContainer.ToDomain(dbContainerPhotos, paginatedRelations);
+    }
+
+    public async Task<int> GetItemCountInContainerAsync(string containerId)
+    {
+        logger.LogDebug("GetItemCountInContainerAsync: containerId={ContainerId}", containerId);
+
+        if (!TryParseGuid(containerId, out Guid cid)) return 0;
+
+        List<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
+        // Sum quantities to match domain model behavior and guard against duplicate rows
+        return relations.Sum(r => r.Quantity);
+    }
+
+    public async Task<Container?> GetContainerForItemAsync(string itemId)
+    {
+        logger.LogDebug("GetContainerForItemAsync: itemId={ItemId}", itemId);
+
+        if (!TryParseGuid(itemId, out Guid iid)) return null;
+
+        DbItemContainerRelation? relation = (await itemContainerRelations.WhereAsync(r => r.ItemId == iid)).FirstOrDefault();
+        if (relation is null) return null;
+
+        DbContainer? dbContainer = await containers.GetAsync(relation.ContainerId.ToString());
+        if (dbContainer is null) return null;
+
+        return await MapContainerWithPhotosAndRelationsAsync(dbContainer);
+    }
+
+    public async Task InsertAsync(Container container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+        await containers.InsertAsync(container.ToDb());
+    }
+
+    public async Task UpdateAsync(Container container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+        await containers.UpdateAsync(container.ToDb());
+    }
+
+    public async Task DeleteAsync(string containerId)
+    {
+        if (!TryParseGuid(containerId, out Guid cid)) return;
+
+        await DeletePhotosForOwnerAsync(cid);
+        await DeleteRelationsAsync(r => r.ContainerId == cid);
+
+        DbContainer? dbContainer = await containers.GetAsync(containerId);
+        if (dbContainer is not null)
+        {
+            await containers.DeleteAsync(dbContainer);
+        }
+    }
+
+    #region Private Helpers - Data Loading
+
+    private async Task<List<Container>> GetContainersInternalAsync(int? pageNumber = null, int? pageSize = null)
+    {
+        List<DbContainer> dbContainers;
+
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
+            ValidatePaging(pageNumber.Value, pageSize.Value);
+            int offset = CalculateOffset(pageNumber.Value, pageSize.Value);
+            dbContainers = await containers.GetAllAsync(offset, pageSize.Value);
+        }
+        else
+        {
+            dbContainers = await containers.GetAllAsync();
+        }
+
+        return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
+    }
+
+    private async Task<(IEnumerable<DbImage> photos, IEnumerable<DbItemContainerRelation> relations)>
+        LoadContainerPhotosAndRelationsAsync(Guid containerId)
+    {
+        IEnumerable<DbImage> dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == containerId);
+        IEnumerable<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == containerId);
+        return (dbPhotos, relations);
+    }
+
+    #endregion
+
+    #region Private Helpers - Mapping
+
+    private async Task<Container> MapContainerWithPhotosAndRelationsAsync(DbContainer dbContainer)
+    {
+        (IEnumerable<DbImage> dbPhotos, IEnumerable<DbItemContainerRelation> relations) =
+            await LoadContainerPhotosAndRelationsAsync(dbContainer.ContainerId);
+        return dbContainer.ToDomain(dbPhotos, relations);
+    }
+
+    private async Task<List<Container>> MapContainersWithPhotosAndRelationsAsync(List<DbContainer> dbContainers)
+    {
+        if (dbContainers.Count == 0) return [];
+
+        var sw = Stopwatch.StartNew();
+        List<object> containerIds = dbContainers.Select(c => (object)c.ContainerId).ToList();
+        Dictionary<Guid, IEnumerable<DbImage>> photosByContainer = await LoadPhotosByOwnerIdsAsync(containerIds);
+        Dictionary<Guid, IEnumerable<DbItemContainerRelation>> relByContainer = await LoadRelationsByContainerIdsAsync(containerIds);
+        sw.Stop();
+        logger.LogInformation(
+            "MapContainersWithPhotosAndRelationsAsync: containers={ContainerCount}, photosBuckets={PhotosBucketCount}, relationBuckets={RelationBucketCount}, elapsedMs={Elapsed}",
+            dbContainers.Count,
+            photosByContainer.Count,
+            relByContainer.Count,
+            sw.ElapsedMilliseconds);
+
+        return dbContainers.Select(dbContainer =>
+        {
+            photosByContainer.TryGetValue(dbContainer.ContainerId, out var containerPhotos);
+            relByContainer.TryGetValue(dbContainer.ContainerId, out var containerRels);
+            return dbContainer.ToDomain(containerPhotos, containerRels);
+        }).ToList();
+    }
+
+    private async Task<Dictionary<Guid, IEnumerable<DbImage>>> LoadPhotosByOwnerIdsAsync(List<object> ownerIds)
+    {
+        if (ownerIds.Count == 0) return [];
+
+        List<DbImage> photosList = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), ownerIds);
+        return GroupByKey(photosList, p => p.OwnerUniqueId);
+    }
+
+    private async Task<Dictionary<Guid, IEnumerable<DbItemContainerRelation>>> LoadRelationsByContainerIdsAsync(List<object> containerIds)
+    {
+        if (containerIds.Count == 0) return [];
+
+        List<DbItemContainerRelation> relations = await itemContainerRelations.WhereInAsync(nameof(DbItemContainerRelation.ContainerId), containerIds);
+        return GroupByKey(relations, r => r.ContainerId);
+    }
+
+    private static Dictionary<TKey, IEnumerable<T>> GroupByKey<T, TKey>(
+        IEnumerable<T> items,
+        Func<T, TKey> keySelector) where TKey : notnull
+        => items.GroupBy(keySelector).ToDictionary(g => g.Key, g => g.AsEnumerable());
+
+    #endregion
+
+    #region Private Helpers - CRUD
+
+    private async Task DeletePhotosForOwnerAsync(Guid ownerId)
+    {
+        IEnumerable<DbImage> images = await photos.WhereAsync(p => p.OwnerUniqueId == ownerId);
+        foreach (DbImage img in images)
+        {
+            await photos.DeleteAsync(img);
+        }
+    }
+
+    private async Task DeleteRelationsAsync(Expression<Func<DbItemContainerRelation, bool>> predicate)
+    {
+        IEnumerable<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(predicate);
+        foreach (DbItemContainerRelation rel in relations)
+        {
+            await itemContainerRelations.DeleteAsync(rel);
+        }
+    }
+
+    #endregion
+
+    #region Private Helpers - Validation & Utilities
+
+    private bool TryParseGuid(string value, out Guid result, string? methodName = null, string? logValue = null)
+    {
+        if (Guid.TryParse(value, out result)) return true;
+
+        if (methodName is not null)
+        {
+            logger.LogWarning("{MethodName}: invalid GUID format: {Value}", methodName, logValue ?? value);
+        }
+
+        return false;
+    }
+
+    private static void ValidatePaging(int pageNumber, int pageSize)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
+        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
+    }
+
+    private static int CalculateOffset(int pageNumber, int pageSize) => pageNumber * pageSize;
+
+    #endregion
+}

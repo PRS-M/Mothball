@@ -38,7 +38,7 @@ public class ImageServiceBehaviorTests
     }
 
     [Test]
-    public async Task CaptureContainerPhotoAsync_SaveFails_RollsBackImage()
+    public void CaptureContainerPhotoAsync_SaveFails_RollsBackImage()
     {
         var camera = new Mock<ICameraHandler>();
         var repo = new Mock<IInventoryDomainRepository>();

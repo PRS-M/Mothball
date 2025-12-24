@@ -1,136 +1,99 @@
-using System;
-using System.Linq;
 using SQLite;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Infrastructure.Services;
 
-public class MothballDatabase
+public class MothballDatabase : IAsyncDisposable
 {
-    private SQLiteAsyncConnection? database;
-    private readonly string? customPath;
-    private readonly object initLock = new();
-    private Task? initializeTask;
+    private readonly string databasePath;
+    private readonly SemaphoreSlim initLock = new(1, 1);
+    private SQLiteAsyncConnection? connection;
+    private bool disposed;
 
     public MothballDatabase(string? databasePath = null)
     {
-        customPath = databasePath;
+        this.databasePath = string.IsNullOrWhiteSpace(databasePath)
+            ? SQLiteConstants.DatabasePath
+            : databasePath;
     }
 
-    public SQLiteAsyncConnection Connection
-    {
-        get
-        {
-            if (database is null)
-                throw new InvalidOperationException("Database not initialized. Call InitializeAsync() first.");
-            return database;
-        }
-    }
+    public SQLiteAsyncConnection Connection =>
+        connection ?? throw new InvalidOperationException("Database not initialized. Call InitializeAsync() first.");
 
     public async Task InitializeAsync()
     {
-        Task task;
-        lock (initLock)
+        if (connection != null) return;
+
+        await initLock.WaitAsync();
+        try
         {
-            initializeTask ??= InitializeCoreAsync();
-            task = initializeTask;
+            if (connection != null) return;
+            connection = await InitializeCoreAsync();
         }
-
-        await task;
+        finally
+        {
+            initLock.Release();
+        }
     }
 
-    private async Task InitializeCoreAsync()
+    private async Task<SQLiteAsyncConnection> InitializeCoreAsync()
     {
-        if (database != null) return;
+        var databaseConnection = new SQLiteAsyncConnection(databasePath, SQLiteConstants.OpenFlags);
 
-        var path = string.IsNullOrWhiteSpace(customPath)
-            ? SQLiteConstants.DatabasePath
-            : customPath!;
+        // Create tables only if they don't exist (avoids MacCatalyst ALTER TABLE NOT NULL crash)
+        await CreateTableIfNotExistsAsync<DbContainer>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbItem>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbImage>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbItemContainerRelation>(databaseConnection);
 
-        var connection = new SQLiteAsyncConnection(path, SQLiteConstants.OpenFlags);
+        // Run migrations (safe to run repeatedly)
+        await EnsureColumnAsync(databaseConnection, nameof(DbItem), nameof(DbItem.Description), "TEXT", "''");
+        await EnsureColumnAsync(databaseConnection, nameof(DbItemContainerRelation), nameof(DbItemContainerRelation.Quantity), "INTEGER", "1");
 
-        // IMPORTANT:
-        // sqlite-net's CreateTableAsync<T>() will auto-migrate existing tables by issuing ALTER TABLE ADD COLUMN.
-        // On some SQLite builds (e.g., MacCatalyst), adding a NOT NULL column during ALTER TABLE can crash.
-        // We therefore only call CreateTableAsync for tables that don't exist yet, and we run our own
-        // migrations for existing databases.
-
-        if (!await TableExistsAsync(connection, nameof(DbContainer)))
-            await connection.CreateTableAsync<DbContainer>();
-
-        if (!await TableExistsAsync(connection, nameof(DbItem)))
-            await connection.CreateTableAsync<DbItem>();
-
-        if (!await TableExistsAsync(connection, nameof(DbImage)))
-            await connection.CreateTableAsync<DbImage>();
-
-        if (!await TableExistsAsync(connection, nameof(DbItemContainerRelation)))
-            await connection.CreateTableAsync<DbItemContainerRelation>();
-
-        // Run migrations/backfills (safe to run repeatedly).
-        await EnsureItemDescriptionColumnAsync(connection);
-        await EnsureItemContainerRelationQuantityColumnAsync(connection);
-
-        // Only publish the connection after schema is up-to-date.
-        database = connection;
+        return databaseConnection;
     }
 
-    private static Task<int> ExecuteScalarIntAsync(SQLiteAsyncConnection db, string sql, params object[] args)
-        => db.ExecuteScalarAsync<int>(sql, args);
-
-    private static async Task<bool> TableExistsAsync(SQLiteAsyncConnection db, string tableName)
+    private static async Task CreateTableIfNotExistsAsync<T>(SQLiteAsyncConnection db) where T : new()
     {
-        // sqlite_master is stable across SQLite versions.
-        var count = await ExecuteScalarIntAsync(
-            db,
+        var exists = await db.ExecuteScalarAsync<int>(
             "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?;",
-            tableName);
-        return count > 0;
+            typeof(T).Name);
+
+        if (exists == 0)
+            await db.CreateTableAsync<T>();
     }
 
-    private sealed class SqliteColumnInfo
+    private static async Task EnsureColumnAsync(
+        SQLiteAsyncConnection db, string table, string column, string sqlType, string defaultValue)
     {
-        // Property name must match PRAGMA table_info column name.
-        // ReSharper disable once InconsistentNaming
+        var columns = await db.QueryAsync<ColumnInfo>($"PRAGMA table_info({table});");
+        if (columns.Count == 0) return;
+
+        var hasColumn = columns.Exists(c =>
+            string.Equals(c.name, column, StringComparison.OrdinalIgnoreCase));
+
+        if (!hasColumn)
+            await db.ExecuteAsync($"ALTER TABLE {table} ADD COLUMN {column} {sqlType};");
+
+        // Always backfill nulls
+        await db.ExecuteAsync($"UPDATE {table} SET {column} = {defaultValue} WHERE {column} IS NULL;");
+    }
+
+    private sealed class ColumnInfo
+    {
         public string name { get; set; } = string.Empty;
     }
 
-    private static async Task EnsureItemContainerRelationQuantityColumnAsync(SQLiteAsyncConnection db)
+    public async ValueTask DisposeAsync()
     {
-        var table = nameof(DbItemContainerRelation);
-        var columns = await db.QueryAsync<SqliteColumnInfo>($"PRAGMA table_info({table});");
-        if (columns.Count == 0) return;
-        var hasQuantity = columns.Any(c => string.Equals(c.name, nameof(DbItemContainerRelation.Quantity), StringComparison.OrdinalIgnoreCase));
+        if (disposed) return;
+        disposed = true;
 
-        var column = nameof(DbItemContainerRelation.Quantity);
-        if (!hasQuantity)
+        if (connection != null)
         {
-            // Some SQLite builds reject adding NOT NULL columns during ALTER TABLE even when a default is specified.
-            // Add as nullable.
-            await db.ExecuteAsync($"ALTER TABLE {table} ADD COLUMN {column} INTEGER;");
+            await connection.CloseAsync();
         }
 
-        // Always backfill (CreateTableAsync may have added it as nullable).
-        await db.ExecuteAsync($"UPDATE {table} SET {column} = 1 WHERE {column} IS NULL;");
-    }
-
-    private static async Task EnsureItemDescriptionColumnAsync(SQLiteAsyncConnection db)
-    {
-        var table = nameof(DbItem);
-        var columns = await db.QueryAsync<SqliteColumnInfo>($"PRAGMA table_info({table});");
-        if (columns.Count == 0) return;
-
-        var hasDescription = columns.Any(c => string.Equals(c.name, nameof(DbItem.Description), StringComparison.OrdinalIgnoreCase));
-
-        var column = nameof(DbItem.Description);
-        if (!hasDescription)
-        {
-            // Some SQLite builds reject adding NOT NULL columns during ALTER TABLE even when a default is specified.
-            // Add as nullable.
-            await db.ExecuteAsync($"ALTER TABLE {table} ADD COLUMN {column} TEXT;");
-        }
-
-        // Always backfill (CreateTableAsync may have added it as nullable).
-        await db.ExecuteAsync($"UPDATE {table} SET {column} = '' WHERE {column} IS NULL;");
+        initLock.Dispose();
     }
 }
