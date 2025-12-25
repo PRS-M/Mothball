@@ -37,10 +37,10 @@ public class DemoDataSeeder
     /// </summary>
     public async Task EnsureContainersAsync(int minContainers = 5, bool withPhotos = true)
     {
-    await containers.InitializeAsync();
-    await photos.InitializeAsync();
+        await containers.InitializeAsync();
+        await photos.InitializeAsync();
 
-    var existing = await containers.GetAllAsync();
+        var existing = await containers.GetAllAsync();
         if (existing.Count >= minContainers) return;
 
         int toCreate = minContainers - existing.Count;
@@ -79,10 +79,10 @@ public class DemoDataSeeder
     public async Task EnsureItemsAsync(int minItemsPerContainer = 3, bool withPhotos = true)
     {
         // Ensure tables exist
-    await containers.InitializeAsync();
-    await items.InitializeAsync();
-    await photos.InitializeAsync();
-    await itemContainerRelations.InitializeAsync();
+        await containers.InitializeAsync();
+        await items.InitializeAsync();
+        await photos.InitializeAsync();
+        await itemContainerRelations.InitializeAsync();
 
         // Make sure we have some containers to attach items to
         var containersList = await containers.GetAllAsync();

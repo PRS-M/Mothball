@@ -7,7 +7,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using Infrastructure.Interfaces;
 using Microsoft.Maui.Handlers;
-#if IOS
+#if IOS || MACCATALYST
 using UIKit;
 #endif
 
@@ -36,7 +36,7 @@ public static class MauiProgram
 		// Platform tweaks
 		builder.ConfigureMauiHandlers(handlers =>
 		{
-#if IOS
+			#if IOS || MACCATALYST
 			SearchBarHandler.Mapper.AppendToMapping("TransparentBackground", (handler, view) =>
 			{
 				var sb = handler.PlatformView;
@@ -47,8 +47,32 @@ public static class MauiProgram
 				sb.BackgroundImage = new UIImage();
 				sb.Layer.BackgroundColor = UIColor.Clear.CGColor;
 				sb.Layer.BorderWidth = 0;
+
+				// Remove the inner SearchTextField styling that can show up as
+				// top/bottom hairlines when the SearchBar sits inside a rounded Border.
+				// (Available on iOS 13+/MacCatalyst.)
+				try
+				{
+					// Clears the native search field "plate" background.
+					sb.SetSearchFieldBackgroundImage(new UIImage(), UIControlState.Normal);
+
+					var tf = sb.SearchTextField;
+					if (tf is not null)
+					{
+						tf.BackgroundColor = UIColor.Clear;
+						tf.Background = null;
+						tf.BorderStyle = UITextBorderStyle.None;
+						tf.Layer.BorderWidth = 0;
+						tf.Layer.ShadowOpacity = 0;
+						tf.Layer.MasksToBounds = true;
+					}
+				}
+				catch
+				{
+					// Best-effort platform polish only.
+				}
 			});
-#endif
+			#endif
 		});
 
 		return builder.Build();

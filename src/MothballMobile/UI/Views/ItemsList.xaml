@@ -39,33 +39,23 @@
                    Text="Items"
                    FontSize="24"
                    FontAttributes="Bold"
-                     TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
             <Label x:DataType="vm:ItemsListViewModel"
                    Text="All items across containers"
-                     TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
+                   TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
         </VerticalStackLayout>
 
         <!-- Search -->
         <Border x:DataType="vm:ItemsListViewModel"
                 Grid.Row="1"
                 Style="{StaticResource SearchWrapper}">
-            <Grid ColumnDefinitions="*,Auto"
-                  ColumnSpacing="8">
-                <SearchBar x:DataType="vm:ItemsListViewModel"
-                           Grid.Column="0"
-                           Placeholder="Search items..."
-                           Text="{Binding Query}"
-                           SearchCommand="{Binding SearchCommand}"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
-                           PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                           BackgroundColor="Transparent"
-                           CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-                <Button x:DataType="vm:ItemsListViewModel"
-                        Grid.Column="1"
-                        Text="Clear"
-                        Style="{StaticResource PrimaryButton}"
-                        Command="{Binding ClearSearchCommand}"/>
-            </Grid>
+            <SearchBar x:DataType="vm:ItemsListViewModel"
+                       Placeholder="Search items..."
+                       Text="{Binding Query}"
+                       SearchCommand="{Binding SearchCommand}"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                       PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                       CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
         </Border>
 
         <RefreshView Grid.Row="2"
@@ -129,9 +119,9 @@
                                                      Spacing="4">
                                     <Label Text="{Binding Name}"
                                            FontAttributes="Bold"
-                                         TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                                     <Label Text="{Binding Description}"
-                                         TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                                            FontSize="12"
                                            LineBreakMode="TailTruncation"/>
                                 </VerticalStackLayout>

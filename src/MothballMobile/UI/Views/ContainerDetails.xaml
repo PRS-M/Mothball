@@ -136,7 +136,6 @@
                        Placeholder="Search within container..."
                        TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                        PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                       BackgroundColor="Transparent"
                        CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                        Text="{Binding SearchQuery}"
                        SearchCommand="{Binding ApplySearchCommand}"/>
