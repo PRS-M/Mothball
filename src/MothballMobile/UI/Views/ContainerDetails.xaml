@@ -9,7 +9,7 @@
                 x:Class="MothballMobile.UI.Views.ContainerDetails"
                 x:DataType="vm:ContainerDetailsViewModel"
                 Title="Container"
-                BackgroundColor="#0F172A">
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
@@ -18,7 +18,7 @@
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontAwesomeSolid"
                                  Glyph="&#xF1F8;"
-                                 Color="{StaticResource ColorPrimaryIcon}"
+                                 Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                                  Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
@@ -45,15 +45,15 @@
                        Text="{Binding Name}"
                        FontSize="22"
                        FontAttributes="Bold"
-                       TextColor="{StaticResource ColorPrimaryText}"/>
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                 <Label Grid.Row="1"
                        Grid.Column="0"
                        Text="{Binding TotalItemCount, StringFormat='Items stored: {0}'}"
-                       TextColor="{StaticResource ColorPrimaryText}"/>
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                 <Label Grid.Row="2"
                        Grid.Column="0"
                        Text="{Binding Notes}"
-                       TextColor="{StaticResource ColorMuted}"
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                        FontSize="12"/>
                 <Border Grid.RowSpan="3"
                         Grid.Column="1"
@@ -92,7 +92,7 @@
                    Text="Items in this container"
                    FontSize="18"
                    FontAttributes="Bold"
-                   TextColor="{StaticResource ColorPrimaryText}"
+                     TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                    VerticalOptions="Center"/>
 
             <HorizontalStackLayout Grid.Column="1"
@@ -108,7 +108,7 @@
                     <Button.ImageSource>
                         <FontImageSource FontFamily="FontAwesomeSolid"
                                          Glyph="&#xF067;"
-                                         Color="{StaticResource ColorPrimaryIcon}"
+                                         Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                                          Size="16"/>
                     </Button.ImageSource>
                 </Button>
@@ -121,7 +121,7 @@
                     <Button.ImageSource>
                         <FontImageSource FontFamily="FontAwesomeSolid"
                                          Glyph="&#xF067;"
-                                         Color="{StaticResource ColorPrimaryIcon}"
+                                         Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                                          Size="16"/>
                     </Button.ImageSource>
                 </Button>
@@ -134,10 +134,10 @@
                 Margin="16,0,16,16">
             <SearchBar x:DataType="vm:ContainerDetailsViewModel"
                        Placeholder="Search within container..."
-                       TextColor="{StaticResource ColorPrimaryText}"
-                       PlaceholderColor="{StaticResource ColorMuted}"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                       PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                        BackgroundColor="Transparent"
-                       CancelButtonColor="{StaticResource ColorMuted}"
+                       CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                        Text="{Binding SearchQuery}"
                        SearchCommand="{Binding ApplySearchCommand}"/>
         </Border>
@@ -161,7 +161,7 @@
                                      HorizontalOptions="Center"
                                      VerticalOptions="Center">
                     <Label Text="No items in this container"
-                           TextColor="{StaticResource ColorMuted}"/>
+                              TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
@@ -199,9 +199,9 @@
                                                  VerticalOptions="Center">
                                 <Label Text="{Binding Name}"
                                        FontAttributes="Bold"
-                                       TextColor="{StaticResource ColorPrimaryText}"/>
+                                        TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                                 <Label Text="{Binding Description}"
-                                       TextColor="{StaticResource ColorMuted}"
+                                        TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                                        FontSize="12"
                                        LineBreakMode="TailTruncation"/>
                             </VerticalStackLayout>

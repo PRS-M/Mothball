@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Views.ContainersList"
                 x:DataType="vm:ContainerListViewModel"
                 Title="Containers"
-                BackgroundColor="#FF182441">
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
@@ -16,7 +16,7 @@
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontAwesomeSolid"
                         Glyph="&#xF067;"
-                        Color="{StaticResource ColorPrimaryIcon}"
+                        Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                         Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
@@ -34,9 +34,9 @@
             <Label Text="Containers"
                     FontSize="28"
                     FontAttributes="Bold"
-                    TextColor="{StaticResource ColorPrimaryText}"/>
+                    TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
             <Label Text="Browse your storage"
-                    TextColor="{StaticResource ColorMuted}"
+                    TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                     FontSize="14"/>
         </VerticalStackLayout>
 
@@ -60,9 +60,9 @@
                         HorizontalOptions="Center"
                         VerticalOptions="Center">
                     <Label Text="No containers yet"
-                            TextColor="{StaticResource ColorMuted}"/>
+                            TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                     <Label Text="Tap + to add your first container"
-                            TextColor="{StaticResource ColorMuted}"
+                            TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                             FontSize="12"/>
                 </VerticalStackLayout>
             </CollectionView.EmptyView>

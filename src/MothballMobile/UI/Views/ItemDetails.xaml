@@ -8,7 +8,7 @@
                 x:Class="MothballMobile.UI.Views.ItemDetails"
                 x:DataType="vm:ItemDetailsViewModel"
                 Title="Item"
-                BackgroundColor="#0F172A">
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
@@ -17,7 +17,7 @@
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontAwesomeSolid"
                                  Glyph="&#xF1F8;"
-                                 Color="{StaticResource ColorPrimaryIcon}"
+                                 Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                                  Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
@@ -37,7 +37,7 @@
                 <Label Text="{Binding Name}"
                        FontSize="22"
                        FontAttributes="Bold"
-                       TextColor="{StaticResource ColorPrimaryText}"/>
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                 <Button Grid.Column="1"
                         Text="Go to the container"
                         Style="{StaticResource PrimaryButton}"
@@ -76,9 +76,9 @@
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Description"
                            FontAttributes="Bold"
-                           TextColor="{StaticResource ColorPrimaryText}"/>
+                              TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                     <Label Text="{Binding Description}"
-                           TextColor="{StaticResource ColorMuted}"/>
+                              TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                 </VerticalStackLayout>
             </Border>
 

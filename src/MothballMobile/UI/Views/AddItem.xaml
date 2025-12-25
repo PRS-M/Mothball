@@ -6,7 +6,7 @@
                 x:Class="MothballMobile.UI.Views.AddItem"
                 x:DataType="vm:AddItemViewModel"
                 Title="Add Item"
-                BackgroundColor="#0F172A">
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ScrollView>
         <Grid Padding="20"
@@ -18,9 +18,9 @@
                 <Label Text="Add a new item"
                        FontSize="24"
                        FontAttributes="Bold"
-                       TextColor="{StaticResource ColorPrimaryText}"/>
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                 <Label Text="Fill in the fields below"
-                       TextColor="{StaticResource ColorMuted}"/>
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
             </VerticalStackLayout>
 
             <Border Grid.Row="1"
@@ -28,7 +28,7 @@
                 <VerticalStackLayout Spacing="12"
                                      HorizontalOptions="Center">
                     <Label Text="Name"
-                           TextColor="{StaticResource ColorMuted}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                            Margin="4,0"/>
                     <Border Style="{StaticResource ValidatedInputWrapper}"
                             WidthRequest="{StaticResource WidthM}">
@@ -39,11 +39,11 @@
                                ReturnCommand="{Binding AddCommand}"/>
                     </Border>
                     <Label Text="{Binding ValidationMessage}"
-                           TextColor="{StaticResource ColorDanger}"
+                           TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"
                            IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
 
                     <Label Text="Description"
-                           TextColor="{StaticResource ColorMuted}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                            Margin="4,8,4,0"/>
                     <Border Style="{StaticResource InputWrapper}"
                             WidthRequest="{StaticResource WidthM}">
@@ -53,7 +53,7 @@
                     </Border>
 
                     <Label Text="Quantity"
-                           TextColor="{StaticResource ColorMuted}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                            Margin="4,8,4,0"/>
                     <Border Style="{StaticResource InputWrapper}"
                             WidthRequest="{StaticResource WidthM}">

@@ -8,7 +8,7 @@
                 x:Class="MothballMobile.UI.Views.AddExistingItemToContainer"
                 x:DataType="vm:AddExistingItemToContainerViewModel"
                 Title="Add Existing Item"
-                BackgroundColor="#0F172A">
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ContentPage.Resources>
         <conv:PathToImageSourceConverter x:Key="PathToImage"/>
@@ -22,9 +22,9 @@
             <Label Text="Select an item"
                    FontSize="24"
                    FontAttributes="Bold"
-                   TextColor="{StaticResource ColorPrimaryText}"/>
+                     TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
             <Label Text="Only items not assigned to any container are shown"
-                   TextColor="{StaticResource ColorMuted}"/>
+                     TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
         </VerticalStackLayout>
 
         <RefreshView Grid.Row="1"
@@ -40,7 +40,7 @@
                                          HorizontalOptions="Center"
                                          VerticalOptions="Center">
                         <Label Text="No unassigned items"
-                               TextColor="{StaticResource ColorMuted}"/>
+                               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
@@ -78,9 +78,9 @@
                                                      Spacing="4">
                                     <Label Text="{Binding Name}"
                                            FontAttributes="Bold"
-                                           TextColor="{StaticResource ColorPrimaryText}"/>
+                                         TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                                     <Label Text="{Binding Description}"
-                                           TextColor="{StaticResource ColorMuted}"
+                                         TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                                            FontSize="12"
                                            LineBreakMode="TailTruncation"/>
                                 </VerticalStackLayout>

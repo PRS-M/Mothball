@@ -9,7 +9,7 @@
                 x:Name="ItemsPage"
                 x:DataType="vm:ItemsListViewModel"
                 Title="Items"
-                BackgroundColor="#0F172A">
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem x:DataType="vm:ItemsListViewModel"
@@ -19,7 +19,7 @@
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontAwesomeSolid"
                                  Glyph="&#xF067;"
-                                 Color="{StaticResource ColorPrimaryIcon}"
+                                 Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                                  Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
@@ -39,10 +39,10 @@
                    Text="Items"
                    FontSize="24"
                    FontAttributes="Bold"
-                   TextColor="{StaticResource ColorPrimaryText}"/>
+                     TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
             <Label x:DataType="vm:ItemsListViewModel"
                    Text="All items across containers"
-                   TextColor="{StaticResource ColorMuted}"/>
+                     TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
         </VerticalStackLayout>
 
         <!-- Search -->
@@ -56,10 +56,10 @@
                            Placeholder="Search items..."
                            Text="{Binding Query}"
                            SearchCommand="{Binding SearchCommand}"
-                           TextColor="{StaticResource ColorPrimaryText}"
-                           PlaceholderColor="{StaticResource ColorMuted}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                           PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                            BackgroundColor="Transparent"
-                           CancelButtonColor="{StaticResource ColorMuted}"/>
+                           CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                 <Button x:DataType="vm:ItemsListViewModel"
                         Grid.Column="1"
                         Text="Clear"
@@ -87,7 +87,7 @@
                                          HorizontalOptions="Center"
                                          VerticalOptions="Center">
                         <Label Text="No items yet"
-                               TextColor="{StaticResource ColorMuted}"/>
+                               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
@@ -129,9 +129,9 @@
                                                      Spacing="4">
                                     <Label Text="{Binding Name}"
                                            FontAttributes="Bold"
-                                           TextColor="{StaticResource ColorPrimaryText}"/>
+                                         TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                                     <Label Text="{Binding Description}"
-                                           TextColor="{StaticResource ColorMuted}"
+                                         TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                                            FontSize="12"
                                            LineBreakMode="TailTruncation"/>
                                 </VerticalStackLayout>
