@@ -4,7 +4,7 @@ using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using Infrastructure.Interfaces;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.Repositories;
 
 /// <summary>
 /// Thin facade that composes focused repositories for a cohesive domain-oriented API.

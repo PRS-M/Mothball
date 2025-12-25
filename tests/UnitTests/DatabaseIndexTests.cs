@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
+using Infrastructure.Services.Repositories;
 
 namespace UnitTests;
 

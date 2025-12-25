@@ -3,7 +3,7 @@ using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.Repositories;
 
 public class ImageRepository : IImageRepository
 {

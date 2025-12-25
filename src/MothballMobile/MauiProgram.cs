@@ -9,6 +9,8 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using Infrastructure.Interfaces;
 using Microsoft.Maui.Handlers;
+using Infrastructure.Services.Repositories;
+
 #if IOS || MACCATALYST
 using UIKit;
 #endif

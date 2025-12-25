@@ -6,7 +6,7 @@ using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using Microsoft.Extensions.Logging;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.Repositories;
 
 public class ItemRepository : IItemRepository
 {

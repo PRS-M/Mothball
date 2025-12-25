@@ -2,7 +2,7 @@ using CoreApp.Interfaces;
 using SQLite;
 using System.Linq.Expressions;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.Repositories;
 
 public class Repository<T> : IRepositoryExtended<T> where T : new()
 {

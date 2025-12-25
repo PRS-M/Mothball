@@ -1,7 +1,7 @@
 using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.Repositories;
 
 /// <summary>
 /// Simple repository for managing item-container relations.
