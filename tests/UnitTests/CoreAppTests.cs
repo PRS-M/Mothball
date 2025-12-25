@@ -51,6 +51,27 @@ public class CoreAppTests
     }
 
     [Test]
+    public void Container_AddItem_SameItemTwice_SumsQuantity_WithoutNewRow()
+    {
+        var container = new Container();
+        var itemId = Guid.NewGuid();
+
+        container.AddItem(itemId, 2);
+        container.AddItem(itemId, 3);
+
+        Assert.That(container.Items.Count, Is.EqualTo(1));
+        Assert.That(container.Items[0].Quantity, Is.EqualTo(5));
+        Assert.That(container.ItemCount, Is.EqualTo(5));
+    }
+
+    [Test]
+    public void Container_Ctor_WithEmptyGuid_GeneratesNewGuid()
+    {
+        var c = new Container(Guid.Empty, "Name", "Notes");
+        Assert.That(c.ContainerId, Is.Not.EqualTo(Guid.Empty));
+    }
+
+    [Test]
     public void StoredItem_Requires_Valid_ItemId_And_Quantity()
     {
         Assert.That(() => new StoredItem(Guid.Empty, 1), Throws.ArgumentException);
