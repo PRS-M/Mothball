@@ -238,59 +238,71 @@ public sealed class JsonInventoryStore
 
     private sealed record ActiveManifest(JsonStoreManifest Manifest, string ActiveManifestFileName, string InactiveManifestFileName);
 
+    private sealed record ManifestCandidate(
+        JsonStoreManifest Manifest,
+        string FileName,
+        bool CurrentSlotComplete,
+        bool PreviousSlotComplete);
+
     private async Task<ActiveManifest?> TryGetActiveManifestAsync()
     {
-        var ma = await TryReadJsonAsync<JsonStoreManifest>(JsonStoreConstants.ManifestAFileName, JsonStoreConstants.StoreRoot).ConfigureAwait(false);
-        var mb = await TryReadJsonAsync<JsonStoreManifest>(JsonStoreConstants.ManifestBFileName, JsonStoreConstants.StoreRoot).ConfigureAwait(false);
+        var candidates = new List<ManifestCandidate>(capacity: 2);
 
-        (JsonStoreManifest manifest, string fileName)? best = null;
+        var a = await TryReadCandidateAsync(JsonStoreConstants.ManifestAFileName).ConfigureAwait(false);
+        if (a is not null) candidates.Add(a);
 
-        if (ma is not null && await IsManifestValidAsync(ma).ConfigureAwait(false)) best = (ma, JsonStoreConstants.ManifestAFileName);
-        if (mb is not null && await IsManifestValidAsync(mb).ConfigureAwait(false))
-        {
-            if (best is null || mb.Generation > best.Value.manifest.Generation) best = (mb, JsonStoreConstants.ManifestBFileName);
-        }
+        var b = await TryReadCandidateAsync(JsonStoreConstants.ManifestBFileName).ConfigureAwait(false);
+        if (b is not null) candidates.Add(b);
 
-        // If the latest manifest points to an invalid current slot but a valid previous slot,
-        // accept it by synthesizing a rollback manifest.
-        if (best is not null)
-        {
-            bool currentOk = await IsSlotCompleteAsync(best.Value.manifest.CurrentSlot).ConfigureAwait(false);
-            if (!currentOk)
-            {
-                bool prevOk = await IsSlotCompleteAsync(best.Value.manifest.PreviousSlot).ConfigureAwait(false);
-                if (prevOk)
-                {
-                    var synthesized = new JsonStoreManifest
-                    {
-                        Generation = best.Value.manifest.Generation,
-                        CurrentSlot = best.Value.manifest.PreviousSlot,
-                        PreviousSlot = best.Value.manifest.CurrentSlot,
-                        SchemaVersion = best.Value.manifest.SchemaVersion,
-                    };
-
-                    return new ActiveManifest(
-                        synthesized,
-                        best.Value.fileName,
-                        best.Value.fileName == JsonStoreConstants.ManifestAFileName ? JsonStoreConstants.ManifestBFileName : JsonStoreConstants.ManifestAFileName);
-                }
-            }
-        }
+        var best = candidates
+            .OrderByDescending(c => c.Manifest.Generation)
+            .FirstOrDefault();
 
         if (best is null) return null;
+        if (!best.CurrentSlotComplete && !best.PreviousSlotComplete) return null;
 
-        string inactive = best.Value.fileName == JsonStoreConstants.ManifestAFileName
-            ? JsonStoreConstants.ManifestBFileName
-            : JsonStoreConstants.ManifestAFileName;
-        return new ActiveManifest(best.Value.manifest, best.Value.fileName, inactive);
+        var effective = best.CurrentSlotComplete
+            ? best.Manifest
+            : SynthesizeRollback(best.Manifest);
+
+        return new ActiveManifest(
+            effective,
+            best.FileName,
+            OtherManifest(best.FileName));
     }
 
-    private async Task<bool> IsManifestValidAsync(JsonStoreManifest manifest)
+    private async Task<ManifestCandidate?> TryReadCandidateAsync(string manifestFileName)
+    {
+        var manifest = await TryReadJsonAsync<JsonStoreManifest>(manifestFileName, JsonStoreConstants.StoreRoot).ConfigureAwait(false);
+        if (manifest is null) return null;
+        if (!IsManifestStructureValid(manifest)) return null;
+
+        bool currentOk = await IsSlotCompleteAsync(manifest.CurrentSlot).ConfigureAwait(false);
+        bool prevOk = await IsSlotCompleteAsync(manifest.PreviousSlot).ConfigureAwait(false);
+
+        return new ManifestCandidate(manifest, manifestFileName, currentOk, prevOk);
+    }
+
+    private static bool IsManifestStructureValid(JsonStoreManifest manifest)
     {
         if (manifest.Generation <= 0) return false;
         if (!IsSlotValue(manifest.CurrentSlot) || !IsSlotValue(manifest.PreviousSlot)) return false;
-        return await IsSlotCompleteAsync(manifest.CurrentSlot).ConfigureAwait(false);
+        return true;
     }
+
+    private static JsonStoreManifest SynthesizeRollback(JsonStoreManifest manifest)
+        => new()
+        {
+            Generation = manifest.Generation,
+            CurrentSlot = manifest.PreviousSlot,
+            PreviousSlot = manifest.CurrentSlot,
+            SchemaVersion = manifest.SchemaVersion,
+        };
+
+    private static string OtherManifest(string fileName)
+        => fileName == JsonStoreConstants.ManifestAFileName
+            ? JsonStoreConstants.ManifestBFileName
+            : JsonStoreConstants.ManifestAFileName;
 
     private async Task<bool> IsSlotCompleteAsync(string slot)
     {

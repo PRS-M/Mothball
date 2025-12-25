@@ -1,15 +1,15 @@
-﻿using Infrastructure.Services;
+﻿using CoreApp.Interfaces;
 
 namespace MothballMobile;
 
 public partial class App : Application
 {
-	public App(MothballDatabase database)
+	public App(IAppStartupInitializer startupInitializer)
 	{
 		InitializeComponent();
 
-		// Fire-and-forget DB init
-		_ = database.InitializeAsync();
+		// Fire-and-forget store init/recovery
+		_ = startupInitializer.InitializeAsync();
 	}
 
 	protected override Window CreateWindow(IActivationState? activationState)

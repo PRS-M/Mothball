@@ -3,6 +3,8 @@ using Microsoft.Maui.Media;
 using MothballMobile.Infrastructure;
 using MothballMobile.UI.ViewModels;
 using Infrastructure.Services;
+using Infrastructure.Services.JsonStore;
+using Infrastructure.Services.JsonStore.Repositories;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using Infrastructure.Interfaces;
@@ -107,17 +109,41 @@ public static class MauiProgram
 
     private static void RegisterDatabase(IServiceCollection services)
 	{
-		// Database and repositories
-		services.AddSingleton<MothballDatabase>();
-		services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
-		// Focused domain repositories
-		services.AddSingleton<IContainerRepository, ContainerRepository>();
-		services.AddSingleton<IItemRepository, ItemRepository>();
-		services.AddSingleton<IImageRepository, ImageRepository>();
-		services.AddSingleton<IRelationRepository, RelationRepository>();
-		// Domain facade composing focused repositories
-		services.AddSingleton<IInventoryDomainRepository, InventoryDomainRepository>();
-		services.AddSingleton<IImagePathResolver, ImagePathResolver>();
+        // Toggle the persistence backend.
+        // - false: SQLite (current default)
+        // - true: JSON operational store (multi-file + rollback)
+        const bool UseJsonOperationalStore = false;
+
+        if (UseJsonOperationalStore)
+        {
+            services.AddSingleton<JsonInventoryStore>();
+            services.AddSingleton<IAppStartupInitializer, JsonStoreStartupInitializer>();
+            services.AddSingleton<IInventoryMaintenanceService, JsonInventoryMaintenanceService>();
+
+            // Focused domain repositories backed by JSON store
+            services.AddSingleton<IContainerRepository, JsonContainerRepository>();
+            services.AddSingleton<IItemRepository, JsonItemRepository>();
+            services.AddSingleton<IImageRepository, JsonImageRepository>();
+            services.AddSingleton<IRelationRepository, JsonRelationRepository>();
+
+            services.AddSingleton<IInventoryDomainRepository, InventoryDomainRepository>();
+            services.AddSingleton<IImagePathResolver, ImagePathResolver>();
+        }
+        else
+        {
+		    // Database and repositories
+		    services.AddSingleton<MothballDatabase>();
+		    services.AddSingleton<IAppStartupInitializer, SqliteStartupInitializer>();
+		    services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
+		    // Focused domain repositories
+		    services.AddSingleton<IContainerRepository, ContainerRepository>();
+		    services.AddSingleton<IItemRepository, ItemRepository>();
+		    services.AddSingleton<IImageRepository, ImageRepository>();
+		    services.AddSingleton<IRelationRepository, RelationRepository>();
+		    // Domain facade composing focused repositories
+		    services.AddSingleton<IInventoryDomainRepository, InventoryDomainRepository>();
+		    services.AddSingleton<IImagePathResolver, ImagePathResolver>();
+        }
 #if DEBUG
 		services.AddSingleton<DemoDataSeeder>();
 #endif
