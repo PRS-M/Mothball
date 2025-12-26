@@ -1,5 +1,4 @@
 using System;
-using CoreApp;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
 using SixLabors.ImageSharp.Formats.Jpeg;
@@ -26,9 +25,16 @@ public class CameraHandler : ICameraHandler
 
         using Stream stream = await photo.OpenReadAsync();
 
-        // If the stream is seekable and the length is known, read directly into a pre-sized buffer.
-        byte[] originalBytes;
+        byte[] originalBytes = await ReadAllBytesAsync(stream);
+        if (originalBytes.Length == 0) return Array.Empty<byte>();
 
+        byte[]? thumbnailBytes = await TryCreateThumbnailJpegAsync(originalBytes);
+        return thumbnailBytes ?? originalBytes;
+    }
+
+    private static async Task<byte[]> ReadAllBytesAsync(Stream stream)
+    {
+        // If the stream is seekable and the length is known, read directly into a pre-sized buffer.
         if (stream.CanSeek)
         {
             long length = stream.Length;
@@ -36,19 +42,17 @@ public class CameraHandler : ICameraHandler
 
             byte[] buffer = new byte[length];
             await stream.ReadExactlyAsync(buffer, 0, (int)length);
-
-            originalBytes = buffer;
-        }
-        else
-        {
-            // Fallback for non-seekable streams.
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-            originalBytes = ms.ToArray();
+            return buffer;
         }
 
-        if (originalBytes.Length == 0) return Array.Empty<byte>();
+        // Fallback for non-seekable streams.
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        return ms.ToArray();
+    }
 
+    private static async Task<byte[]?> TryCreateThumbnailJpegAsync(byte[] originalBytes)
+    {
         // Convert the picked image into a stored thumbnail to reduce storage.
         try
         {
@@ -71,7 +75,7 @@ public class CameraHandler : ICameraHandler
         catch
         {
             // If thumbnail generation fails for any reason, fall back to the original bytes.
-            return originalBytes;
+            return null;
         }
     }
 }
