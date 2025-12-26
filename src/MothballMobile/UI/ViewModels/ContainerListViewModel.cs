@@ -35,8 +35,8 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         }
     }
 
-    protected override async Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => await inventoryRepository.GetAllContainersAsync(pageNumber, pageSize);
+    protected override async Task<List<Container>> LoadAsync(int pageNumber, int requestedPageSize)
+        => await inventoryRepository.GetAllContainersAsync(pageNumber, requestedPageSize);
 
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav);

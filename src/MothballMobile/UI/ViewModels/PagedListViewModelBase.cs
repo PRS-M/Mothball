@@ -48,7 +48,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
 
     protected virtual void OnViewModelAdded(TViewModel vm) { }
     protected abstract Task EnsureDummyData();
-    protected abstract Task<List<TSource>> LoadAsync(int pageNumber, int pageSize);
+    protected abstract Task<List<TSource>> LoadAsync(int pageNumber, int requestedPageSize);
     protected abstract TViewModel MapToViewModel(TSource source);
 
     // Utility for full replacements (e.g. search result sets)
@@ -65,7 +65,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     {
         ResetPaging();
 
-        var page = await LoadAsync(currentPage, pageSize);
+        var page = await LoadAsync(currentPage, this.pageSize);
         if (page.Count == 0)
         {
             hasMorePages = false;
@@ -73,7 +73,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
         }
 
         AddItemsPage(page);
-        if (page.Count < pageSize)
+        if (page.Count < this.pageSize)
             hasMorePages = false;
 
         currentPage++;
@@ -92,7 +92,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     private async Task LoadNextPageCore()
     {
         if (!hasMorePages) return;
-        var page = await LoadAsync(currentPage, pageSize);
+        var page = await LoadAsync(currentPage, this.pageSize);
 
         if (page.Count == 0)
         {
@@ -102,7 +102,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
 
         AddItemsPage(page);
 
-        if (page.Count < pageSize)
+        if (page.Count < this.pageSize)
             hasMorePages = false;
 
         currentPage++;
