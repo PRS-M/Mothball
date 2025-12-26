@@ -47,8 +47,8 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         }
     }
 
-    protected override Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryRepository.GetAllContainersAsync(pageNumber, pageSize);
+    protected override Task<List<Container>> LoadAsync(int pageNumber, int size)
+        => inventoryRepository.GetAllContainersAsync(pageNumber, size);
 
     protected override SelectableContainerViewModel MapToViewModel(Container source)
         => new(source, imagePaths, AssociateWithContainerAsync);

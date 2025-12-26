@@ -45,8 +45,8 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
     protected override void OnViewModelAdded(UnassignedItemViewModel vm)
         => _ = vm.LoadImagesAsync();
 
-    protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryRepository.GetUnassignedItemsWithPhotosAsync(pageNumber, pageSize);
+    protected override Task<List<Item>> LoadAsync(int pageNumber, int size)
+        => inventoryRepository.GetUnassignedItemsWithPhotosAsync(pageNumber, size);
 
     private async Task AssignAsync(Guid itemId)
     {
