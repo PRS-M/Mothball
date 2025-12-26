@@ -101,16 +101,16 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
     }
 
-    private async Task LoadQuerySearchAsync(string? query)
+    private async Task LoadQuerySearchAsync(string? searchQuery)
     {
-        if (string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrWhiteSpace(searchQuery))
         {
             // restore normal paging
             await ReplaceWithFirstPagedAsync();
         }
         else
         {
-            var items = await inventoryRepository.GetItemsWithPhotosAsync(query);
+            var items = await inventoryRepository.GetItemsWithPhotosAsync(searchQuery);
             ReplaceWithFullResultSet(items);
         }
     }
