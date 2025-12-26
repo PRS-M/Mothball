@@ -124,6 +124,6 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     protected override void OnViewModelAdded(ItemViewModel vm)
         => _ = vm.LoadImageAsync();
 
-    protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryRepository.GetAllItemsWithPhotosAsync(pageNumber, pageSize);
+    protected override Task<List<Item>> LoadAsync(int pageNumber, int count)
+        => inventoryRepository.GetAllItemsWithPhotosAsync(pageNumber, count);
 }
