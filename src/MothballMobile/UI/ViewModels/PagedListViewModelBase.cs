@@ -48,7 +48,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
 
     protected virtual void OnViewModelAdded(TViewModel vm) { }
     protected abstract Task EnsureDummyData();
-    protected abstract Task<List<TSource>> LoadAsync(int pageNumber, int pageSize);
+    protected abstract Task<List<TSource>> LoadAsync(int pageNumber, int size);
     protected abstract TViewModel MapToViewModel(TSource source);
 
     // Utility for full replacements (e.g. search result sets)
