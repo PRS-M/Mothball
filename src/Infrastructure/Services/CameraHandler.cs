@@ -1,6 +1,9 @@
 using System;
 using CoreApp;
 using CoreApp.Interfaces;
+using CoreApp.Utilities;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 
 namespace Infrastructure.Services;
 
@@ -24,6 +27,8 @@ public class CameraHandler : ICameraHandler
         using Stream stream = await photo.OpenReadAsync();
 
         // If the stream is seekable and the length is known, read directly into a pre-sized buffer.
+        byte[] originalBytes;
+
         if (stream.CanSeek)
         {
             long length = stream.Length;
@@ -31,12 +36,42 @@ public class CameraHandler : ICameraHandler
 
             byte[] buffer = new byte[length];
             await stream.ReadExactlyAsync(buffer, 0, (int)length);
-            return buffer;
+
+            originalBytes = buffer;
+        }
+        else
+        {
+            // Fallback for non-seekable streams.
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            originalBytes = ms.ToArray();
         }
 
-        // Fallback for non-seekable streams.
-        using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
-        return ms.ToArray();
+        if (originalBytes.Length == 0) return Array.Empty<byte>();
+
+        // Convert the picked image into a stored thumbnail to reduce storage.
+        try
+        {
+            using SixLabors.ImageSharp.Image image = SixLabors.ImageSharp.Image.Load(originalBytes);
+            image.Mutate(ctx =>
+            {
+                ctx.AutoOrient();
+                ctx.Resize(new ResizeOptions
+                {
+                    Mode = SixLabors.ImageSharp.Processing.ResizeMode.Max,
+                    Size = new SixLabors.ImageSharp.Size(Constants.PhotoThumbnailMaxWidthPx, Constants.PhotoThumbnailMaxHeightPx)
+                });
+            });
+
+            using var output = new MemoryStream();
+            var encoder = new JpegEncoder { Quality = 85 };
+            await image.SaveAsync(output, encoder);
+            return output.ToArray();
+        }
+        catch
+        {
+            // If thumbnail generation fails for any reason, fall back to the original bytes.
+            return originalBytes;
+        }
     }
 }
