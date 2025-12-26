@@ -160,7 +160,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             if (!hasMoreItems || string.IsNullOrWhiteSpace(ContainerId)) return;
 
             currentPage++;
-            List<Item> items = new();
+            List<Item> items;
 
             if (isSearchActive && !string.IsNullOrWhiteSpace(SearchQuery))
             {
