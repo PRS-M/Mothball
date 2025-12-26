@@ -22,6 +22,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
 	</ItemGroup>
 
 	<ItemGroup>
