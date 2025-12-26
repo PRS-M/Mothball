@@ -1,46 +1,71 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
-             xmlns:views="clr-namespace:MothballMobile.UI.Views"
-             x:Class="MothballMobile.UI.Views.AddItem"
-             x:DataType="vm:AddItemViewModel"
-             Title="Add Item"
-             BackgroundColor="#0F172A">
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:views="clr-namespace:MothballMobile.UI.Views"
+                x:Class="MothballMobile.UI.Views.AddItem"
+                x:DataType="vm:AddItemViewModel"
+                Title="Add Item"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ScrollView>
-        <Grid Padding="20" RowDefinitions="Auto,Auto" ColumnDefinitions="*">
-            <VerticalStackLayout Grid.Row="0" Spacing="6" Margin="0,6,0,14">
-                <Label Text="Add a new item" FontSize="24" FontAttributes="Bold"
-                       TextColor="{StaticResource ColorPrimaryText}"/>
+        <Grid Padding="20"
+              RowDefinitions="Auto,Auto"
+              ColumnDefinitions="*">
+            <VerticalStackLayout Grid.Row="0"
+                                 Spacing="6"
+                                 Margin="0,6,0,14">
+                <Label Text="Add a new item"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                 <Label Text="Fill in the fields below"
-                       TextColor="{StaticResource ColorMuted}"/>
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
             </VerticalStackLayout>
 
-            <Border Grid.Row="1" Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
-                    <Label Text="Name" TextColor="{StaticResource ColorMuted}" Margin="4,0"/>
-                    <Border Style="{StaticResource ValidatedInputWrapper}" WidthRequest="{StaticResource WidthM}">
+            <Border Grid.Row="1"
+                    Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12"
+                                     HorizontalOptions="Center">
+                    <Label Text="Name"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                           Margin="4,0"/>
+                    <Border Style="{StaticResource ValidatedInputWrapper}"
+                            WidthRequest="{StaticResource WidthM}">
                         <Entry Style="{StaticResource Input}"
                                Placeholder="Item name"
                                Text="{Binding Name}"
                                ReturnType="Done"
-                               ReturnCommand="{Binding AddCommand}" />
+                               ReturnCommand="{Binding AddCommand}"/>
                     </Border>
                     <Label Text="{Binding ValidationMessage}"
-                           TextColor="{StaticResource ColorDanger}"
-                           IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+                           TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"
+                           IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
 
-                    <Label Text="Description" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
-                    <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">
-                        <Entry Style="{StaticResource Input}" Placeholder="Short description" Text="{Binding Description}"/>
+                    <Label Text="Description"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                           Margin="4,8,4,0"/>
+                    <Border Style="{StaticResource InputWrapper}"
+                            WidthRequest="{StaticResource WidthM}">
+                        <Entry Style="{StaticResource Input}"
+                               Placeholder="Short description"
+                               Text="{Binding Description}"/>
                     </Border>
 
-                    <Label Text="Quantity" TextColor="{StaticResource ColorMuted}" Margin="4,8,4,0"/>
-                    <Border Style="{StaticResource InputWrapper}" WidthRequest="{StaticResource WidthM}">
-                        <Entry Style="{StaticResource Input}" Keyboard="Numeric" Placeholder="e.g. 1" Text="{Binding Quantity}"/>
+                    <Label Text="Quantity"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                           Margin="4,8,4,0"/>
+                    <Border Style="{StaticResource InputWrapper}"
+                            WidthRequest="{StaticResource WidthM}">
+                        <Entry Style="{StaticResource Input}"
+                               Keyboard="Numeric"
+                               Placeholder="e.g. 1"
+                               Text="{Binding Quantity}"/>
                     </Border>
-                    <Button Text="Add Item" Style="{StaticResource PrimaryButton}" WidthRequest="{StaticResource WidthM}" Command="{Binding AddCommand}"/>
+                    <Button Text="Add Item"
+                            Style="{StaticResource PrimaryButton}"
+                            WidthRequest="{StaticResource WidthM}"
+                            Command="{Binding AddCommand}"/>
                 </VerticalStackLayout>
             </Border>
         </Grid>

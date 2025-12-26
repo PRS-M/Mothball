@@ -1,42 +1,99 @@
-using System;
 using SQLite;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Infrastructure.Services;
 
-public class MothballDatabase
+public class MothballDatabase : IAsyncDisposable
 {
-    private SQLiteAsyncConnection? database;
-    private readonly string? customPath;
+    private readonly string databasePath;
+    private readonly SemaphoreSlim initLock = new(1, 1);
+    private SQLiteAsyncConnection? connection;
+    private bool disposed;
 
     public MothballDatabase(string? databasePath = null)
     {
-        customPath = databasePath;
+        this.databasePath = string.IsNullOrWhiteSpace(databasePath)
+            ? SQLiteConstants.DatabasePath
+            : databasePath;
     }
 
-    public SQLiteAsyncConnection Connection
-    {
-        get
-        {
-            if (database is null)
-                throw new InvalidOperationException("Database not initialized. Call InitializeAsync() first.");
-            return database;
-        }
-    }
+    public SQLiteAsyncConnection Connection =>
+        connection ?? throw new InvalidOperationException("Database not initialized. Call InitializeAsync() first.");
 
     public async Task InitializeAsync()
     {
-        if (database != null) return;
+        if (connection != null) return;
 
-        var path = string.IsNullOrWhiteSpace(customPath)
-            ? SQLiteConstants.DatabasePath
-            : customPath!;
-        database = new SQLiteAsyncConnection(path, SQLiteConstants.OpenFlags);
+        await initLock.WaitAsync();
+        try
+        {
+            if (connection != null) return;
+            connection = await InitializeCoreAsync();
+        }
+        finally
+        {
+            initLock.Release();
+        }
+    }
 
-        // Create tables for DB models
-        await database.CreateTableAsync<DbContainer>();
-        await database.CreateTableAsync<DbItem>();
-        await database.CreateTableAsync<DbImage>();
-        await database.CreateTableAsync<DbItemContainerRelation>();
+    private async Task<SQLiteAsyncConnection> InitializeCoreAsync()
+    {
+        var databaseConnection = new SQLiteAsyncConnection(databasePath, SQLiteConstants.OpenFlags);
+
+        // Create tables only if they don't exist (avoids MacCatalyst ALTER TABLE NOT NULL crash)
+        await CreateTableIfNotExistsAsync<DbContainer>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbItem>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbImage>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbItemContainerRelation>(databaseConnection);
+
+        // Run migrations (safe to run repeatedly)
+        await EnsureColumnAsync(databaseConnection, nameof(DbItem), nameof(DbItem.Description), "TEXT", "''");
+        await EnsureColumnAsync(databaseConnection, nameof(DbItemContainerRelation), nameof(DbItemContainerRelation.Quantity), "INTEGER", "1");
+
+        return databaseConnection;
+    }
+
+    private static async Task CreateTableIfNotExistsAsync<T>(SQLiteAsyncConnection db) where T : new()
+    {
+        var exists = await db.ExecuteScalarAsync<int>(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?;",
+            typeof(T).Name);
+
+        if (exists == 0)
+            await db.CreateTableAsync<T>();
+    }
+
+    private static async Task EnsureColumnAsync(
+        SQLiteAsyncConnection db, string table, string column, string sqlType, string defaultValue)
+    {
+        var columns = await db.QueryAsync<ColumnInfo>($"PRAGMA table_info({table});");
+        if (columns.Count == 0) return;
+
+        var hasColumn = columns.Exists(c =>
+            string.Equals(c.name, column, StringComparison.OrdinalIgnoreCase));
+
+        if (!hasColumn)
+            await db.ExecuteAsync($"ALTER TABLE {table} ADD COLUMN {column} {sqlType};");
+
+        // Always backfill nulls
+        await db.ExecuteAsync($"UPDATE {table} SET {column} = {defaultValue} WHERE {column} IS NULL;");
+    }
+
+    private sealed class ColumnInfo
+    {
+        public string name { get; set; } = string.Empty;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (disposed) return;
+        disposed = true;
+
+        if (connection != null)
+        {
+            await connection.CloseAsync();
+        }
+
+        initLock.Dispose();
     }
 }

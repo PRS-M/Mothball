@@ -4,7 +4,7 @@
              xmlns:self="clr-namespace:MothballMobile.UI.Controls"
              xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-           xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+             xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
              x:Class="MothballMobile.UI.Controls.ContainerTile"
              x:Name="this"
              x:DataType="self:ContainerTile">
@@ -58,7 +58,7 @@
                 Grid.Column="0"
                 FontSize="{StaticResource fontSize}"
                 Text="{Binding Source={x:Reference this}, Path=Name}"
-                TextColor="{StaticResource ColorPrimaryText}"
+                TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                 VerticalOptions="Start"
                 HorizontalOptions="Start" />
             <Label
@@ -67,7 +67,7 @@
                 Grid.ColumnSpan="2"
                 FontSize="{StaticResource fontSize}"
                 Text="{Binding Source={x:Reference this}, Path=Notes}"
-                TextColor="{StaticResource ColorMuted}"
+                TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                 VerticalOptions="End"
                 HorizontalOptions="Center" />
             <Label
@@ -75,7 +75,7 @@
                 Grid.Column="0"
                 FontSize="{StaticResource fontSize}"
                 Text="{Binding Source={x:Reference this}, Path=ItemCount}"
-                TextColor="{StaticResource ColorPrimaryText}"
+                TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                 VerticalOptions="Start"
                 HorizontalOptions="Start" />
             <Border Grid.RowSpan="2"

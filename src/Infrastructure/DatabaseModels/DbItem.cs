@@ -10,4 +10,7 @@ public class DbItem
 
 	[Indexed, NotNull]
 	public string Name { get; set; } = string.Empty;
+
+	[NotNull]
+	public string Description { get; set; } = string.Empty;
 }

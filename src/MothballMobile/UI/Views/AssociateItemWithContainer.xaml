@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:views="clr-namespace:MothballMobile.UI.Views"
+                x:Class="MothballMobile.UI.Views.AssociateItemWithContainer"
+                x:DataType="vm:AssociateItemWithContainerViewModel"
+                Title="Select container"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <Grid Padding="16"
+          RowDefinitions="Auto,*"
+          ColumnDefinitions="*">
+
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="4"
+                             Margin="0,0,0,10"
+                             VerticalOptions="Center">
+            <Label Text="Select container"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                     TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+            <Label Text="Tap a container to associate this item"
+                     TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                   FontSize="14"/>
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Containers}"
+                        Margin="0,8,0,0"
+                        SelectionMode="None"
+                        RemainingItemsThreshold="2"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical"
+                                 Span="1"
+                                 VerticalItemSpacing="12"/>
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="40"
+                                     Spacing="10"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center">
+                    <Label Text="No containers yet"
+                              TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:SelectableContainerViewModel">
+                    <controls:ContainerTile
+                        Command="{Binding SelectCommand}"
+                        Name="{Binding Name}"
+                        Notes="{Binding Notes}"
+                        ItemCount="{Binding ItemCount}"
+                        ImagePaths="{Binding ImagePaths}"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</views:BasePage>

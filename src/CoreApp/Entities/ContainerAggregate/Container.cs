@@ -43,11 +43,11 @@ public class Container : BaseEntity, IAggregateRoot
         var existingItem = Items.Find(i => i.ItemId == itemId);
         if (existingItem != null)
         {
-            existingItem.Quantity += quantity;
+            existingItem.AddQuantity(quantity);
         }
         else
         {
-            Items.Add(new StoredItem { ItemId = itemId, Quantity = quantity });
+            Items.Add(new StoredItem(itemId, quantity));
         }
     }
 
@@ -71,10 +71,5 @@ public class Container : BaseEntity, IAggregateRoot
     public void RemoveItem(Guid itemId)
     {
         Items.RemoveAll(i => i.ItemId == itemId);
-    }
-
-    public void RemovePhoto(Guid imageId)
-    {
-        Photos.RemoveAll(p => p.ImageId == imageId);
     }
 }

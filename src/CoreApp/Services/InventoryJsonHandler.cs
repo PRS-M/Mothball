@@ -18,9 +18,15 @@ public class InventoryJsonHandler
         return await jsonHandler.DeserializeFromFile<List<Container>>(Constants.InventoryFileName, Constants.PathToData);
     }
 
-    public async Task SaveAsync(Container container)
+    public Task SaveAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
-        await jsonHandler.SerializeToFile(Constants.InventoryFileName, Constants.PathToData, container);
+        return SaveAsync([container]);
+    }
+
+    public Task SaveAsync(List<Container> containers)
+    {
+        ArgumentNullException.ThrowIfNull(containers);
+        return jsonHandler.SerializeToFile(Constants.InventoryFileName, Constants.PathToData, containers);
     }
 }

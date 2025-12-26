@@ -1,10 +1,6 @@
-using System;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp;
 using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using MothballMobile.Infrastructure;
@@ -13,19 +9,21 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class AddContainerViewModel : BaseViewModel
 {
-    private readonly ICameraHandler cameraHandler;
+    private readonly ImageService imageService;
     private readonly IInventoryDomainRepository inventoryDomainRepository;
     private readonly INavigationService navigationService;
+    private readonly IRetryService retryService;
 
     public AddContainerViewModel(
-        ICameraHandler cameraHandler,
+        ImageService imageService,
         IInventoryDomainRepository inventoryDomainRepository,
-        INavigationService navigationService)
+        INavigationService navigationService,
+        IRetryService retryService)
     {
-        this.cameraHandler = cameraHandler ?? throw new ArgumentNullException(nameof(cameraHandler));
+        this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryDomainRepository = inventoryDomainRepository ?? throw new ArgumentNullException(nameof(inventoryDomainRepository));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-        Container = null!;
+        this.retryService = retryService ?? throw new ArgumentNullException(nameof(retryService));
     }
 
     [ObservableProperty]
@@ -38,14 +36,13 @@ public partial class AddContainerViewModel : BaseViewModel
     [ObservableProperty]
     private string? validationMessage;
 
-    Container Container { get; set; }
-
     private bool CanAddContainer() => !string.IsNullOrWhiteSpace(Name);
 
     [RelayCommand(CanExecute = nameof(CanAddContainer))]
     public async Task AddContainer()
     {
-        if (string.IsNullOrWhiteSpace(Name?.Trim()))
+        var trimmedName = Name?.Trim();
+        if (string.IsNullOrWhiteSpace(trimmedName))
         {
             ValidationMessage = "Name is required.";
             return;
@@ -53,21 +50,33 @@ public partial class AddContainerViewModel : BaseViewModel
 
         await RunCommandAsync(async () =>
         {
-            Container = new Container(
+            var container = new Container(
                 containerId: Guid.NewGuid(),
-                name: Name.Trim(),
-                notes: Notes?.Trim() ?? string.Empty
+                name: trimmedName,
+                notes: string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim()
             );
 
-            await cameraHandler.CaptureContainerPhotoAsync(Container);
-            await inventoryDomainRepository.InsertContainerAsync(Container);
-            if (Container.Photos is { Count: > 0 })
-            {
-                await inventoryDomainRepository.InsertImageItemAsync(Container.Photos[0], Container.ContainerId);
-            }
+            await CapturePhotoWithOptionalRetryAsync(container);
+            await inventoryDomainRepository.InsertContainerAsync(container);
 
             ValidationMessage = null;
             await navigationService.GoBackAsync();
         });
+    }
+
+    private async Task CapturePhotoWithOptionalRetryAsync(Container container)
+    {
+        await retryService.RetryAsync(
+            async () =>
+            {
+                var bytesLength = await imageService.CaptureContainerPhotoAsync(container);
+                return bytesLength > 0;
+            },
+            canceledTitle: "Photo capture canceled",
+            canceledMessage: "Please try again or continue without a photo.",
+            retryButton: "Retry",
+            continueButton: "Continue",
+            continueAlertTitle: "No photo",
+            continueAlertMessage: "Continuing without a photo.");
     }
 }

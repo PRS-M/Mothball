@@ -1,47 +1,69 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
-             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-             xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
-             xmlns:views="clr-namespace:MothballMobile.UI.Views"
-             x:Class="MothballMobile.UI.Views.ItemDetails"
-             x:DataType="vm:ItemDetailsViewModel"
-             Title="Item"
-             BackgroundColor="#0F172A">
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+                xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+                xmlns:views="clr-namespace:MothballMobile.UI.Views"
+                x:Class="MothballMobile.UI.Views.ItemDetails"
+                x:DataType="vm:ItemDetailsViewModel"
+                Title="Item"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ContentPage.ToolbarItems>
-    <ToolbarItem Priority="0" Order="Primary" Command="{Binding DeleteItemCommand}">
+        <ToolbarItem Priority="0"
+                     Order="Primary"
+                     Command="{Binding DeleteItemCommand}">
             <ToolbarItem.IconImageSource>
-                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1F8;" Color="{StaticResource ColorPrimaryIcon}" Size="22" />
+                <FontImageSource FontFamily="FontAwesomeSolid"
+                                 Glyph="&#xF1F8;"
+                                 Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                                 Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
     </ContentPage.ToolbarItems>
 
     <ContentPage.Resources>
-        <conv:PathToImageSourceConverter x:Key="PathToImage" />
+        <conv:PathToImageSourceConverter x:Key="PathToImage"/>
     </ContentPage.Resources>
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="16">
+        <VerticalStackLayout Padding="16"
+                             Spacing="16">
             <!-- Title and optional container jump -->
-            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto" ColumnSpacing="12">
-                <Label Text="{Binding Name}" FontSize="22" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
+            <Grid ColumnDefinitions="*,Auto"
+                  RowDefinitions="Auto"
+                  ColumnSpacing="12">
+                <Label Text="{Binding Name}"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
                 <Button Grid.Column="1"
-                        Text="Go to container"
+                        Text="Go to the container"
                         Style="{StaticResource PrimaryButton}"
                         IsVisible="{Binding HasContainerRelation}"
-                        Command="{Binding NavigateToContainerCommand}" />
+                        Command="{Binding NavigateToContainerCommand}"/>
+                <Button Grid.Column="1"
+                        Text="Associate with a container"
+                        Style="{StaticResource PrimaryButton}"
+                    IsVisible="{Binding HasNoContainerRelation}"
+                    Command="{Binding NavigateToAssociateWithContainerCommand}"/>
             </Grid>
 
             <!-- Photos carousel -->
-            <Border Style="{StaticResource Card}" Padding="12">
-                <CarouselView ItemsSource="{Binding ImagePaths}" HeightRequest="220">
+            <Border Style="{StaticResource Card}"
+                    Padding="12">
+                <CarouselView ItemsSource="{Binding ImagePaths}"
+                              HeightRequest="220">
                     <CarouselView.ItemTemplate>
                         <DataTemplate>
-                            <Image x:DataType="sys:String" Source="{Binding ., Converter={StaticResource PathToImage}}" Aspect="AspectFill" HeightRequest="220">
+                            <Image x:DataType="sys:String"
+                                   Source="{Binding ., Converter={StaticResource PathToImage}}"
+                                   Aspect="AspectFill"
+                                   HeightRequest="220">
                                 <Image.Clip>
-                                    <RoundRectangleGeometry CornerRadius="10" Rect="0,0,400,220" />
+                                    <RoundRectangleGeometry CornerRadius="10"
+                                                            Rect="0,0,400,220"/>
                                 </Image.Clip>
                             </Image>
                         </DataTemplate>
@@ -52,8 +74,11 @@
             <!-- Details -->
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Description" FontAttributes="Bold" TextColor="{StaticResource ColorPrimaryText}"/>
-                    <Label Text="{Binding Description}" TextColor="{StaticResource ColorMuted}"/>
+                    <Label Text="Description"
+                           FontAttributes="Bold"
+                              TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                    <Label Text="{Binding Description}"
+                              TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                 </VerticalStackLayout>
             </Border>
 

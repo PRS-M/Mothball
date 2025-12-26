@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+                xmlns:views="clr-namespace:MothballMobile.UI.Views"
+                xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+                x:Class="MothballMobile.UI.Views.AddExistingItemToContainer"
+                x:DataType="vm:AddExistingItemToContainerViewModel"
+                Title="Add Existing Item"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <ContentPage.Resources>
+        <conv:PathToImageSourceConverter x:Key="PathToImage"/>
+    </ContentPage.Resources>
+
+    <Grid Padding="20"
+          RowDefinitions="Auto,*">
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="6"
+                             Margin="0,0,0,10">
+            <Label Text="Select an item"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                     TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+            <Label Text="Only items not assigned to any container are shown"
+                     TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Items}"
+                            SelectionMode="None"
+                            RemainingItemsThreshold="4"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Padding="40"
+                                         Spacing="10"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center">
+                        <Label Text="No unassigned items"
+                               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border x:DataType="vm:UnassignedItemViewModel"
+                                Style="{StaticResource Card}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding AssignToContainerCommand}"/>
+                            </Border.GestureRecognizers>
+
+                            <Grid ColumnDefinitions="Auto,*"
+                                  ColumnSpacing="12">
+                                <CarouselView
+                                    Grid.Column="0"
+                                    ItemsSource="{Binding ImagePaths}"
+                                    HeightRequest="72"
+                                    WidthRequest="72">
+                                    <CarouselView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Image x:DataType="sys:String"
+                                                   Source="{Binding ., Converter={StaticResource PathToImage}}"
+                                                   Aspect="AspectFill"
+                                                   HeightRequest="72"
+                                                   WidthRequest="72">
+                                                <Image.Clip>
+                                                    <RoundRectangleGeometry CornerRadius="10"
+                                                                            Rect="0,0,72,72"/>
+                                                </Image.Clip>
+                                            </Image>
+                                        </DataTemplate>
+                                    </CarouselView.ItemTemplate>
+                                </CarouselView>
+
+                                <VerticalStackLayout Grid.Column="1"
+                                                     Spacing="4">
+                                    <Label Text="{Binding Name}"
+                                           FontAttributes="Bold"
+                                         TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                                    <Label Text="{Binding Description}"
+                                         TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                                           FontSize="12"
+                                           LineBreakMode="TailTruncation"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</views:BasePage>

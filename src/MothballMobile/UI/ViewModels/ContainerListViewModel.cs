@@ -26,17 +26,17 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 
     public ObservableCollection<ContainerViewModel> Containers => Items;
 
-    protected override async Task LoadAllAsync()
+    protected override async Task EnsureDummyData()
     {
         if (demoSeeder is not null)
         {
             await demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
             await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
         }
-        var allContainers = await inventoryRepository.GetAllContainersAsync();
-        allItems.Clear();
-        allItems.AddRange(allContainers);
     }
+
+    protected override async Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
+        => await inventoryRepository.GetAllContainersAsync(pageNumber, pageSize);
 
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav);
@@ -47,5 +47,3 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     [RelayCommand]
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
 }
-
-// Moved ContainerViewModel to its own file for SRP and clarity.

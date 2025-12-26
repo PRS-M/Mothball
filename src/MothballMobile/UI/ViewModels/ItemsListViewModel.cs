@@ -1,38 +1,35 @@
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
-using System.Threading;
+using Infrastructure.Services;
 using MothballMobile.Infrastructure;
-using Microsoft.Maui.ApplicationModel;
-using MothballMobile.UI.ViewModels;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class ItemsListViewModel : BaseViewModel, IDisposable, MothballMobile.Infrastructure.IInitializable
+public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewModel>, IDisposable
 {
     private readonly IImagePathResolver paths;
     private readonly IInventoryDomainRepository inventoryRepository;
-    private readonly Infrastructure.INavigationService nav;
-
-    public ObservableCollection<ItemViewModel> Items { get; } = new();
-
+    private readonly INavigationService nav;
     private readonly IDebouncer debouncer;
-
-    [ObservableProperty]
-    private bool isRefreshing;
+    private readonly DemoDataSeeder? demoSeeder;
 
     [ObservableProperty]
     private string query = string.Empty;
 
-    public ItemsListViewModel(IImagePathResolver paths, IInventoryDomainRepository inventoryRepository, Infrastructure.INavigationService nav, IDebouncer? debouncer = null)
+    public ItemsListViewModel(
+        IImagePathResolver paths,
+        IInventoryDomainRepository inventoryRepository,
+        INavigationService nav,
+        IDebouncer? debouncer = null,
+        DemoDataSeeder? demoSeeder = null)
     {
         this.paths = paths;
         this.inventoryRepository = inventoryRepository;
         this.nav = nav;
-    this.debouncer = debouncer ?? new Debouncer(300);
+        this.debouncer = debouncer ?? new Debouncer(300);
+        this.demoSeeder = demoSeeder;
     }
 
     private bool disposed;
@@ -52,27 +49,28 @@ public partial class ItemsListViewModel : BaseViewModel, IDisposable, MothballMo
         disposed = true;
     }
 
-    public async Task InitializeAsync()
+    protected override async Task EnsureDummyData()
     {
-        IsRefreshing = true;
-        await RunCommandAsync(async () =>
+        if (demoSeeder is not null)
         {
-            await LoadAsync(Query);
-        }, showRefreshing: true);
+            await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
+        }
+    }
+
+    protected override ItemViewModel MapToViewModel(Item source)
+    {
+        return new ItemViewModel(source, paths, nav);
     }
 
     [RelayCommand]
-    private Task RefreshAsync()
-    {
-        return InitializeAsync();
-    }
+    private Task RefreshAsync() => InitializeAsync();
 
     [RelayCommand]
     private async Task SearchAsync()
     {
         await RunCommandAsync(async () =>
         {
-            await LoadAsync(Query);
+            await LoadQuerySearchAsync(Query);
         });
     }
 
@@ -84,6 +82,7 @@ public partial class ItemsListViewModel : BaseViewModel, IDisposable, MothballMo
             await SearchAsync();
             return;
         }
+
         Query = string.Empty;
         await SearchAsync();
     }
@@ -102,30 +101,29 @@ public partial class ItemsListViewModel : BaseViewModel, IDisposable, MothballMo
         return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
     }
 
-    private async Task LoadAsync(string? query)
+    private async Task LoadQuerySearchAsync(string? query)
     {
-        Items.Clear();
-        var items = string.IsNullOrWhiteSpace(query)
-            ? await inventoryRepository.GetAllItemsWithPhotosAsync()
-            : await inventoryRepository.GetItemsWithPhotosAsync(query);
-
-        foreach (var item in items)
+        if (string.IsNullOrWhiteSpace(query))
         {
-            var vm = new ItemViewModel(item, paths, nav);
-            Items.Add(vm);
-            _ = vm.LoadImageAsync();
+            // restore normal paging
+            await ReplaceWithFirstPagedAsync();
+        }
+        else
+        {
+            var items = await inventoryRepository.GetItemsWithPhotosAsync(query);
+            ReplaceWithFullResultSet(items);
         }
     }
 
-    // MVVM Toolkit hook: raised when Query changes
-    // Source generator hook from [ObservableProperty]
-    // The CommunityToolkit.Mvvm generator invokes this partial method
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Called by MVVM Toolkit source generator")]
     partial void OnQueryChanged(string value)
     {
-        // Debounce user typing
+        // Debounce user typing to avoid flooding search
         debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(() => _ = SearchAsync()));
     }
-    #pragma warning restore IDE0051
 
+    protected override void OnViewModelAdded(ItemViewModel vm)
+        => _ = vm.LoadImageAsync();
+
+    protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
+        => inventoryRepository.GetAllItemsWithPhotosAsync(pageNumber, pageSize);
 }

@@ -11,6 +11,19 @@
 				"/consoleloggerparameters:NoSummary"
 			],
 			"group": "build"
+		},
+		{
+			"label": "test: unit",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"test",
+				"tests/UnitTests/UnitTests.csproj",
+				"-v",
+				"minimal"
+			],
+			"isBackground": false,
+			"group": "test"
 		}
 	]
 }

@@ -6,4 +6,6 @@ public static class NavigationRoutes
     public const string ContainerDetails = "ContainerDetails";
     public const string ItemDetails = "ItemDetails";
     public const string AddItem = "AddItem";
+    public const string AddExistingItemToContainer = "AddExistingItemToContainer";
+    public const string AssociateItemWithContainer = "AssociateItemWithContainer";
 }

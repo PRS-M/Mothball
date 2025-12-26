@@ -2,15 +2,20 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.ViewModels;
 
-public partial class AddItemViewModel : BaseViewModel
+public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly IInventoryDomainRepository repo;
     private readonly Infrastructure.INavigationService nav;
 
     [ObservableProperty]
+    private string containerId = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddCommand))]
     private string name = string.Empty;
 
     [ObservableProperty]
@@ -28,13 +33,16 @@ public partial class AddItemViewModel : BaseViewModel
         this.nav = nav;
     }
 
-    private bool CanAdd() => !string.IsNullOrWhiteSpace(Name);
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Called by MVVM Toolkit source generator")]
-    partial void OnNameChanged(string value)
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        AddCommand.NotifyCanExecuteChanged();
+        if (query is null) return;
+        if (query.TryGetValue(NavigationParams.ContainerId, out var value) && value is string id)
+        {
+            ContainerId = id;
+        }
     }
+
+    private bool CanAdd() => !string.IsNullOrWhiteSpace(Name);
 
     [RelayCommand(CanExecute = nameof(CanAdd))]
     private async Task AddAsync()
@@ -46,17 +54,36 @@ public partial class AddItemViewModel : BaseViewModel
             return;
         }
 
+        if (!int.TryParse(Quantity?.Trim(), out var parsedQuantity) || parsedQuantity <= 0)
+        {
+            ValidationMessage = "Quantity must be a positive number.";
+            return;
+        }
+
         await RunCommandAsync(async () =>
         {
-            var item = new Item
+            try
             {
-                Name = trimmed,
-                Description = Description?.Trim() ?? string.Empty
-            };
+                var item = new Item
+                {
+                    Name = trimmed,
+                    Description = Description?.Trim() ?? string.Empty
+                };
 
-            await repo.InsertItemAsync(item);
-            ValidationMessage = null;
-            await nav.GoBackAsync();
+                await repo.InsertItemAsync(item);
+
+                if (Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
+                {
+                    await repo.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
+                }
+
+                ValidationMessage = null;
+                await nav.GoBackAsync();
+            }
+            catch (Exception ex)
+            {
+                ValidationMessage = $"Failed to save item: {ex.Message}";
+            }
         });
     }
 }

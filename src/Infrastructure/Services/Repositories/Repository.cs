@@ -2,7 +2,7 @@ using CoreApp.Interfaces;
 using SQLite;
 using System.Linq.Expressions;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.Repositories;
 
 public class Repository<T> : IRepositoryExtended<T> where T : new()
 {
@@ -70,6 +70,13 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
     {
         await EnsureInitializedAsync();
         return await Connection.Table<T>().ToListAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<List<T>> GetAllAsync(int skip, int take)
+    {
+        await EnsureInitializedAsync();
+        return await Connection.Table<T>().Skip(skip).Take(take).ToListAsync();
     }
 
     /// <inheritdoc />
