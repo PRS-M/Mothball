@@ -26,19 +26,14 @@
             RowDefinitions="Auto,*"
             ColumnDefinitions="*,Auto">
         <!-- Header -->
-        <VerticalStackLayout Grid.Row="0"
-                Grid.Column="0"
-                Spacing="4"
-                Margin="0,0,0,10"
-                VerticalOptions="Center">
-            <Label Text="Containers"
-                    FontSize="28"
-                    FontAttributes="Bold"
-                    TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
-            <Label Text="Browse your storage"
-                    TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                    FontSize="14"/>
-        </VerticalStackLayout>
+        <controls:PageHeader Grid.Row="0"
+                     Grid.Column="0"
+                     Title="Containers"
+                     Subtitle="Browse your storage"
+                     TitleFontSize="28"
+                     SubtitleFontSize="14"
+                     Spacing="4"
+                     HeaderMargin="0,0,0,10" />
 
         <!-- Toolbar button replaces inline add button -->
         <CollectionView x:Name="ContainersCollectionView"
@@ -55,16 +50,9 @@
                         VerticalItemSpacing="12"/>
             </CollectionView.ItemsLayout>
             <CollectionView.EmptyView>
-                <VerticalStackLayout Padding="40"
-                        Spacing="10"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center">
-                    <Label Text="No containers yet"
-                            TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-                    <Label Text="Tap + to add your first container"
-                            TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                            FontSize="12"/>
-                </VerticalStackLayout>
+                <controls:EmptyStateView Title="No containers yet"
+                             Subtitle="Tap + to add your first container"
+                             SubtitleFontSize="12" />
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:ContainerViewModel">

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:self="clr-namespace:MothballMobile.UI.Controls"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+             x:Class="MothballMobile.UI.Controls.ImageCarousel"
+             x:Name="this"
+             x:DataType="self:ImageCarousel">
+
+    <ContentView.Resources>
+        <conv:PathToImageSourceConverter x:Key="PathToImage" />
+    </ContentView.Resources>
+
+    <CarouselView x:Name="Carousel">
+        <CarouselView.ItemTemplate>
+            <DataTemplate>
+                <Image x:DataType="sys:String"
+                       Source="{Binding ., Converter={StaticResource PathToImage}}"
+                       Aspect="AspectFit"
+                       SizeChanged="Image_OnSizeChanged" />
+            </DataTemplate>
+        </CarouselView.ItemTemplate>
+    </CarouselView>
+</ContentView>

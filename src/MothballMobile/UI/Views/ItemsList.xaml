@@ -2,9 +2,8 @@
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
-                xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Views"
-                xmlns:sys="clr-namespace:System;assembly=System.Runtime"
                 x:Class="MothballMobile.UI.Views.ItemsList"
                 x:Name="ItemsPage"
                 x:DataType="vm:ItemsListViewModel"
@@ -25,38 +24,18 @@
         </ToolbarItem>
     </ContentPage.ToolbarItems>
 
-    <ContentPage.Resources>
-        <conv:PathToImageSourceConverter x:Key="PathToImage"/>
-    </ContentPage.Resources>
-
     <Grid Padding="20"
           RowDefinitions="Auto,Auto,*">
-        <VerticalStackLayout x:DataType="vm:ItemsListViewModel"
-                             Grid.Row="0"
-                             Spacing="6"
-                             Margin="0,0,0,10">
-            <Label x:DataType="vm:ItemsListViewModel"
-                   Text="Items"
-                   FontSize="24"
-                   FontAttributes="Bold"
-                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
-            <Label x:DataType="vm:ItemsListViewModel"
-                   Text="All items across containers"
-                   TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-        </VerticalStackLayout>
+         <controls:PageHeader Grid.Row="0"
+                     Title="Items"
+                     Subtitle="All items across containers"
+                     TitleFontSize="24" />
 
         <!-- Search -->
-        <Border x:DataType="vm:ItemsListViewModel"
-                Grid.Row="1"
-                Style="{StaticResource SearchWrapper}">
-            <SearchBar x:DataType="vm:ItemsListViewModel"
-                       Placeholder="Search items..."
-                       Text="{Binding Query}"
-                       SearchCommand="{Binding SearchCommand}"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
-                       PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                       CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-        </Border>
+        <controls:SearchBarCard Grid.Row="1"
+                    Placeholder="Search items..."
+                    Text="{Binding Query}"
+                    SearchCommand="{Binding SearchCommand}" />
 
         <RefreshView Grid.Row="2"
                      IsRefreshing="{Binding IsRefreshing}"
@@ -72,61 +51,16 @@
                                      HorizontalItemSpacing="16"/>
                 </CollectionView.ItemsLayout>
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout Padding="40"
-                                         Spacing="10"
-                                         HorizontalOptions="Center"
-                                         VerticalOptions="Center">
-                        <Label Text="No items yet"
-                               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-                    </VerticalStackLayout>
+                    <controls:EmptyStateView Title="No items yet" />
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Border x:DataType="vm:ItemViewModel"
-                                Style="{StaticResource Card}">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding NavigateToItemDetailsCommand}"/>
-                            </Border.GestureRecognizers>
-                            <Grid ColumnDefinitions="Auto,*"
-                                  ColumnSpacing="12">
-                                <CarouselView
-                                    Grid.Column="0"
-                                    ItemsSource="{Binding ImagePaths}"
-                                    HeightRequest="72"
-                                    WidthRequest="72">
-                                    <CarouselView.ItemTemplate>
-                                        <DataTemplate>
-                                            <Image x:DataType="sys:String"
-                                                   Source="{Binding ., Converter={StaticResource PathToImage}}"
-                                                   Aspect="AspectFill"
-                                                   HeightRequest="72"
-                                                   WidthRequest="72">
-                                                <Image.Clip>
-                                                    <RoundRectangleGeometry CornerRadius="10"
-                                                                            Rect="0,0,72,72"/>
-                                                </Image.Clip>
-                                            </Image>
-                                        </DataTemplate>
-                                    </CarouselView.ItemTemplate>
-                                </CarouselView>
-                                <!-- <Image Source="{Binding ImagePath, Converter={StaticResource PathToImage}}"
-                                       Aspect="AspectFill" HeightRequest="72" WidthRequest="72">
-                                    <Image.Clip>
-                                        <RoundRectangleGeometry CornerRadius="10" Rect="0,0,72,72" />
-                                    </Image.Clip>
-                                </Image> -->
-                                <VerticalStackLayout Grid.Column="1"
-                                                     Spacing="4">
-                                    <Label Text="{Binding Name}"
-                                           FontAttributes="Bold"
-                                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
-                                    <Label Text="{Binding Description}"
-                                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                                           FontSize="12"
-                                           LineBreakMode="TailTruncation"/>
-                                </VerticalStackLayout>
-                            </Grid>
-                        </Border>
+                        <controls:ItemTile x:DataType="vm:ItemViewModel"
+                                           Command="{Binding NavigateToItemDetailsCommand}"
+                                           Name="{Binding Name}"
+                                           Description="{Binding Description}"
+                                           ImagePaths="{Binding ImagePaths}"
+                                           ImageSize="72" />
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

@@ -3,8 +3,7 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
                 xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
-                xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-                xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Views"
                 x:Class="MothballMobile.UI.Views.ContainerDetails"
                 x:DataType="vm:ContainerDetailsViewModel"
@@ -23,10 +22,6 @@
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
     </ContentPage.ToolbarItems>
-
-    <ContentPage.Resources>
-        <conv:PathToImageSourceConverter x:Key="PathToImage"/>
-    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,Auto,*"
           RowSpacing="0"
@@ -60,24 +55,10 @@
                         StrokeShape="RoundRectangle 10"
                         HorizontalOptions="End"
                         VerticalOptions="Center">
-                    <CarouselView ItemsSource="{Binding ContainerImagePaths}"
-                                  HeightRequest="110"
-                                  WidthRequest="110">
-                        <CarouselView.ItemTemplate>
-                            <DataTemplate>
-                                <Image x:DataType="sys:String"
-                                       Source="{Binding ., Converter={StaticResource PathToImage}}"
-                                       Aspect="AspectFill"
-                                       HeightRequest="110"
-                                       WidthRequest="110">
-                                    <Image.Clip>
-                                        <RoundRectangleGeometry CornerRadius="10"
-                                                                Rect="0,0,110,110"/>
-                                    </Image.Clip>
-                                </Image>
-                            </DataTemplate>
-                        </CarouselView.ItemTemplate>
-                    </CarouselView>
+                    <controls:ImageCarousel HeightRequest="110"
+                                            WidthRequest="110"
+                                            CornerRadius="10"
+                                            ImagePaths="{Binding ContainerImagePaths}" />
                 </Border>
             </Grid>
         </Border>
@@ -129,17 +110,11 @@
         </Grid>
 
         <!-- Search bar -->
-        <Border Grid.Row="2"
-                Style="{StaticResource SearchWrapper}"
-                Margin="16,0,16,16">
-            <SearchBar x:DataType="vm:ContainerDetailsViewModel"
-                       Placeholder="Search within container..."
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
-                       PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                       CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                       Text="{Binding SearchQuery}"
-                       SearchCommand="{Binding ApplySearchCommand}"/>
-        </Border>
+        <controls:SearchBarCard Grid.Row="2"
+                    Margin="16,0,16,16"
+                    Placeholder="Search within container..."
+                    Text="{Binding SearchQuery}"
+                    SearchCommand="{Binding ApplySearchCommand}" />
 
         <!-- Items list with infinite scroll -->
         <CollectionView Grid.Row="3"
@@ -155,57 +130,14 @@
                                    ItemSpacing="12"/>
             </CollectionView.ItemsLayout>
             <CollectionView.EmptyView>
-                <VerticalStackLayout Padding="40"
-                                     Spacing="10"
-                                     HorizontalOptions="Center"
-                                     VerticalOptions="Center">
-                    <Label Text="No items in this container"
-                              TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-                </VerticalStackLayout>
+                <controls:EmptyStateView Title="No items in this container" />
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:ItemWithPhotosViewModel">
-                    <Border Style="{StaticResource Card}">
-                        <Grid ColumnDefinitions="Auto,*"
-                              ColumnSpacing="12">
-                            <Grid RowDefinitions="Auto,Auto"
-                                  RowSpacing="6">
-                                <Border StrokeShape="RoundRectangle 10"
-                                        HorizontalOptions="Start"
-                                        VerticalOptions="Start">
-                                    <CarouselView ItemsSource="{Binding ImagePaths}"
-                                                  HeightRequest="92"
-                                                  WidthRequest="92">
-                                        <CarouselView.ItemTemplate>
-                                            <DataTemplate>
-                                                <Image x:DataType="sys:String"
-                                                       Source="{Binding ., Converter={StaticResource PathToImage}}"
-                                                       Aspect="AspectFill"
-                                                       HeightRequest="92"
-                                                       WidthRequest="92">
-                                                    <Image.Clip>
-                                                        <RoundRectangleGeometry CornerRadius="10"
-                                                                                Rect="0,0,92,92"/>
-                                                    </Image.Clip>
-                                                </Image>
-                                            </DataTemplate>
-                                        </CarouselView.ItemTemplate>
-                                    </CarouselView>
-                                </Border>
-                            </Grid>
-                            <VerticalStackLayout Grid.Column="1"
-                                                 Spacing="4"
-                                                 VerticalOptions="Center">
-                                <Label Text="{Binding Name}"
-                                       FontAttributes="Bold"
-                                        TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
-                                <Label Text="{Binding Description}"
-                                        TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                                       FontSize="12"
-                                       LineBreakMode="TailTruncation"/>
-                            </VerticalStackLayout>
-                        </Grid>
-                    </Border>
+                    <controls:ItemTile Name="{Binding Name}"
+                                       Description="{Binding Description}"
+                                       ImagePaths="{Binding ImagePaths}"
+                                       ImageSize="92" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:self="clr-namespace:MothballMobile.UI.Controls"
+             x:Class="MothballMobile.UI.Controls.ItemTile"
+             x:Name="this"
+             x:DataType="self:ItemTile">
+
+    <Border Style="{StaticResource Card}">
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding Source={x:Reference this}, Path=Command}" />
+        </Border.GestureRecognizers>
+
+        <Grid ColumnDefinitions="Auto,*"
+              ColumnSpacing="12">
+            <self:ImageCarousel
+                Grid.Column="0"
+                HeightRequest="{Binding Source={x:Reference this}, Path=ImageSize}"
+                WidthRequest="{Binding Source={x:Reference this}, Path=ImageSize}"
+                CornerRadius="{Binding Source={x:Reference this}, Path=ImageCornerRadius}"
+                ImagePaths="{Binding Source={x:Reference this}, Path=ImagePaths}" />
+
+            <VerticalStackLayout Grid.Column="1"
+                                 Spacing="4">
+                <Label Text="{Binding Source={x:Reference this}, Path=Name}"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                <Label Text="{Binding Source={x:Reference this}, Path=Description}"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                       FontSize="12"
+                       LineBreakMode="TailTruncation" />
+            </VerticalStackLayout>
+        </Grid>
+    </Border>
+</ContentView>

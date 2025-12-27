@@ -2,6 +2,7 @@
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Views"
                 x:Class="MothballMobile.UI.Views.AddItem"
                 x:DataType="vm:AddItemViewModel"
@@ -12,16 +13,11 @@
         <Grid Padding="20"
               RowDefinitions="Auto,Auto"
               ColumnDefinitions="*">
-            <VerticalStackLayout Grid.Row="0"
-                                 Spacing="6"
-                                 Margin="0,6,0,14">
-                <Label Text="Add a new item"
-                       FontSize="24"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
-                <Label Text="Fill in the fields below"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-            </VerticalStackLayout>
+            <controls:PageHeader Grid.Row="0"
+                                 Title="Add a new item"
+                                 Subtitle="Fill in the fields below"
+                                 TitleFontSize="24"
+                                 HeaderMargin="0,6,0,14" />
 
             <Border Grid.Row="1"
                     Style="{StaticResource Card}">

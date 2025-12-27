@@ -4,13 +4,11 @@
              xmlns:self="clr-namespace:MothballMobile.UI.Controls"
              xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-             xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
              x:Class="MothballMobile.UI.Controls.ContainerTile"
              x:Name="this"
              x:DataType="self:ContainerTile">
     <ContentView.Resources>
         <x:Double x:Key="fontSize">14</x:Double>
-       <conv:PathToImageSourceConverter x:Key="PathToImage" />
     </ContentView.Resources>
     <!-- Apply card-like visuals for readability on dark backgrounds -->
     <Border Style="{StaticResource Card}"
@@ -83,24 +81,11 @@
                     StrokeShape="RoundRectangle 10"
                     HorizontalOptions="End"
                     VerticalOptions="Center">
-                <CarouselView
-                    ItemsSource="{Binding Source={x:Reference this}, Path=ImagePaths}"
+                <self:ImageCarousel
                     HeightRequest="125"
-                    WidthRequest="125">
-                    <CarouselView.ItemTemplate>
-                        <DataTemplate>
-                            <Image x:DataType="sys:String"
-                                Source="{Binding ., Converter={StaticResource PathToImage}}"
-                                Aspect="AspectFill"
-                                HeightRequest="125"
-                                WidthRequest="125">
-                                <Image.Clip>
-                                    <RoundRectangleGeometry CornerRadius="10" Rect="0,0,125,125" />
-                                </Image.Clip>
-                            </Image>
-                        </DataTemplate>
-                    </CarouselView.ItemTemplate>
-                </CarouselView>
+                    WidthRequest="125"
+                    CornerRadius="10"
+                    ImagePaths="{Binding Source={x:Reference this}, Path=ImagePaths}" />
             </Border>
         </Grid>
     </Border>

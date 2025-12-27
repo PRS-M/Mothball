@@ -2,8 +2,7 @@
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
-                xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-                xmlns:conv="clr-namespace:MothballMobile.UI.Converters"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Views"
                 x:Class="MothballMobile.UI.Views.ItemDetails"
                 x:DataType="vm:ItemDetailsViewModel"
@@ -22,10 +21,6 @@
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
     </ContentPage.ToolbarItems>
-
-    <ContentPage.Resources>
-        <conv:PathToImageSourceConverter x:Key="PathToImage"/>
-    </ContentPage.Resources>
 
     <ScrollView>
         <VerticalStackLayout Padding="16"
@@ -53,22 +48,9 @@
             <!-- Photos carousel -->
             <Border Style="{StaticResource Card}"
                     Padding="12">
-                <CarouselView ItemsSource="{Binding ImagePaths}"
-                              HeightRequest="220">
-                    <CarouselView.ItemTemplate>
-                        <DataTemplate>
-                            <Image x:DataType="sys:String"
-                                   Source="{Binding ., Converter={StaticResource PathToImage}}"
-                                   Aspect="AspectFill"
-                                   HeightRequest="220">
-                                <Image.Clip>
-                                    <RoundRectangleGeometry CornerRadius="10"
-                                                            Rect="0,0,400,220"/>
-                                </Image.Clip>
-                            </Image>
-                        </DataTemplate>
-                    </CarouselView.ItemTemplate>
-                </CarouselView>
+                <controls:ImageCarousel HeightRequest="220"
+                                        CornerRadius="10"
+                                        ImagePaths="{Binding ImagePaths}" />
             </Border>
 
             <!-- Details -->
