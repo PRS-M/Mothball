@@ -11,7 +11,16 @@ public partial class PageHeader : ContentView
 		BindableProperty.Create(nameof(Title), typeof(string), typeof(PageHeader), string.Empty);
 
 	public static readonly BindableProperty SubtitleProperty =
-		BindableProperty.Create(nameof(Subtitle), typeof(string), typeof(PageHeader), string.Empty, propertyChanged: (_, __, ___) => { });
+		BindableProperty.Create(
+			nameof(Subtitle),
+			typeof(string),
+			typeof(PageHeader),
+			string.Empty,
+			propertyChanged: (bindable, _, _) =>
+			{
+				// HasSubtitle depends on Subtitle, so notify bindings when Subtitle changes.
+				((PageHeader)bindable).OnPropertyChanged(nameof(HasSubtitle));
+			});
 
 	public static readonly BindableProperty TitleFontSizeProperty =
 		BindableProperty.Create(nameof(TitleFontSize), typeof(double), typeof(PageHeader), 24d);

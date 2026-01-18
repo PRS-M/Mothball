@@ -16,8 +16,8 @@ public partial class EmptyStateView : ContentView
 	public static readonly BindableProperty SubtitleFontSizeProperty =
 		BindableProperty.Create(nameof(SubtitleFontSize), typeof(double), typeof(EmptyStateView), 12d);
 
-	public static readonly BindableProperty PaddingProperty =
-		BindableProperty.Create(nameof(Padding), typeof(Thickness), typeof(EmptyStateView), new Thickness(40));
+	public static readonly BindableProperty EmptyPaddingProperty =
+		BindableProperty.Create(nameof(EmptyPadding), typeof(Thickness), typeof(EmptyStateView), new Thickness(40));
 
 	public static readonly BindableProperty SpacingProperty =
 		BindableProperty.Create(nameof(Spacing), typeof(double), typeof(EmptyStateView), 10d);
@@ -42,10 +42,10 @@ public partial class EmptyStateView : ContentView
 		set => SetValue(SubtitleFontSizeProperty, value);
 	}
 
-	public new Thickness Padding
+	public Thickness EmptyPadding
 	{
-		get => (Thickness)GetValue(PaddingProperty);
-		set => SetValue(PaddingProperty, value);
+		get => (Thickness)GetValue(EmptyPaddingProperty);
+		set => SetValue(EmptyPaddingProperty, value);
 	}
 
 	public double Spacing

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:self="clr-namespace:MothballMobile.UI.Controls"
+             x:Class="MothballMobile.UI.Controls.LabeledEntryField"
+             x:Name="this"
+             x:DataType="self:LabeledEntryField">
+
+    <VerticalStackLayout Spacing="8">
+        <Label Text="{Binding Source={x:Reference this}, Path=Label}"
+               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+               Margin="{Binding Source={x:Reference this}, Path=LabelMargin}" />
+
+        <!-- Wrapped entry (matches InputWrapper usage) -->
+        <Border x:Name="WrapperBorder"
+                Padding="0"
+                Style="{Binding Source={x:Reference this}, Path=WrapperStyle}"
+                WidthRequest="{Binding Source={x:Reference this}, Path=FieldWidthRequest}">
+            <Entry Style="{StaticResource Input}"
+                   Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
+                   Text="{Binding Source={x:Reference this}, Path=Text}"
+                   Keyboard="{Binding Source={x:Reference this}, Path=Keyboard}"
+                   ReturnType="{Binding Source={x:Reference this}, Path=ReturnType}"
+                   ReturnCommand="{Binding Source={x:Reference this}, Path=ReturnCommand}" />
+        </Border>
+
+        <!-- Unwrapped entry (for cases that previously had no Border wrapper) -->
+        <Entry x:Name="NakedEntry"
+               Style="{StaticResource Input}"
+               WidthRequest="{Binding Source={x:Reference this}, Path=FieldWidthRequest}"
+               Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
+               Text="{Binding Source={x:Reference this}, Path=Text}"
+               Keyboard="{Binding Source={x:Reference this}, Path=Keyboard}"
+               ReturnType="{Binding Source={x:Reference this}, Path=ReturnType}"
+               ReturnCommand="{Binding Source={x:Reference this}, Path=ReturnCommand}" />
+    </VerticalStackLayout>
+</ContentView>

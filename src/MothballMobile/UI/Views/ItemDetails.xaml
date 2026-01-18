@@ -26,24 +26,23 @@
         <VerticalStackLayout Padding="16"
                              Spacing="16">
             <!-- Title and optional container jump -->
-            <Grid ColumnDefinitions="*,Auto"
-                  RowDefinitions="Auto"
-                  ColumnSpacing="12">
-                <Label Text="{Binding Name}"
-                       FontSize="22"
-                       FontAttributes="Bold"
-                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
-                <Button Grid.Column="1"
-                        Text="Go to the container"
-                        Style="{StaticResource PrimaryButton}"
-                        IsVisible="{Binding HasContainerRelation}"
-                        Command="{Binding NavigateToContainerCommand}"/>
-                <Button Grid.Column="1"
-                        Text="Associate with a container"
-                        Style="{StaticResource PrimaryButton}"
+            <controls:TitleActionRow Title="{Binding Name}"
+                         TitleFontSize="22"
+                         TitleFontAttributes="Bold">
+            <controls:TitleActionRow.Actions>
+                <Grid ColumnDefinitions="Auto"
+                  RowDefinitions="Auto">
+                <Button Text="Go to the container"
+                    Style="{StaticResource PrimaryButton}"
+                    IsVisible="{Binding HasContainerRelation}"
+                    Command="{Binding NavigateToContainerCommand}"/>
+                <Button Text="Associate with a container"
+                    Style="{StaticResource PrimaryButton}"
                     IsVisible="{Binding HasNoContainerRelation}"
                     Command="{Binding NavigateToAssociateWithContainerCommand}"/>
-            </Grid>
+                </Grid>
+            </controls:TitleActionRow.Actions>
+            </controls:TitleActionRow>
 
             <!-- Photos carousel -->
             <Border Style="{StaticResource Card}"

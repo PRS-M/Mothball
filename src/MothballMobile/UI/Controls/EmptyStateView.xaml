@@ -6,7 +6,7 @@
              x:Name="this"
              x:DataType="self:EmptyStateView">
 
-    <VerticalStackLayout Padding="{Binding Source={x:Reference this}, Path=Padding}"
+       <VerticalStackLayout Padding="{Binding Source={x:Reference this}, Path=EmptyPadding}"
                          Spacing="{Binding Source={x:Reference this}, Path=Spacing}"
                          HorizontalOptions="Center"
                          VerticalOptions="Center">
