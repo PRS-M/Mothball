@@ -11,7 +11,12 @@ public partial class TitleActionRow : ContentView
 		BindableProperty.Create(nameof(Title), typeof(string), typeof(TitleActionRow), string.Empty);
 
 	public static readonly BindableProperty ActionsProperty =
-		BindableProperty.Create(nameof(Actions), typeof(View), typeof(TitleActionRow), null);
+		BindableProperty.Create(
+			nameof(Actions),
+			typeof(View),
+			typeof(TitleActionRow),
+			defaultValue: null,
+			propertyChanged: OnActionsChanged);
 
 	public static readonly BindableProperty TitleFontSizeProperty =
 		BindableProperty.Create(nameof(TitleFontSize), typeof(double), typeof(TitleActionRow), 18d);
@@ -32,6 +37,26 @@ public partial class TitleActionRow : ContentView
 	{
 		get => (View?)GetValue(ActionsProperty);
 		set => SetValue(ActionsProperty, value);
+	}
+
+	protected override void OnBindingContextChanged()
+	{
+		base.OnBindingContextChanged();
+
+		if (Actions is not null)
+			Actions.BindingContext = BindingContext;
+	}
+
+	private static void OnActionsChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		if (bindable is not TitleActionRow row)
+			return;
+
+		if (row.ActionsPresenter is not null)
+			row.ActionsPresenter.Content = row.Actions;
+
+		if (row.Actions is not null)
+			row.Actions.BindingContext = row.BindingContext;
 	}
 
 	public double TitleFontSize

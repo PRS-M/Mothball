@@ -17,6 +17,6 @@
                VerticalOptions="Center" />
 
         <ContentPresenter Grid.Column="1"
-                          Content="{Binding Source={x:Reference this}, Path=Actions}" />
+                                     x:Name="ActionsPresenter" />
     </Grid>
 </ContentView>
