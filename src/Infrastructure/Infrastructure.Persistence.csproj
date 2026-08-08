@@ -7,9 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Services/CameraHandler.cs" />
-    <Compile Remove="Services/MobileFileHandler.cs" />
-    <Compile Remove="Services/PlatformDetector.cs" />
     <Compile Remove="Platforms/**/*.cs" />
   </ItemGroup>
 

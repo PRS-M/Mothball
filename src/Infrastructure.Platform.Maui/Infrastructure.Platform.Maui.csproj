@@ -24,10 +24,4 @@
     <ProjectReference Include="../CoreApp/CoreApp.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="../Infrastructure/Services/CameraHandler.cs" Link="Services/CameraHandler.cs" />
-    <Compile Include="../Infrastructure/Services/MobileFileHandler.cs" Link="Services/MobileFileHandler.cs" />
-    <Compile Include="../Infrastructure/Services/PlatformDetector.cs" Link="Services/PlatformDetector.cs" />
-  </ItemGroup>
-
 </Project>
