@@ -20,7 +20,8 @@ public class CameraHandler : ICameraHandler
 
     public async Task<byte[]> CapturePhotoAsync()
     {
-        FileResult? photo = await mediaPicker.PickPhotoAsync();
+        var photos = await mediaPicker.PickPhotosAsync();
+        FileResult? photo = photos?.FirstOrDefault();
         if (photo == null) return Array.Empty<byte>();
 
         using Stream stream = await photo.OpenReadAsync();

@@ -11,7 +11,7 @@ public sealed class MauiPopupService : IPopupService
         var page = TryGetCurrentPage();
         if (page is null)
             return Task.CompletedTask;
-        return page.DisplayAlert(title, message, cancel);
+        return page.DisplayAlertAsync(title, message, cancel);
     }
 
     /// <inheritdoc />
@@ -20,7 +20,7 @@ public sealed class MauiPopupService : IPopupService
         var page = TryGetCurrentPage();
         if (page is null)
             return Task.FromResult(false);
-        return page.DisplayAlert(title, message, accept, cancel);
+        return page.DisplayAlertAsync(title, message, accept, cancel);
     }
 
     private static Page? TryGetCurrentPage()
