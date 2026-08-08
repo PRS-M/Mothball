@@ -22,6 +22,7 @@
 		<Nullable>enable</Nullable>
 		<!-- Enable compiled bindings when Binding has Source specified -->
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+		<MauiDevFlowEnabled>true</MauiDevFlowEnabled>
 
 		<!-- Display name -->
 		<ApplicationTitle>MothballMobile</ApplicationTitle>
@@ -70,7 +71,8 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="../CoreApp/CoreApp.csproj" />
-	  <ProjectReference Include="../Infrastructure/Infrastructure.csproj" />
+	  <ProjectReference Include="../Infrastructure/Infrastructure.Persistence.csproj" />
+	  <ProjectReference Include="../Infrastructure.Platform.Maui/Infrastructure.Platform.Maui.csproj" />
 	</ItemGroup>
 
 </Project>
