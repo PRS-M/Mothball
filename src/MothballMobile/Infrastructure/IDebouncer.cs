@@ -1,8 +1,10 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MothballMobile.Infrastructure;
 
 public interface IDebouncer
 {
-    void Debounce(Action action);
+    Task DebounceAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default);
 }

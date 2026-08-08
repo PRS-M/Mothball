@@ -10,9 +10,21 @@ public class DebouncerTests
         var debouncer = new Debouncer(50);
         int count = 0;
 
-        debouncer.Debounce(() => Interlocked.Increment(ref count));
-        debouncer.Debounce(() => Interlocked.Increment(ref count));
-        debouncer.Debounce(() => Interlocked.Increment(ref count));
+        _ = debouncer.DebounceAsync(_ =>
+        {
+            Interlocked.Increment(ref count);
+            return Task.CompletedTask;
+        });
+        _ = debouncer.DebounceAsync(_ =>
+        {
+            Interlocked.Increment(ref count);
+            return Task.CompletedTask;
+        });
+        _ = debouncer.DebounceAsync(_ =>
+        {
+            Interlocked.Increment(ref count);
+            return Task.CompletedTask;
+        });
 
         await Task.Delay(120);
         Assert.That(count, Is.EqualTo(1));
@@ -24,10 +36,18 @@ public class DebouncerTests
         var debouncer = new Debouncer(50);
         int count = 0;
 
-        debouncer.Debounce(() => Interlocked.Increment(ref count));
+        _ = debouncer.DebounceAsync(_ =>
+        {
+            Interlocked.Increment(ref count);
+            return Task.CompletedTask;
+        });
         debouncer.Dispose();
         // After dispose, new requests should be ignored/canceled
-        debouncer.Debounce(() => Interlocked.Increment(ref count));
+        _ = debouncer.DebounceAsync(_ =>
+        {
+            Interlocked.Increment(ref count);
+            return Task.CompletedTask;
+        });
         await Task.Delay(100);
         Assert.That(count, Is.LessThanOrEqualTo(1));
     }

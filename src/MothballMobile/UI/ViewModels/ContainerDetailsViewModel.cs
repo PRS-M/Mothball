@@ -63,8 +63,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             if (e.PropertyName == nameof(SearchQuery))
             {
-                this.debouncer?.Debounce(() =>
-                    MainThread.BeginInvokeOnMainThread(() => PerformSearchAsync().Forget()));
+                this.debouncer?.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync)).Forget();
             }
         };
     }

@@ -7,6 +7,7 @@ namespace MothballMobile.UI.Views;
 public class BasePage : ContentPage
 {
     private IDisposable? previousDisposable;
+    private readonly SemaphoreSlim initializationGate = new(1, 1);
 
     /// <summary>
     /// Handles changes to the <see cref="P:Microsoft.Maui.Controls.BindableObject.BindingContext"/>.
@@ -40,6 +41,7 @@ public class BasePage : ContentPage
         base.OnAppearing();
         if (BindingContext is IInitializable init)
         {
+            await initializationGate.WaitAsync();
             try
             {
                 await init.InitializeAsync();
@@ -47,6 +49,10 @@ public class BasePage : ContentPage
             catch (Exception ex)
             {
                 Debug.WriteLine($"Initialization failed for {GetType().Name}: {ex}");
+            }
+            finally
+            {
+                initializationGate.Release();
             }
         }
     }

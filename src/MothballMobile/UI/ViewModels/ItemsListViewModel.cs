@@ -118,7 +118,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     partial void OnQueryChanged(string value)
     {
         // Debounce user typing to avoid flooding search
-        debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(() => SearchAsync().Forget()));
+        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync)).Forget();
     }
 
     protected override void OnViewModelAdded(ItemViewModel vm)

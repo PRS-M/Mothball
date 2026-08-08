@@ -36,6 +36,8 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/IPopupService.cs" Link="Infrastructure/IPopupService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/IRetryService.cs" Link="Infrastructure/IRetryService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/RetryService.cs" Link="Infrastructure/RetryService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/IAppStartupOrchestrator.cs" Link="Infrastructure/IAppStartupOrchestrator.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/AppStartupOrchestrator.cs" Link="Infrastructure/AppStartupOrchestrator.cs" />
   </ItemGroup>
 
   <!-- Compile non-MAUI Infrastructure sources directly to avoid referencing the MAUI-only Infrastructure project. -->
