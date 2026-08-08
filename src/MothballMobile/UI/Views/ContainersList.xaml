@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Views.ContainersList"
                 x:DataType="vm:ContainerListViewModel"
                 Title="Containers"
-                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"

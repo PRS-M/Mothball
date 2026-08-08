@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Views.ItemDetails"
                 x:DataType="vm:ItemDetailsViewModel"
                 Title="Item"
-                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
@@ -30,17 +30,16 @@
                          TitleFontSize="22"
                          TitleFontAttributes="Bold">
             <controls:TitleActionRow.Actions>
-                <Grid ColumnDefinitions="Auto"
-                  RowDefinitions="Auto">
+                <VerticalStackLayout Spacing="8">
                 <Button Text="Go to the container"
-                    Style="{StaticResource PrimaryButton}"
+                    Style="{StaticResource TonalButton}"
                     IsVisible="{Binding HasContainerRelation}"
                     Command="{Binding NavigateToContainerCommand}"/>
                 <Button Text="Associate with a container"
-                    Style="{StaticResource PrimaryButton}"
+                    Style="{StaticResource OutlinedButton}"
                     IsVisible="{Binding HasNoContainerRelation}"
                     Command="{Binding NavigateToAssociateWithContainerCommand}"/>
-                </Grid>
+                </VerticalStackLayout>
             </controls:TitleActionRow.Actions>
             </controls:TitleActionRow>
 

@@ -8,7 +8,7 @@
                 x:Class="MothballMobile.UI.Views.ContainerDetails"
                 x:DataType="vm:ContainerDetailsViewModel"
                 Title="Container"
-                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
@@ -38,18 +38,15 @@
                 <Label Grid.Row="0"
                        Grid.ColumnSpan="2"
                        Text="{Binding Name}"
-                       FontSize="22"
-                       FontAttributes="Bold"
-                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                      Style="{StaticResource TitleLarge}"/>
                 <Label Grid.Row="1"
                        Grid.Column="0"
                        Text="{Binding TotalItemCount, StringFormat='Items stored: {0}'}"
-                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                      Style="{StaticResource BodyMedium}"/>
                 <Label Grid.Row="2"
                        Grid.Column="0"
                        Text="{Binding Notes}"
-                      TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                       FontSize="12"/>
+                      Style="{StaticResource BodySmall}"/>
                 <Border Grid.RowSpan="3"
                         Grid.Column="1"
                         StrokeShape="RoundRectangle 10"
@@ -74,7 +71,7 @@
                                        HorizontalOptions="End"
                                        VerticalOptions="Center">
                     <Button Text="Add a new item"
-                            Style="{StaticResource PrimaryButton}"
+                            Style="{StaticResource TonalButton}"
                             HeightRequest="36"
                             FontSize="12"
                             Padding="12,0"
@@ -82,12 +79,12 @@
                         <Button.ImageSource>
                             <FontImageSource FontFamily="FontAwesomeSolid"
                                              Glyph="&#xF067;"
-                                             Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                                             Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
                                              Size="16"/>
                         </Button.ImageSource>
                     </Button>
                     <Button Text="Add an existing item"
-                            Style="{StaticResource PrimaryButton}"
+                            Style="{StaticResource OutlinedButton}"
                             HeightRequest="36"
                             FontSize="12"
                             Padding="12,0"
@@ -95,7 +92,7 @@
                         <Button.ImageSource>
                             <FontImageSource FontFamily="FontAwesomeSolid"
                                              Glyph="&#xF067;"
-                                             Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                                             Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
                                              Size="16"/>
                         </Button.ImageSource>
                     </Button>

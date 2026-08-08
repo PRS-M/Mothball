@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Views.AddExistingItemToContainer"
                 x:DataType="vm:AddExistingItemToContainerViewModel"
                 Title="Add Existing Item"
-                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <Grid Padding="20"
           RowDefinitions="Auto,*">
@@ -27,8 +27,8 @@
                     <controls:EmptyStateView Title="No unassigned items" />
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <controls:ItemTile x:DataType="vm:UnassignedItemViewModel"
+                    <DataTemplate x:DataType="vm:UnassignedItemViewModel">
+                        <controls:ItemTile
                                            Command="{Binding AssignToContainerCommand}"
                                            Name="{Binding Name}"
                                            Description="{Binding Description}"
