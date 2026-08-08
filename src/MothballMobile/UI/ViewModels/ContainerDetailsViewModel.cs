@@ -64,18 +64,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             if (e.PropertyName == nameof(SearchQuery))
             {
                 this.debouncer?.Debounce(() =>
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        try
-                        {
-                            await PerformSearchAsync();
-                        }
-                        catch
-                        {
-                            // Swallow exceptions to prevent unobserved task exceptions from crashing the app.
-                            // Consider adding logging here if a logging mechanism is available.
-                        }
-                    }));
+                    MainThread.BeginInvokeOnMainThread(() => PerformSearchAsync().Forget()));
             }
         };
     }
@@ -146,7 +135,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             var itemVm = new ItemWithPhotosViewModel(item, paths);
             Items.Add(itemVm);
-            _ = itemVm.LoadImagesAsync();
+            itemVm.LoadImagesAsync().Forget();
         }
 
         // Force collection update notification to recalculate RemainingItemsThreshold

@@ -118,11 +118,11 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     partial void OnQueryChanged(string value)
     {
         // Debounce user typing to avoid flooding search
-        debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(() => _ = SearchAsync()));
+        debouncer.Debounce(() => MainThread.BeginInvokeOnMainThread(() => SearchAsync().Forget()));
     }
 
     protected override void OnViewModelAdded(ItemViewModel vm)
-        => _ = vm.LoadImageAsync();
+        => vm.LoadImageAsync().Forget();
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
         => inventoryQueries.GetAllItemsWithPhotosAsync(pageNumber, pageSize);

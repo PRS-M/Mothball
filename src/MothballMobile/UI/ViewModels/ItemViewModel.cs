@@ -23,9 +23,9 @@ public partial class ItemViewModel : ItemWithImagesViewModelBase
     [RelayCommand]
     private Task NavigateToItemDetailsAsync()
     {
-        return nav.GoToAsync("ItemDetails", new Dictionary<string, object>
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemDetails, new Dictionary<string, object>
         {
-            ["ItemId"] = Item.ItemId.ToString()
+            [Infrastructure.NavigationParams.ItemId] = Item.ItemId.ToString()
         });
     }
 }
