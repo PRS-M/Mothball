@@ -25,6 +25,7 @@ public sealed class AppStartupOrchestrator : IAppStartupOrchestrator
         catch (Exception ex)
         {
             logger.LogError(ex, "Startup initialization failed.");
+            throw;
         }
     }
 }

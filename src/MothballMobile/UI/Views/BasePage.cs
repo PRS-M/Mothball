@@ -53,7 +53,7 @@ public class BasePage : ContentPage
 
     /// <summary>
     /// Invoked when the page is no longer visible.
-    /// Disposes the current binding context if it implements <see cref="IDisposable"/> to release resources.
+    /// Reserved for page-level lifecycle hooks.
     /// </summary>
     /// <remarks>
     /// Always calls the base implementation first.
