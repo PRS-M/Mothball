@@ -45,7 +45,10 @@ public class MobileFileHandler : IFileHandler
 
         ThrowIfFileNotExists(sourceFullPath);
 
-        await Task.Run(() => File.Copy(sourceFullPath, destFullPath, true)).ConfigureAwait(false);
+        const int bufferSize = 81920;
+        await using var source = new FileStream(sourceFullPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, useAsync: true);
+        await using var destination = new FileStream(destFullPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize, useAsync: true);
+        await source.CopyToAsync(destination).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -58,12 +61,13 @@ public class MobileFileHandler : IFileHandler
     }
 
     /// <inheritdoc />
-    public async Task DeleteFileAsync(string fileName, string folderPath)
+    public Task DeleteFileAsync(string fileName, string folderPath)
     {
         string fullPath = GetFullPath(fileName, folderPath);
         ThrowIfFileNotExists(fullPath);
 
-        await Task.Run(() => File.Delete(fullPath)).ConfigureAwait(false);
+        File.Delete(fullPath);
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />

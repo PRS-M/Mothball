@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls;
 using MothballMobile.Infrastructure;
+using System.Diagnostics;
 
 namespace MothballMobile.UI.Views;
 
@@ -39,7 +40,14 @@ public class BasePage : ContentPage
         base.OnAppearing();
         if (BindingContext is IInitializable init)
         {
-            await init.InitializeAsync();
+            try
+            {
+                await init.InitializeAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Initialization failed for {GetType().Name}: {ex}");
+            }
         }
     }
 
@@ -53,9 +61,5 @@ public class BasePage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        if (BindingContext is IDisposable d)
-        {
-            d.Dispose();
-        }
     }
 }

@@ -81,12 +81,10 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
 
     /// <inheritdoc />
     public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
-        => await (await Task.Run(async () =>
-        {
-            await EnsureInitializedAsync();
-            return Connection.Table<T>().FirstOrDefaultAsync(predicate);
-        }))
-        ;
+    {
+        await EnsureInitializedAsync();
+        return await Connection.Table<T>().FirstOrDefaultAsync(predicate);
+    }
 
     /// <inheritdoc />
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
@@ -97,12 +95,10 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
 
     /// <inheritdoc />
     public async Task<int> CountAsync(Expression<Func<T, bool>> predicate)
-        => await (await Task.Run(async () =>
-        {
-            await EnsureInitializedAsync();
-            return Connection.Table<T>().CountAsync(predicate);
-        }))
-        ;
+    {
+        await EnsureInitializedAsync();
+        return await Connection.Table<T>().CountAsync(predicate);
+    }
 
     /// <inheritdoc />
     public async Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate, int skip, int take)

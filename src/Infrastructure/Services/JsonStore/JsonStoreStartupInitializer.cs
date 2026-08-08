@@ -14,6 +14,10 @@ public sealed class JsonStoreStartupInitializer : IAppStartupInitializer
 
     public async Task InitializeAsync()
     {
-        _ = await store.TryRecoverAsync().ConfigureAwait(false);
+        var recovered = await store.TryRecoverAsync().ConfigureAwait(false);
+        if (!recovered)
+        {
+            throw new InvalidOperationException("Failed to recover JSON inventory store during startup.");
+        }
     }
 }
