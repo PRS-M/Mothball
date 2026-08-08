@@ -45,7 +45,7 @@
                                                Keyboard="Numeric"
                                                Placeholder="e.g. 1"
                                                Text="{Binding Quantity}" />
-                    <Button Text="Add Item"
+                    <Button Text="Add Item (Choose Photo)"
                             Style="{StaticResource PrimaryButton}"
                             WidthRequest="{StaticResource WidthM}"
                             Command="{Binding AddCommand}"/>
