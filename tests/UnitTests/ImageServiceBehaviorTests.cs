@@ -17,7 +17,7 @@ public class ImageServiceBehaviorTests
     public async Task CaptureContainerPhotoAsync_SavesBytes_AddsImage_AndPersists()
     {
         var camera = new Mock<ICameraHandler>();
-        var repo = new Mock<IInventoryDomainRepository>();
+        var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {1,2,3};
@@ -41,7 +41,7 @@ public class ImageServiceBehaviorTests
     public void CaptureContainerPhotoAsync_SaveFails_RollsBackImage()
     {
         var camera = new Mock<ICameraHandler>();
-        var repo = new Mock<IInventoryDomainRepository>();
+        var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {1};
@@ -62,7 +62,7 @@ public class ImageServiceBehaviorTests
     public async Task CaptureItemPhotoAsync_SavesBytes_AddsImage_AndPersists()
     {
         var camera = new Mock<ICameraHandler>();
-        var repo = new Mock<IInventoryDomainRepository>();
+        var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {9,8};

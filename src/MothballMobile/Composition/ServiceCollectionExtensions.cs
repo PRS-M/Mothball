@@ -47,8 +47,6 @@ public static class ServiceCollectionExtensions
 
             services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
             services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
-            services.AddSingleton<InventoryDomainRepository>();
-            services.AddSingleton<IInventoryDomainRepository>(sp => sp.GetRequiredService<InventoryDomainRepository>());
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         }
         else
@@ -64,8 +62,6 @@ public static class ServiceCollectionExtensions
 
             services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
             services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
-            services.AddSingleton<InventoryDomainRepository>();
-            services.AddSingleton<IInventoryDomainRepository>(sp => sp.GetRequiredService<InventoryDomainRepository>());
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         }
 
