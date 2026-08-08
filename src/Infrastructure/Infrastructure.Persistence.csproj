@@ -6,6 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Platforms/**/*.cs" />
   </ItemGroup>
@@ -14,6 +18,12 @@
     <PackageReference Include="sqlite-net-pcl" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
+    <PackageReference Update="sqlite-net-pcl" Version="1.9.172" />
+    <PackageReference Update="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
+    <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>

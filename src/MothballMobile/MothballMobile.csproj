@@ -44,6 +44,11 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
+		<!-- DevFlow injects Microsoft.Maui.DevFlow.Agent with Version metadata; CPM treats that as NU1008. -->
+		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
@@ -67,6 +72,13 @@
 		<PackageReference Include="Microsoft.Maui.Controls" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
 		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
+		<PackageReference Update="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Update="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Update="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+		<PackageReference Update="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
 	</ItemGroup>
 
 	<ItemGroup>
