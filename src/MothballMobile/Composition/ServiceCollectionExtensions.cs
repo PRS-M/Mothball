@@ -45,10 +45,10 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IImageRepository, JsonImageRepository>();
             services.AddSingleton<IRelationRepository, JsonRelationRepository>();
 
+            services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
+            services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
             services.AddSingleton<InventoryDomainRepository>();
             services.AddSingleton<IInventoryDomainRepository>(sp => sp.GetRequiredService<InventoryDomainRepository>());
-            services.AddSingleton<IInventoryQueryRepository>(sp => sp.GetRequiredService<InventoryDomainRepository>());
-            services.AddSingleton<IInventoryCommandRepository>(sp => sp.GetRequiredService<InventoryDomainRepository>());
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         }
         else
@@ -62,10 +62,10 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IImageRepository, ImageRepository>();
             services.AddSingleton<IRelationRepository, RelationRepository>();
 
+            services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
+            services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
             services.AddSingleton<InventoryDomainRepository>();
             services.AddSingleton<IInventoryDomainRepository>(sp => sp.GetRequiredService<InventoryDomainRepository>());
-            services.AddSingleton<IInventoryQueryRepository>(sp => sp.GetRequiredService<InventoryDomainRepository>());
-            services.AddSingleton<IInventoryCommandRepository>(sp => sp.GetRequiredService<InventoryDomainRepository>());
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         }
 

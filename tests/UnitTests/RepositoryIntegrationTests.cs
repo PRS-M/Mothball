@@ -38,7 +38,10 @@ public class RepositoryIntegrationTests
         var imageRepo = new ImageRepository(photos);
         var relationRepo = new RelationRepository(relations);
 
-        domainRepo = new InventoryDomainRepository(containerRepo, itemRepo, imageRepo, relationRepo);
+        var queryRepo = new InventoryQueryRepository(containerRepo, itemRepo);
+        var commandRepo = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
+
+        domainRepo = new InventoryDomainRepository(queryRepo, commandRepo);
     }
 
     [TearDown]
