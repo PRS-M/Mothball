@@ -10,18 +10,18 @@ namespace MothballMobile.UI.ViewModels;
 public partial class AddContainerViewModel : BaseViewModel
 {
     private readonly ImageService imageService;
-    private readonly IInventoryDomainRepository inventoryDomainRepository;
+    private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService navigationService;
     private readonly IRetryService retryService;
 
     public AddContainerViewModel(
         ImageService imageService,
-        IInventoryDomainRepository inventoryDomainRepository,
+        IInventoryCommandRepository inventoryCommands,
         INavigationService navigationService,
         IRetryService retryService)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
-        this.inventoryDomainRepository = inventoryDomainRepository ?? throw new ArgumentNullException(nameof(inventoryDomainRepository));
+        this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         this.retryService = retryService ?? throw new ArgumentNullException(nameof(retryService));
     }
@@ -57,7 +57,7 @@ public partial class AddContainerViewModel : BaseViewModel
             );
 
             await CapturePhotoWithOptionalRetryAsync(container);
-            await inventoryDomainRepository.InsertContainerAsync(container);
+            await inventoryCommands.InsertContainerAsync(container);
 
             ValidationMessage = null;
             await navigationService.GoBackAsync();

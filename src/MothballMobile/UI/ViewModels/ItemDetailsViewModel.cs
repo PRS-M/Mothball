@@ -10,7 +10,8 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable
 {
-    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService nav;
     private readonly IPopupService popup;
     private Item? currentItem;
@@ -32,10 +33,11 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemDetailsViewModel(IInventoryDomainRepository inventoryRepository, INavigationService nav, IImagePathResolver paths, IPopupService popup, ImageService imageService, IRetryService retryService)
+    public ItemDetailsViewModel(IInventoryQueryRepository inventoryQueries, IInventoryCommandRepository inventoryCommands, INavigationService nav, IImagePathResolver paths, IPopupService popup, ImageService imageService, IRetryService retryService)
         : base(paths, imageService, retryService)
     {
-        this.inventoryRepository = inventoryRepository;
+        this.inventoryQueries = inventoryQueries;
+        this.inventoryCommands = inventoryCommands;
         this.nav = nav;
         this.popup = popup;
     }
@@ -68,7 +70,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             OnPropertyChanged(nameof(HasContainerRelation));
             OnPropertyChanged(nameof(HasNoContainerRelation));
 
-            var item = await inventoryRepository.GetItemWithPhotosAsync(itemId);
+            var item = await inventoryQueries.GetItemWithPhotosAsync(itemId);
             if (item is null)
             {
                 Name = "Item not found";
@@ -84,7 +86,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(item));
 
             // Use repository to find related container, if any
-            var container = await inventoryRepository.GetContainerForItemAsync(item.ItemId.ToString());
+            var container = await inventoryQueries.GetContainerForItemAsync(item.ItemId.ToString());
             ContainerId = container?.ContainerId.ToString();
             OnPropertyChanged(nameof(HasContainerRelation));
             OnPropertyChanged(nameof(HasNoContainerRelation));
@@ -120,7 +122,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             cancel: "Cancel");
         if (!confirmed) return;
 
-        await inventoryRepository.DeleteItemAsync(ItemId);
+        await inventoryCommands.DeleteItemAsync(ItemId);
         await nav.GoBackAsync();
     }
 

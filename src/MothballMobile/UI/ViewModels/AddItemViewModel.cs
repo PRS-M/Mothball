@@ -8,7 +8,7 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 {
-    private readonly IInventoryDomainRepository repo;
+    private readonly IInventoryCommandRepository inventoryCommands;
     private readonly Infrastructure.INavigationService nav;
 
     [ObservableProperty]
@@ -27,9 +27,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private string? validationMessage;
 
-    public AddItemViewModel(IInventoryDomainRepository repo, Infrastructure.INavigationService nav)
+    public AddItemViewModel(IInventoryCommandRepository inventoryCommands, Infrastructure.INavigationService nav)
     {
-        this.repo = repo;
+        this.inventoryCommands = inventoryCommands;
         this.nav = nav;
     }
 
@@ -70,11 +70,11 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                     Description = Description?.Trim() ?? string.Empty
                 };
 
-                await repo.InsertItemAsync(item);
+                await inventoryCommands.InsertItemAsync(item);
 
                 if (Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
                 {
-                    await repo.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
+                    await inventoryCommands.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
                 }
 
                 ValidationMessage = null;

@@ -10,7 +10,7 @@ namespace MothballMobile.UI.ViewModels;
 public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewModel>, IDisposable
 {
     private readonly IImagePathResolver paths;
-    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly IInventoryQueryRepository inventoryQueries;
     private readonly INavigationService nav;
     private readonly IDebouncer debouncer;
     private readonly DemoDataSeeder? demoSeeder;
@@ -20,13 +20,13 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
 
     public ItemsListViewModel(
         IImagePathResolver paths,
-        IInventoryDomainRepository inventoryRepository,
+        IInventoryQueryRepository inventoryQueries,
         INavigationService nav,
         IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
     {
         this.paths = paths;
-        this.inventoryRepository = inventoryRepository;
+        this.inventoryQueries = inventoryQueries;
         this.nav = nav;
         this.debouncer = debouncer ?? new Debouncer(300);
         this.demoSeeder = demoSeeder;
@@ -110,7 +110,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         }
         else
         {
-            var items = await inventoryRepository.GetItemsWithPhotosAsync(query);
+            var items = await inventoryQueries.GetItemsWithPhotosAsync(query);
             ReplaceWithFullResultSet(items);
         }
     }
@@ -125,5 +125,5 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         => _ = vm.LoadImageAsync();
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryRepository.GetAllItemsWithPhotosAsync(pageNumber, pageSize);
+        => inventoryQueries.GetAllItemsWithPhotosAsync(pageNumber, pageSize);
 }

@@ -11,15 +11,15 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 {
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService nav;
-    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly IInventoryQueryRepository inventoryQueries;
 
     private readonly DemoDataSeeder? demoSeeder; // optional in debug
 
-    public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryDomainRepository inventoryRepository, INavigationService nav, DemoDataSeeder? demoSeeder = null)
+    public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryQueryRepository inventoryQueries, INavigationService nav, DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
     {
         this.imagePaths = imagePaths;
-        this.inventoryRepository = inventoryRepository;
+        this.inventoryQueries = inventoryQueries;
         this.nav = nav;
         this.demoSeeder = demoSeeder;
     }
@@ -36,7 +36,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     }
 
     protected override async Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => await inventoryRepository.GetAllContainersAsync(pageNumber, pageSize);
+        => await inventoryQueries.GetAllContainersAsync(pageNumber, pageSize);
 
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav);
