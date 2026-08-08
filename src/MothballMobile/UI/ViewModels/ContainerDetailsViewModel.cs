@@ -63,7 +63,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             if (e.PropertyName == nameof(SearchQuery))
             {
-                this.debouncer?.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync)).Forget();
+                this.debouncer?.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync)).FireAndForget();
             }
         };
     }
@@ -134,7 +134,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             var itemVm = new ItemWithPhotosViewModel(item, paths);
             Items.Add(itemVm);
-            itemVm.LoadImagesAsync().Forget();
+            itemVm.LoadImagesAsync().FireAndForget();
         }
 
         // Force collection update notification to recalculate RemainingItemsThreshold

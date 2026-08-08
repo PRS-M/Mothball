@@ -4,7 +4,7 @@ namespace MothballMobile.Infrastructure;
 
 public static class TaskExtensions
 {
-    public static void Forget(this Task task)
+    public static void FireAndForget(this Task task)
     {
         if (task.IsCompletedSuccessfully)
         {
