@@ -115,7 +115,26 @@ public class ImageService
             throw;
         }
 
-        await persistAsync(image);
+        try
+        {
+            await persistAsync(image);
+        }
+        catch
+        {
+            removeImageItem(image.ImageId);
+
+            try
+            {
+                await fileHandler.DeleteFileAsync(image.FileName, saveDirectory);
+            }
+            catch
+            {
+                // Best-effort cleanup only; preserve the original persistence error.
+            }
+
+            throw;
+        }
+
         return bytes.Length;
     }
 }
