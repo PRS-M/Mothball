@@ -82,11 +82,13 @@
     </Style>
 
     <Style TargetType="Border" x:Key="SearchWrapper" BasedOn="{StaticResource InputWrapper}">
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"/>
+        <Setter Property="StrokeThickness" Value="0.75"/>
         <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"/>
         <Setter Property="Padding" Value="3"/>
         <Setter Property="StrokeShape">
             <Setter.Value>
-                <RoundRectangle CornerRadius="28"/>
+                <RoundRectangle CornerRadius="20"/>
             </Setter.Value>
         </Setter>
     </Style>

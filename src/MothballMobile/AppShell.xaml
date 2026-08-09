@@ -6,13 +6,13 @@
     xmlns:local="clr-namespace:MothballMobile"
     xmlns:ui="clr-namespace:MothballMobile.UI.Views"
     Title="MothballMobile">
-    <FlyoutItem Title="Home">
+    <FlyoutItem Title="Home" Route="Home">
         <ShellContent
             Title="Home"
             ContentTemplate="{DataTemplate local:MainPage}"
             Route="MainPage" />
     </FlyoutItem>
-    <FlyoutItem Title="Containers">
+    <FlyoutItem Title="Containers" Route="Containers">
         <Tab Title="Containers List">
             <ShellContent
                 Title="Containers List"
@@ -24,7 +24,7 @@
             </ShellContent>
         </Tab>
     </FlyoutItem>
-    <FlyoutItem Title="Items">
+    <FlyoutItem Title="Items" Route="Items">
         <Tab Title="Items List">
             <ShellContent
                 Title="Items"

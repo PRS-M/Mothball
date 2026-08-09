@@ -24,18 +24,19 @@
         </ToolbarItem>
     </ContentPage.ToolbarItems>
 
-    <Grid Padding="20"
+    <Grid Padding="12"
           RowDefinitions="Auto,Auto,*">
          <controls:PageHeader Grid.Row="0"
                      Title="Items"
                      Subtitle="All items across containers"
-                     TitleFontSize="28"
-                     SubtitleFontSize="14"
-                     Spacing="4"
-                     HeaderMargin="0,0,0,10" />
+                     TitleFontSize="22"
+                     SubtitleFontSize="12"
+                     Spacing="2"
+                     HeaderMargin="0,0,0,4" />
 
         <!-- Search -->
         <controls:SearchBarCard Grid.Row="1"
+            Margin="0"
                     Placeholder="Search items..."
                     Text="{Binding Query}"
                     SearchCommand="{Binding SearchCommand}" />
@@ -44,6 +45,7 @@
                      IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding RefreshCommand}">
             <CollectionView ItemsSource="{Binding Items}"
+                            Margin="0,2,0,0"
                             SelectionMode="None"
                             RemainingItemsThreshold="4"
                             RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">

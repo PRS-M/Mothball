@@ -12,8 +12,6 @@
     </ContentView.Resources>
     <!-- Apply card-like visuals for readability on dark backgrounds -->
     <Border Style="{StaticResource Card}"
-        Padding="10"
-        Margin="10,0,10,0"
         MaximumWidthRequest="600">
         <Border.StrokeShape>
             <RoundRectangle CornerRadius="10" />
@@ -41,7 +39,7 @@
                 PointerReleased="Border_PointerReleased"
                 PointerExited="Border_PointerReleased" />
         </Border.GestureRecognizers>
-        <Grid Padding="5" Margin="5" RowSpacing="5" ColumnSpacing="5" MinimumWidthRequest="300">
+        <Grid RowSpacing="5" ColumnSpacing="5" MinimumWidthRequest="300">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*" />
                 <RowDefinition Height="*" />

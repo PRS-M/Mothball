@@ -5,23 +5,52 @@ using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using MothballMobile.Infrastructure;
 using Infrastructure.Services;
+using System.Linq;
 
 namespace MothballMobile.UI.ViewModels;
-public partial class ContainerListViewModel : PagedListViewModelBase<Container, ContainerViewModel>
+public partial class ContainerListViewModel : PagedListViewModelBase<Container, ContainerViewModel>, IDisposable
 {
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService nav;
     private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IDebouncer debouncer;
 
     private readonly DemoDataSeeder? demoSeeder; // optional in debug
 
-    public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryQueryRepository inventoryQueries, INavigationService nav, DemoDataSeeder? demoSeeder = null)
+    [ObservableProperty]
+    private string query = string.Empty;
+
+    public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryQueryRepository inventoryQueries, INavigationService nav, IDebouncer? debouncer = null, DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
     {
         this.imagePaths = imagePaths;
         this.inventoryQueries = inventoryQueries;
         this.nav = nav;
+        this.debouncer = debouncer ?? new Debouncer(300);
         this.demoSeeder = demoSeeder;
+    }
+
+    private bool disposed;
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        if (disposing && debouncer is IDisposable d)
+        {
+            d.Dispose();
+        }
+
+        disposed = true;
     }
 
     public ObservableCollection<ContainerViewModel> Containers => Items;
@@ -45,5 +74,52 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         => _ = vm.LoadImageAsync();
 
     [RelayCommand]
+    private async Task SearchAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            await LoadQuerySearchAsync(Query);
+        });
+    }
+
+    [RelayCommand]
+    private async Task ClearSearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Query))
+        {
+            await SearchAsync();
+            return;
+        }
+
+        Query = string.Empty;
+        await SearchAsync();
+    }
+
+    [RelayCommand]
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
+
+    [RelayCommand]
+    private Task RefreshAsync() => InitializeAsync();
+
+    private async Task LoadQuerySearchAsync(string? searchQuery)
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            await ReplaceWithFirstPagedAsync();
+            return;
+        }
+
+        var normalized = searchQuery.Trim();
+        var allContainers = await inventoryQueries.GetAllContainersAsync();
+        var filtered = allContainers.Where(container =>
+            container.Name.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
+            container.Notes.Contains(normalized, StringComparison.OrdinalIgnoreCase));
+
+        ReplaceWithFullResultSet(filtered);
+    }
+
+    partial void OnQueryChanged(string value)
+    {
+        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync)).FireAndForget();
+    }
 }

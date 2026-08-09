@@ -22,48 +22,54 @@
         </ToolbarItem>
     </ContentPage.ToolbarItems>
 
-    <Grid Padding="16"
-            RowDefinitions="Auto,*"
-            ColumnDefinitions="*,Auto">
+    <Grid Padding="12"
+            RowDefinitions="Auto,Auto,*">
         <!-- Header -->
         <controls:PageHeader Grid.Row="0"
-                     Grid.Column="0"
                      Title="Containers"
                      Subtitle="Browse your storage"
-                     TitleFontSize="28"
-                     SubtitleFontSize="14"
-                     Spacing="4"
-                     HeaderMargin="0,0,0,10" />
+                     TitleFontSize="22"
+                     SubtitleFontSize="12"
+                     Spacing="2"
+                     HeaderMargin="0,0,0,4" />
 
-        <!-- Toolbar button replaces inline add button -->
-        <CollectionView x:Name="ContainersCollectionView"
-                        Grid.Row="1"
-                        Grid.ColumnSpan="2"
-                        ItemsSource="{Binding Containers}"
-                        Margin="0,8,0,0"
-                        SelectionMode="None"
-                        RemainingItemsThreshold="2"
-                        RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
-            <CollectionView.ItemsLayout>
-                <GridItemsLayout Orientation="Vertical"
-                        Span="1"
-                        VerticalItemSpacing="12"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.EmptyView>
-                <controls:EmptyStateView Title="No containers yet"
-                             Subtitle="Tap + to add your first container"
-                             SubtitleFontSize="12" />
-            </CollectionView.EmptyView>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="vm:ContainerViewModel">
-                    <controls:ContainerTile
-                        Command="{Binding NavigateCommand}"
-                        Name="{Binding Name}"
-                        Notes="{Binding Notes}"
-                        ItemCount="{Binding ItemCount}"
-                        ImagePaths="{Binding ImagePaths}"/>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+        <controls:SearchBarCard Grid.Row="1"
+                     Margin="0"
+                     Placeholder="Search containers..."
+                     Text="{Binding Query}"
+                     SearchCommand="{Binding SearchCommand}" />
+
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <!-- Toolbar button replaces inline add button -->
+            <CollectionView x:Name="ContainersCollectionView"
+                            ItemsSource="{Binding Containers}"
+                            Margin="0,2,0,0"
+                            SelectionMode="None"
+                            RemainingItemsThreshold="2"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                            Span="1"
+                            VerticalItemSpacing="12"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.EmptyView>
+                    <controls:EmptyStateView Title="No containers yet"
+                                 Subtitle="Tap + to add your first container"
+                                 SubtitleFontSize="12" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ContainerViewModel">
+                        <controls:ContainerTile
+                            Command="{Binding NavigateCommand}"
+                            Name="{Binding Name}"
+                            Notes="{Binding Notes}"
+                            ItemCount="{Binding ItemCount}"
+                            ImagePaths="{Binding ImagePaths}"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
     </Grid>
 </views:BasePage>
