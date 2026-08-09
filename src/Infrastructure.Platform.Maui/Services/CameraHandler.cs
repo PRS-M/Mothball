@@ -57,21 +57,24 @@ public class CameraHandler : ICameraHandler
         // Convert the picked image into a stored thumbnail to reduce storage.
         try
         {
-            using SixLabors.ImageSharp.Image image = SixLabors.ImageSharp.Image.Load(originalBytes);
-            image.Mutate(ctx =>
+            return await Task.Run(() =>
             {
-                ctx.AutoOrient();
-                ctx.Resize(new ResizeOptions
+                using SixLabors.ImageSharp.Image image = SixLabors.ImageSharp.Image.Load(originalBytes);
+                image.Mutate(ctx =>
                 {
-                    Mode = SixLabors.ImageSharp.Processing.ResizeMode.Max,
-                    Size = new SixLabors.ImageSharp.Size(Constants.PhotoThumbnailMaxWidthPx, Constants.PhotoThumbnailMaxHeightPx)
+                    ctx.AutoOrient();
+                    ctx.Resize(new ResizeOptions
+                    {
+                        Mode = SixLabors.ImageSharp.Processing.ResizeMode.Max,
+                        Size = new SixLabors.ImageSharp.Size(Constants.PhotoThumbnailMaxWidthPx, Constants.PhotoThumbnailMaxHeightPx)
+                    });
                 });
-            });
 
-            using var output = new MemoryStream();
-            var encoder = new JpegEncoder { Quality = 85 };
-            await image.SaveAsync(output, encoder);
-            return output.ToArray();
+                using var output = new MemoryStream();
+                var encoder = new JpegEncoder { Quality = 85 };
+                image.Save(output, encoder);
+                return output.ToArray();
+            });
         }
         catch
         {
