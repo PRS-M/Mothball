@@ -53,6 +53,7 @@ public static class ServiceCollectionExtensions
         {
             services.AddSingleton<MothballDatabase>();
             services.AddSingleton<IAppStartupInitializer, SqliteStartupInitializer>();
+            services.AddSingleton<ITransactionRunner, SqliteTransactionRunner>();
             services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
 
             services.AddSingleton<IContainerRepository, ContainerRepository>();

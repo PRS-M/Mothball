@@ -34,9 +34,10 @@ public class RepositoryIntegrationTests
 
         var containerLogger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<ContainerRepository>();
         var itemLogger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<ItemRepository>();
+        var transactionRunner = new SqliteTransactionRunner(db);
 
-        var containerRepo = new ContainerRepository(db, containers, photos, relations, containerLogger);
-        var itemRepo = new ItemRepository(db, items, photos, relations, itemLogger);
+        var containerRepo = new ContainerRepository(transactionRunner, containers, photos, relations, containerLogger);
+        var itemRepo = new ItemRepository(transactionRunner, items, photos, relations, itemLogger);
         var imageRepo = new ImageRepository(photos);
         var relationRepo = new RelationRepository(relations);
 

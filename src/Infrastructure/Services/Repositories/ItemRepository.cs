@@ -10,20 +10,20 @@ namespace Infrastructure.Services.Repositories;
 
 public class ItemRepository : IItemRepository
 {
-    private readonly MothballDatabase database;
+    private readonly ITransactionRunner transactionRunner;
     private readonly IRepository<DbItem> items;
     private readonly IRepository<DbImage> photos;
     private readonly IRepository<DbItemContainerRelation> itemContainerRelations;
     private readonly ILogger<ItemRepository> logger;
 
     public ItemRepository(
-        MothballDatabase database,
+        ITransactionRunner transactionRunner,
         IRepository<DbItem> items,
         IRepository<DbImage> photos,
         IRepository<DbItemContainerRelation> itemContainerRelations,
         ILogger<ItemRepository> logger)
     {
-        this.database = database;
+        this.transactionRunner = transactionRunner;
         this.items = items;
         this.photos = photos;
         this.itemContainerRelations = itemContainerRelations;
@@ -166,11 +166,11 @@ public class ItemRepository : IItemRepository
     {
         if (!TryParseGuid(itemId, out Guid iid)) return;
 
-        await database.RunInTransactionAsync(conn =>
+        await transactionRunner.RunAsync(scope =>
         {
-            conn.DeleteWhere<DbImage>(p => p.OwnerUniqueId == iid);
-            conn.DeleteWhere<DbItemContainerRelation>(r => r.ItemId == iid);
-            conn.DeleteByPrimaryKey<DbItem>(iid);
+            scope.DeleteImagesByOwner(iid);
+            scope.DeleteRelationsByItem(iid);
+            scope.DeleteItem(iid);
         });
     }
 
