@@ -8,6 +8,7 @@ using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
 using Infrastructure.Services.Repositories;
+using Moq;
 
 namespace UnitTests;
 
@@ -94,7 +95,7 @@ public class BackendParityTests
 
     private static async Task<JsonHarness> BuildJsonAsync()
     {
-        var files = new InMemoryFileHandler();
+        var files = CreateInMemoryJsonFileHandler();
         var store = new JsonInventoryStore(files);
         await store.TryRecoverAsync();
 
@@ -107,6 +108,56 @@ public class BackendParityTests
         var command = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
 
         return new JsonHarness(query, command);
+    }
+
+    private static IFileHandler CreateInMemoryJsonFileHandler()
+    {
+        var textFiles = new Dictionary<(string folder, string file), string>();
+
+        var mock = new Mock<IFileHandler>();
+        mock.SetupGet(m => m.AppDataPath).Returns("/appdata");
+
+        mock.Setup(m => m.SaveFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<byte[]>()))
+            .Throws(new NotSupportedException());
+        mock.Setup(m => m.CopyFileFromRawToAppDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new NotSupportedException());
+        mock.Setup(m => m.ReadFileAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new NotSupportedException());
+
+        mock.Setup(m => m.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string fileName, string folderPath) =>
+            {
+                textFiles.Remove((folderPath, fileName));
+                return Task.CompletedTask;
+            });
+
+        mock.Setup(m => m.SaveTextFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string fileName, string folderPath, string content) =>
+            {
+                textFiles[(folderPath, fileName)] = content;
+                return Task.FromResult($"/appdata/{folderPath}/{fileName}");
+            });
+
+        mock.Setup(m => m.ReadTextFileAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string fileName, string folderPath) =>
+            {
+                if (!textFiles.TryGetValue((folderPath, fileName), out var content))
+                {
+                    throw new FileNotFoundException($"Missing file: {folderPath}/{fileName}");
+                }
+
+                return Task.FromResult(content);
+            });
+
+        mock.Setup(m => m.EnumerateFiles(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string folderPath, string _) =>
+                textFiles.Keys
+                    .Where(k => k.folder == folderPath)
+                    .Select(k => k.file)
+                    .Distinct()
+                    .ToList());
+
+        return mock.Object;
     }
 
     private sealed class SqliteHarness : IAsyncDisposable
@@ -147,44 +198,4 @@ public class BackendParityTests
         public IInventoryCommandRepository Command { get; }
     }
 
-    private sealed class InMemoryFileHandler : IFileHandler
-    {
-        private readonly Dictionary<(string folder, string file), string> textFiles = new();
-
-        public string AppDataPath => "/appdata";
-
-        public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
-            => throw new NotSupportedException();
-
-        public Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath)
-            => throw new NotSupportedException();
-
-        public Task<byte[]> ReadFileAsync(string fileName, string folderPath)
-            => throw new NotSupportedException();
-
-        public Task DeleteFileAsync(string fileName, string folderPath)
-        {
-            textFiles.Remove((folderPath, fileName));
-            return Task.CompletedTask;
-        }
-
-        public Task<string> SaveTextFileAsync(string fileName, string folderPath, string content)
-        {
-            textFiles[(folderPath, fileName)] = content;
-            return Task.FromResult($"{AppDataPath}/{folderPath}/{fileName}");
-        }
-
-        public Task<string> ReadTextFileAsync(string fileName, string folderPath)
-        {
-            if (!textFiles.TryGetValue((folderPath, fileName), out var content))
-            {
-                throw new FileNotFoundException($"Missing file: {folderPath}/{fileName}");
-            }
-
-            return Task.FromResult(content);
-        }
-
-        public IEnumerable<string> EnumerateFiles(string folderPath, string searchPattern = "*.*")
-            => textFiles.Keys.Where(k => k.folder == folderPath).Select(k => k.file).Distinct().ToList();
-    }
 }
