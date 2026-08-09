@@ -11,6 +11,7 @@ public record class Constants
 
     public static readonly string PathToItemPhotos = Path.Combine(PathToData, "Photos", "Items");
     public static readonly string PathToContainerPhotos = Path.Combine(PathToData, "Photos", "Containers");
+    public static readonly string PathToTemporaryPhotos = Path.Combine(PathToData, "Photos", "Temp");
 
     // Photo handling
     // Captured photos are stored as thumbnails to reduce storage usage.

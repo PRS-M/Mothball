@@ -13,6 +13,8 @@ namespace CoreApp.Services;
 /// </summary>
 public class ImageService
 {
+    public sealed record TemporaryPhotoCapture(byte[] Bytes, string FileName, string FolderPath, string FullPath);
+
     private readonly ICameraHandler cameraHandler;
     private readonly IInventoryCommandRepository inventoryRepository;
     private readonly IFileHandler fileHandler;
@@ -77,6 +79,85 @@ public class ImageService
     }
 
     /// <summary>
+    /// Captures a photo and stores it in temporary app storage until the owning entity is saved.
+    /// </summary>
+    /// <returns>
+    /// A temporary capture descriptor containing bytes and file path, or <see langword="null"/> when capture is canceled.
+    /// </returns>
+    public async Task<TemporaryPhotoCapture?> CaptureTemporaryPhotoAsync()
+    {
+        byte[] bytes = await cameraHandler.CapturePhotoAsync();
+        if (bytes.Length == 0)
+        {
+            return null;
+        }
+
+        string tempFileName = $"temp-{Guid.NewGuid():N}.jpg";
+        string fullPath = await fileHandler.SaveFileAsync(tempFileName, Constants.PathToTemporaryPhotos, bytes);
+        return new TemporaryPhotoCapture(bytes, tempFileName, Constants.PathToTemporaryPhotos, fullPath);
+    }
+
+    /// <summary>
+    /// Deletes a temporary photo if it exists.
+    /// </summary>
+    public async Task DeleteTemporaryPhotoAsync(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return;
+        }
+
+        try
+        {
+            await fileHandler.DeleteFileAsync(fileName, Constants.PathToTemporaryPhotos);
+        }
+        catch (FileNotFoundException)
+        {
+            // Best-effort cleanup only.
+        }
+    }
+
+    /// <summary>
+    /// Persists previously captured photo bytes for a container.
+    /// </summary>
+    public async Task<int> SaveContainerPhotoAsync(Container container, byte[] bytes)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+        ArgumentNullException.ThrowIfNull(bytes);
+
+        return await PersistPhotoBytesAsync(
+            bytes,
+            addImageItem: container.AddImageItem,
+            removeImageItem: container.RemoveImageItem,
+            saveDirectory: Constants.PathToContainerPhotos,
+            persistAsync: async image =>
+            {
+                await inventoryRepository.InsertImageItemAsync(image, container.ContainerId);
+                await inventoryRepository.UpdateContainerAsync(container);
+            });
+    }
+
+    /// <summary>
+    /// Persists previously captured photo bytes for an item.
+    /// </summary>
+    public async Task<int> SaveItemPhotoAsync(Item item, byte[] bytes)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(bytes);
+
+        return await PersistPhotoBytesAsync(
+            bytes,
+            addImageItem: item.AddImageItem,
+            removeImageItem: item.RemoveImageItem,
+            saveDirectory: Constants.PathToItemPhotos,
+            persistAsync: async image =>
+            {
+                await inventoryRepository.InsertImageItemAsync(image, item.ItemId);
+                await inventoryRepository.UpdateItemAsync(item);
+            });
+    }
+
+    /// <summary>
     /// Captures a photo, saves the file, and persists metadata using the provided delegates.
     /// </summary>
     /// <param name="addImageItem">Factory to add and return an <see cref="ImageItem"/> to the owning aggregate.</param>
@@ -102,7 +183,26 @@ public class ImageService
         ArgumentNullException.ThrowIfNull(persistAsync);
 
         byte[] bytes = await cameraHandler.CapturePhotoAsync();
-        if (bytes.Length == 0) return 0;
+        return await PersistPhotoBytesAsync(bytes, addImageItem, removeImageItem, saveDirectory, persistAsync);
+    }
+
+    private async Task<int> PersistPhotoBytesAsync(
+        byte[] bytes,
+        Func<ImageItem> addImageItem,
+        Action<Guid> removeImageItem,
+        string saveDirectory,
+        Func<ImageItem, Task> persistAsync)
+    {
+        ArgumentNullException.ThrowIfNull(bytes);
+        ArgumentNullException.ThrowIfNull(addImageItem);
+        ArgumentNullException.ThrowIfNull(removeImageItem);
+        ArgumentNullException.ThrowIfNull(saveDirectory);
+        ArgumentNullException.ThrowIfNull(persistAsync);
+
+        if (bytes.Length == 0)
+        {
+            return 0;
+        }
 
         ImageItem image = addImageItem();
         try

@@ -28,7 +28,7 @@
                                                  Placeholder="Item name"
                                                  Text="{Binding Name}"
                                                  ReturnType="Done"
-                                                 ReturnCommand="{Binding AddCommand}"
+                                                 ReturnCommand="{Binding SaveCommand}"
                                                  ValidationMessage="{Binding ValidationMessage}" />
 
                     <controls:LabeledEntryField Label="Description"
@@ -45,10 +45,35 @@
                                                Keyboard="Numeric"
                                                Placeholder="e.g. 1"
                                                Text="{Binding Quantity}" />
-                    <Button Text="Add Item (Choose Photo)"
+
+                    <Button Text="Choose Photo"
+                            Style="{StaticResource OutlinedButton}"
+                            WidthRequest="{StaticResource WidthM}"
+                            Command="{Binding ChoosePhotoCommand}"/>
+
+                    <Border Style="{StaticResource InputWrapper}"
+                            WidthRequest="{StaticResource WidthM}"
+                            IsVisible="{Binding HasTemporaryPhoto}">
+                        <VerticalStackLayout Spacing="8"
+                                             HorizontalOptions="Center">
+                            <Image Source="{Binding PhotoThumbnailPath}"
+                                   HeightRequest="120"
+                                   WidthRequest="120"
+                                   Aspect="AspectFill" />
+                            <Label Text="Photo selected"
+                                   Style="{StaticResource LabelSmall}"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Text="{Binding PhotoSelectionStatus}"
+                           Style="{StaticResource BodySmall}"
+                           WidthRequest="{StaticResource WidthM}" />
+
+                    <Button Text="Save Item"
                             Style="{StaticResource PrimaryButton}"
                             WidthRequest="{StaticResource WidthM}"
-                            Command="{Binding AddCommand}"/>
+                            Command="{Binding SaveCommand}"/>
                 </VerticalStackLayout>
             </Border>
         </Grid>

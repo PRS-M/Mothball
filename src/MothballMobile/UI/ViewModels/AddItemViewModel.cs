@@ -13,12 +13,13 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IRetryService retryService;
     private readonly Infrastructure.INavigationService nav;
+    private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     [ObservableProperty]
     private string containerId = string.Empty;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(AddCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private string name = string.Empty;
 
     [ObservableProperty]
@@ -29,6 +30,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
     [ObservableProperty]
     private string? validationMessage;
+
+    [ObservableProperty]
+    private string? photoThumbnailPath;
 
     public AddItemViewModel(
         ImageService imageService,
@@ -51,10 +55,57 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         }
     }
 
+    public bool HasTemporaryPhoto => !string.IsNullOrWhiteSpace(PhotoThumbnailPath);
+
+    public string PhotoSelectionStatus =>
+        HasTemporaryPhoto
+            ? "Photo selected. It will be saved when you tap Save."
+            : "No photo selected.";
+
+    partial void OnPhotoThumbnailPathChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasTemporaryPhoto));
+        OnPropertyChanged(nameof(PhotoSelectionStatus));
+    }
+
     private bool CanAdd() => !string.IsNullOrWhiteSpace(Name);
 
+    [RelayCommand]
+    private async Task ChoosePhotoAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            ImageService.TemporaryPhotoCapture? selectedPhoto = null;
+
+            bool photoSelected = await retryService.RetryAsync(
+                async () =>
+                {
+                    selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
+                    return selectedPhoto is not null;
+                },
+                canceledTitle: "Photo capture canceled",
+                canceledMessage: "Please try again or continue without a photo.",
+                retryButton: "Retry",
+                continueButton: "Continue");
+
+            if (!photoSelected || selectedPhoto is null)
+            {
+                return;
+            }
+
+            if (pendingPhoto is not null)
+            {
+                await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
+            }
+
+            pendingPhoto = selectedPhoto;
+            PhotoThumbnailPath = selectedPhoto.FullPath;
+            ValidationMessage = null;
+        });
+    }
+
     [RelayCommand(CanExecute = nameof(CanAdd))]
-    private async Task AddAsync()
+    private async Task SaveAsync()
     {
         var trimmed = Name?.Trim();
         if (string.IsNullOrWhiteSpace(trimmed))
@@ -80,13 +131,20 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                 };
 
                 await inventoryCommands.InsertItemAsync(item);
-                await CapturePhotoWithOptionalRetryAsync(item);
+
+                if (pendingPhoto is not null)
+                {
+                    await imageService.SaveItemPhotoAsync(item, pendingPhoto.Bytes);
+                    await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
+                }
 
                 if (Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
                 {
                     await inventoryCommands.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
                 }
 
+                pendingPhoto = null;
+                PhotoThumbnailPath = null;
                 ValidationMessage = null;
                 await nav.GoBackAsync();
             }
@@ -95,21 +153,5 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                 ValidationMessage = $"Failed to save item: {ex.Message}";
             }
         });
-    }
-
-    private async Task CapturePhotoWithOptionalRetryAsync(Item item)
-    {
-        await retryService.RetryAsync(
-            async () =>
-            {
-                var bytesLength = await imageService.CaptureItemPhotoAsync(item);
-                return bytesLength > 0;
-            },
-            canceledTitle: "Photo capture canceled",
-            canceledMessage: "Please try again or continue without a photo.",
-            retryButton: "Retry",
-            continueButton: "Continue",
-            continueAlertTitle: "No photo",
-            continueAlertMessage: "Continuing without a photo.");
     }
 }

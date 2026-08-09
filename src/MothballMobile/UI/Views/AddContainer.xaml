@@ -29,7 +29,7 @@
                                                  Placeholder="Enter container name"
                                                  Text="{Binding Name}"
                                                  ReturnType="Done"
-                                                 ReturnCommand="{Binding AddContainerCommand}"
+                                                 ReturnCommand="{Binding SaveContainerCommand}"
                                                  ValidationMessage="{Binding ValidationMessage}" />
 
                     <!-- Notes -->
@@ -40,11 +40,36 @@
                                                Placeholder="Enter a description or notes."
                                                Text="{Binding Notes}" />
 
-                    <!-- Action -->
-                    <Button Text="Add Container (Choose Photo)"
+                    <!-- Temporary photo selection -->
+                    <Button Text="Choose Photo"
+                            Style="{StaticResource OutlinedButton}"
+                            WidthRequest="{StaticResource WidthM}"
+                            Command="{Binding ChoosePhotoCommand}"/>
+
+                    <Border Style="{StaticResource InputWrapper}"
+                            WidthRequest="{StaticResource WidthM}"
+                            IsVisible="{Binding HasTemporaryPhoto}">
+                        <VerticalStackLayout Spacing="8"
+                                             HorizontalOptions="Center">
+                            <Image Source="{Binding PhotoThumbnailPath}"
+                                   HeightRequest="120"
+                                   WidthRequest="120"
+                                   Aspect="AspectFill" />
+                            <Label Text="Photo selected"
+                                   Style="{StaticResource LabelSmall}"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Text="{Binding PhotoSelectionStatus}"
+                           Style="{StaticResource BodySmall}"
+                           WidthRequest="{StaticResource WidthM}" />
+
+                    <!-- Final entity save -->
+                    <Button Text="Save Container"
                             Style="{StaticResource PrimaryButton}"
                             WidthRequest="{StaticResource WidthM}"
-                            Command="{Binding AddContainerCommand}"/>
+                            Command="{Binding SaveContainerCommand}"/>
                 </VerticalStackLayout>
             </Border>
         </Grid>

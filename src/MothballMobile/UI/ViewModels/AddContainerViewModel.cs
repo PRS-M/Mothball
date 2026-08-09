@@ -13,6 +13,7 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService navigationService;
     private readonly IRetryService retryService;
+    private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     public AddContainerViewModel(
         ImageService imageService,
@@ -27,7 +28,7 @@ public partial class AddContainerViewModel : BaseViewModel
     }
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(AddContainerCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveContainerCommand))]
     private string name = string.Empty;
 
     [ObservableProperty]
@@ -36,10 +37,60 @@ public partial class AddContainerViewModel : BaseViewModel
     [ObservableProperty]
     private string? validationMessage;
 
+    [ObservableProperty]
+    private string? photoThumbnailPath;
+
     private bool CanAddContainer() => !string.IsNullOrWhiteSpace(Name);
 
+    public bool HasTemporaryPhoto => !string.IsNullOrWhiteSpace(PhotoThumbnailPath);
+
+    public string PhotoSelectionStatus =>
+        HasTemporaryPhoto
+            ? "Photo selected. It will be saved when you tap Save."
+            : "No photo selected.";
+
+    partial void OnPhotoThumbnailPathChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasTemporaryPhoto));
+        OnPropertyChanged(nameof(PhotoSelectionStatus));
+    }
+
+    [RelayCommand]
+    public async Task ChoosePhoto()
+    {
+        await RunCommandAsync(async () =>
+        {
+            ImageService.TemporaryPhotoCapture? selectedPhoto = null;
+
+            bool photoSelected = await retryService.RetryAsync(
+                async () =>
+                {
+                    selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
+                    return selectedPhoto is not null;
+                },
+                canceledTitle: "Photo capture canceled",
+                canceledMessage: "Please try again or continue without a photo.",
+                retryButton: "Retry",
+                continueButton: "Continue");
+
+            if (!photoSelected || selectedPhoto is null)
+            {
+                return;
+            }
+
+            if (pendingPhoto is not null)
+            {
+                await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
+            }
+
+            pendingPhoto = selectedPhoto;
+            PhotoThumbnailPath = selectedPhoto.FullPath;
+            ValidationMessage = null;
+        });
+    }
+
     [RelayCommand(CanExecute = nameof(CanAddContainer))]
-    public async Task AddContainer()
+    public async Task SaveContainer()
     {
         var trimmedName = Name?.Trim();
         if (string.IsNullOrWhiteSpace(trimmedName))
@@ -56,27 +107,18 @@ public partial class AddContainerViewModel : BaseViewModel
                 notes: string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim()
             );
 
-            await CapturePhotoWithOptionalRetryAsync(container);
             await inventoryCommands.InsertContainerAsync(container);
 
+            if (pendingPhoto is not null)
+            {
+                await imageService.SaveContainerPhotoAsync(container, pendingPhoto.Bytes);
+                await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
+            }
+
+            pendingPhoto = null;
+            PhotoThumbnailPath = null;
             ValidationMessage = null;
             await navigationService.GoBackAsync();
         });
-    }
-
-    private async Task CapturePhotoWithOptionalRetryAsync(Container container)
-    {
-        await retryService.RetryAsync(
-            async () =>
-            {
-                var bytesLength = await imageService.CaptureContainerPhotoAsync(container);
-                return bytesLength > 0;
-            },
-            canceledTitle: "Photo capture canceled",
-            canceledMessage: "Please try again or continue without a photo.",
-            retryButton: "Retry",
-            continueButton: "Continue",
-            continueAlertTitle: "No photo",
-            continueAlertMessage: "Continuing without a photo.");
     }
 }
