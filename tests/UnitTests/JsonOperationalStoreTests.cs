@@ -1,4 +1,5 @@
 using CoreApp.Entities.ContainerAggregate;
+using FluentAssertions;
 using CoreApp.Interfaces;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Models;
@@ -105,13 +106,13 @@ public class JsonOperationalStoreTests
         var store = new JsonInventoryStore(files);
 
         var ok = await store.TryRecoverAsync();
-        Assert.That(ok, Is.True);
+        ok.Should().BeTrue();
 
         var state = await store.LoadAsync();
-        Assert.That(state.Containers, Is.Empty);
-        Assert.That(state.Items, Is.Empty);
-        Assert.That(state.Images, Is.Empty);
-        Assert.That(state.Relations, Is.Empty);
+        state.Containers.Should().BeEmpty();
+        state.Items.Should().BeEmpty();
+        state.Images.Should().BeEmpty();
+        state.Relations.Should().BeEmpty();
     }
 
     [Test]
@@ -123,24 +124,24 @@ public class JsonOperationalStoreTests
 
         var containers = new JsonContainerRepository(store);
 
-        Assert.That(await maintenance.TryRecoverAsync(), Is.True);
+        (await maintenance.TryRecoverAsync()).Should().BeTrue();
 
         var c1 = new Container(Guid.NewGuid(), "Box", "N1");
         var c2 = new Container(Guid.NewGuid(), "Crate", "N2");
 
         await containers.InsertAsync(c1);
         var afterFirst = await containers.GetAllAsync();
-        Assert.That(afterFirst.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
+        afterFirst.Select(c => c.ContainerId).Should().BeEquivalentTo(new[] { c1.ContainerId });
 
         await containers.InsertAsync(c2);
         var afterSecond = await containers.GetAllAsync();
-        Assert.That(afterSecond.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId, c2.ContainerId }));
+        afterSecond.Select(c => c.ContainerId).Should().BeEquivalentTo(new[] { c1.ContainerId, c2.ContainerId });
 
         var rolledBack = await maintenance.TryRollbackLastCommitAsync();
-        Assert.That(rolledBack, Is.True);
+        rolledBack.Should().BeTrue();
 
         var afterRollback = await containers.GetAllAsync();
-        Assert.That(afterRollback.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
+        afterRollback.Select(c => c.ContainerId).Should().BeEquivalentTo(new[] { c1.ContainerId });
     }
 
     [Test]
@@ -149,7 +150,7 @@ public class JsonOperationalStoreTests
         var files = new InMemoryFileHandler();
         var store = new JsonInventoryStore(files);
 
-        Assert.That(await store.TryRecoverAsync(), Is.True);
+        (await store.TryRecoverAsync()).Should().BeTrue();
 
         await store.UpdateAsync(state =>
         {
@@ -157,10 +158,10 @@ public class JsonOperationalStoreTests
             return Task.CompletedTask;
         });
 
-        Assert.That(await store.TryRecoverAsync(), Is.True);
+        (await store.TryRecoverAsync()).Should().BeTrue();
 
         var loaded = await store.LoadAsync();
-        Assert.That(loaded.Metadata.SchemaVersion, Is.EqualTo(42));
+        loaded.Metadata.SchemaVersion.Should().Be(42);
     }
 
     [Test]
@@ -171,11 +172,11 @@ public class JsonOperationalStoreTests
 
         var loaded = await store.LoadAsync();
 
-        Assert.That(loaded.Containers, Is.Empty);
-        Assert.That(loaded.Items, Is.Empty);
-        Assert.That(loaded.Images, Is.Empty);
-        Assert.That(loaded.Relations, Is.Empty);
-        Assert.That(loaded.Metadata.NextContainerRowId, Is.EqualTo(1));
+        loaded.Containers.Should().BeEmpty();
+        loaded.Items.Should().BeEmpty();
+        loaded.Images.Should().BeEmpty();
+        loaded.Relations.Should().BeEmpty();
+        loaded.Metadata.NextContainerRowId.Should().Be(1);
     }
 
     [Test]
@@ -184,10 +185,10 @@ public class JsonOperationalStoreTests
         var files = new InMemoryFileHandler();
         var store = new JsonInventoryStore(files);
 
-        Assert.That(await store.TryRecoverAsync(), Is.True);
+        (await store.TryRecoverAsync()).Should().BeTrue();
 
         var rolledBack = await store.TryRollbackLastCommitAsync();
-        Assert.That(rolledBack, Is.False);
+        rolledBack.Should().BeFalse();
     }
 
     [Test]
@@ -195,23 +196,25 @@ public class JsonOperationalStoreTests
     {
         var files = new InMemoryFileHandler();
         var store = new JsonInventoryStore(files);
-        Assert.That(await store.TryRecoverAsync(), Is.True);
+        (await store.TryRecoverAsync()).Should().BeTrue();
 
-        Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await store.UpdateAsync(_ => throw new InvalidOperationException("boom")));
+        await FluentActions.Awaiting(() => store.UpdateAsync(_ => throw new InvalidOperationException("boom")))
+            .Should()
+            .ThrowAsync<InvalidOperationException>();
 
         var loaded = await store.LoadAsync();
-        Assert.That(loaded.Metadata.SchemaVersion, Is.EqualTo(1));
+        loaded.Metadata.SchemaVersion.Should().Be(1);
 
-        Assert.DoesNotThrowAsync(async () =>
-            await store.UpdateAsync(state =>
+        await FluentActions.Awaiting(() => store.UpdateAsync(state =>
             {
                 state.Metadata.SchemaVersion = 2;
                 return Task.CompletedTask;
-            }));
+            }))
+            .Should()
+            .NotThrowAsync();
 
         var after = await store.LoadAsync();
-        Assert.That(after.Metadata.SchemaVersion, Is.EqualTo(2));
+        after.Metadata.SchemaVersion.Should().Be(2);
     }
 
     [Test]
@@ -221,7 +224,7 @@ public class JsonOperationalStoreTests
         var store = new JsonInventoryStore(files);
         var containers = new JsonContainerRepository(store);
 
-        Assert.That(await store.TryRecoverAsync(), Is.True);
+        (await store.TryRecoverAsync()).Should().BeTrue();
 
         var c1 = new Container(Guid.NewGuid(), "Box", "N1");
         var c2 = new Container(Guid.NewGuid(), "Crate", "N2");
@@ -230,13 +233,13 @@ public class JsonOperationalStoreTests
         await containers.InsertAsync(c2);
 
         var activeManifest = ReadHighestGenerationManifest(files);
-        Assert.That(activeManifest, Is.Not.Null);
+        activeManifest.Should().NotBeNull();
 
         var currentSlotFolder = JsonStoreConstants.SlotFolder(activeManifest!.CurrentSlot);
         files.DeleteRaw(JsonStoreConstants.MetadataFileName, currentSlotFolder);
 
         var loaded = await containers.GetAllAsync();
-        Assert.That(loaded.Select(x => x.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
+        loaded.Select(x => x.ContainerId).Should().BeEquivalentTo(new[] { c1.ContainerId });
     }
 
     [Test]
@@ -249,19 +252,21 @@ public class JsonOperationalStoreTests
 
         var loaded = await store.LoadAsync();
 
-        Assert.That(loaded.Metadata.NextContainerRowId, Is.EqualTo(8));
-        Assert.That(loaded.Metadata.NextItemRowId, Is.EqualTo(4));
-        Assert.That(loaded.Metadata.NextImageRowId, Is.EqualTo(6));
-        Assert.That(loaded.Metadata.NextRelationId, Is.EqualTo(10));
+        loaded.Metadata.NextContainerRowId.Should().Be(8);
+        loaded.Metadata.NextItemRowId.Should().Be(4);
+        loaded.Metadata.NextImageRowId.Should().Be(6);
+        loaded.Metadata.NextRelationId.Should().Be(10);
     }
 
     [Test]
-    public void StartupInitializer_WhenRecoverFails_ThrowsInvalidOperationException()
+    public async Task StartupInitializer_WhenRecoverFails_ThrowsInvalidOperationException()
     {
         var store = new JsonInventoryStore(new FailingWriteFileHandler());
         var initializer = new JsonStoreStartupInitializer(store);
 
-        Assert.ThrowsAsync<InvalidOperationException>(async () => await initializer.InitializeAsync());
+        await FluentActions.Awaiting(() => initializer.InitializeAsync())
+            .Should()
+            .ThrowAsync<InvalidOperationException>();
     }
 
     private static JsonStoreManifest? ReadHighestGenerationManifest(InMemoryFileHandler files)

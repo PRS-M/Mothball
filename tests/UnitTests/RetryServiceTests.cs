@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using MothballMobile.Infrastructure;
 
@@ -16,7 +17,7 @@ public class RetryServiceTests
 
         var result = await service.RetryAsync(Attempt, "t","m","r","c");
 
-        Assert.That(result, Is.True);
+        result.Should().BeTrue();
         popup.VerifyNoOtherCalls();
     }
 
@@ -32,8 +33,8 @@ public class RetryServiceTests
 
         var result = await service.RetryAsync(Attempt, canceledTitle: "t", canceledMessage: "m", retryButton: "r", continueButton: "c");
 
-        Assert.That(result, Is.True);
-        Assert.That(attempts, Is.EqualTo(2));
+        result.Should().BeTrue();
+        attempts.Should().Be(2);
         popup.Verify(p => p.ConfirmAsync("t","m","r","c"), Times.Once);
         popup.VerifyNoOtherCalls();
     }
@@ -51,8 +52,8 @@ public class RetryServiceTests
 
         var result = await service.RetryAsync(Attempt, canceledTitle: "t", canceledMessage: "m", retryButton: "r", continueButton: "c", continueAlertTitle: "no", continueAlertMessage: "cont");
 
-        Assert.That(result, Is.False);
-        Assert.That(attempts, Is.EqualTo(1));
+        result.Should().BeFalse();
+        attempts.Should().Be(1);
         popup.Verify(p => p.ConfirmAsync("t","m","r","c"), Times.Once);
         popup.Verify(p => p.ShowAlertAsync("no","cont", It.IsAny<string>()), Times.Once);
         popup.VerifyNoOtherCalls();

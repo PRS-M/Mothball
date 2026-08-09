@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
+using FluentAssertions;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Utilities;
@@ -30,7 +31,7 @@ public class ImageServiceBehaviorTests
 
         await service.CaptureContainerPhotoAsync(container);
 
-        Assert.That(container.Photos.Count, Is.EqualTo(1));
+        container.Photos.Count.Should().Be(1);
         var image = container.Photos[0];
         files.Verify(f => f.SaveFileAsync(image.FileName, Constants.PathToContainerPhotos, bytes), Times.Once);
         repo.Verify(r => r.InsertImageItemAsync(image, container.ContainerId), Times.Once);
@@ -38,7 +39,7 @@ public class ImageServiceBehaviorTests
     }
 
     [Test]
-    public void CaptureContainerPhotoAsync_SaveFails_RollsBackImage()
+    public async Task CaptureContainerPhotoAsync_SaveFails_RollsBackImage()
     {
         var camera = new Mock<ICameraHandler>();
         var repo = new Mock<IInventoryCommandRepository>();
@@ -52,8 +53,8 @@ public class ImageServiceBehaviorTests
         var service = new ImageService(camera.Object, repo.Object, files.Object);
         var container = new Container(Guid.NewGuid(), "Box", "notes");
 
-        Assert.ThrowsAsync<IOException>(() => service.CaptureContainerPhotoAsync(container));
-        Assert.That(container.Photos.Count, Is.EqualTo(0));
+        await FluentActions.Awaiting(() => service.CaptureContainerPhotoAsync(container)).Should().ThrowAsync<IOException>();
+        container.Photos.Count.Should().Be(0);
         repo.Verify(r => r.InsertImageItemAsync(It.IsAny<ImageItem>(), It.IsAny<Guid>()), Times.Never);
         repo.Verify(r => r.UpdateContainerAsync(It.IsAny<Container>()), Times.Never);
     }
@@ -75,7 +76,7 @@ public class ImageServiceBehaviorTests
 
         await service.CaptureItemPhotoAsync(item);
 
-        Assert.That(item.Photos.Count, Is.EqualTo(1));
+        item.Photos.Count.Should().Be(1);
         var image = item.Photos[0];
         files.Verify(f => f.SaveFileAsync(image.FileName, Constants.PathToItemPhotos, bytes), Times.Once);
         repo.Verify(r => r.InsertImageItemAsync(image, item.ItemId), Times.Once);

@@ -1,5 +1,6 @@
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
+using FluentAssertions;
 using Infrastructure.Services.Mappers;
 using Infrastructure.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
@@ -81,8 +82,8 @@ public class RepositoryIntegrationTests
         await commandRepo.InsertImageItemAsync(c.Photos[0], c.ContainerId);
 
         var loaded = await queryRepo.GetContainerAsync(c.ContainerId.ToString());
-        Assert.That(loaded, Is.Not.Null);
-        Assert.That(loaded!.Photos.Count, Is.EqualTo(1));
+        loaded.Should().NotBeNull();
+        loaded!.Photos.Count.Should().Be(1);
     }
 
     [Test]
@@ -95,8 +96,8 @@ public class RepositoryIntegrationTests
         await commandRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId, quantity: 2);
 
         var itemsForContainer = await queryRepo.GetItemsForContainerAsync(c.ContainerId.ToString());
-        Assert.That(itemsForContainer.Count, Is.EqualTo(1));
-        Assert.That(itemsForContainer[0].Name, Is.EqualTo("ItemA"));
-        Assert.That(itemsForContainer[0].Description, Is.EqualTo("DescA"));
+        itemsForContainer.Count.Should().Be(1);
+        itemsForContainer[0].Name.Should().Be("ItemA");
+        itemsForContainer[0].Description.Should().Be("DescA");
     }
 }

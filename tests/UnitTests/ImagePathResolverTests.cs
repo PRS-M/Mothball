@@ -1,5 +1,6 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
+using FluentAssertions;
 using CoreApp.Interfaces;
 using Moq;
 
@@ -21,7 +22,7 @@ public class ImagePathResolverTests
     {
         var c = new Container();
         var path = _resolver.GetPrimaryContainerPhotoPath(c);
-        Assert.That(path, Is.EqualTo("dotnet_bot.png"));
+        path.Should().Be("dotnet_bot.png");
     }
 
     [Test]
@@ -31,7 +32,7 @@ public class ImagePathResolverTests
         var img = c.AddImageItem();
         var expected = $"/root/{CoreApp.Utilities.Constants.PathToContainerPhotos}/{img.FileName}";
         var path = _resolver.GetPrimaryContainerPhotoPath(c);
-        Assert.That(path, Is.EqualTo(expected));
+        path.Should().Be(expected);
     }
 
     [Test]
@@ -40,26 +41,26 @@ public class ImagePathResolverTests
         var item = new Item();
         // fallback case
         var single = _resolver.GetItemPhotoPaths(item).Single();
-        Assert.That(single, Is.EqualTo("dotnet_bot.png"));
+        single.Should().Be("dotnet_bot.png");
 
         // add photos
         var img1 = item.AddImageItem();
         var img2 = item.AddImageItem();
         var list = _resolver.GetItemPhotoPaths(item).ToList();
-        Assert.That(list, Is.EquivalentTo(new[] {
+        list.Should().BeEquivalentTo(new[] {
             $"/root/{CoreApp.Utilities.Constants.PathToItemPhotos}/{img1.FileName}",
-            $"/root/{CoreApp.Utilities.Constants.PathToItemPhotos}/{img2.FileName}" }));
+            $"/root/{CoreApp.Utilities.Constants.PathToItemPhotos}/{img2.FileName}" });
     }
 
     [Test]
     public void BuildPath_SwallowsExceptions_ReturnsFallback()
     {
         var badMock = new Mock<IFileHandler>();
-    badMock.SetupGet(f => f.AppDataPath).Throws(new Exception("nope"));
-    var badResolver = new Infrastructure.Services.ImagePathResolver(badMock.Object);
+        badMock.SetupGet(f => f.AppDataPath).Throws(new Exception("nope"));
+        var badResolver = new Infrastructure.Services.ImagePathResolver(badMock.Object);
         var item = new Item();
         item.AddImageItem();
         var path = badResolver.GetPrimaryItemPhotoPath(item);
-        Assert.That(path, Is.EqualTo("dotnet_bot.png"));
+        path.Should().Be("dotnet_bot.png");
     }
 }

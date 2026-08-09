@@ -1,5 +1,7 @@
 using CoreApp.Interfaces;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Moq;
 using MothballMobile.Infrastructure;
 
 namespace UnitTests;
@@ -10,71 +12,45 @@ public class AppStartupOrchestratorTests
     [Test]
     public async Task StartAsync_WhenInitializerSucceeds_CompletesWithoutError()
     {
-        var initializer = new TestStartupInitializer(shouldThrow: false);
-        var logger = new CapturingLogger<AppStartupOrchestrator>();
-        var orchestrator = new AppStartupOrchestrator(initializer, logger);
+        var initializer = new Mock<IAppStartupInitializer>();
+        var logger = new Mock<ILogger<AppStartupOrchestrator>>();
+        var orchestrator = new AppStartupOrchestrator(initializer.Object, logger.Object);
 
-        await orchestrator.StartAsync();
+        await FluentActions.Awaiting(() => orchestrator.StartAsync()).Should().NotThrowAsync();
 
-        Assert.That(initializer.Calls, Is.EqualTo(1));
-        Assert.That(logger.Entries.Any(e => e.Level == LogLevel.Error), Is.False);
+        initializer.Verify(i => i.InitializeAsync(), Times.Once);
+        logger.Verify(
+            l => l.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Never);
     }
 
     [Test]
-    public void StartAsync_WhenInitializerFails_LogsAndRethrows()
+    public async Task StartAsync_WhenInitializerFails_LogsAndRethrows()
     {
-        var initializer = new TestStartupInitializer(shouldThrow: true);
-        var logger = new CapturingLogger<AppStartupOrchestrator>();
-        var orchestrator = new AppStartupOrchestrator(initializer, logger);
+        var initializer = new Mock<IAppStartupInitializer>();
+        initializer.Setup(i => i.InitializeAsync()).ThrowsAsync(new InvalidOperationException("boom"));
 
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await orchestrator.StartAsync());
+        var logger = new Mock<ILogger<AppStartupOrchestrator>>();
+        var orchestrator = new AppStartupOrchestrator(initializer.Object, logger.Object);
 
-        Assert.That(ex, Is.Not.Null);
-        Assert.That(initializer.Calls, Is.EqualTo(1));
-        Assert.That(logger.Entries.Any(e => e.Level == LogLevel.Error && e.Message.Contains("Startup initialization failed.")), Is.True);
-    }
+        await FluentActions.Awaiting(() => orchestrator.StartAsync())
+            .Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("boom");
 
-    private sealed class TestStartupInitializer : IAppStartupInitializer
-    {
-        private readonly bool shouldThrow;
-
-        public TestStartupInitializer(bool shouldThrow)
-        {
-            this.shouldThrow = shouldThrow;
-        }
-
-        public int Calls { get; private set; }
-
-        public Task InitializeAsync()
-        {
-            Calls++;
-            if (shouldThrow)
-            {
-                throw new InvalidOperationException("boom");
-            }
-
-            return Task.CompletedTask;
-        }
-    }
-
-    private sealed class CapturingLogger<T> : ILogger<T>
-    {
-        public List<(LogLevel Level, string Message)> Entries { get; } = [];
-
-        public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
-
-        public bool IsEnabled(LogLevel logLevel) => true;
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
-            Func<TState, Exception?, string> formatter)
-        {
-            Entries.Add((logLevel, formatter(state, exception)));
-        }
-
-        private sealed class NullScope : IDisposable
-        {
-            public static readonly NullScope Instance = new();
-            public void Dispose() { }
-        }
+        initializer.Verify(i => i.InitializeAsync(), Times.Once);
+        logger.Verify(
+            l => l.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("Startup initialization failed.")),
+                It.IsAny<InvalidOperationException>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 }

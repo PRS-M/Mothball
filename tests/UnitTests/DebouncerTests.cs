@@ -1,4 +1,5 @@
 using MothballMobile.Infrastructure;
+using FluentAssertions;
 
 namespace UnitTests;
 
@@ -27,7 +28,7 @@ public class DebouncerTests
         });
 
         await Task.Delay(120);
-        Assert.That(count, Is.EqualTo(1));
+        count.Should().Be(1);
     }
 
     [Test]
@@ -49,6 +50,6 @@ public class DebouncerTests
             return Task.CompletedTask;
         });
         await Task.Delay(100);
-        Assert.That(count, Is.LessThanOrEqualTo(1));
+        count.Should().BeLessThanOrEqualTo(1);
     }
 }
