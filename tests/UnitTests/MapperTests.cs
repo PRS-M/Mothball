@@ -1,7 +1,6 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
-using FluentAssertions;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 
@@ -18,9 +17,9 @@ public class MapperTests
 
         var db = c.ToDb();
 
-        db.ContainerId.Should().Be(id);
-        db.Name.Should().Be("Name");
-        db.Notes.Should().Be("Notes");
+        Assert.That(db.ContainerId, Is.EqualTo(id));
+        Assert.That(db.Name, Is.EqualTo("Name"));
+        Assert.That(db.Notes, Is.EqualTo("Notes"));
     }
 
     [Test]
@@ -40,10 +39,10 @@ public class MapperTests
 
         var domain = db.ToDomain(relations);
 
-        domain.ContainerId.Should().Be(containerId);
-        domain.Items.Count.Should().Be(1);
-        domain.Items[0].ItemId.Should().Be(itemId);
-        domain.Items[0].Quantity.Should().Be(5);
+        Assert.That(domain.ContainerId, Is.EqualTo(containerId));
+        Assert.That(domain.Items.Count, Is.EqualTo(1));
+        Assert.That(domain.Items[0].ItemId, Is.EqualTo(itemId));
+        Assert.That(domain.Items[0].Quantity, Is.EqualTo(5));
     }
 
     [Test]
@@ -57,7 +56,7 @@ public class MapperTests
 
         var domain = db.ToDomain(photos: new[] { p1, p2 });
 
-        domain.Photos.Select(p => p.ImageId).Should().BeEquivalentTo(new[] { p1.ImageId, p2.ImageId });
+        Assert.That(domain.Photos.Select(p => p.ImageId), Is.EquivalentTo(new[] { p1.ImageId, p2.ImageId }));
     }
 
     [Test]
@@ -68,9 +67,9 @@ public class MapperTests
 
         var db = item.ToDb();
 
-        db.ItemId.Should().Be(id);
-        db.Name.Should().Be("Hat");
-        db.Description.Should().Be("Desc");
+        Assert.That(db.ItemId, Is.EqualTo(id));
+        Assert.That(db.Name, Is.EqualTo("Hat"));
+        Assert.That(db.Description, Is.EqualTo("Desc"));
     }
 
     [Test]
@@ -83,15 +82,15 @@ public class MapperTests
 
         var domain = db.ToDomain(new[] { p1 });
 
-        domain.ItemId.Should().Be(itemId);
-        domain.Photos.Select(p => p.ImageId).Should().BeEquivalentTo(new[] { p1.ImageId });
+        Assert.That(domain.ItemId, Is.EqualTo(itemId));
+        Assert.That(domain.Photos.Select(p => p.ImageId), Is.EquivalentTo(new[] { p1.ImageId }));
     }
 
     [Test]
     public void ImageMapper_ToDb_Throws_OnEmptyOwnerId()
     {
         var img = new ImageItem(Guid.NewGuid());
-        FluentActions.Invoking(() => img.ToDb(Guid.Empty)).Should().Throw<ArgumentException>();
+        Assert.That(() => img.ToDb(Guid.Empty), Throws.ArgumentException);
     }
 
     [Test]
@@ -102,6 +101,6 @@ public class MapperTests
 
         var domain = db.ToDomain();
 
-        domain.ImageId.Should().Be(id);
+        Assert.That(domain.ImageId, Is.EqualTo(id));
     }
 }

@@ -1,5 +1,4 @@
 using CoreApp.Entities.ContainerAggregate;
-using FluentAssertions;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Utilities;
@@ -59,9 +58,9 @@ public class InventoryJsonHandlerTests
 
         var loaded = await inv.LoadAsync();
 
-        loaded.Select(c => c.ContainerId).Should().BeEquivalentTo(new[] { c1.ContainerId, c2.ContainerId });
-        loaded.Single(c => c.ContainerId == c1.ContainerId).Name.Should().Be("Box");
-        loaded.Single(c => c.ContainerId == c2.ContainerId).Notes.Should().Be("More");
+        Assert.That(loaded.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId, c2.ContainerId }));
+        Assert.That(loaded.Single(c => c.ContainerId == c1.ContainerId).Name, Is.EqualTo("Box"));
+        Assert.That(loaded.Single(c => c.ContainerId == c2.ContainerId).Notes, Is.EqualTo("More"));
     }
 
     [Test]
@@ -76,10 +75,10 @@ public class InventoryJsonHandlerTests
         await inv.SaveAsync(c);
 
         var raw = await files.Object.ReadTextFileAsync(Constants.InventoryFileName, Constants.PathToData);
-        raw.TrimStart().StartsWith('[').Should().BeTrue();
+        Assert.That(raw.TrimStart().StartsWith('['), Is.True);
 
         var loaded = await inv.LoadAsync();
-        loaded.Count.Should().Be(1);
-        loaded[0].ContainerId.Should().Be(c.ContainerId);
+        Assert.That(loaded.Count, Is.EqualTo(1));
+        Assert.That(loaded[0].ContainerId, Is.EqualTo(c.ContainerId));
     }
 }

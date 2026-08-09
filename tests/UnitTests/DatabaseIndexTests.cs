@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Repositories;
@@ -66,10 +65,10 @@ public class DatabaseIndexTests
     [Test]
     public async Task ModelAttributes_CreateExpectedIndexes()
     {
-        (await ColumnHasIndexAsync(nameof(DbItemContainerRelation), nameof(DbItemContainerRelation.ContainerId))).Should().BeTrue("Missing index: relations.ContainerId");
-        (await ColumnHasIndexAsync(nameof(DbItemContainerRelation), nameof(DbItemContainerRelation.ItemId))).Should().BeTrue("Missing index: relations.ItemId");
-        (await ColumnHasIndexAsync(nameof(DbImage), nameof(DbImage.OwnerUniqueId))).Should().BeTrue("Missing index: images.OwnerUniqueId");
-        (await ColumnHasIndexAsync(nameof(DbItem), nameof(DbItem.Name))).Should().BeTrue("Missing index: items.Name");
-        (await ColumnHasIndexAsync(nameof(DbContainer), nameof(DbContainer.Name))).Should().BeTrue("Missing index: containers.Name");
+        Assert.That(await ColumnHasIndexAsync(nameof(DbItemContainerRelation), nameof(DbItemContainerRelation.ContainerId)), Is.True, "Missing index: relations.ContainerId");
+        Assert.That(await ColumnHasIndexAsync(nameof(DbItemContainerRelation), nameof(DbItemContainerRelation.ItemId)), Is.True, "Missing index: relations.ItemId");
+        Assert.That(await ColumnHasIndexAsync(nameof(DbImage), nameof(DbImage.OwnerUniqueId)), Is.True, "Missing index: images.OwnerUniqueId");
+        Assert.That(await ColumnHasIndexAsync(nameof(DbItem), nameof(DbItem.Name)), Is.True, "Missing index: items.Name");
+        Assert.That(await ColumnHasIndexAsync(nameof(DbContainer), nameof(DbContainer.Name)), Is.True, "Missing index: containers.Name");
     }
 }

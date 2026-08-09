@@ -1,5 +1,4 @@
 using System.Text.Json;
-using FluentAssertions;
 using CoreApp.Services;
 using CoreApp.Interfaces;
 using Moq;
@@ -55,7 +54,7 @@ public class JsonHandlerBehaviorTests
         await handler.SerializeToFile("x.json", "folder", payload);
 
         var actual = await files.Object.ReadTextFileAsync("x.json", "folder");
-        actual.Should().Be(expected);
+        Assert.That(actual, Is.EqualTo(expected));
     }
 
     [Test]
@@ -64,9 +63,7 @@ public class JsonHandlerBehaviorTests
         var files = CreateFileHandler(out _);
         var handler = new JsonHandler(files.Object);
 
-        await FluentActions.Awaiting(() => handler.SerializeToFile<string>("x.json", "folder", null!))
-            .Should()
-            .ThrowAsync<ArgumentNullException>();
+        Assert.ThrowsAsync<ArgumentNullException>(() => handler.SerializeToFile<string>("x.json", "folder", null!));
     }
 
     [Test]
@@ -75,9 +72,7 @@ public class JsonHandlerBehaviorTests
         var files = CreateFileHandler(out _);
         var handler = new JsonHandler(files.Object);
 
-        await FluentActions.Awaiting(() => handler.DeserializeFromFile<object>("x.json", null!))
-            .Should()
-            .ThrowAsync<ArgumentNullException>();
+        Assert.ThrowsAsync<ArgumentNullException>(() => handler.DeserializeFromFile<object>("x.json", null!));
     }
 
     [Test]
@@ -88,9 +83,7 @@ public class JsonHandlerBehaviorTests
 
         await files.Object.SaveTextFileAsync("bad.json", "folder", "not-json");
 
-        await FluentActions.Awaiting(() => handler.DeserializeFromFile<Dictionary<string, int>>("bad.json", "folder"))
-            .Should()
-            .ThrowAsync<JsonException>();
+        Assert.ThrowsAsync<JsonException>(() => handler.DeserializeFromFile<Dictionary<string, int>>("bad.json", "folder"));
     }
 
     [Test]
@@ -103,6 +96,6 @@ public class JsonHandlerBehaviorTests
         await files.Object.SaveTextFileAsync("b.json", "folder", "{}");
 
         var enumerated = handler.EnumerateJsonFiles("folder").ToList();
-        enumerated.Should().BeEquivalentTo(new[] { "a.json", "b.json" });
+        Assert.That(enumerated, Is.EquivalentTo(new[] { "a.json", "b.json" }));
     }
 }

@@ -1,7 +1,6 @@
 ﻿using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
-using FluentAssertions;
 using CoreApp.Services;
 using CoreApp.Utilities;
 
@@ -14,7 +13,7 @@ public class CoreAppTests
     public void BaseEntity_Id_Default_IsZero()
     {
         var entity = new BaseEntity();
-        entity.Id.Should().Be(0);
+        Assert.That(entity.Id, Is.EqualTo(0));
     }
 
     [Test]
@@ -23,7 +22,7 @@ public class CoreAppTests
         var item = new Item();
         var countBefore = item.Photos.Count;
         item.AddImageItem();
-        item.Photos.Count.Should().Be(countBefore + 1);
+        Assert.That(item.Photos.Count, Is.EqualTo(countBefore + 1));
     }
 
     [Test]
@@ -32,7 +31,7 @@ public class CoreAppTests
         var item = new Item();
         var img = item.AddImageItem();
         item.RemoveImageItem(img.ImageId);
-        item.Photos.Should().NotContain(img);
+        Assert.That(item.Photos, Does.Not.Contain(img));
     }
 
     [Test]
@@ -42,8 +41,11 @@ public class CoreAppTests
         var itemId = Guid.NewGuid();
         container.AddItem(itemId, 2);
 
-        container.Items.Count.Should().Be(1);
-        container.ItemCount.Should().Be(2);
+        Assert.Multiple(() =>
+        {
+            Assert.That(container.Items.Count, Is.EqualTo(1));
+            Assert.That(container.ItemCount, Is.EqualTo(2));
+        });
     }
 
     [Test]
@@ -55,36 +57,36 @@ public class CoreAppTests
         container.AddItem(itemId, 2);
         container.AddItem(itemId, 3);
 
-        container.Items.Count.Should().Be(1);
-        container.Items[0].Quantity.Should().Be(5);
-        container.ItemCount.Should().Be(5);
+        Assert.That(container.Items.Count, Is.EqualTo(1));
+        Assert.That(container.Items[0].Quantity, Is.EqualTo(5));
+        Assert.That(container.ItemCount, Is.EqualTo(5));
     }
 
     [Test]
     public void Container_Ctor_WithEmptyGuid_GeneratesNewGuid()
     {
         var c = new Container(Guid.Empty, "Name", "Notes");
-        c.ContainerId.Should().NotBe(Guid.Empty);
+        Assert.That(c.ContainerId, Is.Not.EqualTo(Guid.Empty));
     }
 
     [Test]
     public void StoredItem_Requires_Valid_ItemId_And_Quantity()
     {
-        FluentActions.Invoking(() => new StoredItem(Guid.Empty, 1)).Should().Throw<ArgumentException>();
-        FluentActions.Invoking(() => new StoredItem(Guid.NewGuid(), 0)).Should().Throw<ArgumentOutOfRangeException>();
-        FluentActions.Invoking(() => new StoredItem(Guid.NewGuid(), -1)).Should().Throw<ArgumentOutOfRangeException>();
+        Assert.That(() => new StoredItem(Guid.Empty, 1), Throws.ArgumentException);
+        Assert.That(() => new StoredItem(Guid.NewGuid(), 0), Throws.TypeOf<ArgumentOutOfRangeException>());
+        Assert.That(() => new StoredItem(Guid.NewGuid(), -1), Throws.TypeOf<ArgumentOutOfRangeException>());
 
         var stored = new StoredItem(Guid.NewGuid(), 1);
         stored.AddQuantity(2);
-        stored.Quantity.Should().Be(3);
+        Assert.That(stored.Quantity, Is.EqualTo(3));
 
     }
 
     [Test]
     public void Constants_Values_NotNull()
     {
-        Constants.DataFolder.Should().NotBeNull();
-        Constants.InventoryFileName.Should().NotBeNull();
+        Assert.That(Constants.DataFolder, Is.Not.Null);
+        Assert.That(Constants.InventoryFileName, Is.Not.Null);
     }
 }
 

@@ -1,6 +1,5 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
-using FluentAssertions;
 using CoreApp.Interfaces;
 using Moq;
 
@@ -22,7 +21,7 @@ public class ImagePathResolverTests
     {
         var c = new Container();
         var path = _resolver.GetPrimaryContainerPhotoPath(c);
-        path.Should().Be("dotnet_bot.png");
+        Assert.That(path, Is.EqualTo("dotnet_bot.png"));
     }
 
     [Test]
@@ -32,7 +31,7 @@ public class ImagePathResolverTests
         var img = c.AddImageItem();
         var expected = $"/root/{CoreApp.Utilities.Constants.PathToContainerPhotos}/{img.FileName}";
         var path = _resolver.GetPrimaryContainerPhotoPath(c);
-        path.Should().Be(expected);
+        Assert.That(path, Is.EqualTo(expected));
     }
 
     [Test]
@@ -41,15 +40,15 @@ public class ImagePathResolverTests
         var item = new Item();
         // fallback case
         var single = _resolver.GetItemPhotoPaths(item).Single();
-        single.Should().Be("dotnet_bot.png");
+        Assert.That(single, Is.EqualTo("dotnet_bot.png"));
 
         // add photos
         var img1 = item.AddImageItem();
         var img2 = item.AddImageItem();
         var list = _resolver.GetItemPhotoPaths(item).ToList();
-        list.Should().BeEquivalentTo(new[] {
+        Assert.That(list, Is.EquivalentTo(new[] {
             $"/root/{CoreApp.Utilities.Constants.PathToItemPhotos}/{img1.FileName}",
-            $"/root/{CoreApp.Utilities.Constants.PathToItemPhotos}/{img2.FileName}" });
+            $"/root/{CoreApp.Utilities.Constants.PathToItemPhotos}/{img2.FileName}" }));
     }
 
     [Test]
@@ -61,6 +60,6 @@ public class ImagePathResolverTests
         var item = new Item();
         item.AddImageItem();
         var path = badResolver.GetPrimaryItemPhotoPath(item);
-        path.Should().Be("dotnet_bot.png");
+        Assert.That(path, Is.EqualTo("dotnet_bot.png"));
     }
 }

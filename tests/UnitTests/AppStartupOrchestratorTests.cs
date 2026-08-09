@@ -1,5 +1,4 @@
 using CoreApp.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using MothballMobile.Infrastructure;
@@ -16,7 +15,7 @@ public class AppStartupOrchestratorTests
         var logger = new Mock<ILogger<AppStartupOrchestrator>>();
         var orchestrator = new AppStartupOrchestrator(initializer.Object, logger.Object);
 
-        await FluentActions.Awaiting(() => orchestrator.StartAsync()).Should().NotThrowAsync();
+        Assert.DoesNotThrowAsync(async () => await orchestrator.StartAsync());
 
         initializer.Verify(i => i.InitializeAsync(), Times.Once);
         logger.Verify(
@@ -38,10 +37,9 @@ public class AppStartupOrchestratorTests
         var logger = new Mock<ILogger<AppStartupOrchestrator>>();
         var orchestrator = new AppStartupOrchestrator(initializer.Object, logger.Object);
 
-        await FluentActions.Awaiting(() => orchestrator.StartAsync())
-            .Should()
-            .ThrowAsync<InvalidOperationException>()
-            .WithMessage("boom");
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await orchestrator.StartAsync());
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex!.Message, Is.EqualTo("boom"));
 
         initializer.Verify(i => i.InitializeAsync(), Times.Once);
         logger.Verify(
