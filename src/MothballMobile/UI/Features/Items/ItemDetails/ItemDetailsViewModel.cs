@@ -6,7 +6,7 @@ using CoreApp.Entities.ItemAggregate;
 using MothballMobile.Infrastructure;
 using CoreApp.Services;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Items.ItemDetails;
 
 public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable
 {

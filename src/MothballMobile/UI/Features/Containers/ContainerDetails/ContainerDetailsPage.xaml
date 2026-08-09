@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Containers.ContainerDetails"
                 xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
-                xmlns:views="clr-namespace:MothballMobile.UI.Views"
-                x:Class="MothballMobile.UI.Views.ContainerDetails"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Containers.ContainerDetails.ContainerDetailsPage"
                 x:DataType="vm:ContainerDetailsViewModel"
                 Title="Container"
                 Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
@@ -26,7 +26,6 @@
     <Grid RowDefinitions="Auto,Auto,Auto,*"
           RowSpacing="0"
           Padding="0">
-        <!-- Top: condensed container details -->
         <Border Grid.Row="0"
                 Style="{StaticResource Card}"
                 Margin="16,16,16,8"
@@ -60,7 +59,6 @@
             </Grid>
         </Border>
 
-        <!-- Items header with buttons -->
         <VerticalStackLayout Grid.Row="1"
                              Margin="16,8,16,8"
                              Spacing="8">
@@ -102,14 +100,12 @@
             </HorizontalStackLayout>
         </VerticalStackLayout>
 
-        <!-- Search bar -->
         <controls:SearchBarCard Grid.Row="2"
                     Margin="16,0,16,16"
                     Placeholder="Search within container..."
                     Text="{Binding SearchQuery}"
                     SearchCommand="{Binding ApplySearchCommand}" />
 
-        <!-- Items list with infinite scroll -->
         <CollectionView Grid.Row="3"
                         x:DataType="vm:ContainerDetailsViewModel"
                         ItemsSource="{Binding Items}"

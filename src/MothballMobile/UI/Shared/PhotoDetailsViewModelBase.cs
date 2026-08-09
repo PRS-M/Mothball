@@ -3,7 +3,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using MothballMobile.Infrastructure;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Shared;
 
 public abstract class PhotoDetailsViewModelBase : BaseViewModel
 {

@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Shared;
 
 public abstract class ContainerWithImagesViewModelBase : ObservableObject
 {

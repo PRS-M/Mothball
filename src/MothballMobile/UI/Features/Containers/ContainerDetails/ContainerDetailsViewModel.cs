@@ -7,7 +7,7 @@ using CoreApp.Services;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
 public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
 {

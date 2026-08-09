@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Containers.ContainersList;
 
 public partial class ContainerViewModel : ContainerWithImagesViewModelBase
 {

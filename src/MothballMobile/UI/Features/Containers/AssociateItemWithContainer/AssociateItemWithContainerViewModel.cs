@@ -5,7 +5,7 @@ using CoreApp.Interfaces;
 using MothballMobile.Infrastructure;
 using Infrastructure.Services;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 
 public partial class AssociateItemWithContainerViewModel : PagedListViewModelBase<Container, SelectableContainerViewModel>, IQueryAttributable
 {

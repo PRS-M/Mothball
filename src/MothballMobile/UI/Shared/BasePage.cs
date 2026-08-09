@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls;
 using MothballMobile.Infrastructure;
 using System.Diagnostics;
 
-namespace MothballMobile.UI.Views;
+namespace MothballMobile.UI.Shared;
 
 public class BasePage : ContentPage
 {

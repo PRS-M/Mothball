@@ -2,9 +2,9 @@
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
-                xmlns:vm="clr-namespace:MothballMobile.UI.ViewModels"
-                xmlns:views="clr-namespace:MothballMobile.UI.Views"
-                x:Class="MothballMobile.UI.Views.AssociateItemWithContainer"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Containers.AssociateItemWithContainer"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Containers.AssociateItemWithContainer.AssociateItemWithContainerPage"
                 x:DataType="vm:AssociateItemWithContainerViewModel"
                 Title="Select container"
                 Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">

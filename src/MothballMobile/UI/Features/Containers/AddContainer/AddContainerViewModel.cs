@@ -5,7 +5,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using MothballMobile.Infrastructure;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Containers.AddContainer;
 
 public partial class AddContainerViewModel : BaseViewModel
 {

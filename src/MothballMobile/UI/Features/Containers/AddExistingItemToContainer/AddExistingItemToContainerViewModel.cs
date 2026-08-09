@@ -4,7 +4,7 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using MothballMobile.Infrastructure;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 
 public partial class AddExistingItemToContainerViewModel : PagedListViewModelBase<Item, UnassignedItemViewModel>, IQueryAttributable
 {

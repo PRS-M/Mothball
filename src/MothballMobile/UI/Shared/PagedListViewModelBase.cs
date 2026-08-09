@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using MothballMobile.Infrastructure;
 using System.Linq;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Shared;
 
 public abstract partial class PagedListViewModelBase<TSource, TViewModel> : BaseViewModel, IInitializable
 {

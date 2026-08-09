@@ -3,7 +3,7 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using System.Threading.Tasks;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
 public class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
 {

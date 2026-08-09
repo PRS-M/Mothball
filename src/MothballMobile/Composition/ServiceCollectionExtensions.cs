@@ -9,7 +9,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Media;
 using MothballMobile.Infrastructure;
-using MothballMobile.UI.ViewModels;
+using MothballMobile.UI.Features.Containers.AddContainer;
+using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
+using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
+using MothballMobile.UI.Features.Containers.ContainerDetails;
+using MothballMobile.UI.Features.Containers.ContainersList;
+using MothballMobile.UI.Features.Items.AddItem;
+using MothballMobile.UI.Features.Items.ItemDetails;
+using MothballMobile.UI.Features.Items.ItemsList;
 
 namespace MothballMobile.Composition;
 

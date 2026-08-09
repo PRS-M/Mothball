@@ -5,7 +5,7 @@ using CoreApp.Interfaces;
 using Infrastructure.Services;
 using MothballMobile.Infrastructure;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Items.ItemsList;
 
 public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewModel>, IDisposable
 {

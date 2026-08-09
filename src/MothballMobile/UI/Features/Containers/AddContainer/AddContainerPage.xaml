@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:local="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:local="clr-namespace:MothballMobile.UI.Features.Containers.AddContainer"
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
-                xmlns:views="clr-namespace:MothballMobile.UI.Views"
-                x:Class="MothballMobile.UI.Views.AddContainer"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Containers.AddContainer.AddContainerPage"
                 x:DataType="local:AddContainerViewModel"
                 Title="Add Container"
                 Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">

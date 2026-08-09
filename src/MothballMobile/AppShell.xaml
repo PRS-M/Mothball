@@ -4,7 +4,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MothballMobile"
-    xmlns:ui="clr-namespace:MothballMobile.UI.Views"
+    xmlns:containers="clr-namespace:MothballMobile.UI.Features.Containers.ContainersList"
+    xmlns:items="clr-namespace:MothballMobile.UI.Features.Items.ItemsList"
     Title="MothballMobile">
     <FlyoutItem Title="Home" Route="Home">
         <ShellContent
@@ -16,7 +17,7 @@
         <Tab Title="Containers List">
             <ShellContent
                 Title="Containers List"
-                ContentTemplate="{DataTemplate ui:ContainersList}"
+                ContentTemplate="{DataTemplate containers:ContainersListPage}"
                 Route="ContainersList">
                 <ShellContent.Icon>
                     <FontImageSource Glyph="&#xf080;" FontFamily="FontAwesomeSolid" Size="26" Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
@@ -28,7 +29,7 @@
         <Tab Title="Items List">
             <ShellContent
                 Title="Items"
-                ContentTemplate="{DataTemplate ui:ItemsList}"
+                ContentTemplate="{DataTemplate items:ItemsListPage}"
                 Route="ItemsList">
                 <ShellContent.Icon>
                     <FontImageSource Glyph="&#xf02c;" FontFamily="FontAwesomeSolid" Size="26" Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />

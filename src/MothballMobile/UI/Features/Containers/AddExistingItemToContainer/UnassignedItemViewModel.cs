@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 
 public partial class UnassignedItemViewModel : ItemWithImagesViewModelBase
 {

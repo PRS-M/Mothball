@@ -7,7 +7,7 @@ using MothballMobile.Infrastructure;
 using Infrastructure.Services;
 using System.Linq;
 
-namespace MothballMobile.UI.ViewModels;
+namespace MothballMobile.UI.Features.Containers.ContainersList;
 public partial class ContainerListViewModel : PagedListViewModelBase<Container, ContainerViewModel>, IDisposable
 {
     private readonly IImagePathResolver imagePaths;
