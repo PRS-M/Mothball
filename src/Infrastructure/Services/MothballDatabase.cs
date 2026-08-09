@@ -36,6 +36,14 @@ public class MothballDatabase : IAsyncDisposable
         }
     }
 
+    public async Task RunInTransactionAsync(Action<SQLiteConnection> transactionBody)
+    {
+        ArgumentNullException.ThrowIfNull(transactionBody);
+
+        await InitializeAsync();
+        await Connection.RunInTransactionAsync(transactionBody);
+    }
+
     private async Task<SQLiteAsyncConnection> InitializeCoreAsync()
     {
         var databaseConnection = new SQLiteAsyncConnection(databasePath, SQLiteConstants.OpenFlags);

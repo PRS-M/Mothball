@@ -10,17 +10,20 @@ namespace Infrastructure.Services.Repositories;
 
 public class ItemRepository : IItemRepository
 {
+    private readonly MothballDatabase database;
     private readonly IRepository<DbItem> items;
     private readonly IRepository<DbImage> photos;
     private readonly IRepository<DbItemContainerRelation> itemContainerRelations;
     private readonly ILogger<ItemRepository> logger;
 
     public ItemRepository(
+        MothballDatabase database,
         IRepository<DbItem> items,
         IRepository<DbImage> photos,
         IRepository<DbItemContainerRelation> itemContainerRelations,
         ILogger<ItemRepository> logger)
     {
+        this.database = database;
         this.items = items;
         this.photos = photos;
         this.itemContainerRelations = itemContainerRelations;
@@ -163,14 +166,12 @@ public class ItemRepository : IItemRepository
     {
         if (!TryParseGuid(itemId, out Guid iid)) return;
 
-        await DeletePhotosForOwnerAsync(iid);
-        await DeleteRelationsAsync(r => r.ItemId == iid);
-
-        DbItem? dbItem = await items.GetAsync(itemId);
-        if (dbItem is not null)
+        await database.RunInTransactionAsync(conn =>
         {
-            await items.DeleteAsync(dbItem);
-        }
+            conn.DeleteWhere<DbImage>(p => p.OwnerUniqueId == iid);
+            conn.DeleteWhere<DbItemContainerRelation>(r => r.ItemId == iid);
+            conn.DeleteByPrimaryKey<DbItem>(iid);
+        });
     }
 
     #region Private Helpers - Data Loading
