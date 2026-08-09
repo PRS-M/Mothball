@@ -2,6 +2,7 @@ using System;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using SixLabors.ImageSharp.Processing;
 
 namespace Infrastructure.Services;
@@ -24,13 +25,19 @@ public class CameraHandler : ICameraHandler
         FileResult? photo = photos?.FirstOrDefault();
         if (photo == null) return Array.Empty<byte>();
 
-        using Stream stream = await photo.OpenReadAsync();
+        // Fast path: resize directly from stream to avoid allocating full-resolution bytes first.
+        using (Stream resizeStream = await photo.OpenReadAsync())
+        {
+            byte[]? thumbnailBytes = await TryCreateThumbnailJpegAsync(resizeStream);
+            if (thumbnailBytes is { Length: > 0 })
+            {
+                return thumbnailBytes;
+            }
+        }
 
-        byte[] originalBytes = await ReadAllBytesAsync(stream);
-        if (originalBytes.Length == 0) return Array.Empty<byte>();
-
-        byte[]? thumbnailBytes = await TryCreateThumbnailJpegAsync(originalBytes);
-        return thumbnailBytes ?? originalBytes;
+        // Fallback path: if resizing fails, return the original bytes.
+        using Stream originalStream = await photo.OpenReadAsync();
+        return await ReadAllBytesAsync(originalStream);
     }
 
     private static async Task<byte[]> ReadAllBytesAsync(Stream stream)
@@ -40,6 +47,12 @@ public class CameraHandler : ICameraHandler
         {
             long length = stream.Length;
             if (length <= 0) return Array.Empty<byte>();
+            if (length > int.MaxValue)
+            {
+                using var oversized = new MemoryStream();
+                await stream.CopyToAsync(oversized);
+                return oversized.ToArray();
+            }
 
             byte[] buffer = new byte[length];
             await stream.ReadExactlyAsync(buffer, 0, (int)length);
@@ -52,26 +65,27 @@ public class CameraHandler : ICameraHandler
         return ms.ToArray();
     }
 
-    private static async Task<byte[]?> TryCreateThumbnailJpegAsync(byte[] originalBytes)
+    private static async Task<byte[]?> TryCreateThumbnailJpegAsync(Stream sourceStream)
     {
         // Convert the picked image into a stored thumbnail to reduce storage.
         try
         {
             return await Task.Run(() =>
             {
-                using SixLabors.ImageSharp.Image image = SixLabors.ImageSharp.Image.Load(originalBytes);
+                using SixLabors.ImageSharp.Image image = SixLabors.ImageSharp.Image.Load(sourceStream);
                 image.Mutate(ctx =>
                 {
                     ctx.AutoOrient();
                     ctx.Resize(new ResizeOptions
                     {
                         Mode = SixLabors.ImageSharp.Processing.ResizeMode.Max,
+                        Sampler = KnownResamplers.Triangle,
                         Size = new SixLabors.ImageSharp.Size(Constants.PhotoThumbnailMaxWidthPx, Constants.PhotoThumbnailMaxHeightPx)
                     });
                 });
 
                 using var output = new MemoryStream();
-                var encoder = new JpegEncoder { Quality = 85 };
+                var encoder = new JpegEncoder { Quality = 80 };
                 image.Save(output, encoder);
                 return output.ToArray();
             });
