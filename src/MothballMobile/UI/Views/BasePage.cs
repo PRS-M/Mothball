@@ -1,11 +1,13 @@
 using Microsoft.Maui.Controls;
 using MothballMobile.Infrastructure;
+using System.Diagnostics;
 
 namespace MothballMobile.UI.Views;
 
 public class BasePage : ContentPage
 {
     private IDisposable? previousDisposable;
+    private readonly SemaphoreSlim initializationGate = new(1, 1);
 
     /// <summary>
     /// Handles changes to the <see cref="P:Microsoft.Maui.Controls.BindableObject.BindingContext"/>.
@@ -39,13 +41,25 @@ public class BasePage : ContentPage
         base.OnAppearing();
         if (BindingContext is IInitializable init)
         {
-            await init.InitializeAsync();
+            await initializationGate.WaitAsync();
+            try
+            {
+                await init.InitializeAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Initialization failed for {GetType().Name}: {ex}");
+            }
+            finally
+            {
+                initializationGate.Release();
+            }
         }
     }
 
     /// <summary>
     /// Invoked when the page is no longer visible.
-    /// Disposes the current binding context if it implements <see cref="IDisposable"/> to release resources.
+    /// Reserved for page-level lifecycle hooks.
     /// </summary>
     /// <remarks>
     /// Always calls the base implementation first.
@@ -53,9 +67,5 @@ public class BasePage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        if (BindingContext is IDisposable d)
-        {
-            d.Dispose();
-        }
     }
 }

@@ -17,7 +17,7 @@ public class ImageServiceBehaviorTests
     public async Task CaptureContainerPhotoAsync_SavesBytes_AddsImage_AndPersists()
     {
         var camera = new Mock<ICameraHandler>();
-        var repo = new Mock<IInventoryDomainRepository>();
+        var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {1,2,3};
@@ -38,10 +38,10 @@ public class ImageServiceBehaviorTests
     }
 
     [Test]
-    public void CaptureContainerPhotoAsync_SaveFails_RollsBackImage()
+    public async Task CaptureContainerPhotoAsync_SaveFails_RollsBackImage()
     {
         var camera = new Mock<ICameraHandler>();
-        var repo = new Mock<IInventoryDomainRepository>();
+        var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {1};
@@ -62,7 +62,7 @@ public class ImageServiceBehaviorTests
     public async Task CaptureItemPhotoAsync_SavesBytes_AddsImage_AndPersists()
     {
         var camera = new Mock<ICameraHandler>();
-        var repo = new Mock<IInventoryDomainRepository>();
+        var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {9,8};
@@ -80,5 +80,53 @@ public class ImageServiceBehaviorTests
         files.Verify(f => f.SaveFileAsync(image.FileName, Constants.PathToItemPhotos, bytes), Times.Once);
         repo.Verify(r => r.InsertImageItemAsync(image, item.ItemId), Times.Once);
         repo.Verify(r => r.UpdateItemAsync(item), Times.Once);
+    }
+
+    [Test]
+    public async Task CaptureContainerPhotoAsync_PersistFails_RollsBackImage_AndDeletesFile()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var bytes = new byte[] {4, 5};
+        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToContainerPhotos, bytes))
+             .ReturnsAsync("/fake/path");
+        repo.Setup(r => r.InsertImageItemAsync(It.IsAny<ImageItem>(), It.IsAny<Guid>()))
+            .ThrowsAsync(new InvalidOperationException("db write failed"));
+
+        var service = new ImageService(camera.Object, repo.Object, files.Object);
+        var container = new Container(Guid.NewGuid(), "Box", "notes");
+
+        Assert.ThrowsAsync<InvalidOperationException>(() => service.CaptureContainerPhotoAsync(container));
+        Assert.That(container.Photos.Count, Is.EqualTo(0));
+
+        files.Verify(f => f.DeleteFileAsync(It.IsAny<string>(), Constants.PathToContainerPhotos), Times.Once);
+        repo.Verify(r => r.UpdateContainerAsync(It.IsAny<Container>()), Times.Never);
+    }
+
+    [Test]
+    public async Task CaptureItemPhotoAsync_PersistFails_RollsBackImage_AndDeletesFile()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var bytes = new byte[] {7, 6};
+        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos, bytes))
+             .ReturnsAsync("/fake/path");
+        repo.Setup(r => r.InsertImageItemAsync(It.IsAny<ImageItem>(), It.IsAny<Guid>()))
+            .ThrowsAsync(new InvalidOperationException("db write failed"));
+
+        var service = new ImageService(camera.Object, repo.Object, files.Object);
+        var item = new Item { Name = "Hat" };
+
+        Assert.ThrowsAsync<InvalidOperationException>(() => service.CaptureItemPhotoAsync(item));
+        Assert.That(item.Photos.Count, Is.EqualTo(0));
+
+        files.Verify(f => f.DeleteFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos), Times.Once);
+        repo.Verify(r => r.UpdateItemAsync(It.IsAny<Item>()), Times.Never);
     }
 }

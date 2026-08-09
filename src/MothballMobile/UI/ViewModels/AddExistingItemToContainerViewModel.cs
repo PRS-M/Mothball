@@ -8,7 +8,8 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class AddExistingItemToContainerViewModel : PagedListViewModelBase<Item, UnassignedItemViewModel>, IQueryAttributable
 {
-    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IImagePathResolver paths;
     private readonly INavigationService nav;
 
@@ -16,11 +17,13 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
     private string containerId = string.Empty;
 
     public AddExistingItemToContainerViewModel(
-        IInventoryDomainRepository inventoryRepository,
+        IInventoryQueryRepository inventoryQueries,
+        IInventoryCommandRepository inventoryCommands,
         IImagePathResolver paths,
         INavigationService nav)
     {
-        this.inventoryRepository = inventoryRepository;
+        this.inventoryQueries = inventoryQueries;
+        this.inventoryCommands = inventoryCommands;
         this.paths = paths;
         this.nav = nav;
     }
@@ -46,7 +49,7 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         => _ = vm.LoadImagesAsync();
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryRepository.GetUnassignedItemsWithPhotosAsync(pageNumber, pageSize);
+        => inventoryQueries.GetUnassignedItemsWithPhotosAsync(pageNumber, pageSize);
 
     private async Task AssignAsync(Guid itemId)
     {
@@ -55,7 +58,7 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
 
         await RunCommandAsync(async () =>
         {
-            await inventoryRepository.InsertItemContainerRelation(itemId, cid, quantity: 1);
+            await inventoryCommands.InsertItemContainerRelation(itemId, cid, quantity: 1);
             await nav.GoBackAsync();
         });
     }

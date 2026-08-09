@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:self="clr-namespace:MothballMobile.UI.Controls"
+             x:Class="MothballMobile.UI.Controls.SearchBarCard"
+             x:Name="this"
+             x:DataType="self:SearchBarCard">
+
+    <Border Style="{StaticResource SearchWrapper}">
+        <SearchBar Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
+                   Text="{Binding Source={x:Reference this}, Path=Text}"
+                   SearchCommand="{Binding Source={x:Reference this}, Path=SearchCommand}"
+                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                   PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                   CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+    </Border>
+</ContentView>

@@ -4,6 +4,7 @@ using Infrastructure.Services.Mappers;
 using Infrastructure.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Interfaces;
 using Infrastructure.Services.Repositories;
 
 namespace UnitTests;
@@ -17,7 +18,8 @@ public class RepositoryIntegrationTests
     private IRepository<DbItem> items = null!;
     private IRepository<DbImage> photos = null!;
     private IRepository<DbItemContainerRelation> relations = null!;
-    private InventoryDomainRepository domainRepo = null!;
+    private IInventoryQueryRepository queryRepo = null!;
+    private IInventoryCommandRepository commandRepo = null!;
 
     [SetUp]
     public async Task Setup()
@@ -32,13 +34,15 @@ public class RepositoryIntegrationTests
 
         var containerLogger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<ContainerRepository>();
         var itemLogger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<ItemRepository>();
+        var transactionRunner = new SqliteTransactionRunner(db);
 
-        var containerRepo = new ContainerRepository(containers, photos, relations, containerLogger);
-        var itemRepo = new ItemRepository(items, photos, relations, itemLogger);
+        var containerRepo = new ContainerRepository(transactionRunner, containers, photos, relations, containerLogger);
+        var itemRepo = new ItemRepository(transactionRunner, items, photos, relations, itemLogger);
         var imageRepo = new ImageRepository(photos);
         var relationRepo = new RelationRepository(relations);
 
-        domainRepo = new InventoryDomainRepository(containerRepo, itemRepo, imageRepo, relationRepo);
+        queryRepo = new InventoryQueryRepository(containerRepo, itemRepo);
+        commandRepo = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
     }
 
     [TearDown]
@@ -74,10 +78,10 @@ public class RepositoryIntegrationTests
     {
         var c = new Container(Guid.NewGuid(), "Test Container", "Notes");
         c.AddImageItem();
-        await domainRepo.InsertContainerAsync(c);
-        await domainRepo.InsertImageItemAsync(c.Photos[0], c.ContainerId);
+        await commandRepo.InsertContainerAsync(c);
+        await commandRepo.InsertImageItemAsync(c.Photos[0], c.ContainerId);
 
-        var loaded = await domainRepo.GetContainerAsync(c.ContainerId.ToString());
+        var loaded = await queryRepo.GetContainerAsync(c.ContainerId.ToString());
         Assert.That(loaded, Is.Not.Null);
         Assert.That(loaded!.Photos.Count, Is.EqualTo(1));
     }
@@ -86,12 +90,12 @@ public class RepositoryIntegrationTests
     public async Task Can_Relate_Item_To_Container_And_Load_ItemsForContainer()
     {
         var c = new Container(Guid.NewGuid(), "C1", "");
-        await domainRepo.InsertContainerAsync(c);
+        await commandRepo.InsertContainerAsync(c);
         var i = new Item { Name = "ItemA", Description = "DescA" };
-        await domainRepo.InsertItemAsync(i);
-        await domainRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId, quantity: 2);
+        await commandRepo.InsertItemAsync(i);
+        await commandRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId, quantity: 2);
 
-        var itemsForContainer = await domainRepo.GetItemsForContainerAsync(c.ContainerId.ToString());
+        var itemsForContainer = await queryRepo.GetItemsForContainerAsync(c.ContainerId.ToString());
         Assert.That(itemsForContainer.Count, Is.EqualTo(1));
         Assert.That(itemsForContainer[0].Name, Is.EqualTo("ItemA"));
         Assert.That(itemsForContainer[0].Description, Is.EqualTo("DescA"));

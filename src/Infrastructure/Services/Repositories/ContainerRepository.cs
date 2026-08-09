@@ -10,17 +10,20 @@ namespace Infrastructure.Services.Repositories;
 
 public class ContainerRepository : IContainerRepository
 {
+    private readonly ITransactionRunner transactionRunner;
     private readonly IRepository<DbContainer> containers;
     private readonly IRepository<DbImage> photos;
     private readonly IRepository<DbItemContainerRelation> itemContainerRelations;
     private readonly ILogger<ContainerRepository> logger;
 
     public ContainerRepository(
+        ITransactionRunner transactionRunner,
         IRepository<DbContainer> containers,
         IRepository<DbImage> photos,
         IRepository<DbItemContainerRelation> itemContainerRelations,
         ILogger<ContainerRepository> logger)
     {
+        this.transactionRunner = transactionRunner;
         this.containers = containers;
         this.photos = photos;
         this.itemContainerRelations = itemContainerRelations;
@@ -140,14 +143,12 @@ public class ContainerRepository : IContainerRepository
     {
         if (!TryParseGuid(containerId, out Guid cid)) return;
 
-        await DeletePhotosForOwnerAsync(cid);
-        await DeleteRelationsAsync(r => r.ContainerId == cid);
-
-        DbContainer? dbContainer = await containers.GetAsync(containerId);
-        if (dbContainer is not null)
+        await transactionRunner.RunAsync(scope =>
         {
-            await containers.DeleteAsync(dbContainer);
-        }
+            scope.DeleteImagesByOwner(cid);
+            scope.DeleteRelationsByContainer(cid);
+            scope.DeleteContainer(cid);
+        });
     }
 
     #region Private Helpers - Data Loading

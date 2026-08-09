@@ -6,6 +6,7 @@ namespace MothballMobile.Infrastructure;
 
 public sealed class Debouncer : IDebouncer, IDisposable
 {
+    private readonly object sync = new();
     private CancellationTokenSource? cts;
     private readonly int delayMs;
     private bool isDisposed;
@@ -15,39 +16,61 @@ public sealed class Debouncer : IDebouncer, IDisposable
         this.delayMs = delayMs;
     }
 
-    public void Debounce(Action action)
+    public Task DebounceAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(action);
+
         if (isDisposed)
         {
-            return;
+            return Task.CompletedTask;
         }
+
+        CancellationTokenSource localCts;
+        lock (sync)
+        {
+            if (isDisposed)
+            {
+                return Task.CompletedTask;
+            }
+
+            cts?.Cancel();
+            cts?.Dispose();
+            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            localCts = cts;
+        }
+
+        return DebounceCoreAsync(action, localCts);
+    }
+
+    private async Task DebounceCoreAsync(Func<CancellationToken, Task> action, CancellationTokenSource localCts)
+    {
+        var token = localCts.Token;
 
         try
         {
-            cts?.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-            // If previously disposed, ignore and proceed with a fresh CTS
-        }
-
-        cts?.Dispose();
-        cts = new CancellationTokenSource();
-        var token = cts.Token;
-
-        _ = Task.Run(async () =>
-        {
-            try
+            await Task.Delay(delayMs, token).ConfigureAwait(false);
+            if (token.IsCancellationRequested)
             {
-                await Task.Delay(delayMs, token);
-                if (token.IsCancellationRequested) return;
-                action();
+                return;
             }
-            catch (TaskCanceledException)
+
+            await action(token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // Ignore cancellation from newer debounced requests or disposal.
+        }
+        finally
+        {
+            lock (sync)
             {
-                // ignored
+                if (ReferenceEquals(cts, localCts))
+                {
+                    cts.Dispose();
+                    cts = null;
+                }
             }
-        }, token);
+        }
     }
 
     public void Dispose()
@@ -58,9 +81,16 @@ public sealed class Debouncer : IDebouncer, IDisposable
         }
 
         isDisposed = true;
+        CancellationTokenSource? toDispose;
+        lock (sync)
+        {
+            toDispose = cts;
+            cts = null;
+        }
+
         try
         {
-            cts?.Cancel();
+            toDispose?.Cancel();
         }
         catch (ObjectDisposedException)
         {
@@ -68,8 +98,7 @@ public sealed class Debouncer : IDebouncer, IDisposable
         }
         finally
         {
-            cts?.Dispose();
-            cts = null;
+            toDispose?.Dispose();
         }
     }
 }

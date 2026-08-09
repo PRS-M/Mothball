@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<!-- <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks> -->
-		<TargetFrameworks>net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks>net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net9.0-tizen</TargetFrameworks> -->
@@ -22,6 +21,7 @@
 		<Nullable>enable</Nullable>
 		<!-- Enable compiled bindings when Binding has Source specified -->
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+		<MauiDevFlowEnabled>true</MauiDevFlowEnabled>
 
 		<!-- Display name -->
 		<ApplicationTitle>MothballMobile</ApplicationTitle>
@@ -44,6 +44,11 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
+		<!-- DevFlow injects Microsoft.Maui.DevFlow.Agent with Version metadata; CPM treats that as NU1008. -->
+		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
@@ -63,14 +68,23 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="Microsoft.Maui.Controls" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
+		<PackageReference Update="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Update="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Update="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+		<PackageReference Update="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="../CoreApp/CoreApp.csproj" />
-	  <ProjectReference Include="../Infrastructure/Infrastructure.csproj" />
+	  <ProjectReference Include="../Infrastructure/Infrastructure.Persistence.csproj" />
+	  <ProjectReference Include="../Infrastructure.Platform.Maui/Infrastructure.Platform.Maui.csproj" />
 	</ItemGroup>
 
 </Project>

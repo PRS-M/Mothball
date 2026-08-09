@@ -12,7 +12,7 @@ public class DbImage
     [Indexed]
     public Guid OwnerUniqueId { get; set; }
 
-	[Ignore]
+	[SQLite.Ignore]
 	public string FileName => $"{ImageId}.jpg";
 
 	// Not recommended for large images, but kept as optional blob for thumbnails or small data

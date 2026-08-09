@@ -2,55 +2,43 @@
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:local="clr-namespace:MothballMobile.UI.ViewModels"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Views"
                 x:Class="MothballMobile.UI.Views.AddContainer"
                 x:DataType="local:AddContainerViewModel"
                 Title="Add Container"
-                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
     <ScrollView>
         <Grid Padding="20"
               RowDefinitions="Auto,Auto"
               ColumnDefinitions="*">
-            <VerticalStackLayout Grid.Row="0"
-                                 Spacing="6"
-                                 Margin="0,6,0,14">
-                <Label Text="Create a new container"
-                       FontSize="24"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
-                <Label Text="Enter the details below"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-            </VerticalStackLayout>
+            <controls:PageHeader Grid.Row="0"
+                                 Title="Create a new container"
+                                 Subtitle="Enter the details below"
+                                 TitleFontSize="24"
+                                 HeaderMargin="0,6,0,14" />
 
             <Border Grid.Row="1"
                     Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12"
                                      HorizontalOptions="Center">
                     <!-- Name -->
-                    <Label Text="Name"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                           Margin="4,0"/>
-                    <Border Padding="0"
-                            Style="{StaticResource ValidatedInputWrapper}"
-                            WidthRequest="{StaticResource WidthM}">
-                        <Entry Style="{StaticResource Input}"
-                               Placeholder="Enter container name"
-                               Text="{Binding Name}"
-                               ReturnType="Done"
-                               ReturnCommand="{Binding AddContainerCommand}"/>
-                    </Border>
-                    <Label Text="{Binding ValidationMessage}"
-                           TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"
-                           IsVisible="{Binding ValidationMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
+                    <controls:ValidatedTextField Label="Name"
+                                                 WidthRequest="{StaticResource WidthM}"
+                                                 Placeholder="Enter container name"
+                                                 Text="{Binding Name}"
+                                                 ReturnType="Done"
+                                                 ReturnCommand="{Binding AddContainerCommand}"
+                                                 ValidationMessage="{Binding ValidationMessage}" />
 
                     <!-- Notes -->
-                    <Label Text="Notes"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                           Margin="4,8,4,0"/>
-                    <Entry Style="{StaticResource Input}"
-                           Placeholder="Enter a description or notes."
-                           Text="{Binding Notes}"/>
+                    <controls:LabeledEntryField Label="Notes"
+                                               LabelMargin="4,8,4,0"
+                                               FieldWidthRequest="{StaticResource WidthM}"
+                                               UseWrapper="False"
+                                               Placeholder="Enter a description or notes."
+                                               Text="{Binding Notes}" />
 
                     <!-- Action -->
                     <Button Text="Add Container (Choose Photo)"

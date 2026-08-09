@@ -1,6 +1,7 @@
 using CoreApp.Interfaces;
 using SQLite;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Infrastructure.Services.Repositories;
 
@@ -81,12 +82,10 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
 
     /// <inheritdoc />
     public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
-        => await (await Task.Run(async () =>
-        {
-            await EnsureInitializedAsync();
-            return Connection.Table<T>().FirstOrDefaultAsync(predicate);
-        }))
-        ;
+    {
+        await EnsureInitializedAsync();
+        return await Connection.Table<T>().FirstOrDefaultAsync(predicate);
+    }
 
     /// <inheritdoc />
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
@@ -97,12 +96,10 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
 
     /// <inheritdoc />
     public async Task<int> CountAsync(Expression<Func<T, bool>> predicate)
-        => await (await Task.Run(async () =>
-        {
-            await EnsureInitializedAsync();
-            return Connection.Table<T>().CountAsync(predicate);
-        }))
-        ;
+    {
+        await EnsureInitializedAsync();
+        return await Connection.Table<T>().CountAsync(predicate);
+    }
 
     /// <inheritdoc />
     public async Task<List<T>> WhereAsync(Expression<Func<T, bool>> predicate, int skip, int take)
@@ -137,7 +134,7 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
         var safePropertyName = prop.Name;
 
         var placeholders = string.Join(",", Enumerable.Repeat("?", list.Count));
-        var table = typeof(T).Name;
+        var table = GetTableName();
         var query = $"SELECT * FROM {table} WHERE {safePropertyName} IN ({placeholders})";
 
         return await Connection.QueryAsync<T>(query, list.ToArray());
@@ -155,5 +152,16 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
     {
         // Caller should have ensured initialization; keep for advanced scenarios
         return Connection.Table<T>();
+    }
+
+    private static string GetTableName()
+    {
+        var tableAttribute = typeof(T).GetCustomAttribute<TableAttribute>();
+        if (tableAttribute is not null && !string.IsNullOrWhiteSpace(tableAttribute.Name))
+        {
+            return tableAttribute.Name;
+        }
+
+        return typeof(T).Name;
     }
 }

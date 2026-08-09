@@ -2,13 +2,16 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Services;
 using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.ViewModels;
 
 public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 {
-    private readonly IInventoryDomainRepository repo;
+    private readonly ImageService imageService;
+    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IRetryService retryService;
     private readonly Infrastructure.INavigationService nav;
 
     [ObservableProperty]
@@ -27,10 +30,16 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private string? validationMessage;
 
-    public AddItemViewModel(IInventoryDomainRepository repo, Infrastructure.INavigationService nav)
+    public AddItemViewModel(
+        ImageService imageService,
+        IInventoryCommandRepository inventoryCommands,
+        IRetryService retryService,
+        Infrastructure.INavigationService nav)
     {
-        this.repo = repo;
-        this.nav = nav;
+        this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
+        this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
+        this.retryService = retryService ?? throw new ArgumentNullException(nameof(retryService));
+        this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -70,11 +79,12 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                     Description = Description?.Trim() ?? string.Empty
                 };
 
-                await repo.InsertItemAsync(item);
+                await inventoryCommands.InsertItemAsync(item);
+                await CapturePhotoWithOptionalRetryAsync(item);
 
                 if (Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
                 {
-                    await repo.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
+                    await inventoryCommands.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
                 }
 
                 ValidationMessage = null;
@@ -85,5 +95,21 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                 ValidationMessage = $"Failed to save item: {ex.Message}";
             }
         });
+    }
+
+    private async Task CapturePhotoWithOptionalRetryAsync(Item item)
+    {
+        await retryService.RetryAsync(
+            async () =>
+            {
+                var bytesLength = await imageService.CaptureItemPhotoAsync(item);
+                return bytesLength > 0;
+            },
+            canceledTitle: "Photo capture canceled",
+            canceledMessage: "Please try again or continue without a photo.",
+            retryButton: "Retry",
+            continueButton: "Continue",
+            continueAlertTitle: "No photo",
+            continueAlertMessage: "Continuing without a photo.");
     }
 }

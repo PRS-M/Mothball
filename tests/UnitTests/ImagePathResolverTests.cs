@@ -55,8 +55,8 @@ public class ImagePathResolverTests
     public void BuildPath_SwallowsExceptions_ReturnsFallback()
     {
         var badMock = new Mock<IFileHandler>();
-    badMock.SetupGet(f => f.AppDataPath).Throws(new Exception("nope"));
-    var badResolver = new Infrastructure.Services.ImagePathResolver(badMock.Object);
+        badMock.SetupGet(f => f.AppDataPath).Throws(new Exception("nope"));
+        var badResolver = new Infrastructure.Services.ImagePathResolver(badMock.Object);
         var item = new Item();
         item.AddImageItem();
         var path = badResolver.GetPrimaryItemPhotoPath(item);

@@ -8,10 +8,10 @@ namespace UnitTests;
 public class ServiceTests
 {
     [Test]
-    public void ImageService_CaptureContainerPhotoAsync_ThrowsOnNull()
+    public async Task ImageService_CaptureContainerPhotoAsync_ThrowsOnNull()
     {
         var cameraMock = new Mock<ICameraHandler>();
-        var repoMock = new Mock<IInventoryDomainRepository>();
+        var repoMock = new Mock<IInventoryCommandRepository>();
         var fileHandlerMock = new Mock<IFileHandler>();
         cameraMock.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(Array.Empty<byte>());
         var service = new ImageService(cameraMock.Object, repoMock.Object, fileHandlerMock.Object);
@@ -19,7 +19,7 @@ public class ServiceTests
     }
 
     [Test]
-    public void JsonHandler_SerializeToFile_ThrowsOnNullFileName()
+    public async Task JsonHandler_SerializeToFile_ThrowsOnNullFileName()
     {
         var fileHandlerMock = new Mock<IFileHandler>();
         var handler = new JsonHandler(fileHandlerMock.Object);

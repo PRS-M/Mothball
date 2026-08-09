@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:self="clr-namespace:MothballMobile.UI.Controls"
+             x:Class="MothballMobile.UI.Controls.TitleActionRow"
+             x:Name="this"
+             x:DataType="self:TitleActionRow">
+
+    <Grid ColumnDefinitions="*,Auto"
+          ColumnSpacing="{Binding Source={x:Reference this}, Path=ColumnSpacing}"
+          VerticalOptions="Center">
+        <Label Grid.Column="0"
+               Text="{Binding Source={x:Reference this}, Path=Title}"
+               FontSize="{Binding Source={x:Reference this}, Path=TitleFontSize}"
+               FontAttributes="{Binding Source={x:Reference this}, Path=TitleFontAttributes}"
+               TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+               VerticalOptions="Center" />
+
+        <ContentPresenter Grid.Column="1"
+                                     x:Name="ActionsPresenter" />
+    </Grid>
+</ContentView>

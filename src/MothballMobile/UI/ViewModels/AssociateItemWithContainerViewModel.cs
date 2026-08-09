@@ -10,7 +10,8 @@ namespace MothballMobile.UI.ViewModels;
 public partial class AssociateItemWithContainerViewModel : PagedListViewModelBase<Container, SelectableContainerViewModel>, IQueryAttributable
 {
     private readonly IImagePathResolver imagePaths;
-    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IInventoryCommandRepository inventoryCommands;
     private readonly Infrastructure.INavigationService nav;
     private readonly DemoDataSeeder? demoSeeder;
 
@@ -18,13 +19,15 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
 
     public AssociateItemWithContainerViewModel(
         IImagePathResolver imagePaths,
-        IInventoryDomainRepository inventoryRepository,
+        IInventoryQueryRepository inventoryQueries,
+        IInventoryCommandRepository inventoryCommands,
         Infrastructure.INavigationService nav,
         DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
     {
         this.imagePaths = imagePaths;
-        this.inventoryRepository = inventoryRepository;
+        this.inventoryQueries = inventoryQueries;
+        this.inventoryCommands = inventoryCommands;
         this.nav = nav;
         this.demoSeeder = demoSeeder;
     }
@@ -48,7 +51,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     }
 
     protected override Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryRepository.GetAllContainersAsync(pageNumber, pageSize);
+        => inventoryQueries.GetAllContainersAsync(pageNumber, pageSize);
 
     protected override SelectableContainerViewModel MapToViewModel(Container source)
         => new(source, imagePaths, AssociateWithContainerAsync);
@@ -63,7 +66,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
 
         await RunCommandAsync(async () =>
         {
-            await inventoryRepository.InsertItemContainerRelation(parsedItemId, containerId, quantity: 1);
+            await inventoryCommands.InsertItemContainerRelation(parsedItemId, containerId, quantity: 1);
             await nav.GoBackAsync();
         });
     }

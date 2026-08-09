@@ -11,7 +11,8 @@ namespace MothballMobile.UI.ViewModels;
 
 public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
 {
-    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
     private readonly IPopupService popup;
@@ -41,7 +42,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private bool isSearchActive = false;
 
     public ContainerDetailsViewModel(
-        IInventoryDomainRepository inventoryRepository,
+        IInventoryQueryRepository inventoryQueries,
+        IInventoryCommandRepository inventoryCommands,
         IImagePathResolver paths,
         IPopupService popup,
         ImageService imageService,
@@ -50,7 +52,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IDebouncer? debouncer = null)
         : base(paths, imageService, retryService)
     {
-        this.inventoryRepository = inventoryRepository;
+        this.inventoryQueries = inventoryQueries;
+        this.inventoryCommands = inventoryCommands;
         this.popup = popup;
         this.nav = nav;
         this.debouncer = debouncer ?? new Debouncer(250);
@@ -60,19 +63,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             if (e.PropertyName == nameof(SearchQuery))
             {
-                this.debouncer?.Debounce(() =>
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        try
-                        {
-                            await PerformSearchAsync();
-                        }
-                        catch
-                        {
-                            // Swallow exceptions to prevent unobserved task exceptions from crashing the app.
-                            // Consider adding logging here if a logging mechanism is available.
-                        }
-                    }));
+                this.debouncer?.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync)).FireAndForget();
             }
         };
     }
@@ -103,7 +94,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         Items.Clear();
         ContainerImagePaths.Clear();
 
-        var result = await inventoryRepository.GetContainerWithItemsAndPhotosAsync(containerId, currentPage, PageSize);
+        var result = await inventoryQueries.GetContainerWithItemsAndPhotosAsync(containerId, currentPage, PageSize);
         if (result is null)
         {
             Name = "Container not found";
@@ -120,7 +111,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         Notes = container.Notes;
 
         // Get the total count from repository (sums all quantities, not just this page)
-        TotalItemCount = await inventoryRepository.GetItemCountInContainerAsync(containerId);
+        TotalItemCount = await inventoryQueries.GetItemCountInContainerAsync(containerId);
 
         // Load container photos (all, as a small carousel)
         ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
@@ -143,7 +134,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             var itemVm = new ItemWithPhotosViewModel(item, paths);
             Items.Add(itemVm);
-            _ = itemVm.LoadImagesAsync();
+            itemVm.LoadImagesAsync().FireAndForget();
         }
 
         // Force collection update notification to recalculate RemainingItemsThreshold
@@ -165,13 +156,13 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             if (isSearchActive && !string.IsNullOrWhiteSpace(SearchQuery))
             {
                 // Load more search results
-                items = await inventoryRepository.SearchItemsInContainerAsync(
+                items = await inventoryQueries.SearchItemsInContainerAsync(
                     ContainerId, SearchQuery.Trim(), currentPage, PageSize);
             }
             else
             {
                 // Load more regular items
-                var result = await inventoryRepository.GetContainerWithItemsAndPhotosAsync(
+                var result = await inventoryQueries.GetContainerWithItemsAndPhotosAsync(
                     ContainerId, currentPage, PageSize);
 
                 if (result is null)
@@ -211,7 +202,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             // Perform search
             isSearchActive = true;
-            var searchResults = await inventoryRepository.SearchItemsInContainerAsync(ContainerId, SearchQuery.Trim(), currentPage, PageSize);
+            var searchResults = await inventoryQueries.SearchItemsInContainerAsync(ContainerId, SearchQuery.Trim(), currentPage, PageSize);
             AddItemsToCollectionAsync(searchResults, clearExisting: true);
             hasMoreItems = searchResults.Count == PageSize;
         }
@@ -236,7 +227,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         if (!confirmed) return;
 
-        await inventoryRepository.DeleteContainerAsync(ContainerId);
+        await inventoryCommands.DeleteContainerAsync(ContainerId);
         await nav.GoBackAsync();
     }
 

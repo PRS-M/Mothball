@@ -10,17 +10,20 @@ namespace Infrastructure.Services.Repositories;
 
 public class ItemRepository : IItemRepository
 {
+    private readonly ITransactionRunner transactionRunner;
     private readonly IRepository<DbItem> items;
     private readonly IRepository<DbImage> photos;
     private readonly IRepository<DbItemContainerRelation> itemContainerRelations;
     private readonly ILogger<ItemRepository> logger;
 
     public ItemRepository(
+        ITransactionRunner transactionRunner,
         IRepository<DbItem> items,
         IRepository<DbImage> photos,
         IRepository<DbItemContainerRelation> itemContainerRelations,
         ILogger<ItemRepository> logger)
     {
+        this.transactionRunner = transactionRunner;
         this.items = items;
         this.photos = photos;
         this.itemContainerRelations = itemContainerRelations;
@@ -163,14 +166,12 @@ public class ItemRepository : IItemRepository
     {
         if (!TryParseGuid(itemId, out Guid iid)) return;
 
-        await DeletePhotosForOwnerAsync(iid);
-        await DeleteRelationsAsync(r => r.ItemId == iid);
-
-        DbItem? dbItem = await items.GetAsync(itemId);
-        if (dbItem is not null)
+        await transactionRunner.RunAsync(scope =>
         {
-            await items.DeleteAsync(dbItem);
-        }
+            scope.DeleteImagesByOwner(iid);
+            scope.DeleteRelationsByItem(iid);
+            scope.DeleteItem(iid);
+        });
     }
 
     #region Private Helpers - Data Loading

@@ -14,7 +14,7 @@ namespace CoreApp.Services;
 public class ImageService
 {
     private readonly ICameraHandler cameraHandler;
-    private readonly IInventoryDomainRepository inventoryRepository;
+    private readonly IInventoryCommandRepository inventoryRepository;
     private readonly IFileHandler fileHandler;
 
     /// <summary>
@@ -23,7 +23,7 @@ public class ImageService
     /// <param name="cameraHandler">Service used to capture photos from the device camera.</param>
     /// <param name="inventoryRepository">Domain repository for inserting and updating image-related data.</param>
     /// <param name="fileHandler">Service used to persist captured photos to storage.</param>
-    public ImageService(ICameraHandler cameraHandler, IInventoryDomainRepository inventoryRepository, IFileHandler fileHandler)
+    public ImageService(ICameraHandler cameraHandler, IInventoryCommandRepository inventoryRepository, IFileHandler fileHandler)
     {
         ArgumentNullException.ThrowIfNull(cameraHandler);
         ArgumentNullException.ThrowIfNull(inventoryRepository);
@@ -115,7 +115,26 @@ public class ImageService
             throw;
         }
 
-        await persistAsync(image);
+        try
+        {
+            await persistAsync(image);
+        }
+        catch
+        {
+            removeImageItem(image.ImageId);
+
+            try
+            {
+                await fileHandler.DeleteFileAsync(image.FileName, saveDirectory);
+            }
+            catch
+            {
+                // Best-effort cleanup only; preserve the original persistence error.
+            }
+
+            throw;
+        }
+
         return bytes.Length;
     }
 }

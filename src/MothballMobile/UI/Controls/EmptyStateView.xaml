@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:self="clr-namespace:MothballMobile.UI.Controls"
+             x:Class="MothballMobile.UI.Controls.EmptyStateView"
+             x:Name="this"
+             x:DataType="self:EmptyStateView">
+
+       <VerticalStackLayout Padding="{Binding Source={x:Reference this}, Path=EmptyPadding}"
+                         Spacing="{Binding Source={x:Reference this}, Path=Spacing}"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center">
+        <Label Text="{Binding Source={x:Reference this}, Path=Title}"
+               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+        <Label Text="{Binding Source={x:Reference this}, Path=Subtitle}"
+               IsVisible="{Binding Source={x:Reference this}, Path=HasSubtitle}"
+               FontSize="{Binding Source={x:Reference this}, Path=SubtitleFontSize}"
+               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+    </VerticalStackLayout>
+</ContentView>

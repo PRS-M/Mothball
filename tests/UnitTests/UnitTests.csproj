@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,12 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="NUnit" Version="4.2.2" />
-    <PackageReference Include="NUnit.Analyzers" Version="4.4.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
-    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit.Analyzers" />
+    <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="sqlite-net-pcl" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
+    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,16 +27,29 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/CoreApp/CoreApp.csproj" />
-    <ProjectReference Include="../../src/Infrastructure/Infrastructure.csproj" />
   </ItemGroup>
 
-  <!-- Bring in UI-only Debouncer source directly to allow testing on net9.0 -->
+  <!-- Bring in UI-only Debouncer source directly for testability without MAUI target dependencies. -->
   <ItemGroup>
     <Compile Include="../../src/MothballMobile/Infrastructure/IDebouncer.cs" Link="Infrastructure/IDebouncer.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Debouncer.cs" Link="Infrastructure/Debouncer.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/IPopupService.cs" Link="Infrastructure/IPopupService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/IRetryService.cs" Link="Infrastructure/IRetryService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/RetryService.cs" Link="Infrastructure/RetryService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/IAppStartupOrchestrator.cs" Link="Infrastructure/IAppStartupOrchestrator.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/AppStartupOrchestrator.cs" Link="Infrastructure/AppStartupOrchestrator.cs" />
+  </ItemGroup>
+
+  <!-- Compile non-MAUI Infrastructure sources directly to avoid referencing the MAUI-only Infrastructure project. -->
+  <ItemGroup>
+    <Compile Include="../../src/Infrastructure/DatabaseModels/**/*.cs" Link="Infrastructure/DatabaseModels/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Interfaces/**/*.cs" Link="Infrastructure/Interfaces/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Mappers/**/*.cs" Link="Infrastructure/Mappers/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Services/ImagePathResolver.cs" Link="Infrastructure/Services/ImagePathResolver.cs" />
+    <Compile Include="../../src/Infrastructure/Services/MothballDatabase.cs" Link="Infrastructure/Services/MothballDatabase.cs" />
+    <Compile Include="../../src/Infrastructure/Services/SqliteStartupInitializer.cs" Link="Infrastructure/Services/SqliteStartupInitializer.cs" />
+    <Compile Include="../../src/Infrastructure/Services/JsonStore/**/*.cs" Link="Infrastructure/Services/JsonStore/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Services/Repositories/**/*.cs" Link="Infrastructure/Services/Repositories/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

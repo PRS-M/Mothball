@@ -10,14 +10,16 @@ namespace Infrastructure.Services;
 public class MobileFileHandler : IFileHandler
 {
     private readonly IFileSystem fileSystem;
+    private readonly string appDataRootPath;
 
     public MobileFileHandler(IFileSystem fileSystem)
     {
         this.fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        appDataRootPath = Path.GetFullPath(this.fileSystem.AppDataDirectory);
     }
 
     /// <inheritdoc />
-    public string AppDataPath => fileSystem.AppDataDirectory;
+    public string AppDataPath => appDataRootPath;
 
     /// <inheritdoc />
     public async Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
@@ -45,7 +47,10 @@ public class MobileFileHandler : IFileHandler
 
         ThrowIfFileNotExists(sourceFullPath);
 
-        await Task.Run(() => File.Copy(sourceFullPath, destFullPath, true)).ConfigureAwait(false);
+        const int bufferSize = 81920;
+        await using var source = new FileStream(sourceFullPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, useAsync: true);
+        await using var destination = new FileStream(destFullPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize, useAsync: true);
+        await source.CopyToAsync(destination).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -58,12 +63,13 @@ public class MobileFileHandler : IFileHandler
     }
 
     /// <inheritdoc />
-    public async Task DeleteFileAsync(string fileName, string folderPath)
+    public Task DeleteFileAsync(string fileName, string folderPath)
     {
         string fullPath = GetFullPath(fileName, folderPath);
         ThrowIfFileNotExists(fullPath);
 
-        await Task.Run(() => File.Delete(fullPath)).ConfigureAwait(false);
+        File.Delete(fullPath);
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -114,23 +120,63 @@ public class MobileFileHandler : IFileHandler
             throw new FileNotFoundException($"File not found: {fullPath}");
     }
 
-    // Helper: returns the directory path under appdata (does not create it)
+    // Helper: returns the validated directory path under app data (does not create it)
     private string GetDirectoryPath(string folderPath)
     {
-        return Path.Combine(AppDataPath, folderPath ?? string.Empty);
+        var normalizedFolderPath = folderPath ?? string.Empty;
+        var candidate = Path.IsPathRooted(normalizedFolderPath)
+            ? Path.GetFullPath(normalizedFolderPath)
+            : Path.GetFullPath(Path.Combine(AppDataPath, normalizedFolderPath));
+
+        EnsurePathUnderAppData(candidate);
+        return candidate;
     }
 
-    // Helper: returns the full file path (does not create directory)
+    // Helper: returns the validated full file path (does not create directory)
     private string GetFullPath(string fileName, string folderPath)
     {
-        return Path.Combine(GetDirectoryPath(folderPath), fileName);
+        return GetValidatedFilePath(fileName, folderPath, ensureDirectory: false);
     }
 
     // Helper: ensures directory exists and returns full path for writing
     private string GetWriteFullPath(string fileName, string folderPath)
     {
-        var dir = GetDirectoryPath(folderPath);
-        EnsureDirectoryExists(dir);
-        return Path.Combine(dir, fileName);
+        return GetValidatedFilePath(fileName, folderPath, ensureDirectory: true);
+    }
+
+    private string GetValidatedFilePath(string fileName, string folderPath, bool ensureDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            throw new ArgumentException("File name is required.", nameof(fileName));
+
+        var directoryPath = GetDirectoryPath(folderPath);
+        if (ensureDirectory)
+        {
+            EnsureDirectoryExists(directoryPath);
+        }
+
+        var fullPath = Path.GetFullPath(Path.Combine(directoryPath, fileName));
+        EnsurePathUnderAppData(fullPath);
+        return fullPath;
+    }
+
+    private void EnsurePathUnderAppData(string candidatePath)
+    {
+        var fullCandidate = Path.GetFullPath(candidatePath);
+        var normalizedRoot = appDataRootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var normalizedCandidate = fullCandidate.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        var isRoot = string.Equals(normalizedCandidate, normalizedRoot, comparison);
+        var isChild = normalizedCandidate.StartsWith(normalizedRoot + Path.DirectorySeparatorChar, comparison)
+                      || normalizedCandidate.StartsWith(normalizedRoot + Path.AltDirectorySeparatorChar, comparison);
+
+        if (!isRoot && !isChild)
+        {
+            throw new UnauthorizedAccessException($"Path '{candidatePath}' is outside the app data directory.");
+        }
     }
 }
