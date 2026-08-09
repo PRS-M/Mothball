@@ -48,17 +48,34 @@
 
                     <Border Style="{StaticResource InputWrapper}"
                             WidthRequest="{StaticResource WidthM}"
-                            IsVisible="{Binding HasTemporaryPhoto}">
-                        <VerticalStackLayout Spacing="8"
-                                             HorizontalOptions="Center">
+                            IsVisible="{Binding IsPhotoProcessing}">
+                           <VerticalStackLayout Spacing="8"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"
+                                       MinimumHeightRequest="160">
+                            <ActivityIndicator IsRunning="True"
+                                         WidthRequest="32"
+                                         HeightRequest="32"
+                                         HorizontalOptions="Center" />
+                            <Label Text="Resizing photo..."
+                                Style="{StaticResource LabelSmall}"
+                                HorizontalTextAlignment="Center" />
+                           </VerticalStackLayout>
+                          </Border>
+
+                          <Border Style="{StaticResource InputWrapper}"
+                            WidthRequest="{StaticResource WidthM}"
+                            IsVisible="{Binding ShowPhotoThumbnail}">
+                           <VerticalStackLayout Spacing="8"
+                                       HorizontalOptions="Center">
                             <Image Source="{Binding PhotoThumbnailPath}"
-                                   HeightRequest="120"
-                                   WidthRequest="120"
-                                   Aspect="AspectFill" />
+                                HeightRequest="120"
+                                WidthRequest="120"
+                                Aspect="AspectFill" />
                             <Label Text="Photo selected"
-                                   Style="{StaticResource LabelSmall}"
-                                   HorizontalTextAlignment="Center" />
-                        </VerticalStackLayout>
+                                Style="{StaticResource LabelSmall}"
+                                HorizontalTextAlignment="Center" />
+                           </VerticalStackLayout>
                     </Border>
 
                     <Label Text="{Binding PhotoSelectionStatus}"

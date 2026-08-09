@@ -34,6 +34,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private string? photoThumbnailPath;
 
+    [ObservableProperty]
+    private bool isPhotoProcessing;
+
     public AddItemViewModel(
         ImageService imageService,
         IInventoryCommandRepository inventoryCommands,
@@ -57,14 +60,28 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
     public bool HasTemporaryPhoto => !string.IsNullOrWhiteSpace(PhotoThumbnailPath);
 
+    public bool ShowPhotoThumbnail => HasTemporaryPhoto && !IsPhotoProcessing;
+
+    public bool ShowPhotoProcessingIndicator => IsPhotoProcessing;
+
     public string PhotoSelectionStatus =>
-        HasTemporaryPhoto
+        IsPhotoProcessing
+            ? "Processing photo..."
+            : HasTemporaryPhoto
             ? "Photo selected. It will be saved when you tap Save."
             : "No photo selected.";
 
     partial void OnPhotoThumbnailPathChanged(string? value)
     {
         OnPropertyChanged(nameof(HasTemporaryPhoto));
+        OnPropertyChanged(nameof(ShowPhotoThumbnail));
+        OnPropertyChanged(nameof(PhotoSelectionStatus));
+    }
+
+    partial void OnIsPhotoProcessingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowPhotoThumbnail));
+        OnPropertyChanged(nameof(ShowPhotoProcessingIndicator));
         OnPropertyChanged(nameof(PhotoSelectionStatus));
     }
 
@@ -80,8 +97,16 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             bool photoSelected = await retryService.RetryAsync(
                 async () =>
                 {
-                    selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
-                    return selectedPhoto is not null;
+                    IsPhotoProcessing = true;
+                    try
+                    {
+                        selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
+                        return selectedPhoto is not null;
+                    }
+                    finally
+                    {
+                        IsPhotoProcessing = false;
+                    }
                 },
                 canceledTitle: "Photo capture canceled",
                 canceledMessage: "Please try again or continue without a photo.",
