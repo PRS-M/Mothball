@@ -160,6 +160,66 @@ Serializer configuration:
 
 Row IDs are used for deterministic ordering and pagination parity with current SQLite behavior.
 
+### Example JSON payloads
+
+These examples reflect the actual serializer settings (camelCase, compact output).
+
+#### Example manifestA.json
+
+```json
+{"generation":12,"currentSlot":"B","previousSlot":"A","schemaVersion":1}
+```
+
+#### Example metadata.json
+
+```json
+{"schemaVersion":1,"nextContainerRowId":27,"nextItemRowId":140,"nextImageRowId":81,"nextRelationId":212}
+```
+
+#### Example commit.json
+
+```json
+{"generation":12,"commitId":"1f8f8c20-aad5-4dcf-bcd6-5f74f8587f70","committedUtc":"2026-08-09T10:22:11.153892+00:00"}
+```
+
+#### Example containers.json
+
+```json
+[{"rowId":1,"containerId":"6ec1f1ea-f52b-4b4e-bca3-8d589ce4d3d8","name":"Garage Shelf A","notes":"Top-left bin stack"}]
+```
+
+#### Example items.json
+
+```json
+[{"rowId":1,"itemId":"f8f21693-d4d3-4821-9ba7-96cb8aee0a99","name":"Zip Ties","description":"Black, 8 inch"}]
+```
+
+#### Example images.json
+
+```json
+[{"rowId":1,"imageId":"20d79898-4d22-4fb5-9792-c35aa13e09ba","ownerUniqueId":"f8f21693-d4d3-4821-9ba7-96cb8aee0a99","imageDataBase64":null}]
+```
+
+#### Example relations.json
+
+```json
+[{"id":1,"itemId":"f8f21693-d4d3-4821-9ba7-96cb8aee0a99","containerId":"6ec1f1ea-f52b-4b4e-bca3-8d589ce4d3d8","quantity":50}]
+```
+
+#### Example empty first-run slot
+
+After a clean first recovery, a slot typically looks like this shape:
+
+```json
+// metadata.json
+{"schemaVersion":1,"nextContainerRowId":1,"nextItemRowId":1,"nextImageRowId":1,"nextRelationId":1}
+```
+
+```json
+// containers.json, items.json, images.json, relations.json
+[]
+```
+
 ---
 
 ## Internal Commit Algorithm
