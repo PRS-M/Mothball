@@ -6,17 +6,14 @@
              x:Name="this"
              x:DataType="self:SearchBarCard">
 
-    <Border Style="{StaticResource SearchWrapper}"
-            Padding="1"
-            Margin="0,4">
-        <SearchBar Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
-                   Text="{Binding Source={x:Reference this}, Path=Text}"
-                   SearchCommand="{Binding Source={x:Reference this}, Path=SearchCommand}"
-                   HeightRequest="20"
-                   MinimumHeightRequest="20"
-                   FontSize="12"
-                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
-                   PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                   CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
-    </Border>
+    <SearchBar Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
+               Text="{Binding Source={x:Reference this}, Path=Text}"
+               SearchCommand="{Binding Source={x:Reference this}, Path=SearchCommand}"
+               Margin="0,1"
+               HeightRequest="24"
+               MinimumHeightRequest="20"
+               FontSize="12"
+               TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+               PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+               CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
 </ContentView>
