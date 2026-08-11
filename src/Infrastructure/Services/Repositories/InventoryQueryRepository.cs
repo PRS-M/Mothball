@@ -25,21 +25,6 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     public Task<Container?> GetContainerAsync(string containerId)
         => containerRepo.GetAsync(containerId);
 
-    public Task<List<Container>> GetAllContainersAsync()
-        => containerRepo.GetAllAsync();
-
-    public Task<List<Container>> GetAllContainersAsync(int pageNumber, int pageSize)
-        => containerRepo.GetAllAsync(pageNumber, pageSize);
-
-    public Task<List<Container>> GetEmptyContainersAsync(int pageNumber, int pageSize)
-        => containerRepo.GetEmptyAsync(pageNumber, pageSize);
-
-    public Task<List<Container>> SearchContainersAsync(string searchTerm)
-        => containerRepo.SearchAsync(searchTerm);
-
-    public Task<List<Container>> SearchEmptyContainersAsync(string searchTerm)
-        => containerRepo.SearchEmptyAsync(searchTerm);
-
     public async Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId)
     {
         var container = await containerRepo.GetWithItemsAndPhotosAsync(containerId);
@@ -73,21 +58,6 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     public Task<Item?> GetItemWithPhotosAsync(string itemId)
         => itemRepo.GetWithPhotosAsync(itemId);
-
-    public Task<List<Item>> GetAllItemsWithPhotosAsync()
-        => itemRepo.GetAllWithPhotosAsync();
-
-    public Task<List<Item>> GetAllItemsWithPhotosAsync(int pageNumber, int pageSize)
-        => itemRepo.GetAllWithPhotosAsync(pageNumber, pageSize);
-
-    public Task<List<Item>> GetUnassignedItemsWithPhotosAsync(int pageNumber, int pageSize)
-        => itemRepo.GetUnassignedWithPhotosAsync(pageNumber, pageSize);
-
-    public Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm)
-        => itemRepo.SearchWithPhotosAsync(searchTerm);
-
-    public Task<List<Item>> SearchUnassignedItemsWithPhotosAsync(string searchTerm)
-        => itemRepo.SearchUnassignedWithPhotosAsync(searchTerm);
 
     public Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
         => itemRepo.SearchItemsInContainerAsync(containerId, searchTerm, pageNumber, pageSize);

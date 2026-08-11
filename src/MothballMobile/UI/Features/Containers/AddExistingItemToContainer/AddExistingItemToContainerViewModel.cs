@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
@@ -49,7 +50,11 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         => _ = vm.LoadImagesAsync();
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryQueries.GetUnassignedItemsWithPhotosAsync(pageNumber, pageSize);
+        => inventoryQueries.QueryItemsWithPhotosAsync(
+            new ItemListSpecification(
+                Filter: ItemQueryFilter.Unassigned,
+                PageNumber: pageNumber,
+                PageSize: pageSize));
 
     private async Task AssignAsync(Guid itemId)
     {

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using MothballMobile.Infrastructure;
 using Infrastructure.Services;
 
@@ -51,7 +52,11 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     }
 
     protected override Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryQueries.GetAllContainersAsync(pageNumber, pageSize);
+        => inventoryQueries.QueryContainersAsync(
+            new ContainerListSpecification(
+                Filter: ContainerQueryFilter.All,
+                PageNumber: pageNumber,
+                PageSize: pageSize));
 
     protected override SelectableContainerViewModel MapToViewModel(Container source)
         => new(source, imagePaths, AssociateWithContainerAsync);
