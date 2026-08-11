@@ -208,11 +208,11 @@ public class ContainerRepository : IContainerRepository
     {
         List<DbContainer> dbContainers;
 
-        if (pageNumber.HasValue && pageSize.HasValue)
+        if (TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
         {
-            ValidatePaging(pageNumber.Value, pageSize.Value);
-            int offset = CalculateOffset(pageNumber.Value, pageSize.Value);
-            dbContainers = await containers.GetAllAsync(offset, pageSize.Value);
+            ValidatePaging(pageNumberValue, pageSizeValue);
+            int offset = CalculateOffset(pageNumberValue, pageSizeValue);
+            dbContainers = await containers.GetAllAsync(offset, pageSizeValue);
         }
         else
         {
@@ -328,6 +328,20 @@ public class ContainerRepository : IContainerRepository
     {
         ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
+    }
+
+    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
+    {
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
+            pageNumberValue = pageNumber.Value;
+            pageSizeValue = pageSize.Value;
+            return true;
+        }
+
+        pageNumberValue = default;
+        pageSizeValue = default;
+        return false;
     }
 
     private static int CalculateOffset(int pageNumber, int pageSize) => pageNumber * pageSize;

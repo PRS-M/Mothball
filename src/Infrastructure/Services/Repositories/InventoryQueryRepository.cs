@@ -64,8 +64,7 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     public Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification)
     {
-        var term = specification.SearchTerm?.Trim();
-        var hasSearch = !string.IsNullOrWhiteSpace(term);
+        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
 
         if (hasSearch)
         {
@@ -74,11 +73,11 @@ public class InventoryQueryRepository : IInventoryQueryRepository
                 : containerRepo.SearchAsync(term!);
         }
 
-        if (specification.PageNumber.HasValue && specification.PageSize.HasValue)
+        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
         {
             return specification.Filter == ContainerQueryFilter.Empty
-                ? containerRepo.GetEmptyAsync(specification.PageNumber.Value, specification.PageSize.Value)
-                : containerRepo.GetAllAsync(specification.PageNumber.Value, specification.PageSize.Value);
+            ? containerRepo.GetEmptyAsync(pageNumberValue, pageSizeValue)
+            : containerRepo.GetAllAsync(pageNumberValue, pageSizeValue);
         }
 
         return specification.Filter == ContainerQueryFilter.Empty
@@ -88,8 +87,7 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     public Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification)
     {
-        var term = specification.SearchTerm?.Trim();
-        var hasSearch = !string.IsNullOrWhiteSpace(term);
+        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
 
         if (hasSearch)
         {
@@ -98,11 +96,11 @@ public class InventoryQueryRepository : IInventoryQueryRepository
                 : itemRepo.SearchWithPhotosAsync(term!);
         }
 
-        if (specification.PageNumber.HasValue && specification.PageSize.HasValue)
+        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
         {
             return specification.Filter == ItemQueryFilter.Unassigned
-                ? itemRepo.GetUnassignedWithPhotosAsync(specification.PageNumber.Value, specification.PageSize.Value)
-                : itemRepo.GetAllWithPhotosAsync(specification.PageNumber.Value, specification.PageSize.Value);
+            ? itemRepo.GetUnassignedWithPhotosAsync(pageNumberValue, pageSizeValue)
+            : itemRepo.GetAllWithPhotosAsync(pageNumberValue, pageSizeValue);
         }
 
         return specification.Filter == ItemQueryFilter.Unassigned
@@ -112,20 +110,16 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     public async Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
     {
-        var term = specification.SearchTerm?.Trim();
-        var hasSearch = !string.IsNullOrWhiteSpace(term);
+        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
 
-        if (specification.PageNumber.HasValue && specification.PageSize.HasValue)
+        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
         {
-            var pageNumber = specification.PageNumber.Value;
-            var pageSize = specification.PageSize.Value;
-
             if (hasSearch)
             {
-                return await itemRepo.SearchItemsInContainerAsync(specification.ContainerId, term!, pageNumber, pageSize);
+                return await itemRepo.SearchItemsInContainerAsync(specification.ContainerId, term!, pageNumberValue, pageSizeValue);
             }
 
-            var result = await GetContainerWithItemsAndPhotosAsync(specification.ContainerId, pageNumber, pageSize);
+            var result = await GetContainerWithItemsAndPhotosAsync(specification.ContainerId, pageNumberValue, pageSizeValue);
             return result?.items ?? [];
         }
 
@@ -135,5 +129,25 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         }
 
         return await itemRepo.GetItemsForContainerAsync(specification.ContainerId);
+    }
+
+    private static (string? term, bool hasSearch) NormalizeSearch(string? searchTerm)
+    {
+        var term = searchTerm?.Trim();
+        return (term, !string.IsNullOrWhiteSpace(term));
+    }
+
+    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
+    {
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
+            pageNumberValue = pageNumber.Value;
+            pageSizeValue = pageSize.Value;
+            return true;
+        }
+
+        pageNumberValue = default;
+        pageSizeValue = default;
+        return false;
     }
 }
