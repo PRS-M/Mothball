@@ -1,5 +1,6 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Specifications;
 
 namespace CoreApp.Interfaces;
 
@@ -40,4 +41,8 @@ public interface IInventoryQueryRepository
     Task<Item?> GetItemWithPhotosAsync(string itemId);
 
     Task<Container?> GetContainerForItemAsync(string itemId);
+
+    Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification);
+
+    Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification);
 }

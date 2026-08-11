@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using Infrastructure.Services;
 using MothballMobile.Infrastructure;
 
@@ -134,9 +135,10 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         }
         else
         {
-            List<Item> items = SelectedFilter == ItemsListFilter.Unassigned
-                ? await inventoryQueries.SearchUnassignedItemsWithPhotosAsync(query)
-                : await inventoryQueries.GetItemsWithPhotosAsync(query);
+            var items = await inventoryQueries.QueryItemsWithPhotosAsync(
+                new ItemListSpecification(
+                    Filter: ToQueryFilter(SelectedFilter),
+                    SearchTerm: query));
 
             ReplaceWithFullResultSet(items);
         }
@@ -152,8 +154,13 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         => vm.LoadImageAsync().FireAndForget();
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
-        => SelectedFilter == ItemsListFilter.Unassigned
-            ? inventoryQueries.GetUnassignedItemsWithPhotosAsync(pageNumber, pageSize)
-            : inventoryQueries.GetAllItemsWithPhotosAsync(pageNumber, pageSize);
+        => inventoryQueries.QueryItemsWithPhotosAsync(
+            new ItemListSpecification(
+                Filter: ToQueryFilter(SelectedFilter),
+                PageNumber: pageNumber,
+                PageSize: pageSize));
+
+    private static ItemQueryFilter ToQueryFilter(ItemsListFilter filter)
+        => filter == ItemsListFilter.Unassigned ? ItemQueryFilter.Unassigned : ItemQueryFilter.All;
 
 }

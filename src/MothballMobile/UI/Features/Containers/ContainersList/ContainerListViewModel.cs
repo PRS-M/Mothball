@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Specifications;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using MothballMobile.Infrastructure;
@@ -90,12 +91,12 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 
     protected override async Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
     {
-        if (SelectedFilter == ContainerListFilter.All)
-        {
-            return await inventoryQueries.GetAllContainersAsync(pageNumber, pageSize);
-        }
+        var specification = new ContainerListSpecification(
+            Filter: ToQueryFilter(SelectedFilter),
+            PageNumber: pageNumber,
+            PageSize: pageSize);
 
-        return await inventoryQueries.GetEmptyContainersAsync(pageNumber, pageSize);
+        return await inventoryQueries.QueryContainersAsync(specification);
     }
 
     protected override ContainerViewModel MapToViewModel(Container source)
@@ -140,10 +141,10 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
             return;
         }
 
-        var normalized = searchQuery.Trim();
-        var filtered = SelectedFilter == ContainerListFilter.Empty
-            ? await inventoryQueries.SearchEmptyContainersAsync(normalized)
-            : await inventoryQueries.SearchContainersAsync(normalized);
+        var filtered = await inventoryQueries.QueryContainersAsync(
+            new ContainerListSpecification(
+                Filter: ToQueryFilter(SelectedFilter),
+                SearchTerm: searchQuery));
 
         ReplaceWithFullResultSet(filtered);
     }
@@ -152,5 +153,8 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     {
         debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync)).FireAndForget();
     }
+
+    private static ContainerQueryFilter ToQueryFilter(ContainerListFilter filter)
+        => filter == ContainerListFilter.Empty ? ContainerQueryFilter.Empty : ContainerQueryFilter.All;
 
 }

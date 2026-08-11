@@ -1,6 +1,7 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using Infrastructure.Interfaces;
 
 namespace Infrastructure.Services.Repositories;
@@ -90,4 +91,52 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     public Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
         => itemRepo.SearchItemsInContainerAsync(containerId, searchTerm, pageNumber, pageSize);
+
+    public Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification)
+    {
+        var term = specification.SearchTerm?.Trim();
+        var hasSearch = !string.IsNullOrWhiteSpace(term);
+
+        if (hasSearch)
+        {
+            return specification.Filter == ContainerQueryFilter.Empty
+                ? containerRepo.SearchEmptyAsync(term!)
+                : containerRepo.SearchAsync(term!);
+        }
+
+        if (specification.PageNumber.HasValue && specification.PageSize.HasValue)
+        {
+            return specification.Filter == ContainerQueryFilter.Empty
+                ? containerRepo.GetEmptyAsync(specification.PageNumber.Value, specification.PageSize.Value)
+                : containerRepo.GetAllAsync(specification.PageNumber.Value, specification.PageSize.Value);
+        }
+
+        return specification.Filter == ContainerQueryFilter.Empty
+            ? containerRepo.SearchEmptyAsync(string.Empty)
+            : containerRepo.GetAllAsync();
+    }
+
+    public Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification)
+    {
+        var term = specification.SearchTerm?.Trim();
+        var hasSearch = !string.IsNullOrWhiteSpace(term);
+
+        if (hasSearch)
+        {
+            return specification.Filter == ItemQueryFilter.Unassigned
+                ? itemRepo.SearchUnassignedWithPhotosAsync(term!)
+                : itemRepo.SearchWithPhotosAsync(term!);
+        }
+
+        if (specification.PageNumber.HasValue && specification.PageSize.HasValue)
+        {
+            return specification.Filter == ItemQueryFilter.Unassigned
+                ? itemRepo.GetUnassignedWithPhotosAsync(specification.PageNumber.Value, specification.PageSize.Value)
+                : itemRepo.GetAllWithPhotosAsync(specification.PageNumber.Value, specification.PageSize.Value);
+        }
+
+        return specification.Filter == ItemQueryFilter.Unassigned
+            ? itemRepo.SearchUnassignedWithPhotosAsync(string.Empty)
+            : itemRepo.GetAllWithPhotosAsync();
+    }
 }
