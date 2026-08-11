@@ -39,52 +39,56 @@
                 PointerReleased="Border_PointerReleased"
                 PointerExited="Border_PointerReleased" />
         </Border.GestureRecognizers>
-        <Grid RowSpacing="5" ColumnSpacing="5" MinimumWidthRequest="300">
+        <Grid RowSpacing="8" ColumnSpacing="8" MinimumWidthRequest="300">
             <Grid.RowDefinitions>
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Label
-                Grid.Row="0"
-                Grid.Column="0"
-                FontSize="{StaticResource fontSize}"
-                Text="{Binding Source={x:Reference this}, Path=Name}"
-                TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
-                VerticalOptions="Start"
-                HorizontalOptions="Start" />
-            <Label
-                Grid.Row="2"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                FontSize="{StaticResource fontSize}"
-                Text="{Binding Source={x:Reference this}, Path=Notes}"
-                TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                VerticalOptions="End"
-                HorizontalOptions="Center" />
-            <Label
-                Grid.Row="1"
-                Grid.Column="0"
-                FontSize="{StaticResource fontSize}"
-                Text="{Binding Source={x:Reference this}, Path=ItemCount}"
-                TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
-                VerticalOptions="Start"
-                HorizontalOptions="Start" />
-            <Border Grid.RowSpan="2"
+
+            <VerticalStackLayout Grid.Row="0"
+                                 Grid.Column="0"
+                                 Spacing="5"
+                                 VerticalOptions="Start">
+                <Label
+                    FontSize="{StaticResource fontSize}"
+                    Text="{Binding Source={x:Reference this}, Path=Name}"
+                    TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                    VerticalOptions="Start"
+                    HorizontalOptions="Start" />
+                <Label
+                    FontSize="{StaticResource fontSize}"
+                    Text="{Binding Source={x:Reference this}, Path=ItemCount}"
+                    TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                    VerticalOptions="Start"
+                    HorizontalOptions="Start" />
+            </VerticalStackLayout>
+
+            <Border Grid.Row="0"
                     Grid.Column="1"
                     StrokeShape="RoundRectangle 10"
                     HorizontalOptions="End"
-                    VerticalOptions="Center">
+                    VerticalOptions="Start"
+                    Margin="0,2,0,0">
                 <self:ImageCarousel
                     HeightRequest="125"
                     WidthRequest="125"
                     CornerRadius="10"
                     ImagePaths="{Binding Source={x:Reference this}, Path=ImagePaths}" />
             </Border>
+
+            <Label
+                Grid.Row="1"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                FontSize="{StaticResource fontSize}"
+                Text="{Binding Source={x:Reference this}, Path=Notes}"
+                TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                VerticalOptions="Start"
+                HorizontalOptions="Start" />
         </Grid>
     </Border>
 </ContentView>

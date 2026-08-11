@@ -34,9 +34,11 @@
                   RowDefinitions="Auto,Auto,Auto"
                   ColumnSpacing="12"
                   RowSpacing="6">
-                <Label Grid.Row="0"
-                       Grid.ColumnSpan="2"
-                       Text="{Binding Name}"
+                  <Label Grid.Row="0"
+                      Grid.Column="0"
+                      Text="{Binding Name}"
+                      LineBreakMode="TailTruncation"
+                      MaxLines="2"
                       Style="{StaticResource TitleLarge}"/>
                 <Label Grid.Row="1"
                        Grid.Column="0"
