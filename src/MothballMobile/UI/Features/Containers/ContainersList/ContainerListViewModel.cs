@@ -27,11 +27,55 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     [ObservableProperty]
     private string query = string.Empty;
 
-    [ObservableProperty]
     private ContainerListFilter selectedFilter = ContainerListFilter.All;
+    private string selectedFilterOption = "All";
 
-    public bool IsAllFilterSelected => SelectedFilter == ContainerListFilter.All;
-    public bool IsEmptyFilterSelected => SelectedFilter == ContainerListFilter.Empty;
+    public IReadOnlyList<string> FilterOptions { get; } = ["All", "Empty"];
+
+    public ContainerListFilter SelectedFilter
+    {
+        get => selectedFilter;
+        set
+        {
+            if (!SetProperty(ref selectedFilter, value))
+            {
+                return;
+            }
+
+            var option = value == ContainerListFilter.Empty ? "Empty" : "All";
+            if (!string.Equals(selectedFilterOption, option, StringComparison.Ordinal))
+            {
+                selectedFilterOption = option;
+                OnPropertyChanged(nameof(SelectedFilterOption));
+            }
+        }
+    }
+
+    public string SelectedFilterOption
+    {
+        get => selectedFilterOption;
+        set
+        {
+            var option = string.Equals(value, "Empty", StringComparison.OrdinalIgnoreCase)
+                ? "Empty"
+                : "All";
+
+            if (!SetProperty(ref selectedFilterOption, option))
+            {
+                return;
+            }
+
+            var filter = option == "Empty"
+                ? ContainerListFilter.Empty
+                : ContainerListFilter.All;
+
+            if (SelectedFilter != filter)
+            {
+                SelectedFilter = filter;
+                _ = MainThread.InvokeOnMainThreadAsync(SearchAsync);
+            }
+        }
+    }
 
     public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryQueryRepository inventoryQueries, INavigationService nav, IDebouncer? debouncer = null, DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
@@ -124,34 +168,6 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
 
     [RelayCommand]
-    private async Task SelectAllFilterAsync()
-    {
-        if (SelectedFilter == ContainerListFilter.All)
-        {
-            return;
-        }
-
-        SelectedFilter = ContainerListFilter.All;
-        OnPropertyChanged(nameof(IsAllFilterSelected));
-        OnPropertyChanged(nameof(IsEmptyFilterSelected));
-        await SearchAsync();
-    }
-
-    [RelayCommand]
-    private async Task SelectEmptyFilterAsync()
-    {
-        if (SelectedFilter == ContainerListFilter.Empty)
-        {
-            return;
-        }
-
-        SelectedFilter = ContainerListFilter.Empty;
-        OnPropertyChanged(nameof(IsAllFilterSelected));
-        OnPropertyChanged(nameof(IsEmptyFilterSelected));
-        await SearchAsync();
-    }
-
-    [RelayCommand]
     private Task RefreshAsync() => InitializeAsync();
 
     private async Task LoadQuerySearchAsync(string? searchQuery)
@@ -177,4 +193,5 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     {
         debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync)).FireAndForget();
     }
+
 }

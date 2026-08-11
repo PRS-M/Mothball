@@ -26,15 +26,54 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     private string query = string.Empty;
 
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
+    private string selectedFilterOption = "All";
+
+    public IReadOnlyList<string> FilterOptions { get; } = ["All", "Unassigned"];
 
     public ItemsListFilter SelectedFilter
     {
         get => selectedFilter;
-        set => SetProperty(ref selectedFilter, value);
+        set
+        {
+            if (!SetProperty(ref selectedFilter, value))
+            {
+                return;
+            }
+
+            var option = value == ItemsListFilter.Unassigned ? "Unassigned" : "All";
+            if (!string.Equals(selectedFilterOption, option, StringComparison.Ordinal))
+            {
+                selectedFilterOption = option;
+                OnPropertyChanged(nameof(SelectedFilterOption));
+            }
+        }
     }
 
-    public bool IsAllFilterSelected => SelectedFilter == ItemsListFilter.All;
-    public bool IsUnassignedFilterSelected => SelectedFilter == ItemsListFilter.Unassigned;
+    public string SelectedFilterOption
+    {
+        get => selectedFilterOption;
+        set
+        {
+            var option = string.Equals(value, "Unassigned", StringComparison.OrdinalIgnoreCase)
+                ? "Unassigned"
+                : "All";
+
+            if (!SetProperty(ref selectedFilterOption, option))
+            {
+                return;
+            }
+
+            var filter = option == "Unassigned"
+                ? ItemsListFilter.Unassigned
+                : ItemsListFilter.All;
+
+            if (SelectedFilter != filter)
+            {
+                SelectedFilter = filter;
+                _ = MainThread.InvokeOnMainThreadAsync(SearchAsync);
+            }
+        }
+    }
 
     public ItemsListViewModel(
         IImagePathResolver paths,
@@ -117,34 +156,6 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     private Task NavigateToAddItemAsync()
     {
         return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
-    }
-
-    [RelayCommand]
-    private async Task SelectAllFilterAsync()
-    {
-        if (SelectedFilter == ItemsListFilter.All)
-        {
-            return;
-        }
-
-        SelectedFilter = ItemsListFilter.All;
-        OnPropertyChanged(nameof(IsAllFilterSelected));
-        OnPropertyChanged(nameof(IsUnassignedFilterSelected));
-        await SearchAsync();
-    }
-
-    [RelayCommand]
-    private async Task SelectUnassignedFilterAsync()
-    {
-        if (SelectedFilter == ItemsListFilter.Unassigned)
-        {
-            return;
-        }
-
-        SelectedFilter = ItemsListFilter.Unassigned;
-        OnPropertyChanged(nameof(IsAllFilterSelected));
-        OnPropertyChanged(nameof(IsUnassignedFilterSelected));
-        await SearchAsync();
     }
 
     private async Task LoadQuerySearchAsync(string? query)
