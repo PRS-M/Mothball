@@ -129,4 +129,52 @@ public class ImageServiceBehaviorTests
         files.Verify(f => f.DeleteFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos), Times.Once);
         repo.Verify(r => r.UpdateItemAsync(It.IsAny<Item>()), Times.Never);
     }
+
+    [Test]
+    public async Task CaptureTemporaryPhotoAsync_SavesToTemporaryFolder_AndReturnsDescriptor()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var bytes = new byte[] {10, 11, 12};
+        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToTemporaryPhotos, bytes))
+             .ReturnsAsync("/tmp/temp-photo.jpg");
+
+        var service = new ImageService(camera.Object, repo.Object, files.Object);
+
+        var result = await service.CaptureTemporaryPhotoAsync();
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Bytes, Is.EqualTo(bytes));
+        Assert.That(result.FullPath, Is.EqualTo("/tmp/temp-photo.jpg"));
+        Assert.That(result.FolderPath, Is.EqualTo(Constants.PathToTemporaryPhotos));
+        Assert.That(result.FileName, Does.StartWith("temp-"));
+
+        files.Verify(f => f.SaveFileAsync(result.FileName, Constants.PathToTemporaryPhotos, bytes), Times.Once);
+    }
+
+    [Test]
+    public async Task SaveItemPhotoAsync_UsesProvidedBytes_AndPersistsPhoto()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var bytes = new byte[] {33, 44};
+        files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos, bytes))
+             .ReturnsAsync("/fake/path");
+
+        var service = new ImageService(camera.Object, repo.Object, files.Object);
+        var item = new Item { Name = "Lamp" };
+
+        await service.SaveItemPhotoAsync(item, bytes);
+
+        Assert.That(item.Photos.Count, Is.EqualTo(1));
+        var image = item.Photos[0];
+        files.Verify(f => f.SaveFileAsync(image.FileName, Constants.PathToItemPhotos, bytes), Times.Once);
+        repo.Verify(r => r.InsertImageItemAsync(image, item.ItemId), Times.Once);
+        repo.Verify(r => r.UpdateItemAsync(item), Times.Once);
+    }
 }

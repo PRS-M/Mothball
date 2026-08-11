@@ -12,6 +12,10 @@ namespace Infrastructure.Services;
 /// </summary>
 public class DemoDataSeeder
 {
+    private const string SeededContainerNotesPrefix = "Seeded notes for container";
+    private const string SeedContainerMarkerTokenPrefix = "[SEED-CONTAINER-MARKER:";
+    private static readonly Guid SeedContainerMarkerGuid = new("4f3c5d11-2f9b-44b3-9e55-2e0f1ea7a8d2");
+
     private readonly IRepository<DbContainer> containers;
     private readonly IRepository<DbItem> items;
     private readonly IRepository<DbImage> photos;
@@ -52,7 +56,7 @@ public class DemoDataSeeder
             {
                 ContainerId = id,
                 Name = $"Container {existing.Count + i + 1}",
-                Notes = $"Seeded notes for container {id.ToString()[..8]}"
+                Notes = BuildSeedContainerNotes(id)
             };
 
             await containers.InsertAsync(container);
@@ -92,7 +96,18 @@ public class DemoDataSeeder
             containersList = await containers.GetAllAsync();
         }
 
-        foreach (var container in containersList)
+        // Keep demo seeding scoped to demo-generated containers so user-created
+        // containers stay empty until users add items explicitly.
+        var seededContainers = containersList
+            .Where(IsSeedContainer)
+            .ToList();
+
+        if (seededContainers.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var container in seededContainers)
         {
             var relationsForContainer = await itemContainerRelations.WhereAsync(r => r.ContainerId == container.ContainerId);
             int currentCount = relationsForContainer.Count;
@@ -131,7 +146,7 @@ public class DemoDataSeeder
                     // Use a bundled placeholder image; fall back gracefully if missing
                     try
                     {
-                        await fileHandler.CopyFileFromRawToAppDataAsync("dotnet_bot.png", img.FileName, Constants.PathToItemPhotos);
+                        await fileHandler.CopyFileFromRawToAppDataAsync("mothball_logo.png", img.FileName, Constants.PathToItemPhotos);
                     }
                     catch
                     {
@@ -140,5 +155,26 @@ public class DemoDataSeeder
                 }
             }
         }
+    }
+
+    private static bool IsSeedContainer(DbContainer container)
+    {
+        if (string.IsNullOrWhiteSpace(container.Notes))
+        {
+            return false;
+        }
+
+        var markerToken = GetSeedMarkerToken();
+        return container.Notes.Contains(markerToken, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string BuildSeedContainerNotes(Guid containerId)
+    {
+        return $"{SeededContainerNotesPrefix} {containerId.ToString()[..8]} {GetSeedMarkerToken()}";
+    }
+
+    private static string GetSeedMarkerToken()
+    {
+        return $"{SeedContainerMarkerTokenPrefix}{SeedContainerMarkerGuid:D}]";
     }
 }

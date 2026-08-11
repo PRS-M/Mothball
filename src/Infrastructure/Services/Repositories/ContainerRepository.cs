@@ -46,6 +46,57 @@ public class ContainerRepository : IContainerRepository
     public Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
         => GetContainersInternalAsync(pageNumber, pageSize);
 
+    public async Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize)
+    {
+        ValidatePaging(pageNumber, pageSize);
+        int offset = CalculateOffset(pageNumber, pageSize);
+
+        List<DbContainer> dbContainers = await containers.QueryAsync(
+            $@"SELECT c.* FROM {nameof(DbContainer)} c
+               WHERE NOT EXISTS (
+                   SELECT 1 FROM {nameof(DbItemContainerRelation)} r
+                   WHERE r.ContainerId = c.ContainerId)
+               ORDER BY c.Name COLLATE NOCASE
+               LIMIT ? OFFSET ?",
+            pageSize,
+            offset);
+
+        return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
+    }
+
+    public async Task<List<Container>> SearchAsync(string searchTerm)
+    {
+        string pattern = $"%{searchTerm}%";
+
+        List<DbContainer> dbContainers = await containers.QueryAsync(
+            $@"SELECT * FROM {nameof(DbContainer)}
+               WHERE Name LIKE ? COLLATE NOCASE
+                  OR Notes LIKE ? COLLATE NOCASE
+               ORDER BY Name COLLATE NOCASE",
+            pattern,
+            pattern);
+
+        return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
+    }
+
+    public async Task<List<Container>> SearchEmptyAsync(string searchTerm)
+    {
+        string pattern = $"%{searchTerm}%";
+
+        List<DbContainer> dbContainers = await containers.QueryAsync(
+            $@"SELECT c.* FROM {nameof(DbContainer)} c
+               WHERE (c.Name LIKE ? COLLATE NOCASE
+                   OR c.Notes LIKE ? COLLATE NOCASE)
+                 AND NOT EXISTS (
+                   SELECT 1 FROM {nameof(DbItemContainerRelation)} r
+                   WHERE r.ContainerId = c.ContainerId)
+               ORDER BY c.Name COLLATE NOCASE",
+            pattern,
+            pattern);
+
+        return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
+    }
+
     public async Task<Container?> GetWithItemsAndPhotosAsync(string containerId)
     {
         logger.LogDebug("GetWithItemsAndPhotosAsync: containerId={ContainerId}", containerId);
@@ -157,11 +208,11 @@ public class ContainerRepository : IContainerRepository
     {
         List<DbContainer> dbContainers;
 
-        if (pageNumber.HasValue && pageSize.HasValue)
+        if (TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
         {
-            ValidatePaging(pageNumber.Value, pageSize.Value);
-            int offset = CalculateOffset(pageNumber.Value, pageSize.Value);
-            dbContainers = await containers.GetAllAsync(offset, pageSize.Value);
+            ValidatePaging(pageNumberValue, pageSizeValue);
+            int offset = CalculateOffset(pageNumberValue, pageSizeValue);
+            dbContainers = await containers.GetAllAsync(offset, pageSizeValue);
         }
         else
         {
@@ -277,6 +328,20 @@ public class ContainerRepository : IContainerRepository
     {
         ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
+    }
+
+    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
+    {
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
+            pageNumberValue = pageNumber.Value;
+            pageSizeValue = pageSize.Value;
+            return true;
+        }
+
+        pageNumberValue = default;
+        pageSizeValue = default;
+        return false;
     }
 
     private static int CalculateOffset(int pageNumber, int pageSize) => pageNumber * pageSize;

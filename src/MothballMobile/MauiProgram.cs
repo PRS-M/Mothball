@@ -59,32 +59,31 @@ public static class MauiProgram
 	private static void ConfigurePlatformHandlers(IMauiHandlersCollection handlers)
 	{
 		#if IOS || MACCATALYST
-		SearchBarHandler.Mapper.AppendToMapping("TransparentBackground", (handler, view) =>
+		SearchBarHandler.Mapper.AppendToMapping("ContrastBackground", (handler, view) =>
 		{
 			var sb = handler.PlatformView;
 			if (sb is null) return;
 			sb.SearchBarStyle = UISearchBarStyle.Minimal;
-			sb.BackgroundColor = UIColor.Clear;
-			sb.BarTintColor = UIColor.Clear;
 			sb.BackgroundImage = new UIImage();
-			sb.Layer.BackgroundColor = UIColor.Clear.CGColor;
 			sb.Layer.BorderWidth = 0;
 
-			// Remove the inner SearchTextField styling that can show up as
-			// top/bottom hairlines when the SearchBar sits inside a rounded Border.
-			// (Available on iOS 13+/MacCatalyst.)
+			// On iOS/MacCatalyst, SearchBar rendering is owned by UISearchTextField,
+			// so set contrast colors directly on the native field.
 			try
 			{
-				// Clears the native search field "plate" background.
-				sb.SetSearchFieldBackgroundImage(new UIImage(), UIControlState.Normal);
-
 				var tf = sb.SearchTextField;
 				if (tf is not null)
 				{
-					tf.BackgroundColor = UIColor.Clear;
-					tf.Background = null;
-					tf.BorderStyle = UITextBorderStyle.None;
+					var isDark = sb.TraitCollection?.UserInterfaceStyle == UIUserInterfaceStyle.Dark;
+					tf.BackgroundColor = isDark
+						? UIColor.FromRGB(74, 68, 88)     // SecondaryContainerDark
+						: UIColor.FromRGB(232, 222, 248); // SecondaryContainer
+					tf.TextColor = isDark
+						? UIColor.FromRGB(232, 222, 248)   // OnSecondaryContainerDark
+						: UIColor.FromRGB(29, 25, 43);      // OnSecondaryContainer
+					tf.BorderStyle = UITextBorderStyle.RoundedRect;
 					tf.Layer.BorderWidth = 0;
+					tf.Layer.CornerRadius = 10;
 					tf.Layer.ShadowOpacity = 0;
 					tf.Layer.MasksToBounds = true;
 				}

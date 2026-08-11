@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Containers.ContainersList"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Containers.ContainersList.ContainersListPage"
+                x:DataType="vm:ContainerListViewModel"
+                Title="Containers"
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Priority="0"
+                Order="Primary"
+                Command="{Binding NavigateToAddContainerCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid"
+                        Glyph="&#xF067;"
+                        Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                        Size="22"/>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="12"
+            RowDefinitions="Auto,Auto,*">
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="12">
+            <controls:PageHeader Grid.Column="0"
+                                 Title="Containers"
+                                 Subtitle="Browse your storage"
+                                 TitleFontSize="22"
+                                 SubtitleFontSize="12"
+                                 Spacing="2"
+                                 HeaderMargin="0,0,0,4" />
+
+            <Border Grid.Column="1"
+                    Padding="10,0"
+                    HeightRequest="36"
+                    MinimumWidthRequest="124"
+                    VerticalOptions="Center"
+                    Background="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14">
+                <Grid ColumnDefinitions="Auto,*"
+                      ColumnSpacing="8">
+                    <Label Grid.Column="0"
+                           Text="Filter:"
+                           VerticalOptions="Center"
+                           FontSize="12"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
+
+                    <Picker Grid.Column="1"
+                            AutomationId="ContainersFilterPicker"
+                            ItemsSource="{x:Static vm:ContainerListViewModel.AvailableFilters}"
+                            SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                            FontSize="12"
+                            TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                            Background="Transparent" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <controls:SearchBarCard Grid.Row="1"
+                     Margin="0"
+                     Placeholder="Search containers..."
+                     Text="{Binding Query}"
+                     SearchCommand="{Binding SearchCommand}" />
+
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView x:Name="ContainersCollectionView"
+                            ItemsSource="{Binding Containers}"
+                            Margin="0,2,0,0"
+                            SelectionMode="None"
+                            RemainingItemsThreshold="2"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                            Span="1"
+                            VerticalItemSpacing="12"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.EmptyView>
+                    <controls:EmptyStateView Title="No containers yet"
+                                 Subtitle="Tap + to add your first container"
+                                 SubtitleFontSize="12" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ContainerViewModel">
+                        <controls:ContainerTile
+                            Command="{Binding NavigateCommand}"
+                            Name="{Binding Name}"
+                            Notes="{Binding Notes}"
+                            ItemCount="{Binding ItemCount}"
+                            ImagePaths="{Binding ImagePaths}"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</views:BasePage>

@@ -36,7 +36,7 @@ public sealed class ImagePathResolver : IImagePathResolver
         => PathsOrFallback(item.Photos, Constants.PathToItemPhotos);
 
     /// <inheritdoc />
-    public string GetFallbackImagePath() => "dotnet_bot.png"; // central fallback
+    public string GetFallbackImagePath() => "mothball_logo.png"; // central fallback
 
     private string FirstOrFallback(IEnumerable<ImageItem> photos, string folder)
         => photos.Any() ? BuildPath(folder, photos.First().FileName) : GetFallbackImagePath();

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:local="clr-namespace:MothballMobile.UI.Features.Containers.AddContainer"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Containers.AddContainer.AddContainerPage"
+                x:DataType="local:AddContainerViewModel"
+                Title="Add Container"
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <ScrollView>
+        <Grid Padding="20"
+              RowDefinitions="Auto,Auto"
+              ColumnDefinitions="*">
+            <controls:PageHeader Grid.Row="0"
+                                 Title="Create a new container"
+                                 Subtitle="Enter the details below"
+                                 TitleFontSize="24"
+                                 HeaderMargin="0,6,0,14" />
+
+            <Border Grid.Row="1"
+                    Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12"
+                                     HorizontalOptions="Center">
+                    <!-- Name -->
+                    <controls:ValidatedTextField Label="Name"
+                                                 WidthRequest="{StaticResource WidthM}"
+                                                 Placeholder="Enter container name"
+                                                 Text="{Binding Name}"
+                                                 ReturnType="Done"
+                                                 ReturnCommand="{Binding SaveContainerCommand}"
+                                                 ValidationMessage="{Binding ValidationMessage}" />
+
+                    <!-- Notes -->
+                    <controls:LabeledEntryField Label="Notes"
+                                               LabelMargin="4,8,4,0"
+                                               FieldWidthRequest="{StaticResource WidthM}"
+                                               UseWrapper="False"
+                                               Placeholder="Enter a description or notes."
+                                               Text="{Binding Notes}" />
+
+                    <!-- Temporary photo selection -->
+                    <Button Text="Choose Photo"
+                            Style="{StaticResource OutlinedButton}"
+                            WidthRequest="{StaticResource WidthM}"
+                            Command="{Binding ChoosePhotoCommand}"/>
+
+                    <Border Style="{StaticResource InputWrapper}"
+                            WidthRequest="{StaticResource WidthM}"
+                            IsVisible="{Binding IsPhotoProcessing}">
+                           <VerticalStackLayout Spacing="8"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"
+                                       MinimumHeightRequest="160">
+                            <ActivityIndicator IsRunning="True"
+                                         WidthRequest="32"
+                                         HeightRequest="32"
+                                         HorizontalOptions="Center" />
+                            <Label Text="Resizing photo..."
+                                Style="{StaticResource LabelSmall}"
+                                HorizontalTextAlignment="Center" />
+                           </VerticalStackLayout>
+                          </Border>
+
+                          <Border Style="{StaticResource InputWrapper}"
+                            WidthRequest="{StaticResource WidthM}"
+                            IsVisible="{Binding ShowPhotoThumbnail}">
+                           <VerticalStackLayout Spacing="8"
+                                       HorizontalOptions="Center">
+                            <Image Source="{Binding PhotoThumbnailPath}"
+                                HeightRequest="120"
+                                WidthRequest="120"
+                                Aspect="AspectFill" />
+                            <Label Text="Photo selected"
+                                Style="{StaticResource LabelSmall}"
+                                HorizontalTextAlignment="Center" />
+                           </VerticalStackLayout>
+                    </Border>
+
+                    <Label Text="{Binding PhotoSelectionStatus}"
+                           Style="{StaticResource BodySmall}"
+                           WidthRequest="{StaticResource WidthM}" />
+
+                    <!-- Final entity save -->
+                    <Button Text="Save Container"
+                            Style="{StaticResource PrimaryButton}"
+                            WidthRequest="{StaticResource WidthM}"
+                            Command="{Binding SaveContainerCommand}"/>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ScrollView>
+</views:BasePage>

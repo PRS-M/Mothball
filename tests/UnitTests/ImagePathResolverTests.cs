@@ -21,7 +21,7 @@ public class ImagePathResolverTests
     {
         var c = new Container();
         var path = _resolver.GetPrimaryContainerPhotoPath(c);
-        Assert.That(path, Is.EqualTo("dotnet_bot.png"));
+        Assert.That(path, Is.EqualTo("mothball_logo.png"));
     }
 
     [Test]
@@ -40,7 +40,7 @@ public class ImagePathResolverTests
         var item = new Item();
         // fallback case
         var single = _resolver.GetItemPhotoPaths(item).Single();
-        Assert.That(single, Is.EqualTo("dotnet_bot.png"));
+        Assert.That(single, Is.EqualTo("mothball_logo.png"));
 
         // add photos
         var img1 = item.AddImageItem();
@@ -60,6 +60,6 @@ public class ImagePathResolverTests
         var item = new Item();
         item.AddImageItem();
         var path = badResolver.GetPrimaryItemPhotoPath(item);
-        Assert.That(path, Is.EqualTo("dotnet_bot.png"));
+        Assert.That(path, Is.EqualTo("mothball_logo.png"));
     }
 }

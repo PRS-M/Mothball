@@ -1,6 +1,7 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using Infrastructure.Interfaces;
 
 namespace Infrastructure.Services.Repositories;
@@ -23,12 +24,6 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     public Task<Container?> GetContainerAsync(string containerId)
         => containerRepo.GetAsync(containerId);
-
-    public Task<List<Container>> GetAllContainersAsync()
-        => containerRepo.GetAllAsync();
-
-    public Task<List<Container>> GetAllContainersAsync(int pageNumber, int pageSize)
-        => containerRepo.GetAllAsync(pageNumber, pageSize);
 
     public async Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId)
     {
@@ -64,18 +59,95 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     public Task<Item?> GetItemWithPhotosAsync(string itemId)
         => itemRepo.GetWithPhotosAsync(itemId);
 
-    public Task<List<Item>> GetAllItemsWithPhotosAsync()
-        => itemRepo.GetAllWithPhotosAsync();
-
-    public Task<List<Item>> GetAllItemsWithPhotosAsync(int pageNumber, int pageSize)
-        => itemRepo.GetAllWithPhotosAsync(pageNumber, pageSize);
-
-    public Task<List<Item>> GetUnassignedItemsWithPhotosAsync(int pageNumber, int pageSize)
-        => itemRepo.GetUnassignedWithPhotosAsync(pageNumber, pageSize);
-
-    public Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm)
-        => itemRepo.SearchWithPhotosAsync(searchTerm);
-
     public Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
         => itemRepo.SearchItemsInContainerAsync(containerId, searchTerm, pageNumber, pageSize);
+
+    public Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification)
+    {
+        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+
+        if (hasSearch)
+        {
+            return specification.Filter == ContainerQueryFilter.Empty
+                ? containerRepo.SearchEmptyAsync(term!)
+                : containerRepo.SearchAsync(term!);
+        }
+
+        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            return specification.Filter == ContainerQueryFilter.Empty
+            ? containerRepo.GetEmptyAsync(pageNumberValue, pageSizeValue)
+            : containerRepo.GetAllAsync(pageNumberValue, pageSizeValue);
+        }
+
+        return specification.Filter == ContainerQueryFilter.Empty
+            ? containerRepo.SearchEmptyAsync(string.Empty)
+            : containerRepo.GetAllAsync();
+    }
+
+    public Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification)
+    {
+        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+
+        if (hasSearch)
+        {
+            return specification.Filter == ItemQueryFilter.Unassigned
+                ? itemRepo.SearchUnassignedWithPhotosAsync(term!)
+                : itemRepo.SearchWithPhotosAsync(term!);
+        }
+
+        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            return specification.Filter == ItemQueryFilter.Unassigned
+            ? itemRepo.GetUnassignedWithPhotosAsync(pageNumberValue, pageSizeValue)
+            : itemRepo.GetAllWithPhotosAsync(pageNumberValue, pageSizeValue);
+        }
+
+        return specification.Filter == ItemQueryFilter.Unassigned
+            ? itemRepo.SearchUnassignedWithPhotosAsync(string.Empty)
+            : itemRepo.GetAllWithPhotosAsync();
+    }
+
+    public async Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
+    {
+        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+
+        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            if (hasSearch)
+            {
+                return await itemRepo.SearchItemsInContainerAsync(specification.ContainerId, term!, pageNumberValue, pageSizeValue);
+            }
+
+            var result = await GetContainerWithItemsAndPhotosAsync(specification.ContainerId, pageNumberValue, pageSizeValue);
+            return result?.items ?? [];
+        }
+
+        if (hasSearch)
+        {
+            return await itemRepo.SearchItemsInContainerAsync(specification.ContainerId, term!, pageNumber: 0, pageSize: int.MaxValue);
+        }
+
+        return await itemRepo.GetItemsForContainerAsync(specification.ContainerId);
+    }
+
+    private static (string? term, bool hasSearch) NormalizeSearch(string? searchTerm)
+    {
+        var term = searchTerm?.Trim();
+        return (term, !string.IsNullOrWhiteSpace(term));
+    }
+
+    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
+    {
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
+            pageNumberValue = pageNumber.Value;
+            pageSizeValue = pageSize.Value;
+            return true;
+        }
+
+        pageNumberValue = default;
+        pageSizeValue = default;
+        return false;
+    }
 }

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Items.ItemsList"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Items.ItemsList.ItemsListPage"
+                x:Name="ItemsPage"
+                x:DataType="vm:ItemsListViewModel"
+                Title="Items"
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem x:DataType="vm:ItemsListViewModel"
+                     Priority="0"
+                     Order="Primary"
+                     Command="{Binding NavigateToAddItemCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid"
+                                 Glyph="&#xF067;"
+                                 Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                                 Size="22"/>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="12"
+          RowDefinitions="Auto,Auto,*">
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="12">
+            <controls:PageHeader Grid.Column="0"
+                                 Title="Items"
+                                 Subtitle="All items across containers"
+                                 TitleFontSize="22"
+                                 SubtitleFontSize="12"
+                                 Spacing="2"
+                                 HeaderMargin="0,0,0,4" />
+
+            <Border Grid.Column="1"
+                    Padding="10,0"
+                    HeightRequest="36"
+                    MinimumWidthRequest="152"
+                    VerticalOptions="Center"
+                    Background="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14">
+                <Grid ColumnDefinitions="Auto,*"
+                      ColumnSpacing="8">
+                    <Label Grid.Column="0"
+                           Text="Filter:"
+                           VerticalOptions="Center"
+                           FontSize="12"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
+
+                    <Picker Grid.Column="1"
+                            AutomationId="ItemsFilterPicker"
+                            ItemsSource="{x:Static vm:ItemsListViewModel.AvailableFilters}"
+                            SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                            FontSize="12"
+                            TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                            Background="Transparent" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <controls:SearchBarCard Grid.Row="1"
+            Margin="0"
+                    Placeholder="Search items..."
+                    Text="{Binding Query}"
+                    SearchCommand="{Binding SearchCommand}" />
+
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Items}"
+                            Margin="0,2,0,0"
+                            SelectionMode="None"
+                            RemainingItemsThreshold="4"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="{OnIdiom Phone=1, Tablet=2, Desktop=2}"
+                                     VerticalItemSpacing="16"
+                                     HorizontalItemSpacing="16"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.EmptyView>
+                    <controls:EmptyStateView Title="No items yet" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ItemViewModel">
+                        <controls:ItemTile
+                                           Command="{Binding NavigateToItemDetailsCommand}"
+                                           Name="{Binding Name}"
+                                           Description="{Binding Description}"
+                                           ImagePaths="{Binding ImagePaths}"
+                                           ImageSize="72" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</views:BasePage>

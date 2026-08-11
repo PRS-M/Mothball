@@ -17,7 +17,9 @@
             <DataTemplate>
                 <Image x:DataType="sys:String"
                        Source="{Binding ., Converter={StaticResource PathToImage}}"
-                       Aspect="AspectFit"
+                       Aspect="AspectFill"
+                       HorizontalOptions="Fill"
+                       VerticalOptions="Fill"
                        SizeChanged="Image_OnSizeChanged" />
             </DataTemplate>
         </CarouselView.ItemTemplate>

@@ -45,6 +45,7 @@
     <Compile Include="../../src/Infrastructure/DatabaseModels/**/*.cs" Link="Infrastructure/DatabaseModels/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Interfaces/**/*.cs" Link="Infrastructure/Interfaces/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Mappers/**/*.cs" Link="Infrastructure/Mappers/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Services/DemoDataSeeder.cs" Link="Infrastructure/Services/DemoDataSeeder.cs" />
     <Compile Include="../../src/Infrastructure/Services/ImagePathResolver.cs" Link="Infrastructure/Services/ImagePathResolver.cs" />
     <Compile Include="../../src/Infrastructure/Services/MothballDatabase.cs" Link="Infrastructure/Services/MothballDatabase.cs" />
     <Compile Include="../../src/Infrastructure/Services/SqliteStartupInitializer.cs" Link="Infrastructure/Services/SqliteStartupInitializer.cs" />

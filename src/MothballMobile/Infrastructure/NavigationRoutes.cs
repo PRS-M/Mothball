@@ -2,6 +2,8 @@ namespace MothballMobile.Infrastructure;
 
 public static class NavigationRoutes
 {
+    public const string HomeContainers = "HomeContainersView";
+    public const string HomeItems = "HomeItemsView";
     public const string AddContainer = "AddContainer";
     public const string ContainerDetails = "ContainerDetails";
     public const string ItemDetails = "ItemDetails";

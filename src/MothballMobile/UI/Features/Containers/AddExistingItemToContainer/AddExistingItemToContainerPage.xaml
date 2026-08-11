@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Containers.AddExistingItemToContainer"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Containers.AddExistingItemToContainer.AddExistingItemToContainerPage"
+                x:DataType="vm:AddExistingItemToContainerViewModel"
+                Title="Add Existing Item"
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <Grid Padding="20"
+          RowDefinitions="Auto,*">
+                <controls:PageHeader Grid.Row="0"
+                                                         Title="Select an item"
+                                                         Subtitle="Only items not assigned to any container are shown"
+                                                         TitleFontSize="24" />
+
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Items}"
+                            SelectionMode="None"
+                            RemainingItemsThreshold="4"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
+                <CollectionView.EmptyView>
+                    <controls:EmptyStateView Title="No unassigned items" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:UnassignedItemViewModel">
+                        <controls:ItemTile
+                                           Command="{Binding AssignToContainerCommand}"
+                                           Name="{Binding Name}"
+                                           Description="{Binding Description}"
+                                           ImagePaths="{Binding ImagePaths}"
+                                           ImageSize="72" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</views:BasePage>

@@ -106,6 +106,20 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
+    public async Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm)
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var assigned = state.Relations.Select(r => r.ItemId).ToHashSet();
+
+        return state.Items
+            .Where(i => !assigned.Contains(i.ItemId)
+                && i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(i => i.RowId)
+            .Select(i => MapItem(state, i))
+            .ToList();
+    }
+
     public async Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
     {
         if (!Guid.TryParse(containerId, out var cid)) return [];

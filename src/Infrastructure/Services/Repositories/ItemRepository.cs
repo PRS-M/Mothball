@@ -119,6 +119,21 @@ public class ItemRepository : IItemRepository
         return await MapItemsWithPhotosAsync(itemsQuery);
     }
 
+    public async Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm)
+    {
+        string pattern = $"%{searchTerm}%";
+
+        List<DbItem> itemsQuery = await items.QueryAsync(
+            $@"SELECT * FROM {nameof(DbItem)}
+               WHERE ItemId NOT IN (SELECT ItemId FROM {nameof(DbItemContainerRelation)})
+                 AND Name LIKE ? COLLATE NOCASE
+               ORDER BY Name COLLATE NOCASE",
+            pattern);
+
+        logger.LogDebug("SearchUnassignedWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
+        return await MapItemsWithPhotosAsync(itemsQuery);
+    }
+
     public async Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
     {
         if (!TryParseGuid(containerId, out Guid cid, "SearchItemsInContainerAsync", containerId))
@@ -180,11 +195,11 @@ public class ItemRepository : IItemRepository
     {
         List<DbItem> dbItems;
 
-        if (pageNumber.HasValue && pageSize.HasValue)
+        if (TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
         {
-            ValidatePaging(pageNumber.Value, pageSize.Value);
-            int offset = CalculateOffset(pageNumber.Value, pageSize.Value);
-            dbItems = await items.GetAllAsync(offset, pageSize.Value);
+            ValidatePaging(pageNumberValue, pageSizeValue);
+            int offset = CalculateOffset(pageNumberValue, pageSizeValue);
+            dbItems = await items.GetAllAsync(offset, pageSizeValue);
         }
         else
         {
@@ -275,6 +290,20 @@ public class ItemRepository : IItemRepository
     {
         ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
+    }
+
+    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
+    {
+        if (pageNumber.HasValue && pageSize.HasValue)
+        {
+            pageNumberValue = pageNumber.Value;
+            pageSizeValue = pageSize.Value;
+            return true;
+        }
+
+        pageNumberValue = default;
+        pageSizeValue = default;
+        return false;
     }
 
     private static int CalculateOffset(int pageNumber, int pageSize) => pageNumber * pageSize;

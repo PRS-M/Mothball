@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Containers.ContainerDetails"
+                xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Containers.ContainerDetails.ContainerDetailsPage"
+                x:DataType="vm:ContainerDetailsViewModel"
+                Title="Container"
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Priority="0"
+                     Order="Primary"
+                     Command="{Binding DeleteContainerCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid"
+                                 Glyph="&#xF1F8;"
+                                 Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                                 Size="22"/>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*"
+          RowSpacing="0"
+          Padding="0">
+        <Border Grid.Row="0"
+                Style="{StaticResource Card}"
+                Margin="16,16,16,8"
+                Padding="12">
+            <Grid ColumnDefinitions="*,Auto"
+                  RowDefinitions="Auto,Auto,Auto"
+                  ColumnSpacing="12"
+                  RowSpacing="6">
+                  <Label Grid.Row="0"
+                      Grid.Column="0"
+                      Text="{Binding Name}"
+                      LineBreakMode="TailTruncation"
+                      MaxLines="2"
+                      Style="{StaticResource TitleLarge}"/>
+                <Label Grid.Row="1"
+                       Grid.Column="0"
+                       Text="{Binding TotalItemCount, StringFormat='Items stored: {0}'}"
+                      Style="{StaticResource BodyMedium}"/>
+                <Label Grid.Row="2"
+                       Grid.Column="0"
+                       Text="{Binding Notes}"
+                      Style="{StaticResource BodySmall}"/>
+                <Border Grid.RowSpan="3"
+                        Grid.Column="1"
+                        StrokeShape="RoundRectangle 10"
+                        HorizontalOptions="End"
+                        VerticalOptions="Center">
+                    <controls:ImageCarousel HeightRequest="110"
+                                            WidthRequest="110"
+                                            CornerRadius="10"
+                                            ImagePaths="{Binding ContainerImagePaths}" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <VerticalStackLayout Grid.Row="1"
+                             Margin="16,8,16,8"
+                             Spacing="8">
+            <Label Text="Items in this container"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   LineBreakMode="NoWrap"
+                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+            <HorizontalStackLayout Spacing="8"
+                                   HorizontalOptions="Start"
+                                   VerticalOptions="Center">
+                <Button Text="Add a new item"
+                        Style="{StaticResource TonalButton}"
+                        HeightRequest="36"
+                        FontSize="12"
+                        Padding="12,0"
+                        Command="{Binding NavigateToAddNewItemCommand}">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="FontAwesomeSolid"
+                                         Glyph="&#xF067;"
+                                         Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                                         Size="16"/>
+                    </Button.ImageSource>
+                </Button>
+                <Button Text="Add an existing item"
+                        Style="{StaticResource OutlinedButton}"
+                        HeightRequest="36"
+                        FontSize="12"
+                        Padding="12,0"
+                        Command="{Binding NavigateToAddExistingItemCommand}">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="FontAwesomeSolid"
+                                         Glyph="&#xF067;"
+                                         Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                         Size="16"/>
+                    </Button.ImageSource>
+                </Button>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
+        <controls:SearchBarCard Grid.Row="2"
+                    Margin="16,0,16,16"
+                    Placeholder="Search within container..."
+                    Text="{Binding SearchQuery}"
+                    SearchCommand="{Binding ApplySearchCommand}" />
+
+        <CollectionView Grid.Row="3"
+                        x:DataType="vm:ContainerDetailsViewModel"
+                        ItemsSource="{Binding Items}"
+                        SelectionMode="None"
+                        RemainingItemsThreshold="3"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreItemsCommand}"
+                        Margin="16,0,16,16"
+                        VerticalScrollBarVisibility="Default">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical"
+                                   ItemSpacing="12"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.EmptyView>
+                <controls:EmptyStateView Title="No items in this container" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ItemWithPhotosViewModel">
+                    <controls:ItemTile Name="{Binding Name}"
+                                       Description="{Binding Description}"
+                                       ImagePaths="{Binding ImagePaths}"
+                                       ImageSize="92" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</views:BasePage>

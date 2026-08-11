@@ -1,0 +1,182 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CoreApp.Entities.ItemAggregate;
+using CoreApp.Interfaces;
+using CoreApp.Services;
+using MothballMobile.Infrastructure;
+
+namespace MothballMobile.UI.Features.Items.AddItem;
+
+public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
+{
+    private readonly ImageService imageService;
+    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IRetryService retryService;
+    private readonly Infrastructure.INavigationService nav;
+    private ImageService.TemporaryPhotoCapture? pendingPhoto;
+
+    [ObservableProperty]
+    private string containerId = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string name = string.Empty;
+
+    [ObservableProperty]
+    private string description = string.Empty;
+
+    [ObservableProperty]
+    private string quantity = "1"; // reserved for future relation quantity use
+
+    [ObservableProperty]
+    private string? validationMessage;
+
+    [ObservableProperty]
+    private string? photoThumbnailPath;
+
+    [ObservableProperty]
+    private bool isPhotoProcessing;
+
+    public AddItemViewModel(
+        ImageService imageService,
+        IInventoryCommandRepository inventoryCommands,
+        IRetryService retryService,
+        Infrastructure.INavigationService nav)
+    {
+        this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
+        this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
+        this.retryService = retryService ?? throw new ArgumentNullException(nameof(retryService));
+        this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query is null) return;
+        if (query.TryGetValue(NavigationParams.ContainerId, out var value) && value is string id)
+        {
+            ContainerId = id;
+        }
+    }
+
+    public bool HasTemporaryPhoto => !string.IsNullOrWhiteSpace(PhotoThumbnailPath);
+
+    public bool ShowPhotoThumbnail => HasTemporaryPhoto && !IsPhotoProcessing;
+
+    public bool ShowPhotoProcessingIndicator => IsPhotoProcessing;
+
+    public string PhotoSelectionStatus =>
+        IsPhotoProcessing
+            ? "Processing photo..."
+            : HasTemporaryPhoto
+            ? "Photo selected. It will be saved when you tap Save."
+            : "No photo selected.";
+
+    partial void OnPhotoThumbnailPathChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasTemporaryPhoto));
+        OnPropertyChanged(nameof(ShowPhotoThumbnail));
+        OnPropertyChanged(nameof(PhotoSelectionStatus));
+    }
+
+    partial void OnIsPhotoProcessingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowPhotoThumbnail));
+        OnPropertyChanged(nameof(ShowPhotoProcessingIndicator));
+        OnPropertyChanged(nameof(PhotoSelectionStatus));
+    }
+
+    private bool CanAdd() => !string.IsNullOrWhiteSpace(Name);
+
+    [RelayCommand]
+    private async Task ChoosePhotoAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            ImageService.TemporaryPhotoCapture? selectedPhoto = null;
+
+            bool photoSelected = await retryService.RetryAsync(
+                async () =>
+                {
+                    IsPhotoProcessing = true;
+                    try
+                    {
+                        selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
+                        return selectedPhoto is not null;
+                    }
+                    finally
+                    {
+                        IsPhotoProcessing = false;
+                    }
+                },
+                canceledTitle: "Photo capture canceled",
+                canceledMessage: "Please try again or continue without a photo.",
+                retryButton: "Retry",
+                continueButton: "Continue");
+
+            if (!photoSelected || selectedPhoto is null)
+            {
+                return;
+            }
+
+            if (pendingPhoto is not null)
+            {
+                await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
+            }
+
+            pendingPhoto = selectedPhoto;
+            PhotoThumbnailPath = selectedPhoto.FullPath;
+            ValidationMessage = null;
+        });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAdd))]
+    private async Task SaveAsync()
+    {
+        var trimmed = Name?.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            ValidationMessage = "Name is required.";
+            return;
+        }
+
+        if (!int.TryParse(Quantity?.Trim(), out var parsedQuantity) || parsedQuantity <= 0)
+        {
+            ValidationMessage = "Quantity must be a positive number.";
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            try
+            {
+                var item = new Item
+                {
+                    Name = trimmed,
+                    Description = Description?.Trim() ?? string.Empty
+                };
+
+                await inventoryCommands.InsertItemAsync(item);
+
+                if (pendingPhoto is not null)
+                {
+                    await imageService.SaveItemPhotoAsync(item, pendingPhoto.Bytes);
+                    await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
+                }
+
+                if (Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
+                {
+                    await inventoryCommands.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
+                }
+
+                pendingPhoto = null;
+                PhotoThumbnailPath = null;
+                ValidationMessage = null;
+                await nav.GoBackAsync();
+            }
+            catch (Exception ex)
+            {
+                ValidationMessage = $"Failed to save item: {ex.Message}";
+            }
+        });
+    }
+}
