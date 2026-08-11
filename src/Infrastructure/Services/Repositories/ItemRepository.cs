@@ -119,6 +119,21 @@ public class ItemRepository : IItemRepository
         return await MapItemsWithPhotosAsync(itemsQuery);
     }
 
+    public async Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm)
+    {
+        string pattern = $"%{searchTerm}%";
+
+        List<DbItem> itemsQuery = await items.QueryAsync(
+            $@"SELECT * FROM {nameof(DbItem)}
+               WHERE ItemId NOT IN (SELECT ItemId FROM {nameof(DbItemContainerRelation)})
+                 AND Name LIKE ? COLLATE NOCASE
+               ORDER BY Name COLLATE NOCASE",
+            pattern);
+
+        logger.LogDebug("SearchUnassignedWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
+        return await MapItemsWithPhotosAsync(itemsQuery);
+    }
+
     public async Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
     {
         if (!TryParseGuid(containerId, out Guid cid, "SearchItemsInContainerAsync", containerId))

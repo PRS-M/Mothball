@@ -46,6 +46,57 @@ public class ContainerRepository : IContainerRepository
     public Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
         => GetContainersInternalAsync(pageNumber, pageSize);
 
+    public async Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize)
+    {
+        ValidatePaging(pageNumber, pageSize);
+        int offset = CalculateOffset(pageNumber, pageSize);
+
+        List<DbContainer> dbContainers = await containers.QueryAsync(
+            $@"SELECT c.* FROM {nameof(DbContainer)} c
+               WHERE NOT EXISTS (
+                   SELECT 1 FROM {nameof(DbItemContainerRelation)} r
+                   WHERE r.ContainerId = c.ContainerId)
+               ORDER BY c.Name COLLATE NOCASE
+               LIMIT ? OFFSET ?",
+            pageSize,
+            offset);
+
+        return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
+    }
+
+    public async Task<List<Container>> SearchAsync(string searchTerm)
+    {
+        string pattern = $"%{searchTerm}%";
+
+        List<DbContainer> dbContainers = await containers.QueryAsync(
+            $@"SELECT * FROM {nameof(DbContainer)}
+               WHERE Name LIKE ? COLLATE NOCASE
+                  OR Notes LIKE ? COLLATE NOCASE
+               ORDER BY Name COLLATE NOCASE",
+            pattern,
+            pattern);
+
+        return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
+    }
+
+    public async Task<List<Container>> SearchEmptyAsync(string searchTerm)
+    {
+        string pattern = $"%{searchTerm}%";
+
+        List<DbContainer> dbContainers = await containers.QueryAsync(
+            $@"SELECT c.* FROM {nameof(DbContainer)} c
+               WHERE (c.Name LIKE ? COLLATE NOCASE
+                   OR c.Notes LIKE ? COLLATE NOCASE)
+                 AND NOT EXISTS (
+                   SELECT 1 FROM {nameof(DbItemContainerRelation)} r
+                   WHERE r.ContainerId = c.ContainerId)
+               ORDER BY c.Name COLLATE NOCASE",
+            pattern,
+            pattern);
+
+        return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
+    }
+
     public async Task<Container?> GetWithItemsAndPhotosAsync(string containerId)
     {
         logger.LogDebug("GetWithItemsAndPhotosAsync: containerId={ContainerId}", containerId);

@@ -14,6 +14,7 @@ public interface IItemRepository
     Task<List<Item>> GetByIdsWithPhotosAsync(IEnumerable<Guid> itemIds);
     Task<List<Item>> GetUnassignedWithPhotosAsync(int pageNumber, int pageSize);
     Task<List<Item>> SearchWithPhotosAsync(string searchTerm);
+    Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm);
     Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize);
     Task InsertAsync(Item item);
     Task UpdateAsync(Item item);

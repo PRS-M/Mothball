@@ -30,6 +30,15 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     public Task<List<Container>> GetAllContainersAsync(int pageNumber, int pageSize)
         => containerRepo.GetAllAsync(pageNumber, pageSize);
 
+    public Task<List<Container>> GetEmptyContainersAsync(int pageNumber, int pageSize)
+        => containerRepo.GetEmptyAsync(pageNumber, pageSize);
+
+    public Task<List<Container>> SearchContainersAsync(string searchTerm)
+        => containerRepo.SearchAsync(searchTerm);
+
+    public Task<List<Container>> SearchEmptyContainersAsync(string searchTerm)
+        => containerRepo.SearchEmptyAsync(searchTerm);
+
     public async Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId)
     {
         var container = await containerRepo.GetWithItemsAndPhotosAsync(containerId);
@@ -75,6 +84,9 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     public Task<List<Item>> GetItemsWithPhotosAsync(string searchTerm)
         => itemRepo.SearchWithPhotosAsync(searchTerm);
+
+    public Task<List<Item>> SearchUnassignedItemsWithPhotosAsync(string searchTerm)
+        => itemRepo.SearchUnassignedWithPhotosAsync(searchTerm);
 
     public Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
         => itemRepo.SearchItemsInContainerAsync(containerId, searchTerm, pageNumber, pageSize);

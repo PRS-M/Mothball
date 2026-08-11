@@ -53,6 +53,54 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ToList();
     }
 
+    public async Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize)
+    {
+        ValidatePaging(pageNumber, pageSize);
+        int offset = pageNumber * pageSize;
+
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var nonEmpty = state.Relations.Select(r => r.ContainerId).ToHashSet();
+
+        return state.Containers
+            .Where(c => !nonEmpty.Contains(c.ContainerId))
+            .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(c => c.RowId)
+            .Skip(offset)
+            .Take(pageSize)
+            .Select(c => MapContainer(state, c, includeRelations: true)!)
+            .ToList();
+    }
+
+    public async Task<List<Container>> SearchAsync(string searchTerm)
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var term = searchTerm ?? string.Empty;
+
+        return state.Containers
+            .Where(c => c.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || c.Notes.Contains(term, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(c => c.RowId)
+            .Select(c => MapContainer(state, c, includeRelations: true)!)
+            .ToList();
+    }
+
+    public async Task<List<Container>> SearchEmptyAsync(string searchTerm)
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var term = searchTerm ?? string.Empty;
+        var nonEmpty = state.Relations.Select(r => r.ContainerId).ToHashSet();
+
+        return state.Containers
+            .Where(c => !nonEmpty.Contains(c.ContainerId)
+                && (c.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || c.Notes.Contains(term, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(c => c.RowId)
+            .Select(c => MapContainer(state, c, includeRelations: true)!)
+            .ToList();
+    }
+
     public async Task<Container?> GetWithItemsAndPhotosAsync(string containerId)
     {
         if (!Guid.TryParse(containerId, out var cid)) return null;

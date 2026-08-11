@@ -5,7 +5,6 @@ using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using MothballMobile.Infrastructure;
 using Infrastructure.Services;
-using System.Linq;
 
 namespace MothballMobile.UI.Features.Containers.ContainersList;
 
@@ -96,12 +95,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
             return await inventoryQueries.GetAllContainersAsync(pageNumber, pageSize);
         }
 
-        var allContainers = await inventoryQueries.GetAllContainersAsync();
-        return allContainers
-            .Where(c => c.ItemCount == 0)
-            .Skip(pageNumber * pageSize)
-            .Take(pageSize)
-            .ToList();
+        return await inventoryQueries.GetEmptyContainersAsync(pageNumber, pageSize);
     }
 
     protected override ContainerViewModel MapToViewModel(Container source)
@@ -147,12 +141,9 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         }
 
         var normalized = searchQuery.Trim();
-        var allContainers = await inventoryQueries.GetAllContainersAsync();
-        var onlyEmpty = SelectedFilter == ContainerListFilter.Empty;
-        var filtered = allContainers.Where(container =>
-            (!onlyEmpty || container.ItemCount == 0) &&
-            (container.Name.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
-             container.Notes.Contains(normalized, StringComparison.OrdinalIgnoreCase)));
+        var filtered = SelectedFilter == ContainerListFilter.Empty
+            ? await inventoryQueries.SearchEmptyContainersAsync(normalized)
+            : await inventoryQueries.SearchContainersAsync(normalized);
 
         ReplaceWithFullResultSet(filtered);
     }

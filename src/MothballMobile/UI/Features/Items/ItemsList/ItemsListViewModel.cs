@@ -4,7 +4,6 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using Infrastructure.Services;
 using MothballMobile.Infrastructure;
-using System.Linq;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
 
@@ -135,18 +134,9 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         }
         else
         {
-            List<Item> items;
-            if (SelectedFilter == ItemsListFilter.Unassigned)
-            {
-                var allUnassigned = await GetAllUnassignedItemsAsync();
-                items = allUnassigned
-                    .Where(item => item.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
-            else
-            {
-                items = await inventoryQueries.GetItemsWithPhotosAsync(query);
-            }
+            List<Item> items = SelectedFilter == ItemsListFilter.Unassigned
+                ? await inventoryQueries.SearchUnassignedItemsWithPhotosAsync(query)
+                : await inventoryQueries.GetItemsWithPhotosAsync(query);
 
             ReplaceWithFullResultSet(items);
         }
@@ -166,28 +156,4 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
             ? inventoryQueries.GetUnassignedItemsWithPhotosAsync(pageNumber, pageSize)
             : inventoryQueries.GetAllItemsWithPhotosAsync(pageNumber, pageSize);
 
-    private async Task<List<Item>> GetAllUnassignedItemsAsync()
-    {
-        var results = new List<Item>();
-        var pageNumber = 0;
-
-        while (true)
-        {
-            var page = await inventoryQueries.GetUnassignedItemsWithPhotosAsync(pageNumber, pageSize);
-            if (page.Count == 0)
-            {
-                break;
-            }
-
-            results.AddRange(page);
-            if (page.Count < pageSize)
-            {
-                break;
-            }
-
-            pageNumber++;
-        }
-
-        return results;
-    }
 }
