@@ -139,4 +139,31 @@ public class InventoryQueryRepository : IInventoryQueryRepository
             ? itemRepo.SearchUnassignedWithPhotosAsync(string.Empty)
             : itemRepo.GetAllWithPhotosAsync();
     }
+
+    public async Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
+    {
+        var term = specification.SearchTerm?.Trim();
+        var hasSearch = !string.IsNullOrWhiteSpace(term);
+
+        if (specification.PageNumber.HasValue && specification.PageSize.HasValue)
+        {
+            var pageNumber = specification.PageNumber.Value;
+            var pageSize = specification.PageSize.Value;
+
+            if (hasSearch)
+            {
+                return await itemRepo.SearchItemsInContainerAsync(specification.ContainerId, term!, pageNumber, pageSize);
+            }
+
+            var result = await GetContainerWithItemsAndPhotosAsync(specification.ContainerId, pageNumber, pageSize);
+            return result?.items ?? [];
+        }
+
+        if (hasSearch)
+        {
+            return await itemRepo.SearchItemsInContainerAsync(specification.ContainerId, term!, pageNumber: 0, pageSize: int.MaxValue);
+        }
+
+        return await itemRepo.GetItemsForContainerAsync(specification.ContainerId);
+    }
 }

@@ -45,4 +45,6 @@ public interface IInventoryQueryRepository
     Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification);
 
     Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification);
+
+    Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification);
 }

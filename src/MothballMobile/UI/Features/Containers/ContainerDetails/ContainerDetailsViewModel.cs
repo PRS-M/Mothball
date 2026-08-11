@@ -6,6 +6,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Specifications;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -94,8 +95,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         Items.Clear();
         ContainerImagePaths.Clear();
 
-        var result = await inventoryQueries.GetContainerWithItemsAndPhotosAsync(containerId, currentPage, PageSize);
-        if (result is null)
+        var container = await inventoryQueries.GetContainerAsync(containerId);
+        if (container is null)
         {
             Name = "Container not found";
             Notes = string.Empty;
@@ -105,7 +106,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             return;
         }
 
-        var (container, items) = result.Value;
         currentContainer = container;
         Name = container.Name;
         Notes = container.Notes;
@@ -115,6 +115,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         // Load container photos (all, as a small carousel)
         ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
+
+        var items = await inventoryQueries.QueryContainerItemsWithPhotosAsync(
+            new ContainerItemsSpecification(
+                ContainerId: containerId,
+                PageNumber: currentPage,
+                PageSize: PageSize));
 
         // Map items and load their images (carousel per item)
         AddItemsToCollectionAsync(items, clearExisting: false);
@@ -151,28 +157,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             if (!hasMoreItems || string.IsNullOrWhiteSpace(ContainerId)) return;
 
             currentPage++;
-            List<Item> items;
-
-            if (isSearchActive && !string.IsNullOrWhiteSpace(SearchQuery))
-            {
-                // Load more search results
-                items = await inventoryQueries.SearchItemsInContainerAsync(
-                    ContainerId, SearchQuery.Trim(), currentPage, PageSize);
-            }
-            else
-            {
-                // Load more regular items
-                var result = await inventoryQueries.GetContainerWithItemsAndPhotosAsync(
-                    ContainerId, currentPage, PageSize);
-
-                if (result is null)
-                {
-                    hasMoreItems = false;
-                    return;
-                }
-
-                items = result.Value.items;
-            }
+            var items = await inventoryQueries.QueryContainerItemsWithPhotosAsync(
+                new ContainerItemsSpecification(
+                    ContainerId: ContainerId,
+                    SearchTerm: isSearchActive ? SearchQuery : null,
+                    PageNumber: currentPage,
+                    PageSize: PageSize));
 
             // Only add items if we got any
             if (items.Count > 0)
@@ -202,7 +192,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             // Perform search
             isSearchActive = true;
-            var searchResults = await inventoryQueries.SearchItemsInContainerAsync(ContainerId, SearchQuery.Trim(), currentPage, PageSize);
+            var searchResults = await inventoryQueries.QueryContainerItemsWithPhotosAsync(
+                new ContainerItemsSpecification(
+                    ContainerId: ContainerId,
+                    SearchTerm: SearchQuery,
+                    PageNumber: currentPage,
+                    PageSize: PageSize));
             AddItemsToCollectionAsync(searchResults, clearExisting: true);
             hasMoreItems = searchResults.Count == PageSize;
         }
