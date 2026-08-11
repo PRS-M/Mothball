@@ -48,8 +48,8 @@
                     StrokeShape="RoundRectangle 14">
                 <Picker AutomationId="ItemsFilterPicker"
                         Title="Filter"
-                        ItemsSource="{Binding FilterOptions}"
-                        SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
+                    ItemsSource="{x:Static vm:ItemsListViewModel.AvailableFilters}"
+                    SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
                         FontSize="12"
                         TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
                         Background="Transparent" />

@@ -28,9 +28,8 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     private string query = string.Empty;
 
     private ContainerListFilter selectedFilter = ContainerListFilter.All;
-    private string selectedFilterOption = "All";
 
-    public IReadOnlyList<string> FilterOptions { get; } = ["All", "Empty"];
+    public static IReadOnlyList<ContainerListFilter> AvailableFilters { get; } = Enum.GetValues<ContainerListFilter>();
 
     public ContainerListFilter SelectedFilter
     {
@@ -42,38 +41,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
                 return;
             }
 
-            var option = value == ContainerListFilter.Empty ? "Empty" : "All";
-            if (!string.Equals(selectedFilterOption, option, StringComparison.Ordinal))
-            {
-                selectedFilterOption = option;
-                OnPropertyChanged(nameof(SelectedFilterOption));
-            }
-        }
-    }
-
-    public string SelectedFilterOption
-    {
-        get => selectedFilterOption;
-        set
-        {
-            var option = string.Equals(value, "Empty", StringComparison.OrdinalIgnoreCase)
-                ? "Empty"
-                : "All";
-
-            if (!SetProperty(ref selectedFilterOption, option))
-            {
-                return;
-            }
-
-            var filter = option == "Empty"
-                ? ContainerListFilter.Empty
-                : ContainerListFilter.All;
-
-            if (SelectedFilter != filter)
-            {
-                SelectedFilter = filter;
-                _ = MainThread.InvokeOnMainThreadAsync(SearchAsync);
-            }
+            _ = MainThread.InvokeOnMainThreadAsync(SearchAsync);
         }
     }
 

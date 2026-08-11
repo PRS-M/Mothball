@@ -26,9 +26,8 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     private string query = string.Empty;
 
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
-    private string selectedFilterOption = "All";
 
-    public IReadOnlyList<string> FilterOptions { get; } = ["All", "Unassigned"];
+    public static IReadOnlyList<ItemsListFilter> AvailableFilters { get; } = Enum.GetValues<ItemsListFilter>();
 
     public ItemsListFilter SelectedFilter
     {
@@ -40,38 +39,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
                 return;
             }
 
-            var option = value == ItemsListFilter.Unassigned ? "Unassigned" : "All";
-            if (!string.Equals(selectedFilterOption, option, StringComparison.Ordinal))
-            {
-                selectedFilterOption = option;
-                OnPropertyChanged(nameof(SelectedFilterOption));
-            }
-        }
-    }
-
-    public string SelectedFilterOption
-    {
-        get => selectedFilterOption;
-        set
-        {
-            var option = string.Equals(value, "Unassigned", StringComparison.OrdinalIgnoreCase)
-                ? "Unassigned"
-                : "All";
-
-            if (!SetProperty(ref selectedFilterOption, option))
-            {
-                return;
-            }
-
-            var filter = option == "Unassigned"
-                ? ItemsListFilter.Unassigned
-                : ItemsListFilter.All;
-
-            if (SelectedFilter != filter)
-            {
-                SelectedFilter = filter;
-                _ = MainThread.InvokeOnMainThreadAsync(SearchAsync);
-            }
+            _ = MainThread.InvokeOnMainThreadAsync(SearchAsync);
         }
     }
 
