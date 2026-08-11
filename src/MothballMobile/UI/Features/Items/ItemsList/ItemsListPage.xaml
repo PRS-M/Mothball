@@ -46,13 +46,22 @@
                     Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 14">
-                <Picker AutomationId="ItemsFilterPicker"
-                        Title="Filter"
-                    ItemsSource="{x:Static vm:ItemsListViewModel.AvailableFilters}"
-                    SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
-                        FontSize="12"
-                        TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
-                        Background="Transparent" />
+                <Grid ColumnDefinitions="Auto,*"
+                      ColumnSpacing="8">
+                    <Label Grid.Column="0"
+                           Text="Filter:"
+                           VerticalOptions="Center"
+                           FontSize="12"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
+
+                    <Picker Grid.Column="1"
+                            AutomationId="ItemsFilterPicker"
+                            ItemsSource="{x:Static vm:ItemsListViewModel.AvailableFilters}"
+                            SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                            FontSize="12"
+                            TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                            Background="Transparent" />
+                </Grid>
             </Border>
         </Grid>
 
