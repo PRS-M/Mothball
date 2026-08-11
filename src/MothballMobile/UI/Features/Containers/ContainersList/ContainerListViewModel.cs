@@ -8,6 +8,13 @@ using Infrastructure.Services;
 using System.Linq;
 
 namespace MothballMobile.UI.Features.Containers.ContainersList;
+
+public enum ContainerListFilter
+{
+    All,
+    Empty,
+}
+
 public partial class ContainerListViewModel : PagedListViewModelBase<Container, ContainerViewModel>, IDisposable
 {
     private readonly IImagePathResolver imagePaths;
@@ -19,6 +26,12 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 
     [ObservableProperty]
     private string query = string.Empty;
+
+    [ObservableProperty]
+    private ContainerListFilter selectedFilter = ContainerListFilter.All;
+
+    public bool IsAllFilterSelected => SelectedFilter == ContainerListFilter.All;
+    public bool IsEmptyFilterSelected => SelectedFilter == ContainerListFilter.Empty;
 
     public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryQueryRepository inventoryQueries, INavigationService nav, IDebouncer? debouncer = null, DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
@@ -65,7 +78,19 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     }
 
     protected override async Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => await inventoryQueries.GetAllContainersAsync(pageNumber, pageSize);
+    {
+        if (SelectedFilter == ContainerListFilter.All)
+        {
+            return await inventoryQueries.GetAllContainersAsync(pageNumber, pageSize);
+        }
+
+        var allContainers = await inventoryQueries.GetAllContainersAsync();
+        return allContainers
+            .Where(c => c.ItemCount == 0)
+            .Skip(pageNumber * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
 
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav);
@@ -99,6 +124,34 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
 
     [RelayCommand]
+    private async Task SelectAllFilterAsync()
+    {
+        if (SelectedFilter == ContainerListFilter.All)
+        {
+            return;
+        }
+
+        SelectedFilter = ContainerListFilter.All;
+        OnPropertyChanged(nameof(IsAllFilterSelected));
+        OnPropertyChanged(nameof(IsEmptyFilterSelected));
+        await SearchAsync();
+    }
+
+    [RelayCommand]
+    private async Task SelectEmptyFilterAsync()
+    {
+        if (SelectedFilter == ContainerListFilter.Empty)
+        {
+            return;
+        }
+
+        SelectedFilter = ContainerListFilter.Empty;
+        OnPropertyChanged(nameof(IsAllFilterSelected));
+        OnPropertyChanged(nameof(IsEmptyFilterSelected));
+        await SearchAsync();
+    }
+
+    [RelayCommand]
     private Task RefreshAsync() => InitializeAsync();
 
     private async Task LoadQuerySearchAsync(string? searchQuery)
@@ -111,9 +164,11 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 
         var normalized = searchQuery.Trim();
         var allContainers = await inventoryQueries.GetAllContainersAsync();
+        var onlyEmpty = SelectedFilter == ContainerListFilter.Empty;
         var filtered = allContainers.Where(container =>
-            container.Name.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
-            container.Notes.Contains(normalized, StringComparison.OrdinalIgnoreCase));
+            (!onlyEmpty || container.ItemCount == 0) &&
+            (container.Name.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
+             container.Notes.Contains(normalized, StringComparison.OrdinalIgnoreCase)));
 
         ReplaceWithFullResultSet(filtered);
     }

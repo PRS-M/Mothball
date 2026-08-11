@@ -4,8 +4,15 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using Infrastructure.Services;
 using MothballMobile.Infrastructure;
+using System.Linq;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
+
+public enum ItemsListFilter
+{
+    All,
+    Unassigned,
+}
 
 public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewModel>, IDisposable
 {
@@ -17,6 +24,17 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
 
     [ObservableProperty]
     private string query = string.Empty;
+
+    private ItemsListFilter selectedFilter = ItemsListFilter.All;
+
+    public ItemsListFilter SelectedFilter
+    {
+        get => selectedFilter;
+        set => SetProperty(ref selectedFilter, value);
+    }
+
+    public bool IsAllFilterSelected => SelectedFilter == ItemsListFilter.All;
+    public bool IsUnassignedFilterSelected => SelectedFilter == ItemsListFilter.Unassigned;
 
     public ItemsListViewModel(
         IImagePathResolver paths,
@@ -101,6 +119,34 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
     }
 
+    [RelayCommand]
+    private async Task SelectAllFilterAsync()
+    {
+        if (SelectedFilter == ItemsListFilter.All)
+        {
+            return;
+        }
+
+        SelectedFilter = ItemsListFilter.All;
+        OnPropertyChanged(nameof(IsAllFilterSelected));
+        OnPropertyChanged(nameof(IsUnassignedFilterSelected));
+        await SearchAsync();
+    }
+
+    [RelayCommand]
+    private async Task SelectUnassignedFilterAsync()
+    {
+        if (SelectedFilter == ItemsListFilter.Unassigned)
+        {
+            return;
+        }
+
+        SelectedFilter = ItemsListFilter.Unassigned;
+        OnPropertyChanged(nameof(IsAllFilterSelected));
+        OnPropertyChanged(nameof(IsUnassignedFilterSelected));
+        await SearchAsync();
+    }
+
     private async Task LoadQuerySearchAsync(string? query)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -110,7 +156,19 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         }
         else
         {
-            var items = await inventoryQueries.GetItemsWithPhotosAsync(query);
+            List<Item> items;
+            if (SelectedFilter == ItemsListFilter.Unassigned)
+            {
+                var allUnassigned = await GetAllUnassignedItemsAsync();
+                items = allUnassigned
+                    .Where(item => item.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+            else
+            {
+                items = await inventoryQueries.GetItemsWithPhotosAsync(query);
+            }
+
             ReplaceWithFullResultSet(items);
         }
     }
@@ -125,5 +183,32 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         => vm.LoadImageAsync().FireAndForget();
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryQueries.GetAllItemsWithPhotosAsync(pageNumber, pageSize);
+        => SelectedFilter == ItemsListFilter.Unassigned
+            ? inventoryQueries.GetUnassignedItemsWithPhotosAsync(pageNumber, pageSize)
+            : inventoryQueries.GetAllItemsWithPhotosAsync(pageNumber, pageSize);
+
+    private async Task<List<Item>> GetAllUnassignedItemsAsync()
+    {
+        var results = new List<Item>();
+        var pageNumber = 0;
+
+        while (true)
+        {
+            var page = await inventoryQueries.GetUnassignedItemsWithPhotosAsync(pageNumber, pageSize);
+            if (page.Count == 0)
+            {
+                break;
+            }
+
+            results.AddRange(page);
+            if (page.Count < pageSize)
+            {
+                break;
+            }
+
+            pageNumber++;
+        }
+
+        return results;
+    }
 }

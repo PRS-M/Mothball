@@ -26,13 +26,55 @@
 
     <Grid Padding="12"
           RowDefinitions="Auto,Auto,*">
-         <controls:PageHeader Grid.Row="0"
-                     Title="Items"
-                     Subtitle="All items across containers"
-                     TitleFontSize="22"
-                     SubtitleFontSize="12"
-                     Spacing="2"
-                     HeaderMargin="0,0,0,4" />
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="12">
+            <controls:PageHeader Grid.Column="0"
+                                 Title="Items"
+                                 Subtitle="All items across containers"
+                                 TitleFontSize="22"
+                                 SubtitleFontSize="12"
+                                 Spacing="2"
+                                 HeaderMargin="0,0,0,4" />
+
+            <HorizontalStackLayout Grid.Column="1"
+                                   Spacing="8"
+                                   VerticalOptions="Center">
+                <Button Text="All"
+                        Command="{Binding SelectAllFilterCommand}"
+                        Style="{StaticResource OutlinedButton}"
+                        FontSize="12"
+                        Padding="14,6"
+                        HeightRequest="34">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button"
+                                     Binding="{Binding IsAllFilterSelected}"
+                                     Value="True">
+                            <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}" />
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
+                            <Setter Property="BorderWidth" Value="0" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+                <Button Text="Unassigned"
+                        Command="{Binding SelectUnassignedFilterCommand}"
+                        Style="{StaticResource OutlinedButton}"
+                        FontSize="12"
+                        Padding="14,6"
+                        HeightRequest="34">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button"
+                                     Binding="{Binding IsUnassignedFilterSelected}"
+                                     Value="True">
+                            <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}" />
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
+                            <Setter Property="BorderWidth" Value="0" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+            </HorizontalStackLayout>
+        </Grid>
 
         <controls:SearchBarCard Grid.Row="1"
             Margin="0"
