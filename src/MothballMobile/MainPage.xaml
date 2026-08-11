@@ -9,7 +9,7 @@
             Padding="24"
             Spacing="20">
             <Image
-                Source="dotnet_bot.png"
+                Source="mothball_logo.png"
                 HeightRequest="185"
                 Aspect="AspectFit"
                 SemanticProperties.Description="dot net bot in a hovercraft number nine" />

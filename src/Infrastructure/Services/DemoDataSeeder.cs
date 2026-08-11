@@ -146,7 +146,7 @@ public class DemoDataSeeder
                     // Use a bundled placeholder image; fall back gracefully if missing
                     try
                     {
-                        await fileHandler.CopyFileFromRawToAppDataAsync("dotnet_bot.png", img.FileName, Constants.PathToItemPhotos);
+                        await fileHandler.CopyFileFromRawToAppDataAsync("mothball_logo.png", img.FileName, Constants.PathToItemPhotos);
                     }
                     catch
                     {

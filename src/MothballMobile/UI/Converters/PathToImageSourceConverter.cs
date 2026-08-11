@@ -52,7 +52,7 @@ public class PathToImageSourceConverter : IValueConverter
         catch
         {
             // Fallback placeholder (must exist in Resources/Images)
-            const string fallback = "dotnet_bot.png";
+            const string fallback = "mothball_logo.png";
             try { return ImageSource.FromFile(fallback); }
             catch { return null; }
         }

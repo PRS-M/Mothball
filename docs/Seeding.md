@@ -96,7 +96,7 @@ File: [src/Infrastructure/Services/DemoDataSeeder.cs](../src/Infrastructure/Serv
 - Ensures there are containers (creates a few if needed).
 - **Important current behavior**: seeds items only for containers recognized as seeded containers.
 - For each seeded container, ensures at least `minItemsPerContainer` relations.
-- Optionally adds one photo per seeded item + attempts to copy `dotnet_bot.png`.
+- Optionally adds one photo per seeded item + attempts to copy `mothball_logo.png`.
 
 Seeded-container recognition:
 - `container.Notes` contains `[SEED-CONTAINER-MARKER:4f3c5d11-2f9b-44b3-9e55-2e0f1ea7a8d2]`.
