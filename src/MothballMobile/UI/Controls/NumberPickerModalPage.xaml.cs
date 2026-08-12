@@ -1,5 +1,10 @@
 namespace MothballMobile.UI.Controls;
 
+#if IOS || MACCATALYST
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+#endif
+
 public partial class NumberPickerModalPage : ContentPage
 {
     private readonly TaskCompletionSource<int?> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -9,6 +14,11 @@ public partial class NumberPickerModalPage : ContentPage
     public NumberPickerModalPage(string title, int min, int max, int initialValue, string accept, string cancel)
     {
         InitializeComponent();
+
+#if IOS || MACCATALYST
+        // Present over the existing page so the background stays visible under the scrim.
+    this.On<iOS>().SetModalPresentationStyle(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.OverFullScreen);
+#endif
 
         this.min = min;
         this.max = max;
