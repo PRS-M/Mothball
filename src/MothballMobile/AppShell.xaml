@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:MothballMobile"
     xmlns:containers="clr-namespace:MothballMobile.UI.Features.Containers.ContainersList"
     xmlns:items="clr-namespace:MothballMobile.UI.Features.Items.ItemsList"
+    xmlns:settings="clr-namespace:MothballMobile.UI.Features.Settings"
     Title="MothballMobile">
     <FlyoutItem Title="Home" Route="Home">
         <ShellContent
@@ -33,6 +34,18 @@
                 Route="ItemsList">
                 <ShellContent.Icon>
                     <FontImageSource Glyph="&#xf02c;" FontFamily="FontAwesomeSolid" Size="26" Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                </ShellContent.Icon>
+            </ShellContent>
+        </Tab>
+    </FlyoutItem>
+    <FlyoutItem Title="Settings" Route="Settings">
+        <Tab Title="Settings">
+            <ShellContent
+                Title="Settings"
+                ContentTemplate="{DataTemplate settings:SettingsPage}"
+                Route="SettingsPage">
+                <ShellContent.Icon>
+                    <FontImageSource Glyph="&#xf013;" FontFamily="FontAwesomeSolid" Size="26" Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
                 </ShellContent.Icon>
             </ShellContent>
         </Tab>

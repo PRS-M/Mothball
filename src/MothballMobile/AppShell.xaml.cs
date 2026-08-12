@@ -12,6 +12,7 @@ public partial class AppShell : Shell
 	{
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.HomeContainers, typeof(UI.Features.Containers.ContainersList.ContainersListPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.HomeItems, typeof(UI.Features.Items.ItemsList.ItemsListPage));
+		Routing.RegisterRoute(Infrastructure.NavigationRoutes.Settings, typeof(UI.Features.Settings.SettingsPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddContainer, typeof(UI.Features.Containers.AddContainer.AddContainerPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.ContainerDetails, typeof(UI.Features.Containers.ContainerDetails.ContainerDetailsPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.ItemDetails, typeof(UI.Features.Items.ItemDetails.ItemDetailsPage));

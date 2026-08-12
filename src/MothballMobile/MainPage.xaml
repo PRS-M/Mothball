@@ -38,11 +38,9 @@
                 HorizontalOptions="Fill" />
 
             <Button
-                Text="Settings (Coming Soon)"
-                SemanticProperties.Hint="Settings is not implemented yet"
+                Text="Settings"
+                SemanticProperties.Hint="Open the settings view"
                 Clicked="OnSettingsClicked"
-                Background="#6750A4"
-                TextColor="White"
                 HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>

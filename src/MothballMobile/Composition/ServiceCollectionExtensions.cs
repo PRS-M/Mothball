@@ -18,6 +18,7 @@ using MothballMobile.UI.Features.Containers.ContainersList;
 using MothballMobile.UI.Features.Items.AddItem;
 using MothballMobile.UI.Features.Items.ItemDetails;
 using MothballMobile.UI.Features.Items.ItemsList;
+using MothballMobile.UI.Features.Settings;
 
 namespace MothballMobile.Composition;
 
@@ -106,6 +107,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AddItemViewModel>();
         services.AddTransient<AddExistingItemToContainerViewModel>();
         services.AddTransient<AssociateItemWithContainerViewModel>();
+        services.AddTransient<SettingsViewModel>();
 
         return services;
     }
