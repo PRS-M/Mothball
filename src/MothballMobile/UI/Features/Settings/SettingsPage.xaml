@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Settings"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Settings.SettingsPage"
+                x:DataType="vm:SettingsViewModel"
+                Title="Settings"
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+            <controls:PageHeader Title="Settings"
+                                 Subtitle="Maintenance and backup"
+                                 TitleFontSize="22"
+                                 SubtitleFontSize="12"
+                                 Spacing="2"
+                                 HeaderMargin="0,0,0,6" />
+
+            <Border Padding="14"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeShape="RoundRectangle 16"
+                    Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Backup"
+                           Style="{StaticResource HeadlineSmall}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                    <Label Text="Export a full inventory backup to a local JSON file."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                    <Button Text="Export to JSON"
+                            Command="{Binding ExportToJsonCommand}"
+                            SemanticProperties.Hint="Create a local backup JSON file with full inventory data" />
+
+                        <Button Text="Import from JSON"
+                            Command="{Binding ImportFromJsonCommand}"
+                            SemanticProperties.Hint="Choose restore mode and import a local backup JSON file" />
+
+                        <Button Text="Delete backup JSON"
+                            Command="{Binding DeleteJsonCommand}"
+                            SemanticProperties.Hint="Choose and delete a local backup JSON file" />
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       HorizontalOptions="Start"
+                                       Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</views:BasePage>

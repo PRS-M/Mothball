@@ -2,6 +2,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
+using Infrastructure.Services.Restore;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
 using Infrastructure.Services.Repositories;
@@ -17,6 +18,7 @@ using MothballMobile.UI.Features.Containers.ContainersList;
 using MothballMobile.UI.Features.Items.AddItem;
 using MothballMobile.UI.Features.Items.ItemDetails;
 using MothballMobile.UI.Features.Items.ItemsList;
+using MothballMobile.UI.Features.Settings;
 
 namespace MothballMobile.Composition;
 
@@ -33,6 +35,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPopupService, MauiPopupService>();
         services.AddSingleton<IRetryService, RetryService>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
+        services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
+        services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
+        services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
 
         return services;
     }
@@ -55,6 +60,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
             services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
+            services.AddSingleton<IInventoryBackupRestoreService, InventoryBackupRestoreService>();
         }
         else
         {
@@ -71,6 +77,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
             services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
+            services.AddSingleton<IInventoryBackupRestoreService, SqliteInventoryBackupRestoreService>();
         }
 
 #if DEBUG
@@ -100,6 +107,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AddItemViewModel>();
         services.AddTransient<AddExistingItemToContainerViewModel>();
         services.AddTransient<AssociateItemWithContainerViewModel>();
+        services.AddTransient<SettingsViewModel>();
 
         return services;
     }

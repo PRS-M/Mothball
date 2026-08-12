@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MothballMobile.UI.Controls.NumberPickerModalPage"
+             Background="Transparent"
+             Shell.NavBarIsVisible="False">
+
+    <Grid>
+        <BoxView Background="#000000"
+                 Opacity="0.5">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBackdropTapped" />
+            </BoxView.GestureRecognizers>
+        </BoxView>
+
+        <Border HorizontalOptions="Center"
+                VerticalOptions="Center"
+                MaximumWidthRequest="440"
+                MinimumWidthRequest="320"
+                Margin="24"
+                Padding="20"
+                Style="{StaticResource Card}">
+            <VerticalStackLayout Spacing="12">
+                <Label x:Name="TitleLabel"
+                       Style="{StaticResource HeadlineSmall}"
+                       HorizontalTextAlignment="Center"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                  <Entry x:Name="QuantityEntry"
+                      Text=""
+                      Keyboard="Numeric"
+                      ReturnType="Done"
+                      Placeholder="Enter quantity"
+                      Completed="OnEntryCompleted"
+                        Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                  <Label x:Name="ValidationLabel"
+                      IsVisible="False"
+                      FontSize="12"
+                      TextColor="{StaticResource Error}" />
+
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="12">
+                    <Button x:Name="CancelButton"
+                            Grid.Column="0"
+                            Style="{StaticResource OutlinedButton}"
+                        Padding="14,8"
+                        FontSize="13"
+                        MinimumWidthRequest="120"
+                            Clicked="OnCancelClicked" />
+
+                    <Button x:Name="AcceptButton"
+                            Grid.Column="1"
+                            Style="{StaticResource TonalButton}"
+                        Padding="14,8"
+                        FontSize="13"
+                        MinimumWidthRequest="120"
+                            Clicked="OnAcceptClicked" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

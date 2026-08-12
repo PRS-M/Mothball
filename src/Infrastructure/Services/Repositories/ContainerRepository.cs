@@ -190,6 +190,17 @@ public class ContainerRepository : IContainerRepository
         await containers.UpdateAsync(container.ToDb());
     }
 
+    public async Task DeletePhotoAsync(Container container, Guid imageId)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+
+        await transactionRunner.RunAsync(scope =>
+        {
+            scope.DeleteImage(imageId, container.ContainerId);
+            scope.UpdateContainer(container.ToDb());
+        });
+    }
+
     public async Task DeleteAsync(string containerId)
     {
         if (!TryParseGuid(containerId, out Guid cid)) return;

@@ -19,6 +19,6 @@ public partial class MainPage : ContentPage
 
 	private async void OnSettingsClicked(object? sender, EventArgs e)
 	{
-		await DisplayAlertAsync("Settings", "Settings will be implemented in a later update.", "OK");
+		await Shell.Current.GoToAsync(Infrastructure.NavigationRoutes.Settings);
 	}
 }

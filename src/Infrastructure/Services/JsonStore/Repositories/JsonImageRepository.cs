@@ -70,4 +70,15 @@ public sealed class JsonImageRepository : IImageRepository
             return Task.CompletedTask;
         });
     }
+
+    public Task DeleteAsync(Guid imageId, Guid ownerId)
+    {
+        if (ownerId == Guid.Empty) throw new ArgumentException("Owner ID cannot be empty.", nameof(ownerId));
+
+        return store.UpdateAsync(state =>
+        {
+            state.Images.RemoveAll(i => i.ImageId == imageId && i.OwnerUniqueId == ownerId);
+            return Task.CompletedTask;
+        });
+    }
 }

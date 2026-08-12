@@ -49,6 +49,7 @@
     <Compile Include="../../src/Infrastructure/Services/ImagePathResolver.cs" Link="Infrastructure/Services/ImagePathResolver.cs" />
     <Compile Include="../../src/Infrastructure/Services/MothballDatabase.cs" Link="Infrastructure/Services/MothballDatabase.cs" />
     <Compile Include="../../src/Infrastructure/Services/SqliteStartupInitializer.cs" Link="Infrastructure/Services/SqliteStartupInitializer.cs" />
+    <Compile Include="../../src/Infrastructure/Services/Restore/**/*.cs" Link="Infrastructure/Services/Restore/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Services/JsonStore/**/*.cs" Link="Infrastructure/Services/JsonStore/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Services/Repositories/**/*.cs" Link="Infrastructure/Services/Repositories/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>

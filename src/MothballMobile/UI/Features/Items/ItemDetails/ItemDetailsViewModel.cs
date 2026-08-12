@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
 using MothballMobile.Infrastructure;
@@ -15,6 +16,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly INavigationService nav;
     private readonly IPopupService popup;
     private Item? currentItem;
+    private string? sourceContainerId;
 
     [ObservableProperty]
     private string itemId = string.Empty;
@@ -30,6 +32,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public bool HasNoContainerRelation => string.IsNullOrWhiteSpace(this.ContainerId);
     public bool HasContainerRelation => !HasNoContainerRelation;
+    public bool ShowGoToContainerButton => HasContainerRelation
+        && (string.IsNullOrWhiteSpace(sourceContainerId)
+            || !string.Equals(ContainerId, sourceContainerId, StringComparison.OrdinalIgnoreCase));
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
@@ -44,10 +49,21 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        sourceContainerId = null;
+
         if (query.TryGetValue(nameof(ItemId), out var val) && val is string id && !string.IsNullOrWhiteSpace(id))
         {
             ItemId = id;
         }
+
+        if (query.TryGetValue(NavigationParams.ContainerId, out var sourceValue)
+            && sourceValue is string sourceId
+            && !string.IsNullOrWhiteSpace(sourceId))
+        {
+            sourceContainerId = sourceId;
+        }
+
+        NotifyContainerRelationStateChanged();
     }
 
     public Task InitializeAsync()
@@ -67,8 +83,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             ItemId = itemId;
             ImagePaths.Clear();
             ContainerId = null;
-            OnPropertyChanged(nameof(HasContainerRelation));
-            OnPropertyChanged(nameof(HasNoContainerRelation));
+            NotifyContainerRelationStateChanged();
 
             var item = await inventoryQueries.GetItemWithPhotosAsync(itemId);
             if (item is null)
@@ -88,9 +103,15 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             // Use repository to find related container, if any
             var container = await inventoryQueries.GetContainerForItemAsync(item.ItemId.ToString());
             ContainerId = container?.ContainerId.ToString();
-            OnPropertyChanged(nameof(HasContainerRelation));
-            OnPropertyChanged(nameof(HasNoContainerRelation));
+            NotifyContainerRelationStateChanged();
         });
+    }
+
+    private void NotifyContainerRelationStateChanged()
+    {
+        OnPropertyChanged(nameof(HasContainerRelation));
+        OnPropertyChanged(nameof(HasNoContainerRelation));
+        OnPropertyChanged(nameof(ShowGoToContainerButton));
     }
 
     [RelayCommand]
@@ -141,5 +162,57 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(currentItem));
             }
         });
+    }
+
+    [RelayCommand]
+    private async Task DeletePhotoAsync()
+    {
+        if (currentItem is null) return;
+        if (currentItem.Photos.Count == 0)
+        {
+            await popup.ShowAlertAsync("No photos", "This item does not have any photos to delete.");
+            return;
+        }
+
+        var selectedPhoto = await SelectPhotoAsync(currentItem.Photos, "Choose item photo to delete");
+        if (selectedPhoto is null)
+        {
+            return;
+        }
+
+        var confirmed = await popup.ConfirmAsync(
+            title: "Delete photo",
+            message: "Delete the selected photo?",
+            accept: "Delete",
+            cancel: "Cancel");
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            var deleted = await imageService.DeleteItemPhotoAsync(currentItem, selectedPhoto.ImageId);
+            if (deleted)
+            {
+                ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(currentItem));
+            }
+        });
+    }
+
+    private async Task<ImageItem?> SelectPhotoAsync(IReadOnlyList<ImageItem> photos, string title)
+    {
+        var optionToPhoto = photos
+            .Select((photo, index) => new { Option = $"Photo {index + 1}", Photo = photo })
+            .ToList();
+
+        var selected = await popup.SelectOptionAsync(title, "Cancel", optionToPhoto.Select(x => x.Option).ToArray());
+        if (string.IsNullOrWhiteSpace(selected))
+        {
+            return null;
+        }
+
+        return optionToPhoto.FirstOrDefault(x => string.Equals(x.Option, selected, StringComparison.Ordinal))?.Photo;
     }
 }

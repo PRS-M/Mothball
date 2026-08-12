@@ -14,11 +14,21 @@ public interface IInventoryCommandRepository
 
     Task InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity);
 
+    Task ReplaceItemContainerRelationQuantity(Guid itemId, Guid containerId, int quantity);
+
+    Task DeleteItemContainerRelation(Guid itemId, Guid containerId);
+
     Task UpdateContainerAsync(Container container);
 
     Task UpdateItemAsync(Item item);
 
     Task UpdateImageItemAsync(ImageItem image, Guid ownerId);
+
+    Task DeleteImageItemAsync(Guid imageId, Guid ownerId);
+
+    Task DeleteContainerPhotoAsync(Container container, Guid imageId);
+
+    Task DeleteItemPhotoAsync(Item item, Guid imageId);
 
     Task DeleteItemAsync(string itemId);
 

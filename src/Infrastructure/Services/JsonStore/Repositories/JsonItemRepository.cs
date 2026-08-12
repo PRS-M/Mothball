@@ -198,6 +198,35 @@ public sealed class JsonItemRepository : IItemRepository
         });
     }
 
+    public Task DeletePhotoAsync(Item item, Guid imageId)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        return store.UpdateAsync(state =>
+        {
+            state.Images.RemoveAll(i => i.ImageId == imageId && i.OwnerUniqueId == item.ItemId);
+
+            var existing = state.Items.FirstOrDefault(i => i.ItemId == item.ItemId);
+            if (existing is null)
+            {
+                state.Items.Add(new JsonItemRow
+                {
+                    RowId = state.Metadata.NextItemRowId++,
+                    ItemId = item.ItemId,
+                    Name = item.Name,
+                    Description = item.Description,
+                });
+            }
+            else
+            {
+                existing.Name = item.Name;
+                existing.Description = item.Description;
+            }
+
+            return Task.CompletedTask;
+        });
+    }
+
     public Task DeleteAsync(string itemId)
     {
         if (!Guid.TryParse(itemId, out var iid)) return Task.CompletedTask;

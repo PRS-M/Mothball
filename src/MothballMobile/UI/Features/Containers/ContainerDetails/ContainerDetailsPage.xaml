@@ -31,7 +31,7 @@
                 Margin="16,16,16,8"
                 Padding="12">
             <Grid ColumnDefinitions="*,Auto"
-                  RowDefinitions="Auto,Auto,Auto"
+                RowDefinitions="Auto,Auto,Auto,Auto"
                   ColumnSpacing="12"
                   RowSpacing="6">
                   <Label Grid.Row="0"
@@ -56,8 +56,28 @@
                     <controls:ImageCarousel HeightRequest="110"
                                             WidthRequest="110"
                                             CornerRadius="10"
+                                            ShowCounter="True"
                                             ImagePaths="{Binding ContainerImagePaths}" />
                 </Border>
+
+                <HorizontalStackLayout Grid.Row="3"
+                               Grid.ColumnSpan="2"
+                               Spacing="8"
+                               Margin="0,6,0,0">
+                    <Button Text="Add photo"
+                        Style="{StaticResource TonalButton}"
+                        HeightRequest="34"
+                        FontSize="12"
+                        Padding="10,0"
+                        Command="{Binding AddPhotoCommand}" />
+
+                    <Button Text="Delete photo"
+                        Style="{StaticResource OutlinedButton}"
+                        HeightRequest="34"
+                        FontSize="12"
+                        Padding="10,0"
+                        Command="{Binding DeletePhotoCommand}" />
+                </HorizontalStackLayout>
             </Grid>
         </Border>
 
@@ -126,7 +146,12 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:ItemWithPhotosViewModel">
                     <controls:ItemTile Name="{Binding Name}"
+                                       Quantity="{Binding Quantity}"
+                                       ShowQuantity="True"
+                                       ShowEditQuantity="True"
+                                       EditQuantityCommand="{Binding EditQuantityCommand}"
                                        Description="{Binding Description}"
+                                       Command="{Binding NavigateToItemDetailsCommand}"
                                        ImagePaths="{Binding ImagePaths}"
                                        ImageSize="92" />
                 </DataTemplate>

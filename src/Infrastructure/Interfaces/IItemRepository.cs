@@ -18,5 +18,6 @@ public interface IItemRepository
     Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize);
     Task InsertAsync(Item item);
     Task UpdateAsync(Item item);
+    Task DeletePhotoAsync(Item item, Guid imageId);
     Task DeleteAsync(string itemId);
 }

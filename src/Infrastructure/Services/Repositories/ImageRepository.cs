@@ -25,4 +25,16 @@ public class ImageRepository : IImageRepository
         ArgumentNullException.ThrowIfNull(image);
         await photos.UpdateAsync(image.ToDb(ownerId));
     }
+
+    public async Task DeleteAsync(Guid imageId, Guid ownerId)
+    {
+        var existing = await photos
+            .WhereAsync(p => p.ImageId == imageId && p.OwnerUniqueId == ownerId)
+            .ConfigureAwait(false);
+
+        foreach (var image in existing)
+        {
+            await photos.DeleteAsync(image).ConfigureAwait(false);
+        }
+    }
 }

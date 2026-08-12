@@ -158,6 +158,64 @@ public class ImageService
     }
 
     /// <summary>
+    /// Deletes a photo for the specified container and removes persisted metadata.
+    /// </summary>
+    /// <returns><c>true</c> when the photo was found and deleted; otherwise <c>false</c>.</returns>
+    public async Task<bool> DeleteContainerPhotoAsync(Container container, Guid imageId)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+
+        if (!container.Photos.Any(p => p.ImageId == imageId))
+        {
+            return false;
+        }
+
+        container.RemoveImageItem(imageId);
+
+        try
+        {
+            await inventoryRepository.DeleteContainerPhotoAsync(container, imageId).ConfigureAwait(false);
+        }
+        catch
+        {
+            container.AddImageItem(imageId);
+            throw;
+        }
+
+        await DeletePhotoFileBestEffortAsync(imageId, Constants.PathToContainerPhotos).ConfigureAwait(false);
+        return true;
+    }
+
+    /// <summary>
+    /// Deletes a photo for the specified item and removes persisted metadata.
+    /// </summary>
+    /// <returns><c>true</c> when the photo was found and deleted; otherwise <c>false</c>.</returns>
+    public async Task<bool> DeleteItemPhotoAsync(Item item, Guid imageId)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        if (!item.Photos.Any(p => p.ImageId == imageId))
+        {
+            return false;
+        }
+
+        item.RemoveImageItem(imageId);
+
+        try
+        {
+            await inventoryRepository.DeleteItemPhotoAsync(item, imageId).ConfigureAwait(false);
+        }
+        catch
+        {
+            item.AddImageItem(imageId);
+            throw;
+        }
+
+        await DeletePhotoFileBestEffortAsync(imageId, Constants.PathToItemPhotos).ConfigureAwait(false);
+        return true;
+    }
+
+    /// <summary>
     /// Captures a photo, saves the file, and persists metadata using the provided delegates.
     /// </summary>
     /// <param name="addImageItem">Factory to add and return an <see cref="ImageItem"/> to the owning aggregate.</param>
@@ -236,5 +294,17 @@ public class ImageService
         }
 
         return bytes.Length;
+    }
+
+    private async Task DeletePhotoFileBestEffortAsync(Guid imageId, string folderPath)
+    {
+        try
+        {
+            await fileHandler.DeleteFileAsync($"{imageId}.jpg", folderPath).ConfigureAwait(false);
+        }
+        catch (FileNotFoundException)
+        {
+            // Best-effort cleanup only.
+        }
     }
 }

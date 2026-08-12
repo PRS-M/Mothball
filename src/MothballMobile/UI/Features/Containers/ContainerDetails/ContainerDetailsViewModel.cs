@@ -6,6 +6,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Entities.Shared;
 using CoreApp.Specifications;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
@@ -138,13 +139,41 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         foreach (var item in items)
         {
-            var itemVm = new ItemWithPhotosViewModel(item, paths);
+            var quantity = currentContainer?.Items.FirstOrDefault(x => x.ItemId == item.ItemId)?.Quantity ?? 0;
+            var itemVm = new ItemWithPhotosViewModel(
+                item,
+                quantity,
+                currentContainer?.ContainerId ?? Guid.Empty,
+                paths,
+                nav,
+                inventoryCommands,
+                popup,
+                ContainerId,
+                OnItemQuantitySavedAsync);
             Items.Add(itemVm);
             itemVm.LoadImagesAsync().FireAndForget();
         }
 
         // Force collection update notification to recalculate RemainingItemsThreshold
         OnPropertyChanged(nameof(Items));
+    }
+
+    private Task OnItemQuantitySavedAsync(Guid itemId, int quantity)
+    {
+        var vm = Items.FirstOrDefault(x => x.Item.ItemId == itemId);
+        if (vm is not null && vm.Quantity != quantity)
+        {
+            vm.Quantity = quantity;
+        }
+
+        if (currentContainer is not null)
+        {
+            currentContainer.RemoveItem(itemId);
+            currentContainer.AddItem(itemId, quantity);
+            TotalItemCount = currentContainer.ItemCount;
+        }
+
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -244,6 +273,43 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     }
 
     [RelayCommand]
+    private async Task DeletePhotoAsync()
+    {
+        if (currentContainer is null) return;
+        if (currentContainer.Photos.Count == 0)
+        {
+            await popup.ShowAlertAsync("No photos", "This container does not have any photos to delete.");
+            return;
+        }
+
+        var selectedPhoto = await SelectPhotoAsync(currentContainer.Photos, "Choose container photo to delete");
+        if (selectedPhoto is null)
+        {
+            return;
+        }
+
+        var confirmed = await popup.ConfirmAsync(
+            title: "Delete photo",
+            message: "Delete the selected photo?",
+            accept: "Delete",
+            cancel: "Cancel");
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            var deleted = await imageService.DeleteContainerPhotoAsync(currentContainer, selectedPhoto.ImageId);
+            if (deleted)
+            {
+                ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(currentContainer));
+            }
+        });
+    }
+
+    [RelayCommand]
     private Task NavigateToAddExistingItemAsync()
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
@@ -262,6 +328,22 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     }
 
     private bool disposed;
+
+    private async Task<ImageItem?> SelectPhotoAsync(IReadOnlyList<ImageItem> photos, string title)
+    {
+        var optionToPhoto = photos
+            .Select((photo, index) => new { Option = $"Photo {index + 1}", Photo = photo })
+            .ToList();
+
+        var selected = await popup.SelectOptionAsync(title, "Cancel", optionToPhoto.Select(x => x.Option).ToArray());
+        if (string.IsNullOrWhiteSpace(selected))
+        {
+            return null;
+        }
+
+        return optionToPhoto.FirstOrDefault(x => string.Equals(x.Option, selected, StringComparison.Ordinal))?.Photo;
+    }
+
     public void Dispose()
     {
         Dispose(true);

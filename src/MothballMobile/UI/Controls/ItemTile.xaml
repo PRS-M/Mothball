@@ -2,13 +2,35 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:self="clr-namespace:MothballMobile.UI.Controls"
+             xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
              x:Class="MothballMobile.UI.Controls.ItemTile"
              x:Name="this"
              x:DataType="self:ItemTile">
 
     <Border Style="{StaticResource Card}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Normal">
+                    <VisualState.Setters>
+                        <Setter Property="Scale" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Pressed">
+                    <VisualState.Setters>
+                        <Setter Property="Scale" Value="0.95" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Border.GestureRecognizers>
-            <TapGestureRecognizer Command="{Binding Source={x:Reference this}, Path=Command}" />
+            <TapGestureRecognizer
+                Tapped="Border_OnTapped"
+                Command="{Binding Source={x:Reference this}, Path=Command}" />
+            <PointerGestureRecognizer
+                PointerPressed="Border_PointerPressed"
+                PointerReleased="Border_PointerReleased"
+                PointerExited="Border_PointerReleased" />
         </Border.GestureRecognizers>
 
         <Grid ColumnDefinitions="Auto,*"
@@ -22,13 +44,29 @@
 
             <VerticalStackLayout Grid.Column="1"
                                  Spacing="4">
-                <Label Text="{Binding Source={x:Reference this}, Path=Name}"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                  <Label Text="{Binding Source={x:Reference this}, Path=Name}"
+                      FontAttributes="Bold"
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                  <Label IsVisible="{Binding Source={x:Reference this}, Path=ShowQuantity}"
+                      Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat='Qty: {0}'}"
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                      FontSize="11" />
+
                 <Label Text="{Binding Source={x:Reference this}, Path=Description}"
                        TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                        FontSize="12"
                        LineBreakMode="TailTruncation" />
+
+                <Button Text="Edit quantity"
+                        IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"
+                        Command="{Binding Source={x:Reference this}, Path=EditQuantityCommand}"
+                        Style="{StaticResource OutlinedButton}"
+                        HeightRequest="30"
+                        FontSize="11"
+                        Padding="8,0"
+                        HorizontalOptions="End"
+                        VerticalOptions="End" />
             </VerticalStackLayout>
         </Grid>
     </Border>
