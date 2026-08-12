@@ -26,7 +26,7 @@
 
   <ItemGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
     <PackageReference Update="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-    <PackageReference Update="SkiaSharp" Version="2.88.8" />
+    <PackageReference Update="SkiaSharp" Version="3.119.2" />
   </ItemGroup>
 
   <ItemGroup>

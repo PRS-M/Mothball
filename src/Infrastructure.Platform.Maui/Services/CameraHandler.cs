@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
 using SkiaSharp;
@@ -76,40 +77,49 @@ public class CameraHandler : ICameraHandler
         {
             return await Task.Run(() =>
             {
-                resizeProgress?.Report(0.2);
-                using var managedStream = new SKManagedStream(sourceStream, disposeManagedStream: false);
-                using var codec = SKCodec.Create(managedStream);
-                if (codec is null)
+                try
                 {
+                    resizeProgress?.Report(0.2);
+                    using var sourceManagedStream = new SKManagedStream(sourceStream, disposeManagedStream: false);
+                    using var codec = SKCodec.Create(sourceManagedStream);
+                    if (codec is null)
+                    {
+                        return null;
+                    }
+
+                    using var decoded = SKBitmap.Decode(codec);
+                    if (decoded is null)
+                    {
+                        return null;
+                    }
+
+                    resizeProgress?.Report(0.45);
+                    using var oriented = ApplyExifOrientation(decoded, codec.EncodedOrigin);
+                    var targetSize = CalculateTargetSize(
+                        oriented.Width,
+                        oriented.Height,
+                        Constants.PhotoThumbnailMaxWidthPx,
+                        Constants.PhotoThumbnailMaxHeightPx);
+
+                    using var resized = ResizeBitmap(oriented, targetSize.Width, targetSize.Height);
+
+                    resizeProgress?.Report(0.75);
+                    using var image = SKImage.FromBitmap(resized);
+                    using var output = image.Encode(SKEncodedImageFormat.Jpeg, 80);
+                    if (output is null)
+                    {
+                        return null;
+                    }
+
+                    resizeProgress?.Report(0.95);
+                    return output.ToArray();
+                }
+                catch (Exception ex)
+                {
+                    // Guard the thumbnail pipeline; any SkiaSharp issue should fall back to original image bytes.
+                    Debug.WriteLine($"SkiaSharp thumbnail generation failed: {ex}");
                     return null;
                 }
-
-                using var decoded = SKBitmap.Decode(codec);
-                if (decoded is null)
-                {
-                    return null;
-                }
-
-                resizeProgress?.Report(0.45);
-                using var oriented = ApplyExifOrientation(decoded, codec.EncodedOrigin);
-                var targetSize = CalculateTargetSize(
-                    oriented.Width,
-                    oriented.Height,
-                    Constants.PhotoThumbnailMaxWidthPx,
-                    Constants.PhotoThumbnailMaxHeightPx);
-
-                using var resized = ResizeBitmap(oriented, targetSize.Width, targetSize.Height);
-
-                resizeProgress?.Report(0.75);
-                using var image = SKImage.FromBitmap(resized);
-                using var output = image.Encode(SKEncodedImageFormat.Jpeg, 80);
-                if (output is null)
-                {
-                    return null;
-                }
-
-                resizeProgress?.Report(0.95);
-                return output.ToArray();
             });
         }
         catch
@@ -143,14 +153,16 @@ public class CameraHandler : ICameraHandler
 
         var destination = new SKBitmap(width, height, source.ColorType, source.AlphaType);
         using var canvas = new SKCanvas(destination);
-        using var paint = new SKPaint
-        {
-            FilterQuality = SKFilterQuality.High,
-            IsAntialias = true,
-            IsDither = true
-        };
+        using var sourceImage = SKImage.FromBitmap(source);
+        using var paint = new SKPaint { IsAntialias = true, IsDither = true };
+        var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
 
-        canvas.DrawBitmap(source, new SKRect(0, 0, width, height), paint);
+        canvas.DrawImage(
+            sourceImage,
+            SKRect.Create(source.Width, source.Height),
+            SKRect.Create(width, height),
+            sampling,
+            paint);
         canvas.Flush();
         return destination;
     }
@@ -167,7 +179,9 @@ public class CameraHandler : ICameraHandler
 
         var destination = new SKBitmap(width, height, source.ColorType, source.AlphaType);
         using var canvas = new SKCanvas(destination);
-        using var paint = new SKPaint { FilterQuality = SKFilterQuality.High, IsAntialias = true };
+        using var sourceImage = SKImage.FromBitmap(source);
+        using var paint = new SKPaint { IsAntialias = true };
+        var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
 
         switch (origin)
         {
@@ -199,8 +213,9 @@ public class CameraHandler : ICameraHandler
                 break;
         }
 
-        canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.DrawImage(sourceImage, 0, 0, sampling, paint);
         canvas.Flush();
         return destination;
     }
+
 }
