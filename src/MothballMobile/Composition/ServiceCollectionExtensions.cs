@@ -35,6 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
+        services.AddSingleton<IInventoryBackupRestoreService, InventoryBackupRestoreService>();
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
 
         return services;
