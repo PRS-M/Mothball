@@ -44,9 +44,9 @@
 
             <VerticalStackLayout Grid.Column="1"
                                  Spacing="4">
-                <Label Text="{Binding Source={x:Reference this}, Path=Name}"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                  <Label Text="{Binding Source={x:Reference this}, Path=Name}"
+                      FontAttributes="Bold"
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
 
                   <Label IsVisible="{Binding Source={x:Reference this}, Path=ShowQuantity}"
                       Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat='Qty: {0}'}"
@@ -62,10 +62,11 @@
                         IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"
                         Command="{Binding Source={x:Reference this}, Path=EditQuantityCommand}"
                         Style="{StaticResource OutlinedButton}"
-                        HeightRequest="32"
-                        FontSize="12"
-                        Padding="10,0"
-                        HorizontalOptions="Start" />
+                        HeightRequest="30"
+                        FontSize="11"
+                        Padding="8,0"
+                        HorizontalOptions="End"
+                        VerticalOptions="End" />
             </VerticalStackLayout>
         </Grid>
     </Border>
