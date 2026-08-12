@@ -1,11 +1,15 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace MothballMobile.Infrastructure;
 
 public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBackgroundOperationTracker
 {
     private readonly object gate = new();
-    private readonly Dictionary<Guid, double> activeProgressByOperation = new();
+    private readonly Dictionary<Guid, OperationState> activeOperations = new();
+    private readonly ObservableCollection<PhotoBackgroundOperationEntry> recentOperations = new();
+
+    private const int MaxRecentOperations = 25;
 
     private int activeOperationCount;
     private double overallProgress;
@@ -37,6 +41,8 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
         private set => SetProperty(ref isBannerVisible, value);
     }
 
+    public IReadOnlyList<PhotoBackgroundOperationEntry> RecentOperations => recentOperations;
+
     public Guid Start(string operationDescription)
     {
         var operationId = Guid.NewGuid();
@@ -44,8 +50,8 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
         lock (gate)
         {
             hideBannerCts?.Cancel();
-            activeProgressByOperation[operationId] = 0;
-            PublishRunningState(operationDescription);
+            activeOperations[operationId] = new OperationState(operationDescription, DateTimeOffset.UtcNow, 0);
+            PublishRunningState();
         }
 
         return operationId;
@@ -55,13 +61,13 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
     {
         lock (gate)
         {
-            if (!activeProgressByOperation.ContainsKey(operationId))
+            if (!activeOperations.TryGetValue(operationId, out var state))
             {
                 return;
             }
 
-            activeProgressByOperation[operationId] = Math.Clamp(progress, 0, 1);
-            PublishRunningState("Processing photos");
+            state.Progress = Math.Clamp(progress, 0, 1);
+            PublishRunningState();
         }
     }
 
@@ -69,11 +75,32 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
     {
         lock (gate)
         {
-            activeProgressByOperation.Remove(operationId);
-
-            if (activeProgressByOperation.Count > 0)
+            if (!activeOperations.TryGetValue(operationId, out var completedOperation))
             {
-                PublishRunningState("Processing photos");
+                return;
+            }
+
+            activeOperations.Remove(operationId);
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                recentOperations.Insert(0, new PhotoBackgroundOperationEntry
+                {
+                    Description = completedOperation.Description,
+                    Succeeded = success,
+                    CompletedAt = DateTimeOffset.Now,
+                    FinalProgress = completedOperation.Progress
+                });
+
+                while (recentOperations.Count > MaxRecentOperations)
+                {
+                    recentOperations.RemoveAt(recentOperations.Count - 1);
+                }
+            });
+
+            if (activeOperations.Count > 0)
+            {
+                PublishRunningState();
                 return;
             }
 
@@ -107,14 +134,21 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
         }
     }
 
-    private void PublishRunningState(string description)
+    private void PublishRunningState()
     {
-        int count = activeProgressByOperation.Count;
-        double progress = count == 0 ? 0 : activeProgressByOperation.Values.Average();
+        int count = activeOperations.Count;
+        double progress = count == 0 ? 0 : activeOperations.Values.Average(x => x.Progress);
 
-        string status = count == 1
-            ? string.Concat(description, " in background...")
-            : $"{count} photo operations running in background...";
+        string status;
+        if (count == 1)
+        {
+            var first = activeOperations.Values.First();
+            status = string.Concat(first.Description, " in background...");
+        }
+        else
+        {
+            status = $"{count} photo operations running in background...";
+        }
 
         PublishState(count, progress, status, bannerVisible: true);
     }
@@ -128,5 +162,19 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
             StatusText = status;
             IsBannerVisible = bannerVisible;
         });
+    }
+
+    private sealed class OperationState
+    {
+        public OperationState(string description, DateTimeOffset startedAt, double progress)
+        {
+            Description = description;
+            StartedAt = startedAt;
+            Progress = progress;
+        }
+
+        public string Description { get; }
+        public DateTimeOffset StartedAt { get; }
+        public double Progress { get; set; }
     }
 }

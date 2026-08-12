@@ -9,6 +9,18 @@ public partial class AppShell : Shell
 		RegisterRoutes();
 	}
 
+	private async void OnBackgroundOperationsBannerTapped(object? sender, TappedEventArgs e)
+	{
+		try
+		{
+			await GoToAsync(Infrastructure.NavigationRoutes.BackgroundOperations);
+		}
+		catch
+		{
+			// Best-effort UX: ignore navigation failures from banner tap.
+		}
+	}
+
 	private static void RegisterRoutes()
 	{
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.HomeContainers, typeof(UI.Features.Containers.ContainersList.ContainersListPage));
@@ -20,5 +32,6 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddItem, typeof(UI.Features.Items.AddItem.AddItemPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddExistingItemToContainer, typeof(UI.Features.Containers.AddExistingItemToContainer.AddExistingItemToContainerPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AssociateItemWithContainer, typeof(UI.Features.Containers.AssociateItemWithContainer.AssociateItemWithContainerPage));
+		Routing.RegisterRoute(Infrastructure.NavigationRoutes.BackgroundOperations, typeof(UI.Features.BackgroundOperations.BackgroundOperationsPage));
 	}
 }

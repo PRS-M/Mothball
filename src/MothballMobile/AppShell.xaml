@@ -9,21 +9,29 @@
     xmlns:settings="clr-namespace:MothballMobile.UI.Features.Settings"
     Title="MothballMobile">
     <Shell.TitleView>
-        <Border IsVisible="{Binding IsBannerVisible}"
-                Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
-                StrokeThickness="1"
-                StrokeShape="RoundRectangle 8"
-                Padding="10,6"
-            Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
-            <VerticalStackLayout Spacing="4"
-                                 WidthRequest="280">
-                <Label Text="{Binding StatusText}"
-                       FontSize="12"
-                       LineBreakMode="TailTruncation"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
-                <ProgressBar Progress="{Binding OverallProgress}" />
-            </VerticalStackLayout>
-        </Border>
+        <Grid HorizontalOptions="Fill"
+              Padding="12,0">
+            <Border IsVisible="{Binding IsBannerVisible}"
+                    HorizontalOptions="Center"
+                    Margin="8,2"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="10,6"
+                    Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackgroundOperationsBannerTapped" />
+                </Border.GestureRecognizers>
+                <VerticalStackLayout Spacing="4"
+                                     WidthRequest="280">
+                    <Label Text="{Binding StatusText}"
+                           FontSize="12"
+                           LineBreakMode="TailTruncation"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <ProgressBar Progress="{Binding OverallProgress}" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
     </Shell.TitleView>
 
     <FlyoutItem Title="Home" Route="Home">
