@@ -73,9 +73,9 @@ public static class InventoryBackupRestorePlanner
 
         var context = new PlannerContext(existingState, conflictPolicy);
 
-        PlanContainers(backup, context);
-        PlanItems(backup, context);
-        ApplyRootSyncFilters(context);
+        PlanContainerInsertOrUpdate(backup, context);
+        PlanItemInsertOrUpdate(backup, context);
+        PlanRootDeletesForSync(context);
 
         if (context.IsStrictFullSync)
         {
@@ -91,7 +91,7 @@ public static class InventoryBackupRestorePlanner
         return BuildPlanResult(context);
     }
 
-    private static void PlanContainers(InventoryBackupEnvelope backup, PlannerContext context)
+    private static void PlanContainerInsertOrUpdate(InventoryBackupEnvelope backup, PlannerContext context)
     {
         foreach (var container in backup.Data.Containers)
         {
@@ -120,7 +120,7 @@ public static class InventoryBackupRestorePlanner
         }
     }
 
-    private static void PlanItems(InventoryBackupEnvelope backup, PlannerContext context)
+    private static void PlanItemInsertOrUpdate(InventoryBackupEnvelope backup, PlannerContext context)
     {
         foreach (var item in backup.Data.Items)
         {
@@ -149,7 +149,7 @@ public static class InventoryBackupRestorePlanner
         }
     }
 
-    private static void ApplyRootSyncFilters(PlannerContext context)
+    private static void PlanRootDeletesForSync(PlannerContext context)
     {
         if (!context.IsFullSyncRoots)
         {
@@ -420,7 +420,26 @@ public static class InventoryBackupRestorePlanner
 
     private static InventoryBackupRestorePlan BuildPlanResult(PlannerContext context)
     {
-        var result = new InventoryBackupRestoreResult
+        var result = CreateRestoreResult(context);
+
+        return new InventoryBackupRestorePlan(
+            context.ContainersToInsert,
+            context.ContainersToUpdate,
+            context.ContainerIdsToDelete,
+            context.ItemsToInsert,
+            context.ItemsToUpdate,
+            context.ItemIdsToDelete,
+            context.RelationsToInsert,
+            context.RelationsToSet,
+            context.RelationsToDelete,
+            context.ImagesToInsert,
+            context.ImagesToDelete,
+            result);
+    }
+
+    private static InventoryBackupRestoreResult CreateRestoreResult(PlannerContext context)
+    {
+        return new InventoryBackupRestoreResult
         {
             AddedContainers = context.ContainersToInsert.Count,
             AddedItems = context.ItemsToInsert.Count,
@@ -440,20 +459,6 @@ public static class InventoryBackupRestorePlanner
             SkippedInvalidRelations = context.SkippedInvalidRelations,
             SkippedImagesWithMissingOwner = context.SkippedImagesWithMissingOwner,
         };
-
-        return new InventoryBackupRestorePlan(
-            context.ContainersToInsert,
-            context.ContainersToUpdate,
-            context.ContainerIdsToDelete,
-            context.ItemsToInsert,
-            context.ItemsToUpdate,
-            context.ItemIdsToDelete,
-            context.RelationsToInsert,
-            context.RelationsToSet,
-            context.RelationsToDelete,
-            context.ImagesToInsert,
-            context.ImagesToDelete,
-            result);
     }
 
     private sealed class PlannerContext
