@@ -148,20 +148,28 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     }
 
     [RelayCommand]
-    private async Task AddPhotoAsync()
+    private Task AddPhotoAsync()
     {
-        if (currentItem is null) return;
+        if (currentItem is null) return Task.CompletedTask;
+        if (IsImageResizeInProgress) return Task.CompletedTask;
 
-        await RunCommandAsync(async () =>
+        // Run in background so persistence can finish even if the user leaves this view.
+        CaptureAndRefreshItemPhotoAsync(currentItem).FireAndForget();
+        return Task.CompletedTask;
+    }
+
+    private async Task CaptureAndRefreshItemPhotoAsync(Item item)
+    {
+        var captured = await CaptureWithDefaultRetryAndProgressAsync(
+            attempt: async progress => (await imageService.CaptureItemPhotoAsync(item, progress)) > 0);
+
+        if (captured)
         {
-            var captured = await CaptureWithDefaultRetryAndProgressAsync(
-                attempt: async progress => (await imageService.CaptureItemPhotoAsync(currentItem, progress)) > 0);
-
-            if (captured)
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(currentItem));
-            }
-        });
+                ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(item));
+            });
+        }
     }
 
     [RelayCommand]

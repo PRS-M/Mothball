@@ -256,20 +256,33 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     }
 
     [RelayCommand]
-    private async Task AddPhotoAsync()
+    private Task AddPhotoAsync()
     {
-        if (currentContainer is null) return;
+        if (currentContainer is null) return Task.CompletedTask;
+        if (IsImageResizeInProgress) return Task.CompletedTask;
 
-        await RunCommandAsync(async () =>
+        // Run in background so persistence can finish even if the user leaves this view.
+        CaptureAndRefreshContainerPhotoAsync(currentContainer).FireAndForget();
+        return Task.CompletedTask;
+    }
+
+    private async Task CaptureAndRefreshContainerPhotoAsync(Container container)
+    {
+        var captured = await CaptureWithDefaultRetryAndProgressAsync(
+            attempt: async progress => (await imageService.CaptureContainerPhotoAsync(container, progress)) > 0);
+
+        if (captured)
         {
-            var captured = await CaptureWithDefaultRetryAndProgressAsync(
-                attempt: async progress => (await imageService.CaptureContainerPhotoAsync(currentContainer, progress)) > 0);
-
-            if (captured)
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(currentContainer));
-            }
-        });
+                if (disposed)
+                {
+                    return;
+                }
+
+                ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
+            });
+        }
     }
 
     [RelayCommand]
