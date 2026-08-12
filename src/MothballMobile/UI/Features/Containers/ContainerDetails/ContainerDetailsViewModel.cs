@@ -148,13 +148,32 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                 nav,
                 inventoryCommands,
                 popup,
-                ContainerId);
+                ContainerId,
+                OnItemQuantitySavedAsync);
             Items.Add(itemVm);
             itemVm.LoadImagesAsync().FireAndForget();
         }
 
         // Force collection update notification to recalculate RemainingItemsThreshold
         OnPropertyChanged(nameof(Items));
+    }
+
+    private Task OnItemQuantitySavedAsync(Guid itemId, int quantity)
+    {
+        var vm = Items.FirstOrDefault(x => x.Item.ItemId == itemId);
+        if (vm is not null && vm.Quantity != quantity)
+        {
+            vm.Quantity = quantity;
+        }
+
+        if (currentContainer is not null)
+        {
+            currentContainer.RemoveItem(itemId);
+            currentContainer.AddItem(itemId, quantity);
+            TotalItemCount = currentContainer.ItemCount;
+        }
+
+        return Task.CompletedTask;
     }
 
     [RelayCommand]

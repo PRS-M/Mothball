@@ -14,6 +14,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     private readonly Guid ownerContainerId;
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IPopupService popup;
+    private readonly Func<Guid, int, Task>? onQuantitySaved;
 
     public ItemWithPhotosViewModel(
         Item item,
@@ -23,7 +24,8 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         INavigationService navigation,
         IInventoryCommandRepository inventoryCommands,
         IPopupService popup,
-        string? sourceContainerId)
+        string? sourceContainerId,
+        Func<Guid, int, Task>? onQuantitySaved = null)
         : base(item, paths)
     {
         this.quantity = quantity;
@@ -32,6 +34,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         this.inventoryCommands = inventoryCommands;
         this.popup = popup;
         this.sourceContainerId = sourceContainerId;
+        this.onQuantitySaved = onQuantitySaved;
     }
 
     [ObservableProperty]
@@ -83,5 +86,10 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
 
         await inventoryCommands.ReplaceItemContainerRelationQuantity(Item.ItemId, ownerContainerId, selectedQuantity.Value);
         Quantity = selectedQuantity.Value;
+
+        if (onQuantitySaved is not null)
+        {
+            await onQuantitySaved(Item.ItemId, selectedQuantity.Value);
+        }
     }
 }
