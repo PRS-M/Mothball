@@ -36,6 +36,10 @@
                             Command="{Binding ExportToJsonCommand}"
                             SemanticProperties.Hint="Create a local backup JSON file with full inventory data" />
 
+                        <Button Text="Import from JSON"
+                            Command="{Binding ImportFromJsonCommand}"
+                            SemanticProperties.Hint="Choose restore mode and import a local backup JSON file" />
+
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"
                                        HorizontalOptions="Start"

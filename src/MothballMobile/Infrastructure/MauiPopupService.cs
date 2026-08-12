@@ -23,6 +23,23 @@ public sealed class MauiPopupService : IPopupService
         return page.DisplayAlertAsync(title, message, accept, cancel);
     }
 
+    /// <inheritdoc />
+    public async Task<string?> SelectOptionAsync(string title, string cancel, params string[] options)
+    {
+        var page = TryGetCurrentPage();
+        if (page is null)
+            return null;
+
+        if (options is null || options.Length == 0)
+            return null;
+
+        var selected = await page.DisplayActionSheetAsync(title, cancel, null, options);
+        if (string.Equals(selected, cancel, StringComparison.Ordinal))
+            return null;
+
+        return selected;
+    }
+
     private static Page? TryGetCurrentPage()
     {
         // Prefer Shell.Current for MAUI Shell apps
