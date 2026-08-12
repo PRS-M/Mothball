@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
 using MothballMobile.Infrastructure;
@@ -141,5 +142,57 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(currentItem));
             }
         });
+    }
+
+    [RelayCommand]
+    private async Task DeletePhotoAsync()
+    {
+        if (currentItem is null) return;
+        if (currentItem.Photos.Count == 0)
+        {
+            await popup.ShowAlertAsync("No photos", "This item does not have any photos to delete.");
+            return;
+        }
+
+        var selectedPhoto = await SelectPhotoAsync(currentItem.Photos, "Choose item photo to delete");
+        if (selectedPhoto is null)
+        {
+            return;
+        }
+
+        var confirmed = await popup.ConfirmAsync(
+            title: "Delete photo",
+            message: "Delete the selected photo?",
+            accept: "Delete",
+            cancel: "Cancel");
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            var deleted = await imageService.DeleteItemPhotoAsync(currentItem, selectedPhoto.ImageId);
+            if (deleted)
+            {
+                ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(currentItem));
+            }
+        });
+    }
+
+    private async Task<ImageItem?> SelectPhotoAsync(IReadOnlyList<ImageItem> photos, string title)
+    {
+        var optionToPhoto = photos
+            .Select((photo, index) => new { Option = $"Photo {index + 1}", Photo = photo })
+            .ToList();
+
+        var selected = await popup.SelectOptionAsync(title, "Cancel", optionToPhoto.Select(x => x.Option).ToArray());
+        if (string.IsNullOrWhiteSpace(selected))
+        {
+            return null;
+        }
+
+        return optionToPhoto.FirstOrDefault(x => string.Equals(x.Option, selected, StringComparison.Ordinal))?.Photo;
     }
 }

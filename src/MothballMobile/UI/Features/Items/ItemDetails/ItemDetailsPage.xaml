@@ -44,9 +44,27 @@
 
             <Border Style="{StaticResource Card}"
                     Padding="12">
-                <controls:ImageCarousel HeightRequest="220"
-                                        CornerRadius="10"
-                                        ImagePaths="{Binding ImagePaths}" />
+                <VerticalStackLayout Spacing="10">
+                    <controls:ImageCarousel HeightRequest="220"
+                                            CornerRadius="10"
+                                            ImagePaths="{Binding ImagePaths}" />
+
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Add photo"
+                                Style="{StaticResource TonalButton}"
+                                HeightRequest="34"
+                                FontSize="12"
+                                Padding="10,0"
+                                Command="{Binding AddPhotoCommand}" />
+
+                        <Button Text="Delete photo"
+                                Style="{StaticResource OutlinedButton}"
+                                HeightRequest="34"
+                                FontSize="12"
+                                Padding="10,0"
+                                Command="{Binding DeletePhotoCommand}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
             </Border>
 
             <Border Style="{StaticResource Card}">

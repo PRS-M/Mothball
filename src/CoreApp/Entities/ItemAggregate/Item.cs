@@ -17,6 +17,11 @@ public class Item : BaseEntity, IAggregateRoot
         return newImage;
     }
 
+    public void AddImageItem(Guid imageId)
+    {
+        Photos.Add(new ImageItem(imageId));
+    }
+
     public void RemoveImageItem(Guid imageId)
     {
         Photos.RemoveAll(p => p.ImageId == imageId);

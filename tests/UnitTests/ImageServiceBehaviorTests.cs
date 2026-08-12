@@ -310,4 +310,86 @@ public class ImageServiceBehaviorTests
         repo.Verify(r => r.InsertImageItemAsync(image, item.ItemId), Times.Once);
         repo.Verify(r => r.UpdateItemAsync(item), Times.Once);
     }
+
+    [Test]
+    public async Task DeleteContainerPhotoAsync_WhenPhotoExists_DeletesMetadataAndFile()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var service = new ImageService(camera.Object, repo.Object, files.Object);
+        var container = new Container(Guid.NewGuid(), "Box", "N");
+        var image = container.AddImageItem();
+
+        var deleted = await service.DeleteContainerPhotoAsync(container, image.ImageId);
+
+        Assert.That(deleted, Is.True);
+        Assert.That(container.Photos, Is.Empty);
+        repo.Verify(r => r.DeleteImageItemAsync(image.ImageId, container.ContainerId), Times.Once);
+        repo.Verify(r => r.UpdateContainerAsync(container), Times.Once);
+        files.Verify(f => f.DeleteFileAsync(image.FileName, Constants.PathToContainerPhotos), Times.Once);
+    }
+
+    [Test]
+    public async Task DeleteContainerPhotoAsync_WhenPhotoDoesNotExist_ReturnsFalse_AndDoesNothing()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var service = new ImageService(camera.Object, repo.Object, files.Object);
+        var container = new Container(Guid.NewGuid(), "Box", "N");
+
+        var deleted = await service.DeleteContainerPhotoAsync(container, Guid.NewGuid());
+
+        Assert.That(deleted, Is.False);
+        repo.Verify(r => r.DeleteImageItemAsync(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
+        repo.Verify(r => r.UpdateContainerAsync(It.IsAny<Container>()), Times.Never);
+        files.Verify(f => f.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public void DeleteContainerPhotoAsync_WhenRepositoryDeleteFails_RestoresInMemoryPhoto_AndRethrows()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var service = new ImageService(camera.Object, repo.Object, files.Object);
+        var container = new Container(Guid.NewGuid(), "Box", "N");
+        var image = container.AddImageItem();
+
+        repo.Setup(r => r.DeleteImageItemAsync(image.ImageId, container.ContainerId))
+            .ThrowsAsync(new InvalidOperationException("delete failed"));
+
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.DeleteContainerPhotoAsync(container, image.ImageId));
+
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex!.Message, Is.EqualTo("delete failed"));
+        Assert.That(container.Photos.Count, Is.EqualTo(1));
+        Assert.That(container.Photos[0].ImageId, Is.EqualTo(image.ImageId));
+        files.Verify(f => f.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public async Task DeleteItemPhotoAsync_WhenPhotoExists_DeletesMetadataAndFile()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var service = new ImageService(camera.Object, repo.Object, files.Object);
+        var item = new Item { Name = "Lamp" };
+        var image = item.AddImageItem();
+
+        var deleted = await service.DeleteItemPhotoAsync(item, image.ImageId);
+
+        Assert.That(deleted, Is.True);
+        Assert.That(item.Photos, Is.Empty);
+        repo.Verify(r => r.DeleteImageItemAsync(image.ImageId, item.ItemId), Times.Once);
+        repo.Verify(r => r.UpdateItemAsync(item), Times.Once);
+        files.Verify(f => f.DeleteFileAsync(image.FileName, Constants.PathToItemPhotos), Times.Once);
+    }
 }
