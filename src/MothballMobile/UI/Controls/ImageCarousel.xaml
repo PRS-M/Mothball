@@ -12,16 +12,29 @@
         <conv:PathToImageSourceConverter x:Key="PathToImage" />
     </ContentView.Resources>
 
-    <CarouselView x:Name="Carousel">
-        <CarouselView.ItemTemplate>
-            <DataTemplate>
-                <Image x:DataType="sys:String"
-                       Source="{Binding ., Converter={StaticResource PathToImage}}"
-                       Aspect="AspectFill"
-                       HorizontalOptions="Fill"
-                       VerticalOptions="Fill"
-                       SizeChanged="Image_OnSizeChanged" />
-            </DataTemplate>
-        </CarouselView.ItemTemplate>
-    </CarouselView>
+    <Grid RowDefinitions="*,Auto"
+          RowSpacing="4">
+        <CarouselView x:Name="Carousel"
+                      Grid.Row="0"
+                      PositionChanged="Carousel_OnPositionChanged">
+            <CarouselView.ItemTemplate>
+                <DataTemplate>
+                    <Image x:DataType="sys:String"
+                           Source="{Binding ., Converter={StaticResource PathToImage}}"
+                           Aspect="AspectFill"
+                           HorizontalOptions="Fill"
+                           VerticalOptions="Fill"
+                           SizeChanged="Image_OnSizeChanged" />
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+
+        <Label x:Name="CounterLabel"
+               Grid.Row="1"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               FontSize="11"
+               IsVisible="False"
+               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+    </Grid>
 </ContentView>

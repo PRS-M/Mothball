@@ -47,6 +47,7 @@
                 <VerticalStackLayout Spacing="10">
                     <controls:ImageCarousel HeightRequest="220"
                                             CornerRadius="10"
+                                            ShowCounter="True"
                                             ImagePaths="{Binding ImagePaths}" />
 
                     <HorizontalStackLayout Spacing="8">
