@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using MothballMobile.Infrastructure;
@@ -10,21 +11,31 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
 {
     private readonly INavigationService navigation;
     private readonly string? sourceContainerId;
+    private readonly Guid ownerContainerId;
+    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IPopupService popup;
 
     public ItemWithPhotosViewModel(
         Item item,
         int quantity,
+        Guid ownerContainerId,
         IImagePathResolver paths,
         INavigationService navigation,
+        IInventoryCommandRepository inventoryCommands,
+        IPopupService popup,
         string? sourceContainerId)
         : base(item, paths)
     {
-        Quantity = quantity;
+        this.quantity = quantity;
+        this.ownerContainerId = ownerContainerId;
         this.navigation = navigation;
+        this.inventoryCommands = inventoryCommands;
+        this.popup = popup;
         this.sourceContainerId = sourceContainerId;
     }
 
-    public int Quantity { get; }
+    [ObservableProperty]
+    private int quantity;
 
     public Task LoadImagesAsync()
     {
@@ -47,5 +58,30 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         return navigation.GoToAsync(
             NavigationRoutes.ItemDetails,
             parameters);
+    }
+
+    [RelayCommand]
+    private async Task EditQuantityAsync()
+    {
+        if (ownerContainerId == Guid.Empty)
+        {
+            return;
+        }
+
+        var selectedQuantity = await popup.PickNumberAsync(
+            title: "Set quantity",
+            min: 1,
+            max: 1000,
+            initialValue: Quantity,
+            accept: "Set",
+            cancel: "Cancel");
+
+        if (selectedQuantity is null || selectedQuantity.Value == Quantity)
+        {
+            return;
+        }
+
+        await inventoryCommands.ReplaceItemContainerRelationQuantity(Item.ItemId, ownerContainerId, selectedQuantity.Value);
+        Quantity = selectedQuantity.Value;
     }
 }
