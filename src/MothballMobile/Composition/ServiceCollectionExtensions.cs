@@ -2,6 +2,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
+using Infrastructure.Services.Restore;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
 using Infrastructure.Services.Repositories;
@@ -35,7 +36,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
-        services.AddSingleton<IInventoryBackupRestoreService, InventoryBackupRestoreService>();
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
 
         return services;
@@ -59,6 +59,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
             services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
+            services.AddSingleton<IInventoryBackupRestoreService, InventoryBackupRestoreService>();
         }
         else
         {
@@ -75,6 +76,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
             services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
+            services.AddSingleton<IInventoryBackupRestoreService, SqliteInventoryBackupRestoreService>();
         }
 
 #if DEBUG
