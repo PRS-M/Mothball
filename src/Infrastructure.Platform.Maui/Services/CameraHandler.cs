@@ -1,9 +1,7 @@
 using System;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Processing.Processors.Transforms;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 
 namespace Infrastructure.Services;
 
@@ -79,24 +77,37 @@ public class CameraHandler : ICameraHandler
             return await Task.Run(() =>
             {
                 resizeProgress?.Report(0.2);
-                using SixLabors.ImageSharp.Image image = SixLabors.ImageSharp.Image.Load(sourceStream);
+                using var managedStream = new SKManagedStream(sourceStream, disposeManagedStream: false);
+                using var codec = SKCodec.Create(managedStream);
+                if (codec is null)
+                {
+                    return null;
+                }
+
+                using var decoded = SKBitmap.Decode(codec);
+                if (decoded is null)
+                {
+                    return null;
+                }
 
                 resizeProgress?.Report(0.45);
-                image.Mutate(ctx =>
-                {
-                    ctx.AutoOrient();
-                    ctx.Resize(new ResizeOptions
-                    {
-                        Mode = SixLabors.ImageSharp.Processing.ResizeMode.Max,
-                        Sampler = KnownResamplers.Triangle,
-                        Size = new SixLabors.ImageSharp.Size(Constants.PhotoThumbnailMaxWidthPx, Constants.PhotoThumbnailMaxHeightPx)
-                    });
-                });
+                using var oriented = ApplyExifOrientation(decoded, codec.EncodedOrigin);
+                var targetSize = CalculateTargetSize(
+                    oriented.Width,
+                    oriented.Height,
+                    Constants.PhotoThumbnailMaxWidthPx,
+                    Constants.PhotoThumbnailMaxHeightPx);
+
+                using var resized = ResizeBitmap(oriented, targetSize.Width, targetSize.Height);
 
                 resizeProgress?.Report(0.75);
-                using var output = new MemoryStream();
-                var encoder = new JpegEncoder { Quality = 80 };
-                image.Save(output, encoder);
+                using var image = SKImage.FromBitmap(resized);
+                using var output = image.Encode(SKEncodedImageFormat.Jpeg, 80);
+                if (output is null)
+                {
+                    return null;
+                }
+
                 resizeProgress?.Report(0.95);
                 return output.ToArray();
             });
@@ -106,5 +117,90 @@ public class CameraHandler : ICameraHandler
             // If thumbnail generation fails for any reason, fall back to the original bytes.
             return null;
         }
+    }
+
+    private static (int Width, int Height) CalculateTargetSize(int sourceWidth, int sourceHeight, int maxWidth, int maxHeight)
+    {
+        if (sourceWidth <= 0 || sourceHeight <= 0)
+        {
+            return (Math.Max(1, maxWidth), Math.Max(1, maxHeight));
+        }
+
+        double ratio = Math.Min((double)maxWidth / sourceWidth, (double)maxHeight / sourceHeight);
+        ratio = Math.Min(1, ratio);
+
+        int width = Math.Max(1, (int)Math.Round(sourceWidth * ratio));
+        int height = Math.Max(1, (int)Math.Round(sourceHeight * ratio));
+        return (width, height);
+    }
+
+    private static SKBitmap ResizeBitmap(SKBitmap source, int width, int height)
+    {
+        if (source.Width == width && source.Height == height)
+        {
+            return source.Copy();
+        }
+
+        var destination = new SKBitmap(width, height, source.ColorType, source.AlphaType);
+        using var canvas = new SKCanvas(destination);
+        using var paint = new SKPaint
+        {
+            FilterQuality = SKFilterQuality.High,
+            IsAntialias = true,
+            IsDither = true
+        };
+
+        canvas.DrawBitmap(source, new SKRect(0, 0, width, height), paint);
+        canvas.Flush();
+        return destination;
+    }
+
+    private static SKBitmap ApplyExifOrientation(SKBitmap source, SKEncodedOrigin origin)
+    {
+        bool swapDimensions = origin is SKEncodedOrigin.LeftTop
+            or SKEncodedOrigin.RightTop
+            or SKEncodedOrigin.RightBottom
+            or SKEncodedOrigin.LeftBottom;
+
+        int width = swapDimensions ? source.Height : source.Width;
+        int height = swapDimensions ? source.Width : source.Height;
+
+        var destination = new SKBitmap(width, height, source.ColorType, source.AlphaType);
+        using var canvas = new SKCanvas(destination);
+        using var paint = new SKPaint { FilterQuality = SKFilterQuality.High, IsAntialias = true };
+
+        switch (origin)
+        {
+            case SKEncodedOrigin.TopRight:
+                canvas.Translate(width, 0);
+                canvas.Scale(-1, 1);
+                break;
+
+            case SKEncodedOrigin.BottomRight:
+                canvas.Translate(width, height);
+                canvas.RotateDegrees(180);
+                break;
+
+            case SKEncodedOrigin.BottomLeft:
+                canvas.Translate(0, height);
+                canvas.Scale(1, -1);
+                break;
+
+            case SKEncodedOrigin.RightTop:
+            case SKEncodedOrigin.LeftTop:
+                canvas.Translate(width, 0);
+                canvas.RotateDegrees(90);
+                break;
+
+            case SKEncodedOrigin.LeftBottom:
+            case SKEncodedOrigin.RightBottom:
+                canvas.Translate(0, height);
+                canvas.RotateDegrees(-90);
+                break;
+        }
+
+        canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.Flush();
+        return destination;
     }
 }

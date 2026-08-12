@@ -21,12 +21,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" />
-    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="SkiaSharp" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
     <PackageReference Update="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-    <PackageReference Update="SixLabors.ImageSharp" Version="3.1.11" />
+    <PackageReference Update="SkiaSharp" Version="2.88.8" />
   </ItemGroup>
 
   <ItemGroup>
