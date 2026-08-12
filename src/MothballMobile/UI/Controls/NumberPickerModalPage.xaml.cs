@@ -1,26 +1,25 @@
-namespace MothballMobile.UI.Shared.Modals;
+namespace MothballMobile.UI.Controls;
 
 public partial class NumberPickerModalPage : ContentPage
 {
     private readonly TaskCompletionSource<int?> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly int min;
+    private readonly int max;
 
     public NumberPickerModalPage(string title, int min, int max, int initialValue, string accept, string cancel)
     {
         InitializeComponent();
 
         this.min = min;
+        this.max = max;
 
         TitleLabel.Text = title;
         AcceptButton.Text = accept;
         CancelButton.Text = cancel;
 
-        for (var value = min; value <= max; value++)
-        {
-            QuantityPicker.Items.Add(value.ToString());
-        }
-
-        QuantityPicker.SelectedIndex = Math.Clamp(initialValue - min, 0, QuantityPicker.Items.Count - 1);
+        QuantityEntry.Text = Math.Clamp(initialValue, min, max).ToString();
+        QuantityEntry.CursorPosition = QuantityEntry.Text.Length;
+        QuantityEntry.SelectionLength = 0;
     }
 
     public Task<int?> WaitForResultAsync() => tcs.Task;
@@ -35,15 +34,45 @@ public partial class NumberPickerModalPage : ContentPage
         await CloseAsync(null);
     }
 
+    private async void OnEntryCompleted(object? sender, EventArgs e)
+    {
+        await TryAcceptAsync();
+    }
+
     private async void OnAcceptClicked(object? sender, EventArgs e)
     {
-        if (QuantityPicker.SelectedIndex < 0)
+        await TryAcceptAsync();
+    }
+
+    private async Task TryAcceptAsync()
+    {
+        var raw = QuantityEntry.Text?.Trim();
+        if (!int.TryParse(raw, out var parsed))
         {
-            await CloseAsync(null);
+            ShowValidation($"Enter a number between {min} and {max}.");
             return;
         }
 
-        await CloseAsync(min + QuantityPicker.SelectedIndex);
+        if (parsed < min || parsed > max)
+        {
+            ShowValidation($"Value must be between {min} and {max}.");
+            return;
+        }
+
+        HideValidation();
+        await CloseAsync(parsed);
+    }
+
+    private void ShowValidation(string message)
+    {
+        ValidationLabel.Text = message;
+        ValidationLabel.IsVisible = true;
+    }
+
+    private void HideValidation()
+    {
+        ValidationLabel.Text = string.Empty;
+        ValidationLabel.IsVisible = false;
     }
 
     private async Task CloseAsync(int? value)

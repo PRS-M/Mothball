@@ -1,4 +1,4 @@
-using MothballMobile.UI.Shared.Modals;
+using MothballMobile.UI.Controls;
 
 namespace MothballMobile.Infrastructure;
 

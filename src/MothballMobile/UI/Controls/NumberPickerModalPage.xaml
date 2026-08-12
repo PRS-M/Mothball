@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MothballMobile.UI.Shared.Modals.NumberPickerModalPage"
+             x:Class="MothballMobile.UI.Controls.NumberPickerModalPage"
              BackgroundColor="Transparent"
              Shell.NavBarIsVisible="False">
 
     <Grid Padding="24">
-        <BoxView BackgroundColor="#66000000">
+        <BoxView BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                 Opacity="0.72">
             <BoxView.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnBackdropTapped" />
             </BoxView.GestureRecognizers>
@@ -23,10 +24,19 @@
                        HorizontalTextAlignment="Center"
                        TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
 
-                <Picker x:Name="QuantityPicker"
-                        Title="Select quantity"
-                        Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"
-                        TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                  <Entry x:Name="QuantityEntry"
+                      Text=""
+                      Keyboard="Numeric"
+                      ReturnType="Done"
+                      Placeholder="Enter quantity"
+                      Completed="OnEntryCompleted"
+                      BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                  <Label x:Name="ValidationLabel"
+                      IsVisible="False"
+                      FontSize="12"
+                      TextColor="{StaticResource Error}" />
 
                 <Grid ColumnDefinitions="*,*"
                       ColumnSpacing="10">
