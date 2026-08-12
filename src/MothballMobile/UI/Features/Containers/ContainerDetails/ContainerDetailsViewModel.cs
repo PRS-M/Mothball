@@ -140,7 +140,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         foreach (var item in items)
         {
             var quantity = currentContainer?.Items.FirstOrDefault(x => x.ItemId == item.ItemId)?.Quantity ?? 0;
-            var itemVm = new ItemWithPhotosViewModel(item, quantity, paths, nav);
+            var itemVm = new ItemWithPhotosViewModel(item, quantity, paths, nav, ContainerId);
             Items.Add(itemVm);
             itemVm.LoadImagesAsync().FireAndForget();
         }

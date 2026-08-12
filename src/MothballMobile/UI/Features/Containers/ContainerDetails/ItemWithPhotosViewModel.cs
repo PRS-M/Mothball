@@ -9,12 +9,19 @@ namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
 {
     private readonly INavigationService navigation;
+    private readonly string? sourceContainerId;
 
-    public ItemWithPhotosViewModel(Item item, int quantity, IImagePathResolver paths, INavigationService navigation)
+    public ItemWithPhotosViewModel(
+        Item item,
+        int quantity,
+        IImagePathResolver paths,
+        INavigationService navigation,
+        string? sourceContainerId)
         : base(item, paths)
     {
         Quantity = quantity;
         this.navigation = navigation;
+        this.sourceContainerId = sourceContainerId;
     }
 
     public int Quantity { get; }
@@ -27,11 +34,18 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     [RelayCommand]
     private Task NavigateToItemDetailsAsync()
     {
+        var parameters = new Dictionary<string, object>
+        {
+            [NavigationParams.ItemId] = Item.ItemId.ToString()
+        };
+
+        if (!string.IsNullOrWhiteSpace(sourceContainerId))
+        {
+            parameters[NavigationParams.ContainerId] = sourceContainerId;
+        }
+
         return navigation.GoToAsync(
             NavigationRoutes.ItemDetails,
-            new Dictionary<string, object>
-            {
-                [NavigationParams.ItemId] = Item.ItemId.ToString()
-            });
+            parameters);
     }
 }

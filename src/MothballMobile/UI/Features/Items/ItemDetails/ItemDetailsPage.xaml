@@ -32,7 +32,7 @@
                 <VerticalStackLayout Spacing="8">
                 <Button Text="Go to the container"
                     Style="{StaticResource TonalButton}"
-                    IsVisible="{Binding HasContainerRelation}"
+                    IsVisible="{Binding ShowGoToContainerButton}"
                     Command="{Binding NavigateToContainerCommand}"/>
                 <Button Text="Associate with a container"
                     Style="{StaticResource OutlinedButton}"
