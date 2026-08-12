@@ -32,12 +32,14 @@ internal sealed class InventoryBackupRestorePlanBuilder
 
     private static IConflictPolicyStrategy CreateStrategy(InventoryBackupConflictPolicy conflictPolicy)
     {
-        if (conflictPolicy == InventoryBackupConflictPolicy.StrictFullSync)
+        return conflictPolicy switch
         {
-            return StrictFullSyncStrategy.Instance;
-        }
-
-        return AdditiveStrategy.Instance;
+            InventoryBackupConflictPolicy.AddOnly => AdditiveStrategy.Instance,
+            InventoryBackupConflictPolicy.AddAndUpsertMetadata => AdditiveStrategy.Instance,
+            InventoryBackupConflictPolicy.FullSync => AdditiveStrategy.Instance,
+            InventoryBackupConflictPolicy.StrictFullSync => StrictFullSyncStrategy.Instance,
+            _ => throw new NotSupportedException($"Unsupported conflict policy '{conflictPolicy}' for restore planning."),
+        };
     }
 
     private static void PlanContainerInsertOrUpdate(
