@@ -26,6 +26,12 @@ public partial class ItemTile : ContentView
 	public static readonly BindableProperty ShowQuantityProperty =
 		BindableProperty.Create(nameof(ShowQuantity), typeof(bool), typeof(ItemTile), false);
 
+	public static readonly BindableProperty EditQuantityCommandProperty =
+		BindableProperty.Create(nameof(EditQuantityCommand), typeof(ICommand), typeof(ItemTile), null);
+
+	public static readonly BindableProperty ShowEditQuantityProperty =
+		BindableProperty.Create(nameof(ShowEditQuantity), typeof(bool), typeof(ItemTile), false);
+
 	public static readonly BindableProperty ImagePathsProperty =
 		BindableProperty.Create(nameof(ImagePaths), typeof(IEnumerable), typeof(ItemTile), default(IEnumerable));
 
@@ -63,6 +69,18 @@ public partial class ItemTile : ContentView
 	{
 		get => (bool)GetValue(ShowQuantityProperty);
 		set => SetValue(ShowQuantityProperty, value);
+	}
+
+	public ICommand? EditQuantityCommand
+	{
+		get => (ICommand?)GetValue(EditQuantityCommandProperty);
+		set => SetValue(EditQuantityCommandProperty, value);
+	}
+
+	public bool ShowEditQuantity
+	{
+		get => (bool)GetValue(ShowEditQuantityProperty);
+		set => SetValue(ShowEditQuantityProperty, value);
 	}
 
 	public IEnumerable? ImagePaths

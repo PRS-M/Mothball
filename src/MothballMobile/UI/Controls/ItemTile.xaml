@@ -57,6 +57,15 @@
                        TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                        FontSize="12"
                        LineBreakMode="TailTruncation" />
+
+                <Button Text="Edit quantity"
+                        IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"
+                        Command="{Binding Source={x:Reference this}, Path=EditQuantityCommand}"
+                        Style="{StaticResource OutlinedButton}"
+                        HeightRequest="32"
+                        FontSize="12"
+                        Padding="10,0"
+                        HorizontalOptions="Start" />
             </VerticalStackLayout>
         </Grid>
     </Border>

@@ -145,23 +145,15 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:ItemWithPhotosViewModel">
-                    <VerticalStackLayout Spacing="6">
-                        <controls:ItemTile Name="{Binding Name}"
-                                           Quantity="{Binding Quantity}"
-                                           ShowQuantity="True"
-                                           Description="{Binding Description}"
-                                           Command="{Binding NavigateToItemDetailsCommand}"
-                                           ImagePaths="{Binding ImagePaths}"
-                                           ImageSize="92" />
-
-                        <Button Text="Edit quantity"
-                                Style="{StaticResource OutlinedButton}"
-                                HeightRequest="32"
-                                FontSize="12"
-                                Padding="10,0"
-                                HorizontalOptions="Start"
-                                Command="{Binding EditQuantityCommand}" />
-                    </VerticalStackLayout>
+                    <controls:ItemTile Name="{Binding Name}"
+                                       Quantity="{Binding Quantity}"
+                                       ShowQuantity="True"
+                                       ShowEditQuantity="True"
+                                       EditQuantityCommand="{Binding EditQuantityCommand}"
+                                       Description="{Binding Description}"
+                                       Command="{Binding NavigateToItemDetailsCommand}"
+                                       ImagePaths="{Binding ImagePaths}"
+                                       ImageSize="92" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
