@@ -13,38 +13,51 @@ internal sealed class InventoryBackupRestorePlanBuilder
         ArgumentNullException.ThrowIfNull(backup.Data);
         ArgumentNullException.ThrowIfNull(existingState);
 
-        var context = new PlannerContext(existingState, conflictPolicy);
+        ConflictPolicyProfile policyProfile = CreatePolicyProfile(conflictPolicy);
+        var context = new PlannerContext(existingState);
 
-        PlanContainerInsertOrUpdate(backup.Data.Containers, context);
-        PlanItemInsertOrUpdate(backup.Data.Items, context);
-        PlanRootDeletesForSync(context);
+        PlanContainerInsertOrUpdate(backup.Data.Containers, context, policyProfile);
+        PlanItemInsertOrUpdate(backup.Data.Items, context, policyProfile);
+        PlanRootDeletesForSync(context, policyProfile);
 
         var normalized = NormalizeBackupData(backup.Data, context);
         context.SkippedInvalidRelations += normalized.SkippedInvalidRelations;
         context.SkippedImagesWithMissingOwner += normalized.SkippedImagesWithMissingOwner;
 
-        IConflictPolicyStrategy strategy = CreateStrategy(conflictPolicy);
-        strategy.PlanRelations(context, normalized.ValidRelations);
-        strategy.PlanImages(context, normalized.ValidContainerImages, normalized.ValidItemImages);
+        policyProfile.ChildReconciliationStrategy.PlanRelations(context, normalized.ValidRelations);
+        policyProfile.ChildReconciliationStrategy.PlanImages(context, normalized.ValidContainerImages, normalized.ValidItemImages);
 
         return BuildPlanResult(context);
     }
 
-    private static IConflictPolicyStrategy CreateStrategy(InventoryBackupConflictPolicy conflictPolicy)
+    private static ConflictPolicyProfile CreatePolicyProfile(InventoryBackupConflictPolicy conflictPolicy)
     {
         return conflictPolicy switch
         {
-            InventoryBackupConflictPolicy.AddOnly => AdditiveStrategy.Instance,
-            InventoryBackupConflictPolicy.AddAndUpsertMetadata => AdditiveStrategy.Instance,
-            InventoryBackupConflictPolicy.FullSync => AdditiveStrategy.Instance,
-            InventoryBackupConflictPolicy.StrictFullSync => StrictFullSyncStrategy.Instance,
+            InventoryBackupConflictPolicy.AddOnly => new ConflictPolicyProfile(
+                AllowMetadataUpsert: false,
+                DeleteMissingRoots: false,
+                ChildReconciliationStrategy: AdditiveStrategy.Instance),
+            InventoryBackupConflictPolicy.AddAndUpsertMetadata => new ConflictPolicyProfile(
+                AllowMetadataUpsert: true,
+                DeleteMissingRoots: false,
+                ChildReconciliationStrategy: AdditiveStrategy.Instance),
+            InventoryBackupConflictPolicy.FullSync => new ConflictPolicyProfile(
+                AllowMetadataUpsert: true,
+                DeleteMissingRoots: true,
+                ChildReconciliationStrategy: AdditiveStrategy.Instance),
+            InventoryBackupConflictPolicy.StrictFullSync => new ConflictPolicyProfile(
+                AllowMetadataUpsert: true,
+                DeleteMissingRoots: true,
+                ChildReconciliationStrategy: StrictFullSyncStrategy.Instance),
             _ => throw new NotSupportedException($"Unsupported conflict policy '{conflictPolicy}' for restore planning."),
         };
     }
 
     private static void PlanContainerInsertOrUpdate(
         IReadOnlyCollection<InventoryBackupContainer> containers,
-        PlannerContext context)
+        PlannerContext context,
+        ConflictPolicyProfile policyProfile)
     {
         foreach (var container in containers)
         {
@@ -52,7 +65,7 @@ internal sealed class InventoryBackupRestorePlanBuilder
 
             if (context.ExistingContainersById.TryGetValue(container.ContainerId, out var existing))
             {
-                bool shouldUpdate = context.ConflictPolicy != InventoryBackupConflictPolicy.AddOnly
+                bool shouldUpdate = policyProfile.AllowMetadataUpsert
                     && (!string.Equals(existing.Name, container.Name, StringComparison.Ordinal)
                     || !string.Equals(existing.Notes, container.Notes, StringComparison.Ordinal));
 
@@ -75,7 +88,8 @@ internal sealed class InventoryBackupRestorePlanBuilder
 
     private static void PlanItemInsertOrUpdate(
         IReadOnlyCollection<InventoryBackupItem> items,
-        PlannerContext context)
+        PlannerContext context,
+        ConflictPolicyProfile policyProfile)
     {
         foreach (var item in items)
         {
@@ -83,7 +97,7 @@ internal sealed class InventoryBackupRestorePlanBuilder
 
             if (context.ExistingItemsById.TryGetValue(item.ItemId, out var existing))
             {
-                bool shouldUpdate = context.ConflictPolicy != InventoryBackupConflictPolicy.AddOnly
+                bool shouldUpdate = policyProfile.AllowMetadataUpsert
                     && (!string.Equals(existing.Name, item.Name, StringComparison.Ordinal)
                     || !string.Equals(existing.Description, item.Description, StringComparison.Ordinal));
 
@@ -104,9 +118,9 @@ internal sealed class InventoryBackupRestorePlanBuilder
         }
     }
 
-    private static void PlanRootDeletesForSync(PlannerContext context)
+    private static void PlanRootDeletesForSync(PlannerContext context, ConflictPolicyProfile policyProfile)
     {
-        if (!context.IsFullSyncRoots)
+        if (!policyProfile.DeleteMissingRoots)
         {
             return;
         }

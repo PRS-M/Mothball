@@ -4,9 +4,8 @@ namespace CoreApp.Utilities;
 
 internal sealed class PlannerContext
 {
-    public PlannerContext(InventoryBackupExistingState existingState, InventoryBackupConflictPolicy conflictPolicy)
+    public PlannerContext(InventoryBackupExistingState existingState)
     {
-        ConflictPolicy = conflictPolicy;
         ExistingContainersById = existingState.Containers.ToDictionary(c => c.ContainerId, c => c);
         ExistingItemsById = existingState.Items.ToDictionary(i => i.ItemId, i => i);
 
@@ -18,9 +17,6 @@ internal sealed class PlannerContext
             .GroupBy(r => (r.ContainerId, r.ItemId))
             .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity));
     }
-
-    public InventoryBackupConflictPolicy ConflictPolicy { get; }
-    public bool IsFullSyncRoots => ConflictPolicy is InventoryBackupConflictPolicy.FullSync or InventoryBackupConflictPolicy.StrictFullSync;
 
     public Dictionary<Guid, InventoryBackupExistingContainer> ExistingContainersById { get; }
     public Dictionary<Guid, InventoryBackupExistingItem> ExistingItemsById { get; }

@@ -247,6 +247,18 @@ public class InventoryBackupRestorePlannerTests
     }
 
     [Test]
+    public void BuildPlan_UnsupportedConflictPolicy_ThrowsNotSupportedException()
+    {
+        var backup = new InventoryBackupEnvelope { Data = new InventoryBackupData() };
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<NotSupportedException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            (InventoryBackupConflictPolicy)999));
+    }
+
+    [Test]
     public void ValidateIntegrity_WhenMissingAndRequired_Throws()
     {
         var backup = new InventoryBackupEnvelope
