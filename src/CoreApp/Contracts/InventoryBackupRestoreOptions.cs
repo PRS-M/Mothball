@@ -5,6 +5,7 @@ public enum InventoryBackupConflictPolicy
     AddOnly,
     AddAndUpsertMetadata,
     FullSync,
+    StrictFullSync,
 }
 
 public sealed record InventoryBackupRestoreOptions

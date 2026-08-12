@@ -15,7 +15,13 @@ public sealed record InventoryBackupExistingRelation(Guid ContainerId, Guid Item
 
 public sealed record InventoryBackupPlannedRelationInsert(Guid ContainerId, Guid ItemId, int QuantityToInsert);
 
+public sealed record InventoryBackupPlannedRelationSet(Guid ContainerId, Guid ItemId, int Quantity);
+
+public sealed record InventoryBackupPlannedRelationDelete(Guid ContainerId, Guid ItemId);
+
 public sealed record InventoryBackupPlannedImageInsert(Guid OwnerId, Guid ImageId, InventoryBackupOwnerType OwnerType);
+
+public sealed record InventoryBackupPlannedImageDelete(Guid OwnerId, Guid ImageId, InventoryBackupOwnerType OwnerType);
 
 public sealed record InventoryBackupExistingState(
     IReadOnlyCollection<InventoryBackupExistingContainer> Containers,
@@ -32,7 +38,10 @@ public sealed record InventoryBackupRestorePlan(
     List<InventoryBackupItem> ItemsToUpdate,
     List<Guid> ItemIdsToDelete,
     List<InventoryBackupPlannedRelationInsert> RelationsToInsert,
+    List<InventoryBackupPlannedRelationSet> RelationsToSet,
+    List<InventoryBackupPlannedRelationDelete> RelationsToDelete,
     List<InventoryBackupPlannedImageInsert> ImagesToInsert,
+    List<InventoryBackupPlannedImageDelete> ImagesToDelete,
     InventoryBackupRestoreResult Result);
 
 public static class InventoryBackupRestorePlanner
@@ -197,6 +206,9 @@ public static class InventoryBackupRestorePlanner
             .GroupBy(r => (r.ContainerId, r.ItemId))
             .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity));
 
+        bool isFullSyncRoots = conflictPolicy is InventoryBackupConflictPolicy.FullSync or InventoryBackupConflictPolicy.StrictFullSync;
+        bool isStrictFullSync = conflictPolicy == InventoryBackupConflictPolicy.StrictFullSync;
+
         var containersToInsert = new List<InventoryBackupContainer>();
         var containersToUpdate = new List<InventoryBackupContainer>();
         var containerIdsToDelete = new List<Guid>();
@@ -204,7 +216,10 @@ public static class InventoryBackupRestorePlanner
         var itemsToUpdate = new List<InventoryBackupItem>();
         var itemIdsToDelete = new List<Guid>();
         var relationsToInsert = new List<InventoryBackupPlannedRelationInsert>();
+        var relationsToSet = new List<InventoryBackupPlannedRelationSet>();
+        var relationsToDelete = new List<InventoryBackupPlannedRelationDelete>();
         var imagesToInsert = new List<InventoryBackupPlannedImageInsert>();
+        var imagesToDelete = new List<InventoryBackupPlannedImageDelete>();
 
         int skippedExistingContainers = 0;
         int skippedExistingItems = 0;
@@ -261,7 +276,7 @@ public static class InventoryBackupRestorePlanner
             itemsToInsert.Add(item);
         }
 
-        if (conflictPolicy == InventoryBackupConflictPolicy.FullSync)
+        if (isFullSyncRoots)
         {
             foreach (var existingContainerId in existingContainersById.Keys)
             {
@@ -298,98 +313,233 @@ public static class InventoryBackupRestorePlanner
                 .ToHashSet();
         }
 
-        foreach (var relation in backup.Data.Relations)
+        if (isStrictFullSync)
         {
-            if (relation.Quantity <= 0)
+            var backupRelationQuantityByPair = new Dictionary<(Guid ContainerId, Guid ItemId), int>();
+            foreach (var relation in backup.Data.Relations)
             {
-                skippedInvalidRelations++;
-                continue;
+                if (relation.Quantity <= 0)
+                {
+                    skippedInvalidRelations++;
+                    continue;
+                }
+
+                if (!knownContainerIds.Contains(relation.ContainerId) || !knownItemIds.Contains(relation.ItemId))
+                {
+                    skippedInvalidRelations++;
+                    continue;
+                }
+
+                var key = (relation.ContainerId, relation.ItemId);
+                backupRelationQuantityByPair.TryGetValue(key, out int current);
+                backupRelationQuantityByPair[key] = current + relation.Quantity;
             }
 
-            if (!knownContainerIds.Contains(relation.ContainerId) || !knownItemIds.Contains(relation.ItemId))
+            foreach (var (key, desiredQuantity) in backupRelationQuantityByPair)
             {
-                skippedInvalidRelations++;
-                continue;
+                knownRelationQuantityByPair.TryGetValue(key, out int existingQuantity);
+                if (existingQuantity == desiredQuantity)
+                {
+                    skippedExistingRelations++;
+                    continue;
+                }
+
+                relationsToSet.Add(new InventoryBackupPlannedRelationSet(key.ContainerId, key.ItemId, desiredQuantity));
+                if (desiredQuantity > existingQuantity)
+                {
+                    addedRelationQuantity += desiredQuantity - existingQuantity;
+                }
             }
 
-            var key = (relation.ContainerId, relation.ItemId);
-            knownRelationQuantityByPair.TryGetValue(key, out int existingQuantity);
-            if (relation.Quantity <= existingQuantity)
+            foreach (var key in knownRelationQuantityByPair.Keys)
             {
-                skippedExistingRelations++;
-                continue;
+                if (!backupRelationQuantityByPair.ContainsKey(key))
+                {
+                    relationsToDelete.Add(new InventoryBackupPlannedRelationDelete(key.ContainerId, key.ItemId));
+                }
             }
 
-            int missingQuantity = relation.Quantity - existingQuantity;
-            relationsToInsert.Add(new InventoryBackupPlannedRelationInsert(
-                relation.ContainerId,
-                relation.ItemId,
-                missingQuantity));
+            var backupContainerImages = new HashSet<InventoryBackupImageOwnership>();
+            var backupItemImages = new HashSet<InventoryBackupImageOwnership>();
 
-            knownRelationQuantityByPair[key] = relation.Quantity;
-            addedRelationQuantity += missingQuantity;
+            foreach (var image in backup.Data.Images)
+            {
+                if (image.OwnerType == InventoryBackupOwnerType.Container)
+                {
+                    if (!knownContainerIds.Contains(image.OwnerId))
+                    {
+                        skippedImagesWithMissingOwner++;
+                        continue;
+                    }
+
+                    backupContainerImages.Add(new InventoryBackupImageOwnership(image.OwnerId, image.ImageId));
+                    continue;
+                }
+
+                if (image.OwnerType == InventoryBackupOwnerType.Item)
+                {
+                    if (!knownItemIds.Contains(image.OwnerId))
+                    {
+                        skippedImagesWithMissingOwner++;
+                        continue;
+                    }
+
+                    backupItemImages.Add(new InventoryBackupImageOwnership(image.OwnerId, image.ImageId));
+                    continue;
+                }
+
+                skippedImagesWithMissingOwner++;
+            }
+
+            foreach (var ownership in backupContainerImages)
+            {
+                if (!knownContainerImages.Contains(ownership))
+                {
+                    imagesToInsert.Add(new InventoryBackupPlannedImageInsert(
+                        ownership.OwnerId,
+                        ownership.ImageId,
+                        InventoryBackupOwnerType.Container));
+                }
+                else
+                {
+                    skippedExistingImages++;
+                }
+            }
+
+            foreach (var ownership in backupItemImages)
+            {
+                if (!knownItemImages.Contains(ownership))
+                {
+                    imagesToInsert.Add(new InventoryBackupPlannedImageInsert(
+                        ownership.OwnerId,
+                        ownership.ImageId,
+                        InventoryBackupOwnerType.Item));
+                }
+                else
+                {
+                    skippedExistingImages++;
+                }
+            }
+
+            foreach (var existingImage in knownContainerImages)
+            {
+                if (!backupContainerImages.Contains(existingImage))
+                {
+                    imagesToDelete.Add(new InventoryBackupPlannedImageDelete(
+                        existingImage.OwnerId,
+                        existingImage.ImageId,
+                        InventoryBackupOwnerType.Container));
+                }
+            }
+
+            foreach (var existingImage in knownItemImages)
+            {
+                if (!backupItemImages.Contains(existingImage))
+                {
+                    imagesToDelete.Add(new InventoryBackupPlannedImageDelete(
+                        existingImage.OwnerId,
+                        existingImage.ImageId,
+                        InventoryBackupOwnerType.Item));
+                }
+            }
         }
-
-        foreach (var image in backup.Data.Images)
+        else
         {
-            if (image.OwnerType == InventoryBackupOwnerType.Container)
+            foreach (var relation in backup.Data.Relations)
             {
-                if (!knownContainerIds.Contains(image.OwnerId))
+                if (relation.Quantity <= 0)
                 {
-                    skippedImagesWithMissingOwner++;
+                    skippedInvalidRelations++;
                     continue;
                 }
 
-                var ownership = new InventoryBackupImageOwnership(image.OwnerId, image.ImageId);
-                if (!knownContainerImages.Add(ownership))
+                if (!knownContainerIds.Contains(relation.ContainerId) || !knownItemIds.Contains(relation.ItemId))
                 {
-                    skippedExistingImages++;
+                    skippedInvalidRelations++;
                     continue;
                 }
 
-                imagesToInsert.Add(new InventoryBackupPlannedImageInsert(
-                    image.OwnerId,
-                    image.ImageId,
-                    InventoryBackupOwnerType.Container));
-                continue;
+                var key = (relation.ContainerId, relation.ItemId);
+                knownRelationQuantityByPair.TryGetValue(key, out int existingQuantity);
+                if (relation.Quantity <= existingQuantity)
+                {
+                    skippedExistingRelations++;
+                    continue;
+                }
+
+                int missingQuantity = relation.Quantity - existingQuantity;
+                relationsToInsert.Add(new InventoryBackupPlannedRelationInsert(
+                    relation.ContainerId,
+                    relation.ItemId,
+                    missingQuantity));
+
+                knownRelationQuantityByPair[key] = relation.Quantity;
+                addedRelationQuantity += missingQuantity;
             }
 
-            if (image.OwnerType == InventoryBackupOwnerType.Item)
+            foreach (var image in backup.Data.Images)
             {
-                if (!knownItemIds.Contains(image.OwnerId))
+                if (image.OwnerType == InventoryBackupOwnerType.Container)
                 {
-                    skippedImagesWithMissingOwner++;
+                    if (!knownContainerIds.Contains(image.OwnerId))
+                    {
+                        skippedImagesWithMissingOwner++;
+                        continue;
+                    }
+
+                    var ownership = new InventoryBackupImageOwnership(image.OwnerId, image.ImageId);
+                    if (!knownContainerImages.Add(ownership))
+                    {
+                        skippedExistingImages++;
+                        continue;
+                    }
+
+                    imagesToInsert.Add(new InventoryBackupPlannedImageInsert(
+                        image.OwnerId,
+                        image.ImageId,
+                        InventoryBackupOwnerType.Container));
                     continue;
                 }
 
-                var ownership = new InventoryBackupImageOwnership(image.OwnerId, image.ImageId);
-                if (!knownItemImages.Add(ownership))
+                if (image.OwnerType == InventoryBackupOwnerType.Item)
                 {
-                    skippedExistingImages++;
+                    if (!knownItemIds.Contains(image.OwnerId))
+                    {
+                        skippedImagesWithMissingOwner++;
+                        continue;
+                    }
+
+                    var ownership = new InventoryBackupImageOwnership(image.OwnerId, image.ImageId);
+                    if (!knownItemImages.Add(ownership))
+                    {
+                        skippedExistingImages++;
+                        continue;
+                    }
+
+                    imagesToInsert.Add(new InventoryBackupPlannedImageInsert(
+                        image.OwnerId,
+                        image.ImageId,
+                        InventoryBackupOwnerType.Item));
                     continue;
                 }
 
-                imagesToInsert.Add(new InventoryBackupPlannedImageInsert(
-                    image.OwnerId,
-                    image.ImageId,
-                    InventoryBackupOwnerType.Item));
-                continue;
+                skippedImagesWithMissingOwner++;
             }
-
-            skippedImagesWithMissingOwner++;
         }
 
         var result = new InventoryBackupRestoreResult
         {
             AddedContainers = containersToInsert.Count,
             AddedItems = itemsToInsert.Count,
-            AddedRelations = relationsToInsert.Count,
+            AddedRelations = relationsToInsert.Count + relationsToSet.Count,
             AddedRelationQuantity = addedRelationQuantity,
             AddedImages = imagesToInsert.Count,
             UpdatedContainers = containersToUpdate.Count,
             UpdatedItems = itemsToUpdate.Count,
             DeletedContainers = containerIdsToDelete.Count,
             DeletedItems = itemIdsToDelete.Count,
+            DeletedRelations = relationsToDelete.Count,
+            DeletedImages = imagesToDelete.Count,
             SkippedExistingContainers = skippedExistingContainers,
             SkippedExistingItems = skippedExistingItems,
             SkippedExistingRelations = skippedExistingRelations,
@@ -406,7 +556,10 @@ public static class InventoryBackupRestorePlanner
             itemsToUpdate,
             itemIdsToDelete,
             relationsToInsert,
+                relationsToSet,
+                relationsToDelete,
             imagesToInsert,
+                imagesToDelete,
             result);
     }
 

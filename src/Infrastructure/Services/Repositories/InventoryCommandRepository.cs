@@ -40,6 +40,12 @@ public class InventoryCommandRepository : IInventoryCommandRepository
     public Task InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity)
         => relationRepo.InsertItemContainerRelationAsync(itemId, containerId, quantity);
 
+    public Task ReplaceItemContainerRelationQuantity(Guid itemId, Guid containerId, int quantity)
+        => relationRepo.ReplaceItemContainerRelationQuantityAsync(itemId, containerId, quantity);
+
+    public Task DeleteItemContainerRelation(Guid itemId, Guid containerId)
+        => relationRepo.DeleteItemContainerRelationAsync(itemId, containerId);
+
     public Task UpdateContainerAsync(Container container)
         => containerRepo.UpdateAsync(container);
 
@@ -48,6 +54,9 @@ public class InventoryCommandRepository : IInventoryCommandRepository
 
     public Task UpdateImageItemAsync(ImageItem image, Guid ownerId)
         => imageRepo.UpdateAsync(image, ownerId);
+
+    public Task DeleteImageItemAsync(Guid imageId, Guid ownerId)
+        => imageRepo.DeleteAsync(imageId, ownerId);
 
     public Task DeleteItemAsync(string itemId)
         => itemRepo.DeleteAsync(itemId);

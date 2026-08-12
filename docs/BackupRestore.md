@@ -80,6 +80,7 @@ This removes duplicate decision logic between the generic and SQLite restore ser
 - `AddOnly`
 - `AddAndUpsertMetadata`
 - `FullSync`
+- `StrictFullSync`
 
 ### AddOnly
 
@@ -100,6 +101,17 @@ This removes duplicate decision logic between the generic and SQLite restore ser
 - Deletes containers not present in backup.
 - Deletes items not present in backup.
 - Keeps relation/image restore additive for surviving entities by adding only missing quantity or missing image refs.
+
+### StrictFullSync
+
+- Includes FullSync root-entity behavior.
+- Reconciles surviving relation pairs exactly:
+- Missing pairs are inserted.
+- Extra pairs are deleted.
+- Existing pair quantity is set to exact backup quantity (can increase or decrease).
+- Reconciles surviving image references exactly:
+- Missing owner-image refs are inserted.
+- Extra owner-image refs are deleted.
 
 ## Integrity Verification
 
@@ -128,6 +140,7 @@ Restore reports include:
 - Added: containers, items, relations, relation quantity, images.
 - Updated: containers, items.
 - Deleted: containers, items.
+- Deleted: relations, images (StrictFullSync).
 - Skipped: existing containers/items/relations/images, invalid relations, images with missing owner.
 
 ## Dependency Injection Wiring
@@ -152,9 +165,8 @@ Persistence-based selection:
 
 ## Notes
 
-- `FullSync` currently enforces strict sync at root entity level (containers/items).
-- For surviving roots, relation and image handling remains additive, not strict replacement.
-- Strict full graph reconciliation can be added in a future iteration if needed.
+- `FullSync` remains root-level strict for compatibility.
+- Use `StrictFullSync` when you need exact relation and image reconciliation for surviving roots.
 
 ## How to Use Restore
 
@@ -212,6 +224,23 @@ Behavior:
 - Add + metadata upsert behavior.
 - Containers/items not present in backup are deleted.
 - Relations/images for surviving roots are still additive in current implementation.
+
+### 3b. StrictFullSync for exact graph reconciliation
+
+```csharp
+var options = new InventoryBackupRestoreOptions
+{
+	ConflictPolicy = InventoryBackupConflictPolicy.StrictFullSync,
+};
+
+var result = await backupRestoreService.RestoreAsync(backup, options);
+```
+
+Behavior:
+
+- FullSync root behavior.
+- Exact relation reconciliation for surviving roots (insert/delete/set quantity).
+- Exact image reference reconciliation for surviving roots (insert/delete).
 
 ### 4. Signed payload verification (HMAC)
 

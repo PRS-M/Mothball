@@ -115,10 +115,33 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
                 .ConfigureAwait(false);
         }
 
+        foreach (var relation in plan.RelationsToSet)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await inventoryCommands
+                .ReplaceItemContainerRelationQuantity(relation.ItemId, relation.ContainerId, relation.Quantity)
+                .ConfigureAwait(false);
+        }
+
+        foreach (var relation in plan.RelationsToDelete)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await inventoryCommands
+                .DeleteItemContainerRelation(relation.ItemId, relation.ContainerId)
+                .ConfigureAwait(false);
+        }
+
         foreach (var image in plan.ImagesToInsert)
         {
             cancellationToken.ThrowIfCancellationRequested();
             await inventoryCommands.InsertImageItemAsync(new ImageItem(image.ImageId), image.OwnerId)
+                .ConfigureAwait(false);
+        }
+
+        foreach (var image in plan.ImagesToDelete)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await inventoryCommands.DeleteImageItemAsync(image.ImageId, image.OwnerId)
                 .ConfigureAwait(false);
         }
 

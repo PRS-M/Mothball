@@ -266,4 +266,90 @@ public class InventoryBackupRestoreServiceTests
 
         Assert.ThrowsAsync<InvalidDataException>(() => sut.RestoreAsync(tamperedBackup));
     }
+
+    [Test]
+    public async Task RestoreAsync_StrictFullSync_ReconcilesRelationsAndImagesExactly()
+    {
+        var containerId = Guid.NewGuid();
+        var item1Id = Guid.NewGuid();
+        var item2Id = Guid.NewGuid();
+
+        var existingContainer = new Container(containerId, "Container", "Notes");
+        existingContainer.AddItem(item1Id, 5);
+        existingContainer.AddItem(item2Id, 1);
+
+        var keepImageId = Guid.NewGuid();
+        var deleteImageId = Guid.NewGuid();
+        existingContainer.AddImageItem(keepImageId);
+        existingContainer.AddImageItem(deleteImageId);
+
+        var existingItem1 = new Item
+        {
+            ItemId = item1Id,
+            Name = "Item 1",
+            Description = "D1",
+        };
+
+        var existingItem2 = new Item
+        {
+            ItemId = item2Id,
+            Name = "Item 2",
+            Description = "D2",
+        };
+
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers =
+                [
+                    new InventoryBackupContainer { ContainerId = containerId, Name = "Container", Notes = "Notes" },
+                ],
+                Items =
+                [
+                    new InventoryBackupItem { ItemId = item1Id, Name = "Item 1", Description = "D1" },
+                    new InventoryBackupItem { ItemId = item2Id, Name = "Item 2", Description = "D2" },
+                ],
+                Relations =
+                [
+                    new InventoryBackupRelation { ContainerId = containerId, ItemId = item1Id, Quantity = 2 },
+                ],
+                Images =
+                [
+                    new InventoryBackupImageRef
+                    {
+                        ImageId = keepImageId,
+                        OwnerId = containerId,
+                        OwnerType = InventoryBackupOwnerType.Container,
+                        FileName = $"{keepImageId}.jpg",
+                    },
+                ],
+            },
+        });
+
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(q => q.QueryContainersAsync(It.IsAny<ContainerListSpecification>()))
+            .ReturnsAsync([existingContainer]);
+        queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
+            .ReturnsAsync([existingItem1, existingItem2]);
+
+        var commands = new Mock<IInventoryCommandRepository>();
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+
+        var result = await sut.RestoreAsync(backup, new InventoryBackupRestoreOptions
+        {
+            ConflictPolicy = InventoryBackupConflictPolicy.StrictFullSync,
+        });
+
+        commands.Verify(c => c.ReplaceItemContainerRelationQuantity(item1Id, containerId, 2), Times.Once);
+        commands.Verify(c => c.DeleteItemContainerRelation(item2Id, containerId), Times.Once);
+        commands.Verify(c => c.DeleteImageItemAsync(deleteImageId, containerId), Times.Once);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.DeletedItems, Is.EqualTo(0));
+            Assert.That(result.DeletedRelations, Is.EqualTo(1));
+            Assert.That(result.DeletedImages, Is.EqualTo(1));
+        });
+    }
 }

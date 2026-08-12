@@ -136,6 +136,34 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                 });
             }
 
+            foreach (var relation in plan.RelationsToSet)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Execute(
+                    $"DELETE FROM {nameof(DbItemContainerRelation)} WHERE {nameof(DbItemContainerRelation.ItemId)} = ? AND {nameof(DbItemContainerRelation.ContainerId)} = ?",
+                    relation.ItemId,
+                    relation.ContainerId);
+
+                if (relation.Quantity > 0)
+                {
+                    connection.Insert(new DbItemContainerRelation
+                    {
+                        ItemId = relation.ItemId,
+                        ContainerId = relation.ContainerId,
+                        Quantity = relation.Quantity,
+                    });
+                }
+            }
+
+            foreach (var relation in plan.RelationsToDelete)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Execute(
+                    $"DELETE FROM {nameof(DbItemContainerRelation)} WHERE {nameof(DbItemContainerRelation.ItemId)} = ? AND {nameof(DbItemContainerRelation.ContainerId)} = ?",
+                    relation.ItemId,
+                    relation.ContainerId);
+            }
+
             foreach (var image in plan.ImagesToInsert)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -144,6 +172,15 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     ImageId = image.ImageId,
                     OwnerUniqueId = image.OwnerId,
                 });
+            }
+
+            foreach (var image in plan.ImagesToDelete)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Execute(
+                    $"DELETE FROM {nameof(DbImage)} WHERE {nameof(DbImage.ImageId)} = ? AND {nameof(DbImage.OwnerUniqueId)} = ?",
+                    image.ImageId,
+                    image.OwnerId);
             }
 
             foreach (var itemId in plan.ItemIdsToDelete)
