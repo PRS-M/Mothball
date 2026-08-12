@@ -67,12 +67,30 @@ public class JsonHandlerBehaviorTests
     }
 
     [Test]
+    public async Task SerializeToFile_Throws_OnEmptyFileName()
+    {
+        var files = CreateFileHandler(out _);
+        var handler = new JsonHandler(files.Object);
+
+        Assert.ThrowsAsync<ArgumentNullException>(() => handler.SerializeToFile("", "folder", new { A = 1 }));
+    }
+
+    [Test]
     public async Task DeserializeFromFile_Throws_OnNullFolder()
     {
         var files = CreateFileHandler(out _);
         var handler = new JsonHandler(files.Object);
 
         Assert.ThrowsAsync<ArgumentNullException>(() => handler.DeserializeFromFile<object>("x.json", null!));
+    }
+
+    [Test]
+    public async Task DeserializeFromFile_Throws_OnNullFileName()
+    {
+        var files = CreateFileHandler(out _);
+        var handler = new JsonHandler(files.Object);
+
+        Assert.ThrowsAsync<ArgumentNullException>(() => handler.DeserializeFromFile<object>(null!, "folder"));
     }
 
     [Test]
@@ -84,6 +102,17 @@ public class JsonHandlerBehaviorTests
         await files.Object.SaveTextFileAsync("bad.json", "folder", "not-json");
 
         Assert.ThrowsAsync<JsonException>(() => handler.DeserializeFromFile<Dictionary<string, int>>("bad.json", "folder"));
+    }
+
+    [Test]
+    public async Task DeserializeFromFile_ThrowsJsonException_WhenPayloadIsJsonNull()
+    {
+        var files = CreateFileHandler(out _);
+        var handler = new JsonHandler(files.Object);
+
+        await files.Object.SaveTextFileAsync("null.json", "folder", "null");
+
+        Assert.ThrowsAsync<JsonException>(() => handler.DeserializeFromFile<Dictionary<string, int>>("null.json", "folder"));
     }
 
     [Test]

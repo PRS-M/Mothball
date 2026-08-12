@@ -7,6 +7,7 @@ using CoreApp.Services;
 using CoreApp.Specifications;
 using CoreApp.Utilities;
 using Moq;
+using System.Text.Json;
 
 namespace UnitTests;
 
@@ -132,6 +133,44 @@ public class InventoryBackupRestoreServiceTests
         var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
 
         Assert.ThrowsAsync<ArgumentException>(() => sut.RestoreFromJsonAsync("{invalid-json"));
+    }
+
+    [Test]
+    public async Task RestoreFromJsonAsync_WithValidJson_ParsesAndRestores()
+    {
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [],
+                Items = [],
+                Relations = [],
+                Images = [],
+            },
+        });
+
+        var json = JsonSerializer.Serialize(backup, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        });
+
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(q => q.QueryContainersAsync(It.IsAny<ContainerListSpecification>()))
+            .ReturnsAsync([]);
+        queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
+            .ReturnsAsync([]);
+
+        var commands = new Mock<IInventoryCommandRepository>();
+
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+        var result = await sut.RestoreFromJsonAsync(json);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.AddedContainers, Is.EqualTo(0));
+        Assert.That(result.AddedItems, Is.EqualTo(0));
+
+        queries.Verify(q => q.QueryContainersAsync(It.IsAny<ContainerListSpecification>()), Times.Once);
+        queries.Verify(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()), Times.Once);
     }
 
     [Test]
