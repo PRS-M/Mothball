@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Windows.Input;
+using Microsoft.Maui.Controls;
 
 namespace MothballMobile.UI.Controls;
 
@@ -18,6 +19,12 @@ public partial class ItemTile : ContentView
 
 	public static readonly BindableProperty DescriptionProperty =
 		BindableProperty.Create(nameof(Description), typeof(string), typeof(ItemTile), string.Empty);
+
+	public static readonly BindableProperty QuantityProperty =
+		BindableProperty.Create(nameof(Quantity), typeof(int), typeof(ItemTile), 0);
+
+	public static readonly BindableProperty ShowQuantityProperty =
+		BindableProperty.Create(nameof(ShowQuantity), typeof(bool), typeof(ItemTile), false);
 
 	public static readonly BindableProperty ImagePathsProperty =
 		BindableProperty.Create(nameof(ImagePaths), typeof(IEnumerable), typeof(ItemTile), default(IEnumerable));
@@ -46,6 +53,18 @@ public partial class ItemTile : ContentView
 		set => SetValue(DescriptionProperty, value);
 	}
 
+	public int Quantity
+	{
+		get => (int)GetValue(QuantityProperty);
+		set => SetValue(QuantityProperty, value);
+	}
+
+	public bool ShowQuantity
+	{
+		get => (bool)GetValue(ShowQuantityProperty);
+		set => SetValue(ShowQuantityProperty, value);
+	}
+
 	public IEnumerable? ImagePaths
 	{
 		get => (IEnumerable?)GetValue(ImagePathsProperty);
@@ -62,5 +81,35 @@ public partial class ItemTile : ContentView
 	{
 		get => (float)GetValue(ImageCornerRadiusProperty);
 		set => SetValue(ImageCornerRadiusProperty, value);
+	}
+
+	private void Border_OnTapped(object sender, EventArgs e)
+	{
+		if (sender is Border border)
+			VisualStateManager.GoToState(border, "Pressed");
+
+		if (Command is not null && Command.CanExecute(null))
+		{
+			Command.Execute(null);
+		}
+
+		Dispatcher.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+		{
+			if (sender is Border border)
+				VisualStateManager.GoToState(border, "Normal");
+			return false;
+		});
+	}
+
+	private static void Border_PointerPressed(object sender, PointerEventArgs e)
+	{
+		if (sender is Border border)
+			VisualStateManager.GoToState(border, "Pressed");
+	}
+
+	private static void Border_PointerReleased(object sender, PointerEventArgs e)
+	{
+		if (sender is Border border)
+			VisualStateManager.GoToState(border, "Normal");
 	}
 }
