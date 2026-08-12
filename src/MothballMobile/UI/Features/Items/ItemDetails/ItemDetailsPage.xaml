@@ -65,6 +65,14 @@
                                 Padding="10,0"
                                 Command="{Binding DeletePhotoCommand}" />
                     </HorizontalStackLayout>
+
+                    <VerticalStackLayout IsVisible="{Binding IsImageResizeInProgress}"
+                                         Spacing="4">
+                        <Label Text="Processing photo..."
+                               FontSize="12"
+                               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                        <ProgressBar Progress="{Binding ImageResizeProgress}" />
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
             </Border>
 

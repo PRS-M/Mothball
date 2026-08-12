@@ -31,7 +31,7 @@
                 Margin="16,16,16,8"
                 Padding="12">
             <Grid ColumnDefinitions="*,Auto"
-                RowDefinitions="Auto,Auto,Auto,Auto"
+                                RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                   ColumnSpacing="12"
                   RowSpacing="6">
                   <Label Grid.Row="0"
@@ -78,6 +78,17 @@
                         Padding="10,0"
                         Command="{Binding DeletePhotoCommand}" />
                 </HorizontalStackLayout>
+
+                <VerticalStackLayout Grid.Row="4"
+                                     Grid.ColumnSpan="2"
+                                     IsVisible="{Binding IsImageResizeInProgress}"
+                                     Spacing="4"
+                                     Margin="0,8,0,0">
+                    <Label Text="Processing photo..."
+                           FontSize="12"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                    <ProgressBar Progress="{Binding ImageResizeProgress}" />
+                </VerticalStackLayout>
             </Grid>
         </Border>
 

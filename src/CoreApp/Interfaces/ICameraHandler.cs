@@ -11,5 +11,5 @@ public interface ICameraHandler
     /// <summary>
     /// Captures a photo and returns its bytes, or an empty array if the operation is canceled.
     /// </summary>
-    Task<byte[]> CapturePhotoAsync();
+    Task<byte[]> CapturePhotoAsync(IProgress<double>? resizeProgress = null);
 }

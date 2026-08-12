@@ -154,8 +154,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
         await RunCommandAsync(async () =>
         {
-            var captured = await CaptureWithDefaultRetryAsync(
-                attempt: async () => (await imageService.CaptureItemPhotoAsync(currentItem)) > 0);
+            var captured = await CaptureWithDefaultRetryAndProgressAsync(
+                attempt: async progress => (await imageService.CaptureItemPhotoAsync(currentItem, progress)) > 0);
 
             if (captured)
             {

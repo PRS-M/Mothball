@@ -262,8 +262,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         await RunCommandAsync(async () =>
         {
-            var captured = await CaptureWithDefaultRetryAsync(
-                attempt: async () => (await imageService.CaptureContainerPhotoAsync(currentContainer)) > 0);
+            var captured = await CaptureWithDefaultRetryAndProgressAsync(
+                attempt: async progress => (await imageService.CaptureContainerPhotoAsync(currentContainer, progress)) > 0);
 
             if (captured)
             {
