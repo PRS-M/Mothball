@@ -5,11 +5,13 @@ namespace MothballMobile;
 public partial class App : Application
 {
 	private readonly IAppStartupOrchestrator startupOrchestrator;
+	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 
-	public App(IAppStartupOrchestrator startupOrchestrator)
+	public App(IAppStartupOrchestrator startupOrchestrator, IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
 	{
 		InitializeComponent();
 		this.startupOrchestrator = startupOrchestrator;
+		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
 	}
 
 	protected override Window CreateWindow(IActivationState? activationState)
@@ -24,7 +26,7 @@ public partial class App : Application
 		try
 		{
 			await startupOrchestrator.StartAsync();
-			window.Page = new AppShell();
+			window.Page = new AppShell(photoBackgroundOperationTracker);
 		}
 		catch (Exception ex)
 		{

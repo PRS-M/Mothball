@@ -2,9 +2,10 @@
 
 public partial class AppShell : Shell
 {
-	public AppShell()
+	public AppShell(Infrastructure.IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
 	{
 		InitializeComponent();
+		BindingContext = photoBackgroundOperationTracker;
 		RegisterRoutes();
 	}
 

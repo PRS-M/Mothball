@@ -18,6 +18,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
     private readonly IPopupService popup;
+    private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -51,6 +52,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         ImageService imageService,
         IRetryService retryService,
         INavigationService nav,
+        IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IDebouncer? debouncer = null)
         : base(paths, imageService, retryService)
     {
@@ -58,6 +60,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.inventoryCommands = inventoryCommands;
         this.popup = popup;
         this.nav = nav;
+        this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
         this.debouncer = debouncer ?? new Debouncer(250);
 
         // Debounce search query changes
@@ -268,8 +271,27 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     private async Task CaptureAndRefreshContainerPhotoAsync(Container container)
     {
-        var captured = await CaptureWithDefaultRetryAndProgressAsync(
-            attempt: async progress => (await imageService.CaptureContainerPhotoAsync(container, progress)) > 0);
+        Guid operationId = photoBackgroundOperationTracker.Start("Saving container photo");
+        var captured = false;
+
+        try
+        {
+            captured = await CaptureWithDefaultRetryAndProgressAsync(
+                attempt: async progress =>
+                {
+                    var compositeProgress = new Progress<double>(value =>
+                    {
+                        progress.Report(value);
+                        photoBackgroundOperationTracker.Report(operationId, value);
+                    });
+
+                    return (await imageService.CaptureContainerPhotoAsync(container, compositeProgress)) > 0;
+                });
+        }
+        finally
+        {
+            photoBackgroundOperationTracker.Complete(operationId, captured);
+        }
 
         if (captured)
         {

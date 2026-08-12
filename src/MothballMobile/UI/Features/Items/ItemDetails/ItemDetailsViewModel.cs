@@ -15,6 +15,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService nav;
     private readonly IPopupService popup;
+    private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
     private Item? currentItem;
     private string? sourceContainerId;
 
@@ -38,13 +39,14 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemDetailsViewModel(IInventoryQueryRepository inventoryQueries, IInventoryCommandRepository inventoryCommands, INavigationService nav, IImagePathResolver paths, IPopupService popup, ImageService imageService, IRetryService retryService)
+    public ItemDetailsViewModel(IInventoryQueryRepository inventoryQueries, IInventoryCommandRepository inventoryCommands, INavigationService nav, IImagePathResolver paths, IPopupService popup, ImageService imageService, IRetryService retryService, IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
         : base(paths, imageService, retryService)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
         this.nav = nav;
         this.popup = popup;
+        this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -160,8 +162,27 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private async Task CaptureAndRefreshItemPhotoAsync(Item item)
     {
-        var captured = await CaptureWithDefaultRetryAndProgressAsync(
-            attempt: async progress => (await imageService.CaptureItemPhotoAsync(item, progress)) > 0);
+        Guid operationId = photoBackgroundOperationTracker.Start("Saving item photo");
+        var captured = false;
+
+        try
+        {
+            captured = await CaptureWithDefaultRetryAndProgressAsync(
+                attempt: async progress =>
+                {
+                    var compositeProgress = new Progress<double>(value =>
+                    {
+                        progress.Report(value);
+                        photoBackgroundOperationTracker.Report(operationId, value);
+                    });
+
+                    return (await imageService.CaptureItemPhotoAsync(item, compositeProgress)) > 0;
+                });
+        }
+        finally
+        {
+            photoBackgroundOperationTracker.Complete(operationId, captured);
+        }
 
         if (captured)
         {
