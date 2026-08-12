@@ -247,6 +247,179 @@ public class InventoryBackupRestorePlannerTests
     }
 
     [Test]
+    public void BuildPlan_StrictFullSync_AggregatesDuplicateRelations_AndTracksAddedQuantity()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+
+        var existing = new InventoryBackupExistingState(
+            Containers: [new InventoryBackupExistingContainer(containerId, "C", "N")],
+            Items: [new InventoryBackupExistingItem(itemId, "I", "D")],
+            ContainerImages: [],
+            ItemImages: [],
+            Relations: [new InventoryBackupExistingRelation(containerId, itemId, 2)]);
+
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = containerId, Name = "C", Notes = "N" }],
+                Items = [new InventoryBackupItem { ItemId = itemId, Name = "I", Description = "D" }],
+                Relations =
+                [
+                    new InventoryBackupRelation { ContainerId = containerId, ItemId = itemId, Quantity = 2 },
+                    new InventoryBackupRelation { ContainerId = containerId, ItemId = itemId, Quantity = 3 },
+                ],
+                Images = [],
+            },
+        };
+
+        var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existing, InventoryBackupConflictPolicy.StrictFullSync);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.RelationsToSet, Has.Count.EqualTo(1));
+            Assert.That(plan.RelationsToSet.Single().Quantity, Is.EqualTo(5));
+            Assert.That(plan.Result.AddedRelationQuantity, Is.EqualTo(3));
+            Assert.That(plan.Result.SkippedExistingRelations, Is.EqualTo(0));
+            Assert.That(plan.RelationsToDelete, Is.Empty);
+        });
+    }
+
+    [Test]
+    public void BuildPlan_StrictFullSync_SkipsEqualRelation_AndDeletesMissingPairs()
+    {
+        var containerId = Guid.NewGuid();
+        var keepItemId = Guid.NewGuid();
+        var deleteItemId = Guid.NewGuid();
+
+        var existing = new InventoryBackupExistingState(
+            Containers: [new InventoryBackupExistingContainer(containerId, "C", "N")],
+            Items:
+            [
+                new InventoryBackupExistingItem(keepItemId, "Keep", "D"),
+                new InventoryBackupExistingItem(deleteItemId, "Delete", "D"),
+            ],
+            ContainerImages: [],
+            ItemImages: [],
+            Relations:
+            [
+                new InventoryBackupExistingRelation(containerId, keepItemId, 4),
+                new InventoryBackupExistingRelation(containerId, deleteItemId, 1),
+            ]);
+
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = containerId, Name = "C", Notes = "N" }],
+                Items =
+                [
+                    new InventoryBackupItem { ItemId = keepItemId, Name = "Keep", Description = "D" },
+                    new InventoryBackupItem { ItemId = deleteItemId, Name = "Delete", Description = "D" },
+                ],
+                Relations = [new InventoryBackupRelation { ContainerId = containerId, ItemId = keepItemId, Quantity = 4 }],
+                Images = [],
+            },
+        };
+
+        var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existing, InventoryBackupConflictPolicy.StrictFullSync);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.Result.SkippedExistingRelations, Is.EqualTo(1));
+            Assert.That(plan.RelationsToSet, Is.Empty);
+            Assert.That(plan.RelationsToDelete, Has.Count.EqualTo(1));
+            Assert.That(plan.RelationsToDelete.Single().ItemId, Is.EqualTo(deleteItemId));
+        });
+    }
+
+    [Test]
+    public void BuildPlan_StrictFullSync_ReconcilesContainerAndItemImages_WithSkipAndDeleteCounts()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+
+        var keepContainerImageId = Guid.NewGuid();
+        var deleteContainerImageId = Guid.NewGuid();
+        var insertContainerImageId = Guid.NewGuid();
+
+        var keepItemImageId = Guid.NewGuid();
+        var deleteItemImageId = Guid.NewGuid();
+        var insertItemImageId = Guid.NewGuid();
+
+        var existing = new InventoryBackupExistingState(
+            Containers: [new InventoryBackupExistingContainer(containerId, "C", "N")],
+            Items: [new InventoryBackupExistingItem(itemId, "I", "D")],
+            ContainerImages:
+            [
+                new InventoryBackupImageOwnership(containerId, keepContainerImageId),
+                new InventoryBackupImageOwnership(containerId, deleteContainerImageId),
+            ],
+            ItemImages:
+            [
+                new InventoryBackupImageOwnership(itemId, keepItemImageId),
+                new InventoryBackupImageOwnership(itemId, deleteItemImageId),
+            ],
+            Relations: []);
+
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = containerId, Name = "C", Notes = "N" }],
+                Items = [new InventoryBackupItem { ItemId = itemId, Name = "I", Description = "D" }],
+                Relations = [],
+                Images =
+                [
+                    new InventoryBackupImageRef
+                    {
+                        OwnerType = InventoryBackupOwnerType.Container,
+                        OwnerId = containerId,
+                        ImageId = keepContainerImageId,
+                        FileName = "keep-c.jpg",
+                    },
+                    new InventoryBackupImageRef
+                    {
+                        OwnerType = InventoryBackupOwnerType.Container,
+                        OwnerId = containerId,
+                        ImageId = insertContainerImageId,
+                        FileName = "insert-c.jpg",
+                    },
+                    new InventoryBackupImageRef
+                    {
+                        OwnerType = InventoryBackupOwnerType.Item,
+                        OwnerId = itemId,
+                        ImageId = keepItemImageId,
+                        FileName = "keep-i.jpg",
+                    },
+                    new InventoryBackupImageRef
+                    {
+                        OwnerType = InventoryBackupOwnerType.Item,
+                        OwnerId = itemId,
+                        ImageId = insertItemImageId,
+                        FileName = "insert-i.jpg",
+                    },
+                ],
+            },
+        };
+
+        var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existing, InventoryBackupConflictPolicy.StrictFullSync);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.Result.SkippedExistingImages, Is.EqualTo(2));
+            Assert.That(plan.ImagesToInsert, Has.Count.EqualTo(2));
+            Assert.That(plan.ImagesToDelete, Has.Count.EqualTo(2));
+            Assert.That(plan.ImagesToDelete.Select(x => x.ImageId), Is.EquivalentTo(new[]
+            {
+                deleteContainerImageId,
+                deleteItemImageId,
+            }));
+        });
+    }
+
+    [Test]
     public void BuildPlan_UnsupportedConflictPolicy_ThrowsNotSupportedException()
     {
         var backup = new InventoryBackupEnvelope { Data = new InventoryBackupData() };
