@@ -33,6 +33,9 @@ public sealed class SqliteTransactionRunner : ITransactionRunner
             this.connection = connection;
         }
 
+        public void DeleteImage(Guid imageId, Guid ownerId)
+            => connection.DeleteWhere<DbImage>(p => p.ImageId == imageId && p.OwnerUniqueId == ownerId);
+
         public void DeleteImagesByOwner(Guid ownerId)
             => connection.DeleteWhere<DbImage>(p => p.OwnerUniqueId == ownerId);
 
@@ -41,6 +44,12 @@ public sealed class SqliteTransactionRunner : ITransactionRunner
 
         public void DeleteRelationsByItem(Guid itemId)
             => connection.DeleteWhere<DbItemContainerRelation>(r => r.ItemId == itemId);
+
+        public void UpdateContainer(DbContainer container)
+            => connection.Update(container);
+
+        public void UpdateItem(DbItem item)
+            => connection.Update(item);
 
         public void DeleteContainer(Guid containerId)
             => connection.DeleteByPrimaryKey<DbContainer>(containerId);

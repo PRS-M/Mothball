@@ -19,5 +19,6 @@ public interface IContainerRepository
     Task<Container?> GetContainerForItemAsync(string itemId);
     Task InsertAsync(Container container);
     Task UpdateAsync(Container container);
+    Task DeletePhotoAsync(Container container, Guid imageId);
     Task DeleteAsync(string containerId);
 }

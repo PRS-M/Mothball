@@ -26,6 +26,10 @@ public interface IInventoryCommandRepository
 
     Task DeleteImageItemAsync(Guid imageId, Guid ownerId);
 
+    Task DeleteContainerPhotoAsync(Container container, Guid imageId);
+
+    Task DeleteItemPhotoAsync(Item item, Guid imageId);
+
     Task DeleteItemAsync(string itemId);
 
     Task DeleteContainerAsync(string containerId);

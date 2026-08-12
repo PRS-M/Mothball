@@ -206,6 +206,35 @@ public sealed class JsonContainerRepository : IContainerRepository
         });
     }
 
+    public Task DeletePhotoAsync(Container container, Guid imageId)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+
+        return store.UpdateAsync(state =>
+        {
+            state.Images.RemoveAll(i => i.ImageId == imageId && i.OwnerUniqueId == container.ContainerId);
+
+            var existing = state.Containers.FirstOrDefault(c => c.ContainerId == container.ContainerId);
+            if (existing is null)
+            {
+                state.Containers.Add(new JsonContainerRow
+                {
+                    RowId = state.Metadata.NextContainerRowId++,
+                    ContainerId = container.ContainerId,
+                    Name = container.Name,
+                    Notes = container.Notes,
+                });
+            }
+            else
+            {
+                existing.Name = container.Name;
+                existing.Notes = container.Notes;
+            }
+
+            return Task.CompletedTask;
+        });
+    }
+
     public Task DeleteAsync(string containerId)
     {
         if (!Guid.TryParse(containerId, out var cid)) return Task.CompletedTask;

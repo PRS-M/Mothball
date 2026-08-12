@@ -174,8 +174,7 @@ public class ImageService
 
         try
         {
-            await inventoryRepository.DeleteImageItemAsync(imageId, container.ContainerId).ConfigureAwait(false);
-            await inventoryRepository.UpdateContainerAsync(container).ConfigureAwait(false);
+            await inventoryRepository.DeleteContainerPhotoAsync(container, imageId).ConfigureAwait(false);
         }
         catch
         {
@@ -204,8 +203,7 @@ public class ImageService
 
         try
         {
-            await inventoryRepository.DeleteImageItemAsync(imageId, item.ItemId).ConfigureAwait(false);
-            await inventoryRepository.UpdateItemAsync(item).ConfigureAwait(false);
+            await inventoryRepository.DeleteItemPhotoAsync(item, imageId).ConfigureAwait(false);
         }
         catch
         {

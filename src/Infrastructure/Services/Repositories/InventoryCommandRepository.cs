@@ -58,6 +58,12 @@ public class InventoryCommandRepository : IInventoryCommandRepository
     public Task DeleteImageItemAsync(Guid imageId, Guid ownerId)
         => imageRepo.DeleteAsync(imageId, ownerId);
 
+    public Task DeleteContainerPhotoAsync(Container container, Guid imageId)
+        => containerRepo.DeletePhotoAsync(container, imageId);
+
+    public Task DeleteItemPhotoAsync(Item item, Guid imageId)
+        => itemRepo.DeletePhotoAsync(item, imageId);
+
     public Task DeleteItemAsync(string itemId)
         => itemRepo.DeleteAsync(itemId);
 

@@ -326,8 +326,8 @@ public class ImageServiceBehaviorTests
 
         Assert.That(deleted, Is.True);
         Assert.That(container.Photos, Is.Empty);
-        repo.Verify(r => r.DeleteImageItemAsync(image.ImageId, container.ContainerId), Times.Once);
-        repo.Verify(r => r.UpdateContainerAsync(container), Times.Once);
+        repo.Verify(r => r.DeleteContainerPhotoAsync(container, image.ImageId), Times.Once);
+        repo.Verify(r => r.UpdateContainerAsync(It.IsAny<Container>()), Times.Never);
         files.Verify(f => f.DeleteFileAsync(image.FileName, Constants.PathToContainerPhotos), Times.Once);
     }
 
@@ -344,7 +344,7 @@ public class ImageServiceBehaviorTests
         var deleted = await service.DeleteContainerPhotoAsync(container, Guid.NewGuid());
 
         Assert.That(deleted, Is.False);
-        repo.Verify(r => r.DeleteImageItemAsync(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
+        repo.Verify(r => r.DeleteContainerPhotoAsync(It.IsAny<Container>(), It.IsAny<Guid>()), Times.Never);
         repo.Verify(r => r.UpdateContainerAsync(It.IsAny<Container>()), Times.Never);
         files.Verify(f => f.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
@@ -360,7 +360,7 @@ public class ImageServiceBehaviorTests
         var container = new Container(Guid.NewGuid(), "Box", "N");
         var image = container.AddImageItem();
 
-        repo.Setup(r => r.DeleteImageItemAsync(image.ImageId, container.ContainerId))
+        repo.Setup(r => r.DeleteContainerPhotoAsync(container, image.ImageId))
             .ThrowsAsync(new InvalidOperationException("delete failed"));
 
         var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -388,8 +388,8 @@ public class ImageServiceBehaviorTests
 
         Assert.That(deleted, Is.True);
         Assert.That(item.Photos, Is.Empty);
-        repo.Verify(r => r.DeleteImageItemAsync(image.ImageId, item.ItemId), Times.Once);
-        repo.Verify(r => r.UpdateItemAsync(item), Times.Once);
+        repo.Verify(r => r.DeleteItemPhotoAsync(item, image.ImageId), Times.Once);
+        repo.Verify(r => r.UpdateItemAsync(It.IsAny<Item>()), Times.Never);
         files.Verify(f => f.DeleteFileAsync(image.FileName, Constants.PathToItemPhotos), Times.Once);
     }
 }

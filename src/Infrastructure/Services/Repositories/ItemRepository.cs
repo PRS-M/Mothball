@@ -177,6 +177,17 @@ public class ItemRepository : IItemRepository
         await items.UpdateAsync(item.ToDb());
     }
 
+    public async Task DeletePhotoAsync(Item item, Guid imageId)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        await transactionRunner.RunAsync(scope =>
+        {
+            scope.DeleteImage(imageId, item.ItemId);
+            scope.UpdateItem(item.ToDb());
+        });
+    }
+
     public async Task DeleteAsync(string itemId)
     {
         if (!TryParseGuid(itemId, out Guid iid)) return;
