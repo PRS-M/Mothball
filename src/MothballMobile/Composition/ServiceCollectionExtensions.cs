@@ -33,6 +33,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPopupService, MauiPopupService>();
         services.AddSingleton<IRetryService, RetryService>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
+        services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
+        services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
+        services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
 
         return services;
     }
