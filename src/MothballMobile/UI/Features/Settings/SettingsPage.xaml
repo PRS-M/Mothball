@@ -40,6 +40,10 @@
                             Command="{Binding ImportFromJsonCommand}"
                             SemanticProperties.Hint="Choose restore mode and import a local backup JSON file" />
 
+                        <Button Text="Delete backup JSON"
+                            Command="{Binding DeleteJsonCommand}"
+                            SemanticProperties.Hint="Choose and delete a local backup JSON file" />
+
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"
                                        HorizontalOptions="Start"

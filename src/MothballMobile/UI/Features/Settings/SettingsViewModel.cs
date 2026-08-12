@@ -87,6 +87,40 @@ public partial class SettingsViewModel : BaseViewModel
         });
     }
 
+    [RelayCommand]
+    private async Task DeleteJsonAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            var fileName = await SelectBackupFileAsync();
+            if (string.IsNullOrWhiteSpace(fileName))
+                return;
+
+            var confirmed = await popup.ConfirmAsync(
+                "Delete backup",
+                $"Delete '{fileName}' from local backup storage?",
+                "Delete",
+                "Cancel");
+
+            if (!confirmed)
+                return;
+
+            try
+            {
+                await fileHandler.DeleteFileAsync(fileName, BackupsFolder);
+                await popup.ShowAlertAsync(
+                    "Backup deleted",
+                    $"Deleted: {fileName}");
+            }
+            catch (Exception ex)
+            {
+                await popup.ShowAlertAsync(
+                    "Delete failed",
+                    $"Could not delete backup JSON.\n\n{ex.Message}");
+            }
+        });
+    }
+
     private static string BuildBackupFileName()
     {
         var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
