@@ -8,6 +8,7 @@ public sealed record InventoryBackupEnvelope
     public int SchemaVersion { get; init; } = 1;
     public DateTimeOffset CreatedUtc { get; init; }
     public string Source { get; init; } = "MothballMobile";
+    public InventoryBackupIntegrity Integrity { get; init; } = new();
     public InventoryBackupData Data { get; init; } = new();
 }
 

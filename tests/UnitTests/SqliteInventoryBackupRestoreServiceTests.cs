@@ -4,6 +4,7 @@ using Infrastructure.Services;
 using Infrastructure.Services.Restore;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Repositories;
+using CoreApp.Utilities;
 
 namespace UnitTests;
 
@@ -54,7 +55,7 @@ public class SqliteInventoryBackupRestoreServiceTests
     {
         var service = new SqliteInventoryBackupRestoreService(db);
 
-        var backup = new InventoryBackupEnvelope
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
         {
             Data = new InventoryBackupData
             {
@@ -78,7 +79,7 @@ public class SqliteInventoryBackupRestoreServiceTests
                 Relations = [],
                 Images = [],
             },
-        };
+        });
 
         Assert.ThrowsAsync<SQLite.NotNullConstraintViolationException>(() => service.RestoreAsync(backup));
 
@@ -110,7 +111,7 @@ public class SqliteInventoryBackupRestoreServiceTests
         await imagesRepo.InsertAsync(new DbImage { ImageId = existingContainerImageId, OwnerUniqueId = containerId });
         await imagesRepo.InsertAsync(new DbImage { ImageId = existingItemImageId, OwnerUniqueId = itemId });
 
-        var backup = new InventoryBackupEnvelope
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
         {
             Data = new InventoryBackupData
             {
@@ -161,7 +162,7 @@ public class SqliteInventoryBackupRestoreServiceTests
                     },
                 ],
             },
-        };
+        });
 
         IInventoryBackupRestoreService service = new SqliteInventoryBackupRestoreService(db);
         var result = await service.RestoreAsync(backup);

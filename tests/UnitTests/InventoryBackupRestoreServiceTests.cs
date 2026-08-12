@@ -5,6 +5,7 @@ using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Specifications;
+using CoreApp.Utilities;
 using Moq;
 
 namespace UnitTests;
@@ -37,7 +38,7 @@ public class InventoryBackupRestoreServiceTests
             Photos = [new ImageItem(existingItemPhoto)],
         };
 
-        var backup = new InventoryBackupEnvelope
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
         {
             Data = new InventoryBackupData
             {
@@ -88,7 +89,7 @@ public class InventoryBackupRestoreServiceTests
                     },
                 ],
             },
-        };
+        });
 
         var queries = new Mock<IInventoryQueryRepository>();
         queries.Setup(q => q.QueryContainersAsync(It.IsAny<ContainerListSpecification>()))
@@ -131,5 +132,138 @@ public class InventoryBackupRestoreServiceTests
         var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
 
         Assert.ThrowsAsync<ArgumentException>(() => sut.RestoreFromJsonAsync("{invalid-json"));
+    }
+
+    [Test]
+    public async Task RestoreAsync_AddAndUpsertMetadata_UpdatesExistingRows()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+
+        var existingContainer = new Container(containerId, "Old", "Old Notes");
+        var existingItem = new Item
+        {
+            ItemId = itemId,
+            Name = "Old Item",
+            Description = "Old Description",
+        };
+
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers =
+                [
+                    new InventoryBackupContainer { ContainerId = containerId, Name = "New", Notes = "New Notes" },
+                ],
+                Items =
+                [
+                    new InventoryBackupItem { ItemId = itemId, Name = "New Item", Description = "New Description" },
+                ],
+                Relations = [],
+                Images = [],
+            },
+        });
+
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(q => q.QueryContainersAsync(It.IsAny<ContainerListSpecification>()))
+            .ReturnsAsync([existingContainer]);
+        queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
+            .ReturnsAsync([existingItem]);
+
+        var commands = new Mock<IInventoryCommandRepository>();
+
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+        var result = await sut.RestoreAsync(backup, new InventoryBackupRestoreOptions
+        {
+            ConflictPolicy = InventoryBackupConflictPolicy.AddAndUpsertMetadata,
+        });
+
+        commands.Verify(c => c.UpdateContainerAsync(It.Is<Container>(x => x.ContainerId == containerId && x.Name == "New" && x.Notes == "New Notes")), Times.Once);
+        commands.Verify(c => c.UpdateItemAsync(It.Is<Item>(x => x.ItemId == itemId && x.Name == "New Item" && x.Description == "New Description")), Times.Once);
+
+        Assert.That(result.UpdatedContainers, Is.EqualTo(1));
+        Assert.That(result.UpdatedItems, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task RestoreAsync_FullSync_DeletesMissingRootEntities()
+    {
+        var existingContainer = new Container(Guid.NewGuid(), "Existing", "Notes");
+        var existingItem = new Item
+        {
+            ItemId = Guid.NewGuid(),
+            Name = "Existing Item",
+            Description = "Description",
+        };
+
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [],
+                Items = [],
+                Relations = [],
+                Images = [],
+            },
+        });
+
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(q => q.QueryContainersAsync(It.IsAny<ContainerListSpecification>()))
+            .ReturnsAsync([existingContainer]);
+        queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
+            .ReturnsAsync([existingItem]);
+
+        var commands = new Mock<IInventoryCommandRepository>();
+
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+        var result = await sut.RestoreAsync(backup, new InventoryBackupRestoreOptions
+        {
+            ConflictPolicy = InventoryBackupConflictPolicy.FullSync,
+        });
+
+        commands.Verify(c => c.DeleteItemAsync(existingItem.ItemId.ToString()), Times.Once);
+        commands.Verify(c => c.DeleteContainerAsync(existingContainer.ContainerId.ToString()), Times.Once);
+
+        Assert.That(result.DeletedContainers, Is.EqualTo(1));
+        Assert.That(result.DeletedItems, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void RestoreAsync_ThrowsInvalidDataException_WhenChecksumDoesNotMatch()
+    {
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [],
+                Items = [],
+                Relations = [],
+                Images = [],
+            },
+        });
+
+        var tamperedBackup = backup with
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = Guid.NewGuid(), Name = "Tampered", Notes = "Tampered" }],
+                Items = [],
+                Relations = [],
+                Images = [],
+            },
+        };
+
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(q => q.QueryContainersAsync(It.IsAny<ContainerListSpecification>()))
+            .ReturnsAsync(new List<Container>());
+        queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
+            .ReturnsAsync(new List<Item>());
+
+        var commands = new Mock<IInventoryCommandRepository>();
+
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+
+        Assert.ThrowsAsync<InvalidDataException>(() => sut.RestoreAsync(tamperedBackup));
     }
 }

@@ -23,19 +23,24 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
 
     public async Task<InventoryBackupRestoreResult> RestoreFromJsonAsync(
         string backupJson,
+        InventoryBackupRestoreOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         var backup = InventoryBackupRestorePlanner.ParseBackupJson(backupJson);
-        return await RestoreAsync(backup, cancellationToken).ConfigureAwait(false);
+        return await RestoreAsync(backup, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<InventoryBackupRestoreResult> RestoreAsync(
         InventoryBackupEnvelope backup,
+        InventoryBackupRestoreOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        options ??= new InventoryBackupRestoreOptions();
+
         ArgumentNullException.ThrowIfNull(backup);
         ArgumentNullException.ThrowIfNull(backup.Data);
         InventoryBackupRestorePlanner.ValidatePayloadVersion(backup);
+        InventoryBackupRestorePlanner.ValidateIntegrity(backup, options);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -48,8 +53,12 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
             .ConfigureAwait(false);
 
         var existingState = new InventoryBackupExistingState(
-            existingContainers.Select(c => c.ContainerId).ToList(),
-            existingItems.Select(i => i.ItemId).ToList(),
+            existingContainers
+                .Select(c => new InventoryBackupExistingContainer(c.ContainerId, c.Name, c.Notes))
+                .ToList(),
+            existingItems
+                .Select(i => new InventoryBackupExistingItem(i.ItemId, i.Name, i.Description))
+                .ToList(),
             existingContainers
                 .SelectMany(c => c.Photos.Select(p => new InventoryBackupImageOwnership(c.ContainerId, p.ImageId)))
                 .ToList(),
@@ -60,7 +69,7 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
                 .SelectMany(c => c.Items.Select(stored => new InventoryBackupExistingRelation(c.ContainerId, stored.ItemId, stored.Quantity)))
                 .ToList());
 
-        var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState);
+        var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState, options.ConflictPolicy);
 
         foreach (var container in plan.ContainersToInsert)
         {
@@ -69,10 +78,28 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
                 .ConfigureAwait(false);
         }
 
+        foreach (var container in plan.ContainersToUpdate)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await inventoryCommands.UpdateContainerAsync(new Container(container.ContainerId, container.Name, container.Notes))
+                .ConfigureAwait(false);
+        }
+
         foreach (var item in plan.ItemsToInsert)
         {
             cancellationToken.ThrowIfCancellationRequested();
             await inventoryCommands.InsertItemAsync(new Item
+            {
+                ItemId = item.ItemId,
+                Name = item.Name,
+                Description = item.Description,
+            }).ConfigureAwait(false);
+        }
+
+        foreach (var item in plan.ItemsToUpdate)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await inventoryCommands.UpdateItemAsync(new Item
             {
                 ItemId = item.ItemId,
                 Name = item.Name,
@@ -92,6 +119,20 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
         {
             cancellationToken.ThrowIfCancellationRequested();
             await inventoryCommands.InsertImageItemAsync(new ImageItem(image.ImageId), image.OwnerId)
+                .ConfigureAwait(false);
+        }
+
+        foreach (var itemId in plan.ItemIdsToDelete)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await inventoryCommands.DeleteItemAsync(itemId.ToString())
+                .ConfigureAwait(false);
+        }
+
+        foreach (var containerId in plan.ContainerIdsToDelete)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await inventoryCommands.DeleteContainerAsync(containerId.ToString())
                 .ConfigureAwait(false);
         }
 

@@ -16,19 +16,24 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
 
     public async Task<InventoryBackupRestoreResult> RestoreFromJsonAsync(
         string backupJson,
+        InventoryBackupRestoreOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         var backup = InventoryBackupRestorePlanner.ParseBackupJson(backupJson);
-        return await RestoreAsync(backup, cancellationToken).ConfigureAwait(false);
+        return await RestoreAsync(backup, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<InventoryBackupRestoreResult> RestoreAsync(
         InventoryBackupEnvelope backup,
+        InventoryBackupRestoreOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        options ??= new InventoryBackupRestoreOptions();
+
         ArgumentNullException.ThrowIfNull(backup);
         ArgumentNullException.ThrowIfNull(backup.Data);
         InventoryBackupRestorePlanner.ValidatePayloadVersion(backup);
+        InventoryBackupRestorePlanner.ValidateIntegrity(backup, options);
 
         cancellationToken.ThrowIfCancellationRequested();
         await database.InitializeAsync().ConfigureAwait(false);
@@ -62,15 +67,19 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                 .ToList();
 
             var existingState = new InventoryBackupExistingState(
-                existingContainerIds,
-                existingItemIds,
+                connection.Table<DbContainer>()
+                    .Select(c => new InventoryBackupExistingContainer(c.ContainerId, c.Name, c.Notes))
+                    .ToList(),
+                connection.Table<DbItem>()
+                    .Select(i => new InventoryBackupExistingItem(i.ItemId, i.Name, i.Description))
+                    .ToList(),
                 existingContainerImages,
                 existingItemImages,
                 connection.Table<DbItemContainerRelation>()
                     .Select(r => new InventoryBackupExistingRelation(r.ContainerId, r.ItemId, r.Quantity))
                     .ToList());
 
-            var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState);
+            var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState, options.ConflictPolicy);
 
             foreach (var container in plan.ContainersToInsert)
             {
@@ -83,10 +92,32 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                 });
             }
 
+            foreach (var container in plan.ContainersToUpdate)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Update(new DbContainer
+                {
+                    ContainerId = container.ContainerId,
+                    Name = container.Name,
+                    Notes = container.Notes,
+                });
+            }
+
             foreach (var item in plan.ItemsToInsert)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 connection.Insert(new DbItem
+                {
+                    ItemId = item.ItemId,
+                    Name = item.Name,
+                    Description = item.Description,
+                });
+            }
+
+            foreach (var item in plan.ItemsToUpdate)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Update(new DbItem
                 {
                     ItemId = item.ItemId,
                     Name = item.Name,
@@ -113,6 +144,22 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     ImageId = image.ImageId,
                     OwnerUniqueId = image.OwnerId,
                 });
+            }
+
+            foreach (var itemId in plan.ItemIdsToDelete)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Execute($"DELETE FROM {nameof(DbImage)} WHERE {nameof(DbImage.OwnerUniqueId)} = ?", itemId);
+                connection.Execute($"DELETE FROM {nameof(DbItemContainerRelation)} WHERE {nameof(DbItemContainerRelation.ItemId)} = ?", itemId);
+                connection.Execute($"DELETE FROM {nameof(DbItem)} WHERE {nameof(DbItem.ItemId)} = ?", itemId);
+            }
+
+            foreach (var containerId in plan.ContainerIdsToDelete)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Execute($"DELETE FROM {nameof(DbImage)} WHERE {nameof(DbImage.OwnerUniqueId)} = ?", containerId);
+                connection.Execute($"DELETE FROM {nameof(DbItemContainerRelation)} WHERE {nameof(DbItemContainerRelation.ContainerId)} = ?", containerId);
+                connection.Execute($"DELETE FROM {nameof(DbContainer)} WHERE {nameof(DbContainer.ContainerId)} = ?", containerId);
             }
 
             result = plan.Result;

@@ -2,6 +2,7 @@ using System.Text.Json;
 using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using CoreApp.Specifications;
+using CoreApp.Utilities;
 
 namespace CoreApp.Services;
 
@@ -88,7 +89,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
             .ThenBy(i => i.ImageId)
             .ToList();
 
-        return new InventoryBackupEnvelope
+        var backup = new InventoryBackupEnvelope
         {
             CreatedUtc = DateTimeOffset.UtcNow,
             Data = new InventoryBackupData
@@ -99,6 +100,8 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
                 Images = backupImages,
             },
         };
+
+        return InventoryBackupRestorePlanner.AttachIntegrity(backup);
     }
 
     public async Task<string> ExportAsJsonAsync(CancellationToken cancellationToken = default)

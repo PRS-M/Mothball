@@ -40,6 +40,8 @@ public class InventoryBackupExporterTests
         Assert.Multiple(() =>
         {
             Assert.That(backup.PayloadVersion, Is.EqualTo(1));
+            Assert.That(backup.Integrity.PayloadChecksum, Is.Not.Empty);
+            Assert.That(backup.Integrity.ChecksumAlgorithm, Is.EqualTo("SHA256"));
             Assert.That(backup.Data.Containers.Count, Is.EqualTo(1));
             Assert.That(backup.Data.Items.Count, Is.EqualTo(1));
             Assert.That(backup.Data.Relations.Count, Is.EqualTo(1));
@@ -68,6 +70,8 @@ public class InventoryBackupExporterTests
             Assert.That(json, Does.Contain("payloadVersion"));
             Assert.That(json, Does.Contain("schemaVersion"));
             Assert.That(json, Does.Contain("createdUtc"));
+            Assert.That(json, Does.Contain("integrity"));
+            Assert.That(json, Does.Contain("payloadChecksum"));
             Assert.That(json, Does.Contain("data"));
         });
     }
