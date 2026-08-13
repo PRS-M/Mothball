@@ -50,11 +50,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IImagePathResolver paths,
         IPopupService popup,
         ImageService imageService,
-        IRetryService retryService,
         INavigationService nav,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IDebouncer? debouncer = null)
-        : base(paths, imageService, retryService, photoBackgroundOperationTracker)
+        : base(paths, imageService, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
@@ -261,7 +260,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private Task AddPhotoAsync()
     {
         if (currentContainer is null) return Task.CompletedTask;
-        if (IsImageResizeInProgress) return Task.CompletedTask;
+        if (IsPhotoCaptureInProgress) return Task.CompletedTask;
 
         // Run in background so persistence can finish even if the user leaves this view.
         CaptureTrackedPhotoAsync(

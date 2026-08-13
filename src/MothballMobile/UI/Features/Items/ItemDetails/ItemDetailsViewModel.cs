@@ -38,8 +38,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemDetailsViewModel(IInventoryQueryRepository inventoryQueries, IInventoryCommandRepository inventoryCommands, INavigationService nav, IImagePathResolver paths, IPopupService popup, ImageService imageService, IRetryService retryService, IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
-        : base(paths, imageService, retryService, photoBackgroundOperationTracker)
+    public ItemDetailsViewModel(IInventoryQueryRepository inventoryQueries, IInventoryCommandRepository inventoryCommands, INavigationService nav, IImagePathResolver paths, IPopupService popup, ImageService imageService, IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
+        : base(paths, imageService, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
@@ -151,7 +151,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private Task AddPhotoAsync()
     {
         if (currentItem is null) return Task.CompletedTask;
-        if (IsImageResizeInProgress) return Task.CompletedTask;
+        if (IsPhotoCaptureInProgress) return Task.CompletedTask;
 
         // Run in background so persistence can finish even if the user leaves this view.
         CaptureTrackedPhotoAsync(

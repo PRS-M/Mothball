@@ -9,74 +9,24 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
 {
     protected readonly IImagePathResolver paths;
     protected readonly ImageService imageService;
-    protected readonly IRetryService retryService;
     private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 
-    private bool isImageResizeInProgress;
-    private double imageResizeProgress;
+    private bool isPhotoCaptureInProgress;
 
     protected PhotoDetailsViewModelBase(
         IImagePathResolver paths,
         ImageService imageService,
-        IRetryService retryService,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
     {
         this.paths = paths;
         this.imageService = imageService;
-        this.retryService = retryService;
         this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
     }
 
-    public bool IsImageResizeInProgress
+    protected bool IsPhotoCaptureInProgress
     {
-        get => isImageResizeInProgress;
-        private set => SetProperty(ref isImageResizeInProgress, value);
-    }
-
-    public double ImageResizeProgress
-    {
-        get => imageResizeProgress;
-        private set => SetProperty(ref imageResizeProgress, value);
-    }
-
-    protected Task<bool> CaptureWithDefaultRetryAsync(Func<Task<bool>> attempt)
-    {
-        return retryService.RetryAsync(
-            attempt: attempt,
-            canceledTitle: "Photo capture canceled",
-            canceledMessage: "Please try again or continue without a photo.",
-            retryButton: "Retry",
-            continueButton: "Continue",
-            continueAlertTitle: "No photo",
-            continueAlertMessage: "Continuing without a photo.");
-    }
-
-    protected Task<bool> CaptureWithDefaultRetryAndProgressAsync(Func<IProgress<double>, Task<bool>> attempt)
-    {
-        return CaptureWithDefaultRetryAsync(async () =>
-        {
-            IsImageResizeInProgress = true;
-            ImageResizeProgress = 0;
-
-            var progress = new Progress<double>(value =>
-            {
-                var normalized = Math.Clamp(value, 0, 1);
-                MainThread.BeginInvokeOnMainThread(() => ImageResizeProgress = normalized);
-            });
-
-            try
-            {
-                return await attempt(progress);
-            }
-            finally
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    ImageResizeProgress = 1;
-                    IsImageResizeInProgress = false;
-                });
-            }
-        });
+        get => isPhotoCaptureInProgress;
+        private set => SetProperty(ref isPhotoCaptureInProgress, value);
     }
 
     protected async Task CaptureTrackedPhotoAsync(
@@ -94,17 +44,13 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
         Guid? operationId = null;
         var captured = false;
 
+        IsPhotoCaptureInProgress = true;
+
         try
         {
             var progress = new Progress<double>(value =>
             {
                 var normalized = Math.Clamp(value, 0, 1);
-
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    IsImageResizeInProgress = true;
-                    ImageResizeProgress = normalized;
-                });
 
                 operationId ??= photoBackgroundOperationTracker.Start(operationName);
                 photoBackgroundOperationTracker.Report(operationId.Value, normalized);
@@ -116,12 +62,7 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                if (captured)
-                {
-                    ImageResizeProgress = 1;
-                }
-
-                IsImageResizeInProgress = false;
+                IsPhotoCaptureInProgress = false;
             });
 
             if (operationId.HasValue)
@@ -132,13 +73,6 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
                 }
 
                 photoBackgroundOperationTracker.Complete(operationId.Value, captured);
-            }
-            else if (!captured)
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    ImageResizeProgress = 0;
-                });
             }
         }
 
