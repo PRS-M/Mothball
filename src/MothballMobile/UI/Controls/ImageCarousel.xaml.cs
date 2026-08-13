@@ -10,7 +10,9 @@ namespace MothballMobile.UI.Controls;
 public partial class ImageCarousel
 {
 	private const double DefaultCarouselHeight = 220d;
-	private const double FallbackAspectRatio = 16d / 9d;
+	private const double FallbackAspectRatio = 4d / 3d;
+	private const uint HeightAnimationDuration = 150;
+	private const string HeightAnimationName = "ImageCarouselHeight";
 
 	private INotifyCollectionChanged? observedCollection;
 	private readonly Dictionary<string, double> aspectRatioCache = new(StringComparer.Ordinal);
@@ -191,20 +193,20 @@ public partial class ImageCarousel
 		var imagePath = GetImagePathAt(Carousel.Position);
 		if (string.IsNullOrWhiteSpace(imagePath))
 		{
-			ApplyCarouselHeight(width / FallbackAspectRatio);
+			ApplyCarouselHeight(width / FallbackAspectRatio, animate: false);
 			return;
 		}
 
 		if (aspectRatioCache.TryGetValue(imagePath, out var cached))
 		{
-			ApplyCarouselHeight(width / cached);
+			ApplyCarouselHeight(width / cached, animate: true);
 			return;
 		}
 
 		var reader = GetImageMetadataReader();
 		if (reader is null)
 		{
-			ApplyCarouselHeight(width / FallbackAspectRatio);
+			ApplyCarouselHeight(width / FallbackAspectRatio, animate: false);
 			return;
 		}
 
@@ -229,13 +231,28 @@ public partial class ImageCarousel
 		if (requestId != sizingRequestId || GetImagePathAt(Carousel.Position) != imagePath)
 			return;
 
-		ApplyCarouselHeight(width / aspectRatio);
+		ApplyCarouselHeight(width / aspectRatio, animate: true);
 	}
 
-	void ApplyCarouselHeight(double height)
+	void ApplyCarouselHeight(double height, bool animate)
 	{
 		if (Math.Abs(Carousel.HeightRequest - height) > 0.5)
-			Carousel.HeightRequest = height;
+		{
+			if (!animate || Carousel.HeightRequest <= 0)
+			{
+				Carousel.AbortAnimation(HeightAnimationName);
+				Carousel.HeightRequest = height;
+				return;
+			}
+
+			Carousel.Animate(
+				HeightAnimationName,
+				value => Carousel.HeightRequest = value,
+				Carousel.HeightRequest,
+				height,
+				length: HeightAnimationDuration,
+				easing: Easing.SinInOut);
+		}
 	}
 
 	string? GetImagePathAt(int position)
