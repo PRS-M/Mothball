@@ -35,9 +35,9 @@
                 <Border Style="{StaticResource Card}"
                         Padding="12">
                     <VerticalStackLayout Spacing="10">
-                        <controls:ImageCarousel HeightRequest="220"
-                                                CornerRadius="10"
+                        <controls:ImageCarousel CornerRadius="10"
                                                 ShowCounter="True"
+                                                UseDynamicAspectRatio="True"
                                                 ImagePaths="{Binding ContainerImagePaths}" />
 
                         <HorizontalStackLayout Spacing="8">

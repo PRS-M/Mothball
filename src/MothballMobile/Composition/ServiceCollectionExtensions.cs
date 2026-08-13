@@ -93,6 +93,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<ICameraHandler, CameraHandler>();
         services.AddSingleton<IFileHandler, MobileFileHandler>();
+        services.AddSingleton<IImageMetadataReader, SkiaImageMetadataReader>();
         services.AddSingleton(FileSystem.Current);
         services.AddSingleton(MediaPicker.Default);
 
