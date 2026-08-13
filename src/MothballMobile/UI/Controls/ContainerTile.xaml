@@ -39,22 +39,22 @@
                 PointerReleased="Border_PointerReleased"
                 PointerExited="Border_PointerReleased" />
         </Border.GestureRecognizers>
-        <Grid RowSpacing="8" ColumnSpacing="8" MinimumWidthRequest="300">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <Grid ColumnDefinitions="Auto,*"
+              ColumnSpacing="12"
+              MinimumWidthRequest="300">
+            <self:ImageCarousel
+                Grid.Column="0"
+                HeightRequest="{Binding Source={x:Reference this}, Path=ImageSize}"
+                WidthRequest="{Binding Source={x:Reference this}, Path=ImageSize}"
+                CornerRadius="{Binding Source={x:Reference this}, Path=ImageCornerRadius}"
+                ImagePaths="{Binding Source={x:Reference this}, Path=ImagePaths}" />
 
-            <VerticalStackLayout Grid.Row="0"
-                                 Grid.Column="0"
-                                 Spacing="5"
+            <VerticalStackLayout Grid.Column="1"
+                                 Spacing="4"
                                  VerticalOptions="Start">
                 <Label
                     FontSize="{StaticResource fontSize}"
+                    FontAttributes="Bold"
                     Text="{Binding Source={x:Reference this}, Path=Name}"
                     TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                     VerticalOptions="Start"
@@ -65,30 +65,15 @@
                     TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                     VerticalOptions="Start"
                     HorizontalOptions="Start" />
-            </VerticalStackLayout>
 
-            <Border Grid.Row="0"
-                    Grid.Column="1"
-                    StrokeShape="RoundRectangle 10"
-                    HorizontalOptions="End"
+                <Label
+                    FontSize="12"
+                    Text="{Binding Source={x:Reference this}, Path=Notes}"
+                    TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                    LineBreakMode="WordWrap"
                     VerticalOptions="Start"
-                    Margin="0,2,0,0">
-                <self:ImageCarousel
-                    HeightRequest="125"
-                    WidthRequest="125"
-                    CornerRadius="10"
-                    ImagePaths="{Binding Source={x:Reference this}, Path=ImagePaths}" />
-            </Border>
-
-            <Label
-                Grid.Row="1"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                FontSize="{StaticResource fontSize}"
-                Text="{Binding Source={x:Reference this}, Path=Notes}"
-                TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                VerticalOptions="Start"
-                HorizontalOptions="Start" />
+                    HorizontalOptions="Start" />
+            </VerticalStackLayout>
         </Grid>
     </Border>
 </ContentView>

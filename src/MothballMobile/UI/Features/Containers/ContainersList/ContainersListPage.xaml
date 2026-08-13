@@ -80,8 +80,9 @@
                             RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical"
-                            Span="1"
-                            VerticalItemSpacing="12"/>
+                                     Span="{OnIdiom Phone=1, Tablet=2, Desktop=2}"
+                                     VerticalItemSpacing="16"
+                                     HorizontalItemSpacing="16"/>
                 </CollectionView.ItemsLayout>
                 <CollectionView.EmptyView>
                     <controls:EmptyStateView Title="No containers yet"
@@ -95,7 +96,8 @@
                             Name="{Binding Name}"
                             Notes="{Binding Notes}"
                             ItemCount="{Binding ItemCount}"
-                            ImagePaths="{Binding ImagePaths}"/>
+                            ImagePaths="{Binding ImagePaths}"
+                            ImageSize="125" />
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

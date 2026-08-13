@@ -29,6 +29,12 @@ public partial class ContainerTile : ContentView
 	public static readonly BindableProperty ImagePathsProperty =
 		BindableProperty.Create(nameof(ImagePaths), typeof(ObservableCollection<string>), typeof(ContainerTile), default(ObservableCollection<string>));
 
+	public static readonly BindableProperty ImageSizeProperty =
+		BindableProperty.Create(nameof(ImageSize), typeof(double), typeof(ContainerTile), 72d);
+
+	public static readonly BindableProperty ImageCornerRadiusProperty =
+		BindableProperty.Create(nameof(ImageCornerRadius), typeof(float), typeof(ContainerTile), 10f);
+
 	public ICommand Command
 	{
 		get => (ICommand)GetValue(CommandProperty);
@@ -57,6 +63,18 @@ public partial class ContainerTile : ContentView
 	{
 		get => (ObservableCollection<string>)GetValue(ImagePathsProperty);
 		set => SetValue(ImagePathsProperty, value);
+	}
+
+	public double ImageSize
+	{
+		get => (double)GetValue(ImageSizeProperty);
+		set => SetValue(ImageSizeProperty, value);
+	}
+
+	public float ImageCornerRadius
+	{
+		get => (float)GetValue(ImageCornerRadiusProperty);
+		set => SetValue(ImageCornerRadiusProperty, value);
 	}
 
 	private void Border_OnTapped(object sender, EventArgs e)
