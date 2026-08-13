@@ -12,7 +12,6 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly ImageService imageService;
     private readonly IInventoryCommandRepository inventoryCommands;
-    private readonly IRetryService retryService;
     private readonly Infrastructure.INavigationService nav;
     private readonly ILogger<AddItemViewModel> logger;
     private ImageService.TemporaryPhotoCapture? pendingPhoto;
@@ -42,13 +41,11 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     public AddItemViewModel(
         ImageService imageService,
         IInventoryCommandRepository inventoryCommands,
-        IRetryService retryService,
         Infrastructure.INavigationService nav,
         ILogger<AddItemViewModel> logger)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
-        this.retryService = retryService ?? throw new ArgumentNullException(nameof(retryService));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -96,28 +93,18 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     {
         await RunCommandAsync(async () =>
         {
-            ImageService.TemporaryPhotoCapture? selectedPhoto = null;
+            ImageService.TemporaryPhotoCapture? selectedPhoto;
+            IsPhotoProcessing = true;
+            try
+            {
+                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
+            }
+            finally
+            {
+                IsPhotoProcessing = false;
+            }
 
-            bool photoSelected = await retryService.RetryAsync(
-                async () =>
-                {
-                    IsPhotoProcessing = true;
-                    try
-                    {
-                        selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
-                        return selectedPhoto is not null;
-                    }
-                    finally
-                    {
-                        IsPhotoProcessing = false;
-                    }
-                },
-                canceledTitle: "Photo capture canceled",
-                canceledMessage: "Please try again or continue without a photo.",
-                retryButton: "Retry",
-                continueButton: "Continue");
-
-            if (!photoSelected || selectedPhoto is null)
+            if (selectedPhoto is null)
             {
                 return;
             }

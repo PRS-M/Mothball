@@ -23,7 +23,17 @@ public class CameraHandler : ICameraHandler
 
     public async Task<byte[]> CapturePhotoAsync(IProgress<double>? resizeProgress = null)
     {
-        var photos = await mediaPicker.PickPhotosAsync();
+        IReadOnlyList<FileResult>? photos;
+        try
+        {
+            photos = await mediaPicker.PickPhotosAsync();
+        }
+        catch (OperationCanceledException ex)
+        {
+            logger.LogDebug(ex, "Photo selection was canceled.");
+            return Array.Empty<byte>();
+        }
+
         FileResult? photo = photos?.FirstOrDefault();
         if (photo == null) return Array.Empty<byte>();
 

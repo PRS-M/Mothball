@@ -91,26 +91,55 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
         ArgumentNullException.ThrowIfNull(targetPaths);
         ArgumentNullException.ThrowIfNull(refreshedPaths);
 
-        Guid operationId = photoBackgroundOperationTracker.Start(operationName);
+        Guid? operationId = null;
         var captured = false;
 
         try
         {
-            captured = await CaptureWithDefaultRetryAndProgressAsync(
-                attempt: async progress =>
-                {
-                    var compositeProgress = new Progress<double>(value =>
-                    {
-                        progress.Report(value);
-                        photoBackgroundOperationTracker.Report(operationId, value);
-                    });
+            var progress = new Progress<double>(value =>
+            {
+                var normalized = Math.Clamp(value, 0, 1);
 
-                    return await captureAsync(compositeProgress) > 0;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    IsImageResizeInProgress = true;
+                    ImageResizeProgress = normalized;
                 });
+
+                operationId ??= photoBackgroundOperationTracker.Start(operationName);
+                photoBackgroundOperationTracker.Report(operationId.Value, normalized);
+            });
+
+            captured = await captureAsync(progress) > 0;
         }
         finally
         {
-            photoBackgroundOperationTracker.Complete(operationId, captured);
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (captured)
+                {
+                    ImageResizeProgress = 1;
+                }
+
+                IsImageResizeInProgress = false;
+            });
+
+            if (operationId.HasValue)
+            {
+                if (captured)
+                {
+                    photoBackgroundOperationTracker.Report(operationId.Value, 1);
+                }
+
+                photoBackgroundOperationTracker.Complete(operationId.Value, captured);
+            }
+            else if (!captured)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ImageResizeProgress = 0;
+                });
+            }
         }
 
         if (!captured)

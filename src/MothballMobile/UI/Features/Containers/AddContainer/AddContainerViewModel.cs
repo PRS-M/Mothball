@@ -12,19 +12,16 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly ImageService imageService;
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService navigationService;
-    private readonly IRetryService retryService;
     private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     public AddContainerViewModel(
         ImageService imageService,
         IInventoryCommandRepository inventoryCommands,
-        INavigationService navigationService,
-        IRetryService retryService)
+        INavigationService navigationService)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-        this.retryService = retryService ?? throw new ArgumentNullException(nameof(retryService));
     }
 
     [ObservableProperty]
@@ -77,28 +74,18 @@ public partial class AddContainerViewModel : BaseViewModel
     {
         await RunCommandAsync(async () =>
         {
-            ImageService.TemporaryPhotoCapture? selectedPhoto = null;
+            ImageService.TemporaryPhotoCapture? selectedPhoto;
+            IsPhotoProcessing = true;
+            try
+            {
+                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
+            }
+            finally
+            {
+                IsPhotoProcessing = false;
+            }
 
-            bool photoSelected = await retryService.RetryAsync(
-                async () =>
-                {
-                    IsPhotoProcessing = true;
-                    try
-                    {
-                        selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
-                        return selectedPhoto is not null;
-                    }
-                    finally
-                    {
-                        IsPhotoProcessing = false;
-                    }
-                },
-                canceledTitle: "Photo capture canceled",
-                canceledMessage: "Please try again or continue without a photo.",
-                retryButton: "Retry",
-                continueButton: "Continue");
-
-            if (!photoSelected || selectedPhoto is null)
+            if (selectedPhoto is null)
             {
                 return;
             }
