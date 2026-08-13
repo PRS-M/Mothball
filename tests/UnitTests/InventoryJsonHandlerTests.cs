@@ -81,4 +81,55 @@ public class InventoryJsonHandlerTests
         Assert.That(loaded.Count, Is.EqualTo(1));
         Assert.That(loaded[0].ContainerId, Is.EqualTo(c.ContainerId));
     }
+
+    [Test]
+    public async Task SaveAsync_PreservesPhotosAndItems_WhenRoundTripped()
+    {
+        var files = CreateFileHandler(out _);
+        var json = new JsonHandler(files.Object);
+        var inv = new InventoryJsonHandler(json);
+
+        var itemId = Guid.NewGuid();
+        var photoId = Guid.NewGuid();
+        var container = new Container(Guid.NewGuid(), "Box", "Notes");
+        container.AddItem(itemId, 3);
+        container.AddImageItem(photoId);
+
+        await inv.SaveAsync(container);
+
+        var loaded = await inv.LoadAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(loaded[0].Items.Single().ItemId, Is.EqualTo(itemId));
+            Assert.That(loaded[0].Items.Single().Quantity, Is.EqualTo(3));
+            Assert.That(loaded[0].Photos.Single().ImageId, Is.EqualTo(photoId));
+        });
+    }
+
+    [Test]
+    public async Task LoadAsync_ReadsExistingDomainSerializationShape()
+    {
+        var files = CreateFileHandler(out _);
+        var json = new JsonHandler(files.Object);
+        var inv = new InventoryJsonHandler(json);
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var photoId = Guid.NewGuid();
+        var existingJson = $$"""
+            [{"ContainerId":"{{containerId}}","Name":"Box","Notes":"Notes","Photos":[{"ImageId":"{{photoId}}"}],"Items":[{"ItemId":"{{itemId}}","Quantity":2}],"ItemCount":2}]
+            """;
+
+        await files.Object.SaveTextFileAsync(Constants.InventoryFileName, Constants.PathToData, existingJson);
+
+        var loaded = await inv.LoadAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(loaded.Single().ContainerId, Is.EqualTo(containerId));
+            Assert.That(loaded.Single().Photos.Single().ImageId, Is.EqualTo(photoId));
+            Assert.That(loaded.Single().Items.Single().ItemId, Is.EqualTo(itemId));
+            Assert.That(loaded.Single().ItemCount, Is.EqualTo(2));
+        });
+    }
 }

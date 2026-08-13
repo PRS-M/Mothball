@@ -39,8 +39,8 @@ public class BackendParityTests
         await sqlite.Command.InsertContainerAsync(sqliteContainer);
         await json.Command.InsertContainerAsync(jsonContainer);
 
-        var sqliteItem = new Item { Name = "Hat", Description = "Desc" };
-        var jsonItem = new Item { Name = "Hat", Description = "Desc" };
+        var sqliteItem = new Item("Hat", "Desc");
+        var jsonItem = new Item("Hat", "Desc");
         await sqlite.Command.InsertItemAsync(sqliteItem);
         await json.Command.InsertItemAsync(jsonItem);
 

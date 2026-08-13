@@ -14,16 +14,11 @@ public class InventoryBackupExporterTests
     public async Task ExportAsync_ProducesExpectedSnapshotShape()
     {
         var container = new Container(Guid.NewGuid(), "Garage", "Shelf A");
-        var item = new Item
-        {
-            ItemId = Guid.NewGuid(),
-            Name = "Zip Ties",
-            Description = "Black 8 inch",
-        };
+        var item = new Item("Zip Ties", "Black 8 inch");
 
         container.AddItem(item.ItemId, 5);
         container.AddImageItem(Guid.NewGuid());
-        item.Photos.Add(new ImageItem(Guid.NewGuid()));
+        item.AddImageItem(Guid.NewGuid());
 
         var queries = new Mock<IInventoryQueryRepository>();
         queries

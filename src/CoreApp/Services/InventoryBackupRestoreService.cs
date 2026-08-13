@@ -88,23 +88,15 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
         foreach (var item in plan.ItemsToInsert)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await inventoryCommands.InsertItemAsync(new Item
-            {
-                ItemId = item.ItemId,
-                Name = item.Name,
-                Description = item.Description,
-            }).ConfigureAwait(false);
+            await inventoryCommands.InsertItemAsync(new Item(item.ItemId, item.Name, item.Description))
+                .ConfigureAwait(false);
         }
 
         foreach (var item in plan.ItemsToUpdate)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await inventoryCommands.UpdateItemAsync(new Item
-            {
-                ItemId = item.ItemId,
-                Name = item.Name,
-                Description = item.Description,
-            }).ConfigureAwait(false);
+            await inventoryCommands.UpdateItemAsync(new Item(item.ItemId, item.Name, item.Description))
+                .ConfigureAwait(false);
         }
 
         foreach (var relation in plan.RelationsToInsert)

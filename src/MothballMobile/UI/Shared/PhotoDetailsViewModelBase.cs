@@ -10,15 +10,21 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
     protected readonly IImagePathResolver paths;
     protected readonly ImageService imageService;
     protected readonly IRetryService retryService;
+    private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 
     private bool isImageResizeInProgress;
     private double imageResizeProgress;
 
-    protected PhotoDetailsViewModelBase(IImagePathResolver paths, ImageService imageService, IRetryService retryService)
+    protected PhotoDetailsViewModelBase(
+        IImagePathResolver paths,
+        ImageService imageService,
+        IRetryService retryService,
+        IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
     {
         this.paths = paths;
         this.imageService = imageService;
         this.retryService = retryService;
+        this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
     }
 
     public bool IsImageResizeInProgress
@@ -70,6 +76,56 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
                     IsImageResizeInProgress = false;
                 });
             }
+        });
+    }
+
+    protected async Task CaptureTrackedPhotoAsync(
+        string operationName,
+        Func<IProgress<double>, Task<int>> captureAsync,
+        ObservableCollection<string> targetPaths,
+        Func<IEnumerable<string>> refreshedPaths,
+        Func<bool>? shouldRefresh = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(operationName);
+        ArgumentNullException.ThrowIfNull(captureAsync);
+        ArgumentNullException.ThrowIfNull(targetPaths);
+        ArgumentNullException.ThrowIfNull(refreshedPaths);
+
+        Guid operationId = photoBackgroundOperationTracker.Start(operationName);
+        var captured = false;
+
+        try
+        {
+            captured = await CaptureWithDefaultRetryAndProgressAsync(
+                attempt: async progress =>
+                {
+                    var compositeProgress = new Progress<double>(value =>
+                    {
+                        progress.Report(value);
+                        photoBackgroundOperationTracker.Report(operationId, value);
+                    });
+
+                    return await captureAsync(compositeProgress) > 0;
+                });
+        }
+        finally
+        {
+            photoBackgroundOperationTracker.Complete(operationId, captured);
+        }
+
+        if (!captured)
+        {
+            return;
+        }
+
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            if (shouldRefresh?.Invoke() == false)
+            {
+                return;
+            }
+
+            ReplaceWith(targetPaths, refreshedPaths());
         });
     }
 

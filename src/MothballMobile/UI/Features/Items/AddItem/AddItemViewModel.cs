@@ -149,11 +149,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         {
             try
             {
-                var item = new Item
-                {
-                    Name = trimmed,
-                    Description = Description?.Trim() ?? string.Empty
-                };
+                var item = new Item(trimmed, Description?.Trim() ?? string.Empty);
 
                 await inventoryCommands.InsertItemAsync(item);
 

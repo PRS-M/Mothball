@@ -63,7 +63,7 @@ public class MapperTests
     public void ItemMapper_ToDb_MapsCoreFields()
     {
         var id = Guid.NewGuid();
-        var item = new Item { ItemId = id, Name = "Hat", Description = "Desc" };
+        var item = new Item(id, "Hat", "Desc");
 
         var db = item.ToDb();
 

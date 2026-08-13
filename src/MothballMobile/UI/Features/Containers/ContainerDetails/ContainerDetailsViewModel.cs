@@ -18,7 +18,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
     private readonly IPopupService popup;
-    private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -54,13 +53,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         INavigationService nav,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IDebouncer? debouncer = null)
-        : base(paths, imageService, retryService)
+        : base(paths, imageService, retryService, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
         this.popup = popup;
         this.nav = nav;
-        this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
         this.debouncer = debouncer ?? new Debouncer(250);
 
         // Debounce search query changes
@@ -265,46 +263,13 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (IsImageResizeInProgress) return Task.CompletedTask;
 
         // Run in background so persistence can finish even if the user leaves this view.
-        CaptureAndRefreshContainerPhotoAsync(currentContainer).FireAndForget();
+        CaptureTrackedPhotoAsync(
+            operationName: "Saving container photo",
+            captureAsync: progress => imageService.CaptureContainerPhotoAsync(currentContainer, progress),
+            targetPaths: ContainerImagePaths,
+            refreshedPaths: () => paths.GetContainerPhotoPaths(currentContainer),
+            shouldRefresh: () => !disposed).FireAndForget();
         return Task.CompletedTask;
-    }
-
-    private async Task CaptureAndRefreshContainerPhotoAsync(Container container)
-    {
-        Guid operationId = photoBackgroundOperationTracker.Start("Saving container photo");
-        var captured = false;
-
-        try
-        {
-            captured = await CaptureWithDefaultRetryAndProgressAsync(
-                attempt: async progress =>
-                {
-                    var compositeProgress = new Progress<double>(value =>
-                    {
-                        progress.Report(value);
-                        photoBackgroundOperationTracker.Report(operationId, value);
-                    });
-
-                    return (await imageService.CaptureContainerPhotoAsync(container, compositeProgress)) > 0;
-                });
-        }
-        finally
-        {
-            photoBackgroundOperationTracker.Complete(operationId, captured);
-        }
-
-        if (captured)
-        {
-            await MainThread.InvokeOnMainThreadAsync(() =>
-            {
-                if (disposed)
-                {
-                    return;
-                }
-
-                ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
-            });
-        }
     }
 
     [RelayCommand]

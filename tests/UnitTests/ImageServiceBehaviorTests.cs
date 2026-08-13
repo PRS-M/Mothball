@@ -71,7 +71,7 @@ public class ImageServiceBehaviorTests
              .ReturnsAsync("/fake/path");
 
         var service = new ImageService(camera.Object, repo.Object, files.Object);
-        var item = new Item { Name = "Hat" };
+        var item = new Item("Hat", string.Empty);
 
         await service.CaptureItemPhotoAsync(item);
 
@@ -121,7 +121,7 @@ public class ImageServiceBehaviorTests
             .ThrowsAsync(new InvalidOperationException("db write failed"));
 
         var service = new ImageService(camera.Object, repo.Object, files.Object);
-        var item = new Item { Name = "Hat" };
+        var item = new Item("Hat", string.Empty);
 
         Assert.ThrowsAsync<InvalidOperationException>(() => service.CaptureItemPhotoAsync(item));
         Assert.That(item.Photos.Count, Is.EqualTo(0));
@@ -228,7 +228,7 @@ public class ImageServiceBehaviorTests
         camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(Array.Empty<byte>());
 
         var service = new ImageService(camera.Object, repo.Object, files.Object);
-        var item = new Item { Name = "Hat" };
+        var item = new Item("Hat", string.Empty);
 
         var saved = await service.CaptureItemPhotoAsync(item);
 
@@ -300,7 +300,7 @@ public class ImageServiceBehaviorTests
              .ReturnsAsync("/fake/path");
 
         var service = new ImageService(camera.Object, repo.Object, files.Object);
-        var item = new Item { Name = "Lamp" };
+        var item = new Item("Lamp", string.Empty);
 
         await service.SaveItemPhotoAsync(item, bytes);
 
@@ -381,7 +381,7 @@ public class ImageServiceBehaviorTests
         var files = new Mock<IFileHandler>();
 
         var service = new ImageService(camera.Object, repo.Object, files.Object);
-        var item = new Item { Name = "Lamp" };
+        var item = new Item("Lamp", string.Empty);
         var image = item.AddImageItem();
 
         var deleted = await service.DeleteItemPhotoAsync(item, image.ImageId);
