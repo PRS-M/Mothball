@@ -4,6 +4,7 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace CoreApp.Services;
 
@@ -18,6 +19,7 @@ public class ImageService
     private readonly ICameraHandler cameraHandler;
     private readonly IInventoryCommandRepository inventoryRepository;
     private readonly IFileHandler fileHandler;
+    private readonly ILogger<ImageService> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageService"/> class.
@@ -25,7 +27,11 @@ public class ImageService
     /// <param name="cameraHandler">Service used to capture photos from the device camera.</param>
     /// <param name="inventoryRepository">Domain repository for inserting and updating image-related data.</param>
     /// <param name="fileHandler">Service used to persist captured photos to storage.</param>
-    public ImageService(ICameraHandler cameraHandler, IInventoryCommandRepository inventoryRepository, IFileHandler fileHandler)
+    public ImageService(
+        ICameraHandler cameraHandler,
+        IInventoryCommandRepository inventoryRepository,
+        IFileHandler fileHandler,
+        ILogger<ImageService> logger)
     {
         ArgumentNullException.ThrowIfNull(cameraHandler);
         ArgumentNullException.ThrowIfNull(inventoryRepository);
@@ -34,6 +40,7 @@ public class ImageService
         this.cameraHandler = cameraHandler;
         this.inventoryRepository = inventoryRepository;
         this.fileHandler = fileHandler;
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -113,8 +120,9 @@ public class ImageService
         {
             await fileHandler.DeleteFileAsync(fileName, Constants.PathToTemporaryPhotos);
         }
-        catch (FileNotFoundException)
+        catch (FileNotFoundException ex)
         {
+            logger.LogDebug(ex, "Temporary photo file {FileName} was not found during cleanup.", fileName);
             // Best-effort cleanup only.
         }
     }
@@ -288,8 +296,9 @@ public class ImageService
             {
                 await fileHandler.DeleteFileAsync(image.FileName, saveDirectory);
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogWarning(ex, "Failed to delete photo file {FileName} from {Directory} after metadata persistence failed.", image.FileName, saveDirectory);
                 // Best-effort cleanup only; preserve the original persistence error.
             }
 
@@ -305,8 +314,9 @@ public class ImageService
         {
             await fileHandler.DeleteFileAsync($"{imageId}.jpg", folderPath).ConfigureAwait(false);
         }
-        catch (FileNotFoundException)
+        catch (FileNotFoundException ex)
         {
+            logger.LogDebug(ex, "Photo file for image {ImageId} was not found in {FolderPath} during cleanup.", imageId, folderPath);
             // Best-effort cleanup only.
         }
     }

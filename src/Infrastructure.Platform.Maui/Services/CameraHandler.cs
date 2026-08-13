@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
+using Microsoft.Extensions.Logging;
 using SkiaSharp;
 
 namespace Infrastructure.Services;
@@ -12,10 +13,12 @@ namespace Infrastructure.Services;
 public class CameraHandler : ICameraHandler
 {
     private readonly IMediaPicker mediaPicker;
+    private readonly ILogger<CameraHandler> logger;
 
-    public CameraHandler(IMediaPicker mediaPicker)
+    public CameraHandler(IMediaPicker mediaPicker, ILogger<CameraHandler> logger)
     {
         this.mediaPicker = mediaPicker ?? throw new ArgumentNullException(nameof(mediaPicker));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<byte[]> CapturePhotoAsync(IProgress<double>? resizeProgress = null)
@@ -29,7 +32,7 @@ public class CameraHandler : ICameraHandler
         // Fast path: resize directly from stream to avoid allocating full-resolution bytes first.
         using (Stream resizeStream = await photo.OpenReadAsync())
         {
-            byte[]? thumbnailBytes = await TryCreateThumbnailJpegAsync(resizeStream, resizeProgress);
+            byte[]? thumbnailBytes = await TryCreateThumbnailJpegAsync(resizeStream, resizeProgress, logger);
             if (thumbnailBytes is { Length: > 0 })
             {
                 resizeProgress?.Report(1);
@@ -70,7 +73,10 @@ public class CameraHandler : ICameraHandler
         return ms.ToArray();
     }
 
-    private static async Task<byte[]?> TryCreateThumbnailJpegAsync(Stream sourceStream, IProgress<double>? resizeProgress)
+    private static async Task<byte[]?> TryCreateThumbnailJpegAsync(
+        Stream sourceStream,
+        IProgress<double>? resizeProgress,
+        ILogger<CameraHandler> logger)
     {
         // Convert the picked image into a stored thumbnail to reduce storage.
         try
@@ -117,14 +123,16 @@ public class CameraHandler : ICameraHandler
                 catch (Exception ex)
                 {
                     // Guard the thumbnail pipeline; any SkiaSharp issue should fall back to original image bytes.
+                    logger.LogWarning(ex, "SkiaSharp thumbnail generation failed; falling back to original image bytes.");
                     Debug.WriteLine($"SkiaSharp thumbnail generation failed: {ex}");
                     return null;
                 }
             });
         }
-        catch
+        catch (Exception ex)
         {
             // If thumbnail generation fails for any reason, fall back to the original bytes.
+            logger.LogWarning(ex, "Thumbnail generation task failed; falling back to original image bytes.");
             return null;
         }
     }

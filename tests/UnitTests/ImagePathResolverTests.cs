@@ -1,6 +1,8 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using Infrastructure.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace UnitTests;
@@ -13,7 +15,7 @@ public class ImagePathResolverTests
     public ImagePathResolverTests()
     {
         _fileHandler.SetupGet(f => f.AppDataPath).Returns("/root");
-        _resolver = new Infrastructure.Services.ImagePathResolver(_fileHandler.Object);
+        _resolver = new ImagePathResolver(_fileHandler.Object, NullLogger<ImagePathResolver>.Instance);
     }
 
     [Test]
@@ -56,7 +58,7 @@ public class ImagePathResolverTests
     {
         var badMock = new Mock<IFileHandler>();
         badMock.SetupGet(f => f.AppDataPath).Throws(new Exception("nope"));
-        var badResolver = new Infrastructure.Services.ImagePathResolver(badMock.Object);
+        var badResolver = new ImagePathResolver(badMock.Object, NullLogger<ImagePathResolver>.Instance);
         var item = new Item();
         item.AddImageItem();
         var path = badResolver.GetPrimaryItemPhotoPath(item);

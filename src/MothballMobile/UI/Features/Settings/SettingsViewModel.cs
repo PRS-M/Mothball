@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
 using CoreApp.Interfaces;
+using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure;
 using MothballMobile.UI.Shared;
 
@@ -14,17 +15,20 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IInventoryBackupRestoreService backupRestoreService;
     private readonly IFileHandler fileHandler;
     private readonly IPopupService popup;
+    private readonly ILogger<SettingsViewModel> logger;
 
     public SettingsViewModel(
         IInventoryBackupExporter backupExporter,
         IInventoryBackupRestoreService backupRestoreService,
         IFileHandler fileHandler,
-        IPopupService popup)
+        IPopupService popup,
+        ILogger<SettingsViewModel> logger)
     {
         this.backupExporter = backupExporter;
         this.backupRestoreService = backupRestoreService;
         this.fileHandler = fileHandler;
         this.popup = popup;
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     [RelayCommand]
@@ -44,6 +48,7 @@ public partial class SettingsViewModel : BaseViewModel
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to export inventory backup to JSON.");
                 await popup.ShowAlertAsync(
                     "Export Failed",
                     $"Could not export backup to JSON.\n\n{ex.Message}");
@@ -80,6 +85,7 @@ public partial class SettingsViewModel : BaseViewModel
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to import inventory backup from JSON file {FileName}.", fileName);
                 await popup.ShowAlertAsync(
                     "Restore Failed",
                     $"Could not import backup from JSON.\n\n{ex.Message}");
@@ -114,6 +120,7 @@ public partial class SettingsViewModel : BaseViewModel
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to delete inventory backup JSON file {FileName}.", fileName);
                 await popup.ShowAlertAsync(
                     "Delete failed",
                     $"Could not delete backup JSON.\n\n{ex.Message}");

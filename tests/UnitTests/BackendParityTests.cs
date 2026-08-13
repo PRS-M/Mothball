@@ -7,6 +7,7 @@ using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
+using Microsoft.Extensions.Logging.Abstractions;
 using Infrastructure.Services.Repositories;
 using Moq;
 
@@ -96,7 +97,7 @@ public class BackendParityTests
     private static async Task<JsonHarness> BuildJsonAsync()
     {
         var files = CreateInMemoryJsonFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
         await store.TryRecoverAsync();
 
         var containerRepo = new JsonContainerRepository(store);

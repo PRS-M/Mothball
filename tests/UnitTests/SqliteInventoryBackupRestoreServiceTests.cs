@@ -32,8 +32,9 @@ public class SqliteInventoryBackupRestoreServiceTests
                 await db.DisposeAsync();
             }
         }
-        catch
+        catch (Exception ex)
         {
+            TestContext.Error.WriteLine($"Failed to dispose test database: {ex}");
             // ignore disposal issues in tests
         }
 
@@ -44,8 +45,9 @@ public class SqliteInventoryBackupRestoreServiceTests
                 File.Delete(dbPath);
             }
         }
-        catch
+        catch (Exception ex)
         {
+            TestContext.Error.WriteLine($"Failed to delete test database '{dbPath}': {ex}");
             // best effort cleanup
         }
     }

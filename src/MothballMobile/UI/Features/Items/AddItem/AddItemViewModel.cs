@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Services;
+using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.Features.Items.AddItem;
@@ -13,6 +14,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IRetryService retryService;
     private readonly Infrastructure.INavigationService nav;
+    private readonly ILogger<AddItemViewModel> logger;
     private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     [ObservableProperty]
@@ -41,12 +43,14 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         ImageService imageService,
         IInventoryCommandRepository inventoryCommands,
         IRetryService retryService,
-        Infrastructure.INavigationService nav)
+        Infrastructure.INavigationService nav,
+        ILogger<AddItemViewModel> logger)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.retryService = retryService ?? throw new ArgumentNullException(nameof(retryService));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -171,6 +175,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to save item.");
                 ValidationMessage = $"Failed to save item: {ex.Message}";
             }
         });

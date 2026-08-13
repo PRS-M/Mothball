@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Infrastructure.Services.JsonStore.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services.JsonStore;
 
@@ -51,8 +52,9 @@ public sealed partial class JsonInventoryStore
             {
                 await files.DeleteFileAsync(file, slotFolder).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogWarning(ex, "Failed to delete stale JSON store file {FileName} from {Folder}.", file, slotFolder);
                 // Best-effort cleanup only.
             }
         }
@@ -83,8 +85,9 @@ public sealed partial class JsonInventoryStore
             {
                 _ = await files.ReadTextFileAsync(required, folder).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogDebug(ex, "JSON store slot {Slot} is incomplete; missing or unreadable file {FileName}.", slot, required);
                 return false;
             }
         }
@@ -99,8 +102,9 @@ public sealed partial class JsonInventoryStore
             var raw = await files.ReadTextFileAsync(fileName, folder).ConfigureAwait(false);
             return JsonSerializer.Deserialize<T>(raw, JsonOptions);
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogDebug(ex, "Failed to read JSON store file {FileName} from {Folder}.", fileName, folder);
             return default;
         }
     }

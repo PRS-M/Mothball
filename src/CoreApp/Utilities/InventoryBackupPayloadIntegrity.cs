@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Diagnostics;
 using CoreApp.Contracts;
 
 namespace CoreApp.Utilities;
@@ -133,8 +134,9 @@ internal static class InventoryBackupPayloadIntegrity
             expected = Convert.FromBase64String(expectedBase64);
             provided = Convert.FromBase64String(providedBase64);
         }
-        catch (FormatException)
+        catch (FormatException ex)
         {
+            Debug.WriteLine($"Backup signature base64 decoding failed: {ex}");
             return false;
         }
 

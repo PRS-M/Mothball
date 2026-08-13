@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Diagnostics;
 
 namespace MothballMobile.UI.Converters;
 
@@ -49,12 +50,17 @@ public class PathToImageSourceConverter : IValueConverter
             // App resource (bundled) – resolves by filename
             return ImageSource.FromFile(s);
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine($"Image source conversion failed for '{s}': {ex}");
             // Fallback placeholder (must exist in Resources/Images)
             const string fallback = "mothball_logo.png";
             try { return ImageSource.FromFile(fallback); }
-            catch { return null; }
+            catch (Exception fallbackEx)
+            {
+                Debug.WriteLine($"Fallback image source conversion failed for '{fallback}': {fallbackEx}");
+                return null;
+            }
         }
     }
 

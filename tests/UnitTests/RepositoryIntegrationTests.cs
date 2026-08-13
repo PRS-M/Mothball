@@ -55,8 +55,9 @@ public class RepositoryIntegrationTests
                 await db.DisposeAsync();
             }
         }
-        catch
+        catch (Exception ex)
         {
+            TestContext.Error.WriteLine($"Failed to dispose test database: {ex}");
             // ignore disposal issues in tests
         }
 
@@ -67,8 +68,9 @@ public class RepositoryIntegrationTests
                 File.Delete(dbPath);
             }
         }
-        catch (IOException)
+        catch (IOException ex)
         {
+            TestContext.Error.WriteLine($"Failed to delete test database '{dbPath}': {ex}");
             // Best effort cleanup in tests; ignore file locks
         }
     }

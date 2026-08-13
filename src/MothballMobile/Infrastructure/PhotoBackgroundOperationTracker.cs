@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 
 namespace MothballMobile.Infrastructure;
@@ -8,6 +9,7 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
     private readonly object gate = new();
     private readonly Dictionary<Guid, OperationState> activeOperations = new();
     private readonly ObservableCollection<PhotoBackgroundOperationEntry> recentOperations = new();
+    private readonly ILogger<PhotoBackgroundOperationTracker> logger;
 
     private const int MaxRecentOperations = 25;
 
@@ -16,6 +18,11 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
     private string statusText = string.Empty;
     private bool isBannerVisible;
     private CancellationTokenSource? hideBannerCts;
+
+    public PhotoBackgroundOperationTracker(ILogger<PhotoBackgroundOperationTracker> logger)
+    {
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
     public int ActiveOperationCount
     {
@@ -126,8 +133,9 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
 
                     PublishState(activeCount: 0, progress: 0, status: string.Empty, bannerVisible: false);
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException ex)
                 {
+                    logger.LogDebug(ex, "Photo background operation banner hide timer was canceled.");
                     // Ignore cancellation when newer operations replace this hide timer.
                 }
             }, token);

@@ -1,4 +1,6 @@
-﻿namespace MothballMobile;
+﻿using System.Diagnostics;
+
+namespace MothballMobile;
 
 public partial class AppShell : Shell
 {
@@ -15,8 +17,9 @@ public partial class AppShell : Shell
 		{
 			await GoToAsync(Infrastructure.NavigationRoutes.BackgroundOperations);
 		}
-		catch
+		catch (Exception ex)
 		{
+			Debug.WriteLine($"Background operations navigation failed: {ex}");
 			// Best-effort UX: ignore navigation failures from banner tap.
 		}
 	}

@@ -8,6 +8,7 @@ using Infrastructure.Services.JsonStore.Repositories;
 using Infrastructure.Services.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Media;
 using MothballMobile.Infrastructure;
 using MothballMobile.UI.Features.Containers.AddContainer;
@@ -26,7 +27,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCoreApplication(this IServiceCollection services)
     {
-        services.AddTransient<IDebouncer>(_ => new Debouncer(300));
+        services.AddTransient<IDebouncer>(sp => new Debouncer(300, sp.GetRequiredService<ILogger<Debouncer>>()));
         services.AddSingleton<ImageService>();
         services.AddSingleton<JsonHandler>();
         services.AddSingleton<InventoryJsonHandler>();

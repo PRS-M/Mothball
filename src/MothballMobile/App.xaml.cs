@@ -1,4 +1,5 @@
 ﻿using MothballMobile.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace MothballMobile;
 
@@ -6,12 +7,17 @@ public partial class App : Application
 {
 	private readonly IAppStartupOrchestrator startupOrchestrator;
 	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
+	private readonly ILogger<App> logger;
 
-	public App(IAppStartupOrchestrator startupOrchestrator, IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
+	public App(
+		IAppStartupOrchestrator startupOrchestrator,
+		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+		ILogger<App> logger)
 	{
 		InitializeComponent();
 		this.startupOrchestrator = startupOrchestrator;
 		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
+		this.logger = logger;
 	}
 
 	protected override Window CreateWindow(IActivationState? activationState)
@@ -30,6 +36,7 @@ public partial class App : Application
 		}
 		catch (Exception ex)
 		{
+			logger.LogError(ex, "Application startup failed.");
 			window.Page = CreateStartupErrorPage(window, ex.Message);
 		}
 	}

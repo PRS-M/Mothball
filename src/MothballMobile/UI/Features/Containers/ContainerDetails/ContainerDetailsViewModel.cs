@@ -8,6 +8,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Specifications;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -59,7 +60,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.inventoryCommands = inventoryCommands;
         this.popup = popup;
         this.nav = nav;
-        this.debouncer = debouncer ?? new Debouncer(250);
+        this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
 
         // Debounce search query changes
         PropertyChanged += (s, e) =>

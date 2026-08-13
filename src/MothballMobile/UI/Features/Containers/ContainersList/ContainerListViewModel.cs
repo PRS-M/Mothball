@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Specifications;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
+using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure;
 using Infrastructure.Services;
 
@@ -51,7 +52,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         this.imagePaths = imagePaths;
         this.inventoryQueries = inventoryQueries;
         this.nav = nav;
-        this.debouncer = debouncer ?? new Debouncer(300);
+        this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
     }
 

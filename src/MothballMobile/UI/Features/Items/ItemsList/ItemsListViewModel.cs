@@ -4,6 +4,7 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Specifications;
 using Infrastructure.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
@@ -53,7 +54,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         this.paths = paths;
         this.inventoryQueries = inventoryQueries;
         this.nav = nav;
-        this.debouncer = debouncer ?? new Debouncer(300);
+        this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
     }
 
