@@ -1,4 +1,4 @@
-namespace MothballMobile.UI.Controls;
+﻿namespace MothballMobile.UI.Controls;
 
 #if IOS || MACCATALYST
 using Microsoft.Maui.Controls.PlatformConfiguration;

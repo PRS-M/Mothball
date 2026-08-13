@@ -1,4 +1,4 @@
-using MothballMobile.Infrastructure;
+﻿using MothballMobile.Infrastructure;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.BackgroundOperations;

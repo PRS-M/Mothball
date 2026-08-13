@@ -1,4 +1,4 @@
-using MothballMobile.UI.Shared;
+﻿using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 

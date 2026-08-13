@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Diagnostics;
 
 namespace MothballMobile.UI.Converters;
@@ -19,13 +19,13 @@ public class PathToImageSourceConverter : IValueConverter
             // If value is an absolute URI or path
             if (Uri.TryCreate(s, UriKind.Absolute, out var uri))
             {
-                // File URI (file://) → load from local file system
+                // File URI (file://) â load from local file system
                 if (uri.IsFile)
                 {
                     // Prefer local path for file URIs
                     return ImageSource.FromFile(uri.LocalPath);
                 }
-                // Remote http/https → use FromUri with caching enabled
+                // Remote http/https â use FromUri with caching enabled
                 if (uri.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase) ||
                     uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
                 {
@@ -37,7 +37,7 @@ public class PathToImageSourceConverter : IValueConverter
                     };
                 }
 
-                // Any other absolute scheme – try URI image source directly
+                // Any other absolute scheme â try URI image source directly
                 return new UriImageSource { Uri = uri };
             }
 
@@ -47,7 +47,7 @@ public class PathToImageSourceConverter : IValueConverter
                 return ImageSource.FromFile(s);
             }
 
-            // App resource (bundled) – resolves by filename
+            // App resource (bundled) â resolves by filename
             return ImageSource.FromFile(s);
         }
         catch (Exception ex)

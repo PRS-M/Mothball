@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging;
