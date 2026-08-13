@@ -14,6 +14,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IInventoryBackupExporter backupExporter;
     private readonly IInventoryBackupRestoreService backupRestoreService;
     private readonly IFileHandler fileHandler;
+    private readonly INavigationService nav;
     private readonly IPopupService popup;
     private readonly ILogger<SettingsViewModel> logger;
 
@@ -21,15 +22,21 @@ public partial class SettingsViewModel : BaseViewModel
         IInventoryBackupExporter backupExporter,
         IInventoryBackupRestoreService backupRestoreService,
         IFileHandler fileHandler,
+        INavigationService nav,
         IPopupService popup,
         ILogger<SettingsViewModel> logger)
     {
         this.backupExporter = backupExporter;
         this.backupRestoreService = backupRestoreService;
         this.fileHandler = fileHandler;
+        this.nav = nav;
         this.popup = popup;
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+
+    [RelayCommand]
+    private Task NavigateToBackgroundOperationsAsync()
+        => nav.GoToAsync(NavigationRoutes.BackgroundOperations);
 
     [RelayCommand]
     private async Task ExportToJsonAsync()

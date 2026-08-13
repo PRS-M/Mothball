@@ -50,6 +50,26 @@
                                        Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
                 </VerticalStackLayout>
             </Border>
+
+            <Border Padding="14"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeShape="RoundRectangle 16"
+                    Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Image processing"
+                           Style="{StaticResource HeadlineSmall}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                    <Label Text="View active and recent background photo operations."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                    <Button Text="View image processing"
+                            Command="{Binding NavigateToBackgroundOperationsCommand}"
+                            SemanticProperties.Hint="Open the background photo operations page" />
+                </VerticalStackLayout>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 
