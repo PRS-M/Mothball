@@ -203,6 +203,7 @@ public sealed class JsonItemRepository : IItemRepository
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
+                existing.TotalQuantity = item.TotalQuantity;
                 return Task.CompletedTask;
             }
 
@@ -212,6 +213,7 @@ public sealed class JsonItemRepository : IItemRepository
                 ItemId = item.ItemId,
                 Name = item.Name,
                 Description = item.Description,
+                TotalQuantity = item.TotalQuantity,
             });
 
             return Task.CompletedTask;
@@ -233,12 +235,14 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    TotalQuantity = item.TotalQuantity,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
+                existing.TotalQuantity = item.TotalQuantity;
             }
 
             return Task.CompletedTask;
@@ -262,12 +266,14 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    TotalQuantity = item.TotalQuantity,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
+                existing.TotalQuantity = item.TotalQuantity;
             }
 
             return Task.CompletedTask;
@@ -294,6 +300,7 @@ public sealed class JsonItemRepository : IItemRepository
             ItemId = row.ItemId,
             Name = row.Name,
             Description = row.Description,
+            TotalQuantity = row.TotalQuantity,
         };
 
         var photos = state.Images

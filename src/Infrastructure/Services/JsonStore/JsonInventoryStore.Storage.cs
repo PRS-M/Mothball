@@ -31,6 +31,18 @@ public sealed partial class JsonInventoryStore
         metadata.NextImageRowId = Math.Max(metadata.NextImageRowId, images.Select(p => p.RowId).DefaultIfEmpty(0).Max() + 1);
         metadata.NextRelationId = Math.Max(metadata.NextRelationId, relations.Select(r => r.Id).DefaultIfEmpty(0).Max() + 1);
 
+        if (metadata.SchemaVersion < 2)
+        {
+            foreach (var item in items.Where(item => item.TotalQuantity == 0))
+            {
+                item.TotalQuantity = relations
+                    .Where(relation => relation.ItemId == item.ItemId && relation.Quantity > 0)
+                    .Sum(relation => relation.Quantity);
+            }
+
+            metadata.SchemaVersion = 2;
+        }
+
         return new StoreState
         {
             Metadata = metadata,

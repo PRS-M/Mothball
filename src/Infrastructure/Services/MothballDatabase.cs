@@ -57,6 +57,16 @@ public class MothballDatabase : IAsyncDisposable
         // Run migrations (safe to run repeatedly)
         await EnsureColumnAsync(databaseConnection, nameof(DbItem), nameof(DbItem.Description), "TEXT", "''");
         await EnsureColumnAsync(databaseConnection, nameof(DbItemContainerRelation), nameof(DbItemContainerRelation.Quantity), "INTEGER", "1");
+        bool addedTotalQuantity = await EnsureColumnAsync(
+            databaseConnection,
+            nameof(DbItem),
+            nameof(DbItem.TotalQuantity),
+            "INTEGER",
+            "0");
+        if (addedTotalQuantity)
+        {
+            await BackfillItemTotalQuantitiesAsync(databaseConnection);
+        }
 
         return databaseConnection;
     }
@@ -71,21 +81,33 @@ public class MothballDatabase : IAsyncDisposable
             await db.CreateTableAsync<T>();
     }
 
-    private static async Task EnsureColumnAsync(
+    private static async Task<bool> EnsureColumnAsync(
         SQLiteAsyncConnection db, string table, string column, string sqlType, string defaultValue)
     {
         var columns = await db.QueryAsync<ColumnInfo>($"PRAGMA table_info({table});");
-        if (columns.Count == 0) return;
+        if (columns.Count == 0) return false;
 
         var hasColumn = columns.Exists(c =>
             string.Equals(c.name, column, StringComparison.OrdinalIgnoreCase));
 
-        if (!hasColumn)
+        bool addedColumn = !hasColumn;
+        if (addedColumn)
             await db.ExecuteAsync($"ALTER TABLE {table} ADD COLUMN {column} {sqlType};");
 
         // Always backfill nulls
         await db.ExecuteAsync($"UPDATE {table} SET {column} = {defaultValue} WHERE {column} IS NULL;");
+        return addedColumn;
     }
+
+    private static Task BackfillItemTotalQuantitiesAsync(SQLiteAsyncConnection db)
+        => db.ExecuteAsync(
+            $@"UPDATE {nameof(DbItem)}
+               SET {nameof(DbItem.TotalQuantity)} = (
+                   SELECT COALESCE(SUM({nameof(DbItemContainerRelation.Quantity)}), 0)
+                   FROM {nameof(DbItemContainerRelation)}
+                   WHERE {nameof(DbItemContainerRelation.ItemId)} = {nameof(DbItem)}.{nameof(DbItem.ItemId)}
+                     AND {nameof(DbItemContainerRelation.Quantity)} > 0)
+               WHERE {nameof(DbItem.TotalQuantity)} = 0;");
 
     private sealed class ColumnInfo
     {

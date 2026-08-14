@@ -63,26 +63,28 @@ public class MapperTests
     public void ItemMapper_ToDb_MapsCoreFields()
     {
         var id = Guid.NewGuid();
-        var item = new Item(id, "Hat", "Desc");
+        var item = new Item(id, "Hat", "Desc", totalQuantity: 7);
 
         var db = item.ToDb();
 
         Assert.That(db.ItemId, Is.EqualTo(id));
         Assert.That(db.Name, Is.EqualTo("Hat"));
         Assert.That(db.Description, Is.EqualTo("Desc"));
+        Assert.That(db.TotalQuantity, Is.EqualTo(7));
     }
 
     [Test]
     public void ItemMapper_ToDomain_ConvertsPhotos_WhenProvided()
     {
         var itemId = Guid.NewGuid();
-        var db = new DbItem { ItemId = itemId, Name = "Hat", Description = "Desc" };
+        var db = new DbItem { ItemId = itemId, Name = "Hat", Description = "Desc", TotalQuantity = 7 };
 
         var p1 = new DbImage { ImageId = Guid.NewGuid(), OwnerUniqueId = itemId };
 
         var domain = db.ToDomain(new[] { p1 });
 
         Assert.That(domain.ItemId, Is.EqualTo(itemId));
+        Assert.That(domain.TotalQuantity, Is.EqualTo(7));
         Assert.That(domain.Photos.Select(p => p.ImageId), Is.EquivalentTo(new[] { p1.ImageId }));
     }
 

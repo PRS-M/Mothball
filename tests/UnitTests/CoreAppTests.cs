@@ -57,6 +57,20 @@ public class CoreAppTests
     }
 
     [Test]
+    public void Item_TotalQuantity_RequiresNonNegativeValue()
+    {
+        var item = new Item("Hat", "Blue", totalQuantity: 2);
+
+        item.SetTotalQuantity(5);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.TotalQuantity, Is.EqualTo(5));
+            Assert.That(() => item.SetTotalQuantity(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
+        });
+    }
+
+    [Test]
     public void Container_AddItem_AddsQuantity()
     {
         var container = new Container();

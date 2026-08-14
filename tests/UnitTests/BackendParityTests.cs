@@ -144,6 +144,27 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task ItemTotalQuantity_PersistsAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 12);
+
+        await sqlite.Command.InsertItemAsync(item);
+        await json.Command.InsertItemAsync(item);
+
+        var sqliteItem = await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var jsonItem = await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItem!.TotalQuantity, Is.EqualTo(12));
+            Assert.That(jsonItem!.TotalQuantity, Is.EqualTo(12));
+        });
+    }
+
+    [Test]
     public async Task QueryContainerItemsWithPhotosAsync_PagesByRelationInsertionOrder()
     {
         await using var sqlite = await BuildSqliteAsync();
