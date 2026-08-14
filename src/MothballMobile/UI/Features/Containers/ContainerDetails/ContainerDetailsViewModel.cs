@@ -20,6 +20,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly ContainerItemPagingController itemPaging;
     private readonly ContainerDetailsItemRowsViewModel itemRows;
     private readonly IContainerItemQuantityService quantityService;
+    private readonly IBackgroundTaskObserver backgroundTasks;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -56,6 +57,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         INavigationService nav,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IContainerItemQuantityService quantityService,
+        IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
@@ -63,6 +65,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.inventoryCommands = inventoryCommands;
         this.nav = nav;
         this.quantityService = quantityService;
+        this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
         itemPaging = new ContainerItemPagingController(inventoryQueries, PageSize);
         itemRows = new ContainerDetailsItemRowsViewModel(this, Items, Rows);
@@ -72,7 +75,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             if (e.PropertyName == nameof(SearchQuery))
             {
-                this.debouncer?.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync)).FireAndForget();
+                this.debouncer?.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync))
+                    .FireAndForget(backgroundTasks, "Search container items");
             }
         };
     }
@@ -145,7 +149,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                     popupDefinitions,
                     ContainerId,
                     SaveItemQuantityAsync);
-                itemVm.LoadImagesAsync().FireAndForget();
+                itemVm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load container item images");
                 return itemVm;
             });
 
@@ -258,7 +262,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             captureAsync: progress => imageService.CaptureContainerPhotoAsync(currentContainer, progress, source.Value),
             targetPaths: ContainerImagePaths,
             refreshedPaths: () => paths.GetContainerPhotoPaths(currentContainer),
-            shouldRefresh: () => !disposed).FireAndForget();
+            shouldRefresh: () => !disposed).FireAndForget(backgroundTasks, "Save container photo");
     }
 
     [RelayCommand]

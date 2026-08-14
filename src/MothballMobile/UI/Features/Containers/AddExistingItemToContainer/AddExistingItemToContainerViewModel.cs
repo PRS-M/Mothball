@@ -13,6 +13,7 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IImagePathResolver paths;
     private readonly INavigationService nav;
+    private readonly IBackgroundTaskObserver backgroundTasks;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -21,12 +22,14 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         IInventoryQueryRepository inventoryQueries,
         IInventoryCommandRepository inventoryCommands,
         IImagePathResolver paths,
-        INavigationService nav)
+        INavigationService nav,
+        IBackgroundTaskObserver backgroundTasks)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
         this.paths = paths;
         this.nav = nav;
+        this.backgroundTasks = backgroundTasks;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -47,7 +50,7 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         => new(source, paths, AssignAsync);
 
     protected override void OnViewModelAdded(UnassignedItemViewModel vm)
-        => _ = vm.LoadImagesAsync();
+        => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load unassigned item images");
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
         => inventoryQueries.QueryItemsWithPhotosAsync(

@@ -32,6 +32,9 @@
   <ItemGroup>
     <Compile Include="../../src/MothballMobile/Infrastructure/IDebouncer.cs" Link="Infrastructure/IDebouncer.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Debouncer.cs" Link="Infrastructure/Debouncer.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/IBackgroundTaskObserver.cs" Link="Infrastructure/IBackgroundTaskObserver.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/LoggingBackgroundTaskObserver.cs" Link="Infrastructure/LoggingBackgroundTaskObserver.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/TaskExtensions.cs" Link="Infrastructure/TaskExtensions.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/IPopupService.cs" Link="Infrastructure/IPopupService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Popups/**/*.cs" Link="Infrastructure/Popups/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/MothballMobile/Infrastructure/IRetryService.cs" Link="Infrastructure/IRetryService.cs" />

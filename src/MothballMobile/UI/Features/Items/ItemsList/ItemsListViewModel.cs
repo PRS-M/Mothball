@@ -21,6 +21,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly INavigationService nav;
     private readonly IDebouncer debouncer;
+    private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly DemoDataSeeder? demoSeeder;
 
     [ObservableProperty]
@@ -40,7 +41,8 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
                 return;
             }
 
-            _ = MainThread.InvokeOnMainThreadAsync(SearchAsync);
+            MainThread.InvokeOnMainThreadAsync(SearchAsync)
+                .FireAndForget(backgroundTasks, "Search items");
         }
     }
 
@@ -48,12 +50,14 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         IImagePathResolver paths,
         IInventoryQueryRepository inventoryQueries,
         INavigationService nav,
+        IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
     {
         this.paths = paths;
         this.inventoryQueries = inventoryQueries;
         this.nav = nav;
+        this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
     }
@@ -148,11 +152,12 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     partial void OnQueryChanged(string value)
     {
         // Debounce user typing to avoid flooding search
-        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync)).FireAndForget();
+        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync))
+            .FireAndForget(backgroundTasks, "Search items");
     }
 
     protected override void OnViewModelAdded(ItemViewModel vm)
-        => vm.LoadImageAsync().FireAndForget();
+        => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
         => inventoryQueries.QueryItemsWithPhotosAsync(

@@ -14,6 +14,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly Infrastructure.INavigationService nav;
+    private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly DemoDataSeeder? demoSeeder;
 
     private string? itemId;
@@ -23,6 +24,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         IInventoryQueryRepository inventoryQueries,
         IInventoryCommandRepository inventoryCommands,
         Infrastructure.INavigationService nav,
+        IBackgroundTaskObserver backgroundTasks,
         DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
     {
@@ -30,6 +32,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
         this.nav = nav;
+        this.backgroundTasks = backgroundTasks;
         this.demoSeeder = demoSeeder;
     }
 
@@ -62,7 +65,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         => new(source, imagePaths, AssociateWithContainerAsync);
 
     protected override void OnViewModelAdded(SelectableContainerViewModel vm)
-        => _ = vm.LoadImagesAsync();
+        => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load selectable container images");
 
     private async Task AssociateWithContainerAsync(Guid containerId)
     {

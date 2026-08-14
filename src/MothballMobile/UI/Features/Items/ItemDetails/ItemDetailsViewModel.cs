@@ -14,6 +14,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService nav;
+    private readonly IBackgroundTaskObserver backgroundTasks;
     private Item? currentItem;
     private string? sourceContainerId;
 
@@ -45,12 +46,14 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         ImageService imageService,
-        IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
+        IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+        IBackgroundTaskObserver backgroundTasks)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
         this.nav = nav;
+        this.backgroundTasks = backgroundTasks;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -166,7 +169,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             operationName: "Saving item photo",
             captureAsync: progress => imageService.CaptureItemPhotoAsync(currentItem, progress, source.Value),
             targetPaths: ImagePaths,
-            refreshedPaths: () => paths.GetItemPhotoPaths(currentItem)).FireAndForget();
+            refreshedPaths: () => paths.GetItemPhotoPaths(currentItem)).FireAndForget(backgroundTasks, "Save item photo");
     }
 
     [RelayCommand]

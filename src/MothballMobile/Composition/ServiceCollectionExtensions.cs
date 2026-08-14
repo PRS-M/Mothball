@@ -37,6 +37,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPopupService, MauiPopupService>();
         services.AddSingleton<IPopupDefinitionService, PopupDefinitionService>();
         services.AddSingleton<IRetryService, RetryService>();
+        services.AddSingleton<IBackgroundTaskObserver, LoggingBackgroundTaskObserver>();
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
