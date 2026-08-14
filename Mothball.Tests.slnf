@@ -1,0 +1,8 @@
+{
+  "solution": {
+    "path": "Mothball.sln",
+    "projects": [
+      "tests\\UnitTests\\UnitTests.csproj"
+    ]
+  }
+}
