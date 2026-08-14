@@ -5,6 +5,7 @@ using Infrastructure.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using Infrastructure.Services.Repositories;
 
 namespace UnitTests;
@@ -97,7 +98,8 @@ public class RepositoryIntegrationTests
         await commandRepo.InsertItemAsync(i);
         await commandRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId, quantity: 2);
 
-        var itemsForContainer = await queryRepo.GetItemsForContainerAsync(c.ContainerId.ToString());
+        var itemsForContainer = await queryRepo.QueryContainerItemsWithPhotosAsync(
+            new ContainerItemsSpecification(c.ContainerId.ToString()));
         Assert.That(itemsForContainer.Count, Is.EqualTo(1));
         Assert.That(itemsForContainer[0].Name, Is.EqualTo("ItemA"));
         Assert.That(itemsForContainer[0].Description, Is.EqualTo("DescA"));

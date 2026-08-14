@@ -1,5 +1,6 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.JsonStore.Repositories;
@@ -130,17 +131,17 @@ public class JsonOperationalStoreTests
         var c2 = new Container(Guid.NewGuid(), "Crate", "N2");
 
         await containers.InsertAsync(c1);
-        var afterFirst = await containers.GetAllAsync();
+        var afterFirst = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
         Assert.That(afterFirst.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
 
         await containers.InsertAsync(c2);
-        var afterSecond = await containers.GetAllAsync();
+        var afterSecond = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
         Assert.That(afterSecond.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId, c2.ContainerId }));
 
         var rolledBack = await maintenance.TryRollbackLastCommitAsync();
         Assert.That(rolledBack, Is.True);
 
-        var afterRollback = await containers.GetAllAsync();
+        var afterRollback = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
         Assert.That(afterRollback.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
     }
 
@@ -236,7 +237,7 @@ public class JsonOperationalStoreTests
         var currentSlotFolder = JsonStoreConstants.SlotFolder(activeManifest!.CurrentSlot);
         files.DeleteRaw(JsonStoreConstants.MetadataFileName, currentSlotFolder);
 
-        var loaded = await containers.GetAllAsync();
+        var loaded = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
         Assert.That(loaded.Select(x => x.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
     }
 

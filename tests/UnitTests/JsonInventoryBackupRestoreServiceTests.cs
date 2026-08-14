@@ -1,6 +1,7 @@
 using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using CoreApp.Utilities;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
@@ -109,13 +110,13 @@ public class JsonInventoryBackupRestoreServiceTests
             Assert.That(result.AddedImages, Is.EqualTo(1));
         });
 
-        Assert.That((await containers.GetAllAsync()).Select(c => c.ContainerId), Does.Contain(restoredContainerId));
-        Assert.That((await items.GetAllWithPhotosAsync()).Select(i => i.ItemId), Does.Contain(restoredItemId));
+        Assert.That((await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All))).Select(c => c.ContainerId), Does.Contain(restoredContainerId));
+        Assert.That((await items.QueryWithPhotosAsync(new ItemListSpecification(ItemQueryFilter.All))).Select(i => i.ItemId), Does.Contain(restoredItemId));
 
         Assert.That(await store.TryRollbackLastCommitAsync(), Is.True);
 
-        var containersAfterRollback = await containers.GetAllAsync();
-        var itemsAfterRollback = await items.GetAllWithPhotosAsync();
+        var containersAfterRollback = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
+        var itemsAfterRollback = await items.QueryWithPhotosAsync(new ItemListSpecification(ItemQueryFilter.All));
 
         Assert.Multiple(() =>
         {

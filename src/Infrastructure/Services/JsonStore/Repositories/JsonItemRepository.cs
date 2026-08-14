@@ -8,6 +8,7 @@ using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;
 using Infrastructure.Services.Repositories;
+using CoreApp.Specifications;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 
@@ -31,13 +32,13 @@ public sealed class JsonItemRepository : IItemRepository
         return MapItem(state, row);
     }
 
-    public async Task<List<Item>> GetAllWithPhotosAsync()
+    private async Task<List<Item>> GetAllWithPhotosAsync()
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
         return state.Items.OrderBy(i => i.RowId).Select(i => MapItem(state, i)).ToList();
     }
 
-    public async Task<List<Item>> GetAllWithPhotosAsync(int pageNumber, int pageSize)
+    private async Task<List<Item>> GetAllWithPhotosAsync(int pageNumber, int pageSize)
     {
         RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
         int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
@@ -51,12 +52,70 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
-    public async Task<List<Item>> GetItemsForContainerAsync(string containerId)
+    public Task<List<Item>> QueryWithPhotosAsync(ItemListSpecification specification)
+    {
+        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+
+        if (hasSearch)
+        {
+            return specification.Filter == ItemQueryFilter.Unassigned
+                ? SearchUnassignedWithPhotosAsync(term!)
+                : SearchWithPhotosAsync(term!);
+        }
+
+        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            return specification.Filter == ItemQueryFilter.Unassigned
+                ? GetUnassignedWithPhotosAsync(pageNumberValue, pageSizeValue)
+                : GetAllWithPhotosAsync(pageNumberValue, pageSizeValue);
+        }
+
+        return specification.Filter == ItemQueryFilter.Unassigned
+            ? SearchUnassignedWithPhotosAsync(string.Empty)
+            : GetAllWithPhotosAsync();
+    }
+
+    public Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
+    {
+        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+        var hasPaging = RepositoryQueryHelpers.TryGetPaging(
+            specification.PageNumber,
+            specification.PageSize,
+            out var pageNumberValue,
+            out var pageSizeValue);
+
+        if (hasSearch)
+        {
+            return SearchItemsInContainerAsync(
+                specification.ContainerId,
+                term!,
+                hasPaging ? pageNumberValue : 0,
+                hasPaging ? pageSizeValue : int.MaxValue);
+        }
+
+        return GetItemsForContainerAsync(
+            specification.ContainerId,
+            hasPaging ? pageNumberValue : null,
+            hasPaging ? pageSizeValue : null);
+    }
+
+    private async Task<List<Item>> GetItemsForContainerAsync(string containerId, int? pageNumber = null, int? pageSize = null)
     {
         if (!Guid.TryParse(containerId, out var cid)) return [];
 
         var state = await store.LoadAsync().ConfigureAwait(false);
-        var ids = state.Relations.Where(r => r.ContainerId == cid).Select(r => r.ItemId).Distinct().ToHashSet();
+        var relationIds = state.Relations
+            .Where(r => r.ContainerId == cid && r.Quantity > 0)
+            .OrderBy(r => r.Id);
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            relationIds = relationIds
+                .Skip(RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue))
+                .Take(pageSizeValue)
+                .OrderBy(r => r.Id);
+        }
+
+        var ids = relationIds.Select(r => r.ItemId).Distinct().ToHashSet();
 
         return state.Items
             .Where(i => ids.Contains(i.ItemId))
@@ -65,20 +124,7 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
-    public async Task<List<Item>> GetByIdsWithPhotosAsync(IEnumerable<Guid> itemIds)
-    {
-        var ids = (itemIds ?? []).ToHashSet();
-        if (ids.Count == 0) return [];
-
-        var state = await store.LoadAsync().ConfigureAwait(false);
-        return state.Items
-            .Where(i => ids.Contains(i.ItemId))
-            .OrderBy(i => i.RowId)
-            .Select(i => MapItem(state, i))
-            .ToList();
-    }
-
-    public async Task<List<Item>> GetUnassignedWithPhotosAsync(int pageNumber, int pageSize)
+    private async Task<List<Item>> GetUnassignedWithPhotosAsync(int pageNumber, int pageSize)
     {
         RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
         int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
@@ -96,7 +142,7 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
-    public async Task<List<Item>> SearchWithPhotosAsync(string searchTerm)
+    private async Task<List<Item>> SearchWithPhotosAsync(string searchTerm)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
 
@@ -107,7 +153,7 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
-    public async Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm)
+    private async Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
         var assigned = state.Relations.Select(r => r.ItemId).ToHashSet();
@@ -121,7 +167,7 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
-    public async Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
+    private async Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
     {
         if (!Guid.TryParse(containerId, out var cid)) return [];
 
@@ -257,5 +303,11 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
 
         return dbItem.ToDomain(photos);
+    }
+
+    private static (string? term, bool hasSearch) NormalizeSearch(string? searchTerm)
+    {
+        var term = searchTerm?.Trim();
+        return (term, !string.IsNullOrWhiteSpace(term));
     }
 }

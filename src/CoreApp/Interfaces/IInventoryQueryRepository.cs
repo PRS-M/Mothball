@@ -8,15 +8,7 @@ public interface IInventoryQueryRepository
 {
     Task<Container?> GetContainerAsync(string containerId);
 
-    Task<List<Item>> GetItemsForContainerAsync(string containerId);
-
-    Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId);
-
-    Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId, int pageNumber, int pageSize);
-
     Task<int> GetItemCountInContainerAsync(string containerId);
-
-    Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize);
 
     Task<Item?> GetItemWithPhotosAsync(string itemId);
 

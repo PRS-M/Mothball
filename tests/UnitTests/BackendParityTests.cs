@@ -2,6 +2,7 @@ using System.Text.Json;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
@@ -17,20 +18,22 @@ namespace UnitTests;
 public class BackendParityTests
 {
     [Test]
-    public async Task GetItemsForContainerAsync_InvalidId_ReturnsEmpty_ForSqliteAndJson()
+    public async Task QueryContainerItemsWithPhotosAsync_InvalidId_ReturnsEmpty_ForSqliteAndJson()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
 
-        var sqliteItems = await sqlite.Query.GetItemsForContainerAsync("not-a-guid");
-        var jsonItems = await json.Query.GetItemsForContainerAsync("not-a-guid");
+        var specification = new ContainerItemsSpecification("not-a-guid");
+
+        var sqliteItems = await sqlite.Query.QueryContainerItemsWithPhotosAsync(specification);
+        var jsonItems = await json.Query.QueryContainerItemsWithPhotosAsync(specification);
 
         Assert.That(sqliteItems, Is.Empty);
         Assert.That(jsonItems, Is.Empty);
     }
 
     [Test]
-    public async Task SearchItemsInContainerAsync_DuplicateRelations_ParitiesAcrossBackends()
+    public async Task QueryContainerItemsWithPhotosAsync_DuplicateRelations_ParitiesAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
@@ -50,17 +53,19 @@ public class BackendParityTests
         await json.Command.InsertItemContainerRelation(jsonItem.ItemId, jsonContainer.ContainerId, 1);
         await json.Command.InsertItemContainerRelation(jsonItem.ItemId, jsonContainer.ContainerId, 1);
 
-        var sqliteResults = await sqlite.Query.SearchItemsInContainerAsync(
-            sqliteContainer.ContainerId.ToString(),
-            "hat",
-            pageNumber: 0,
-            pageSize: 10);
+        var sqliteResults = await sqlite.Query.QueryContainerItemsWithPhotosAsync(
+            new ContainerItemsSpecification(
+                sqliteContainer.ContainerId.ToString(),
+                SearchTerm: "hat",
+                PageNumber: 0,
+                PageSize: 10));
 
-        var jsonResults = await json.Query.SearchItemsInContainerAsync(
-            jsonContainer.ContainerId.ToString(),
-            "hat",
-            pageNumber: 0,
-            pageSize: 10);
+        var jsonResults = await json.Query.QueryContainerItemsWithPhotosAsync(
+            new ContainerItemsSpecification(
+                jsonContainer.ContainerId.ToString(),
+                SearchTerm: "hat",
+                PageNumber: 0,
+                PageSize: 10));
 
         Assert.That(sqliteResults.Count, Is.EqualTo(2));
         Assert.That(jsonResults.Count, Is.EqualTo(2));

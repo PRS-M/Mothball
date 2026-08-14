@@ -1,4 +1,5 @@
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Specifications;
 
 namespace Infrastructure.Interfaces;
 
@@ -8,14 +9,8 @@ namespace Infrastructure.Interfaces;
 public interface IItemRepository
 {
     Task<Item?> GetWithPhotosAsync(string itemId);
-    Task<List<Item>> GetAllWithPhotosAsync();
-    Task<List<Item>> GetAllWithPhotosAsync(int pageNumber, int pageSize);
-    Task<List<Item>> GetItemsForContainerAsync(string containerId);
-    Task<List<Item>> GetByIdsWithPhotosAsync(IEnumerable<Guid> itemIds);
-    Task<List<Item>> GetUnassignedWithPhotosAsync(int pageNumber, int pageSize);
-    Task<List<Item>> SearchWithPhotosAsync(string searchTerm);
-    Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm);
-    Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize);
+    Task<List<Item>> QueryWithPhotosAsync(ItemListSpecification specification);
+    Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification);
     Task InsertAsync(Item item);
     Task UpdateAsync(Item item);
     Task DeletePhotoAsync(Item item, Guid imageId);

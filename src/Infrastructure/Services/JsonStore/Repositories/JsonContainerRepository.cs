@@ -8,6 +8,7 @@ using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;
 using Infrastructure.Services.Repositories;
+using CoreApp.Specifications;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 
@@ -31,7 +32,7 @@ public sealed class JsonContainerRepository : IContainerRepository
         return MapContainer(state, row, includeRelations: true);
     }
 
-    public async Task<List<Container>> GetAllAsync()
+    private async Task<List<Container>> GetAllAsync()
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
         return state.Containers
@@ -40,7 +41,7 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ToList();
     }
 
-    public async Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
+    private async Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
     {
         RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
         int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
@@ -54,7 +55,30 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ToList();
     }
 
-    public async Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize)
+    public Task<List<Container>> QueryAsync(ContainerListSpecification specification)
+    {
+        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+
+        if (hasSearch)
+        {
+            return specification.Filter == ContainerQueryFilter.Empty
+                ? SearchEmptyAsync(term!)
+                : SearchAsync(term!);
+        }
+
+        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            return specification.Filter == ContainerQueryFilter.Empty
+                ? GetEmptyAsync(pageNumberValue, pageSizeValue)
+                : GetAllAsync(pageNumberValue, pageSizeValue);
+        }
+
+        return specification.Filter == ContainerQueryFilter.Empty
+            ? SearchEmptyAsync(string.Empty)
+            : GetAllAsync();
+    }
+
+    private async Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize)
     {
         RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
         int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
@@ -72,7 +96,7 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ToList();
     }
 
-    public async Task<List<Container>> SearchAsync(string searchTerm)
+    private async Task<List<Container>> SearchAsync(string searchTerm)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
         var term = searchTerm ?? string.Empty;
@@ -86,7 +110,7 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ToList();
     }
 
-    public async Task<List<Container>> SearchEmptyAsync(string searchTerm)
+    private async Task<List<Container>> SearchEmptyAsync(string searchTerm)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
         var term = searchTerm ?? string.Empty;
@@ -100,35 +124,6 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ThenBy(c => c.RowId)
             .Select(c => MapContainer(state, c, includeRelations: true)!)
             .ToList();
-    }
-
-    public async Task<Container?> GetWithItemsAndPhotosAsync(string containerId)
-    {
-        if (!Guid.TryParse(containerId, out var cid)) return null;
-
-        var state = await store.LoadAsync().ConfigureAwait(false);
-        var row = state.Containers.FirstOrDefault(c => c.ContainerId == cid);
-        if (row is null) return null;
-
-        return MapContainer(state, row, includeRelations: true);
-    }
-
-    public async Task<Container?> GetWithItemsAndPhotosAsync(string containerId, int pageNumber, int pageSize)
-    {
-        if (!Guid.TryParse(containerId, out var cid)) return null;
-
-        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
-        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
-
-        var state = await store.LoadAsync().ConfigureAwait(false);
-        var row = state.Containers.FirstOrDefault(c => c.ContainerId == cid);
-        if (row is null) return null;
-
-        // Mimic current SQLite behavior: load all relations then apply paging.
-        var allRelations = state.Relations.Where(r => r.ContainerId == cid).OrderBy(r => r.Id).ToList();
-        var paginatedRelations = allRelations.Skip(offset).Take(pageSize).ToList();
-
-        return MapContainer(state, row, includeRelations: false, overrideRelations: paginatedRelations);
     }
 
     public async Task<int> GetItemCountInContainerAsync(string containerId)
@@ -298,5 +293,11 @@ public sealed class JsonContainerRepository : IContainerRepository
         }
 
         return dbContainer.ToDomain(photos, relations);
+    }
+
+    private static (string? term, bool hasSearch) NormalizeSearch(string? searchTerm)
+    {
+        var term = searchTerm?.Trim();
+        return (term, !string.IsNullOrWhiteSpace(term));
     }
 }
