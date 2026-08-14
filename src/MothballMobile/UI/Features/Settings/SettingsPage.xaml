@@ -79,6 +79,10 @@
                                 Command="{Binding ImportFromJsonCommand}"
                                 SemanticProperties.Hint="Choose restore mode and import a local backup JSON file" />
 
+                        <Button Text="Share backup JSON"
+                                Command="{Binding ShareJsonCommand}"
+                                SemanticProperties.Hint="Choose and share a local backup JSON file outside the app" />
+
                         <Button Text="Delete backup JSON"
                                 Command="{Binding DeleteJsonCommand}"
                                 SemanticProperties.Hint="Choose and delete a local backup JSON file" />
@@ -93,6 +97,10 @@
                         <Button Text="Import with photos from ZIP"
                                 Command="{Binding ImportFromZipCommand}"
                                 SemanticProperties.Hint="Choose restore mode and import a local ZIP backup with photo files" />
+
+                        <Button Text="Share backup ZIP"
+                                Command="{Binding ShareZipCommand}"
+                                SemanticProperties.Hint="Choose and share a local backup ZIP file outside the app" />
 
                         <Button Text="Delete backup ZIP"
                                 Command="{Binding DeleteZipCommand}"

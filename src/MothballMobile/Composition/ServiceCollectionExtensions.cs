@@ -9,6 +9,7 @@ using Infrastructure.Services.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Media;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
@@ -115,6 +116,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IImageMetadataReader, SkiaImageMetadataReader>();
         services.AddSingleton(FileSystem.Current);
         services.AddSingleton(MediaPicker.Default);
+        services.AddSingleton<IShare>(Share.Default);
 
         return services;
     }

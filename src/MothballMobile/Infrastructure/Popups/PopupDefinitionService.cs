@@ -14,7 +14,12 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
     public AlertPopupDefinition BackupExportFailed(string errorMessage)
         => new(
             "Export Failed",
-            $"Could not export backup to JSON.\n\n{errorMessage}");
+            $"Could not export backup.\n\n{errorMessage}");
+
+    public AlertPopupDefinition BackupShareFailed(string errorMessage)
+        => new(
+            "Share Failed",
+            $"Could not share backup.\n\n{errorMessage}");
 
     public AlertPopupDefinition RestoreCompleted(string summary)
         => new("Restore Completed", summary);
@@ -22,7 +27,7 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
     public AlertPopupDefinition RestoreFailed(string errorMessage)
         => new(
             "Restore Failed",
-            $"Could not import backup from JSON.\n\n{errorMessage}");
+            $"Could not import backup.\n\n{errorMessage}");
 
     public ConfirmationPopupDefinition DeleteBackup(string fileName)
         => new(
@@ -38,7 +43,7 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
     public AlertPopupDefinition DeleteBackupFailed(string errorMessage)
         => new(
             "Delete failed",
-            $"Could not delete backup JSON.\n\n{errorMessage}");
+            $"Could not delete backup.\n\n{errorMessage}");
 
     public OptionPickerPopupDefinition<InventoryBackupConflictPolicy> RestorePolicyPicker()
         => new(
@@ -55,7 +60,7 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
     public AlertPopupDefinition NoBackupsFound()
         => new(
             "No backups found",
-            "No JSON backup files were found in local backup storage.");
+            "No backup files were found in local backup storage.");
 
     public OptionPickerPopupDefinition<string> BackupFilePicker(IReadOnlyList<string> fileNames)
         => new(

@@ -2,6 +2,7 @@
 using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Shared;
@@ -16,6 +17,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IInventoryBackupRestoreService backupRestoreService;
     private readonly IInventoryBackupZipRestoreService backupZipRestoreService;
     private readonly IFileHandler fileHandler;
+    private readonly IShare share;
     private readonly INavigationService nav;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
@@ -27,6 +29,7 @@ public partial class SettingsViewModel : BaseViewModel
         IInventoryBackupRestoreService backupRestoreService,
         IInventoryBackupZipRestoreService backupZipRestoreService,
         IFileHandler fileHandler,
+        IShare share,
         INavigationService nav,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
@@ -36,6 +39,7 @@ public partial class SettingsViewModel : BaseViewModel
         this.backupRestoreService = backupRestoreService;
         this.backupZipRestoreService = backupZipRestoreService;
         this.fileHandler = fileHandler;
+        this.share = share;
         this.nav = nav;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
@@ -140,6 +144,19 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task ShareJsonAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            var fileName = await SelectBackupFileAsync();
+            if (string.IsNullOrWhiteSpace(fileName))
+                return;
+
+            await ShareBackupFileAsync(fileName, "Share JSON backup");
+        });
+    }
+
+    [RelayCommand]
     private async Task ImportFromZipAsync()
     {
         await RunCommandAsync(async () =>
@@ -169,6 +186,19 @@ public partial class SettingsViewModel : BaseViewModel
                 logger.LogError(ex, "Failed to import inventory backup from ZIP file {FileName}.", fileName);
                 await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
             }
+        });
+    }
+
+    [RelayCommand]
+    private async Task ShareZipAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            var fileName = await SelectZipBackupFileAsync();
+            if (string.IsNullOrWhiteSpace(fileName))
+                return;
+
+            await ShareBackupFileAsync(fileName, "Share ZIP backup");
         });
     }
 
@@ -240,6 +270,24 @@ public partial class SettingsViewModel : BaseViewModel
 
     private async Task<InventoryBackupConflictPolicy?> SelectRestorePolicyAsync()
         => await popup.SelectValueOptionAsync(popupDefinitions.RestorePolicyPicker());
+
+    private async Task ShareBackupFileAsync(string fileName, string title)
+    {
+        try
+        {
+            var fullPath = Path.Combine(fileHandler.AppDataPath, BackupsFolder, fileName);
+            await share.RequestAsync(new ShareFileRequest
+            {
+                Title = title,
+                File = new ShareFile(fullPath),
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to share inventory backup file {FileName}.", fileName);
+            await popup.ShowAlertAsync(popupDefinitions.BackupShareFailed(ex.Message));
+        }
+    }
 
     private async Task<string?> SelectBackupFileAsync()
     {
