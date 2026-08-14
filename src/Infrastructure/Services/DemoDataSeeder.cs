@@ -124,7 +124,8 @@ public class DemoDataSeeder
                 var item = new DbItem
                 {
                     ItemId = itemId,
-                    Name = $"Item {container.Name}-{(currentCount + i + 1)}"
+                    Name = $"Item {container.Name}-{(currentCount + i + 1)}",
+                    TotalQuantity = 1,
                 };
 
                 await items.InsertAsync(item);

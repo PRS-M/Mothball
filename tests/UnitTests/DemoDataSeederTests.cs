@@ -34,6 +34,7 @@ public class DemoDataSeederTests
             }
         };
 
+        var createdItems = new List<DbItem>();
         var createdRelations = new List<DbItemContainerRelation>();
 
         var containersRepo = new Mock<IRepository<DbContainer>>();
@@ -42,7 +43,9 @@ public class DemoDataSeederTests
 
         var itemsRepo = new Mock<IRepository<DbItem>>();
         itemsRepo.Setup(r => r.InitializeAsync()).Returns(Task.CompletedTask);
-        itemsRepo.Setup(r => r.InsertAsync(It.IsAny<DbItem>())).ReturnsAsync(1);
+        itemsRepo.Setup(r => r.InsertAsync(It.IsAny<DbItem>()))
+            .Callback<DbItem>(createdItems.Add)
+            .ReturnsAsync(1);
 
         var photosRepo = new Mock<IRepository<DbImage>>();
         photosRepo.Setup(r => r.InitializeAsync()).Returns(Task.CompletedTask);
@@ -72,5 +75,7 @@ public class DemoDataSeederTests
         Assert.That(createdRelations.Count, Is.EqualTo(3), "Expected exactly 3 seeded item relations.");
         Assert.That(createdRelations.All(r => r.ContainerId == seededContainerId), Is.True,
             "Containers without the seed GUID marker should not receive auto-seeded items.");
+        Assert.That(createdItems.All(item => item.TotalQuantity == 1), Is.True,
+            "Each seeded item must include the quantity allocated to its seeded container.");
     }
 }

@@ -2,7 +2,7 @@ namespace Infrastructure.Services.JsonStore.Models;
 
 public sealed class JsonStoreMetadata
 {
-    public int SchemaVersion { get; set; } = 2;
+    public int SchemaVersion { get; set; } = 1;
 
     public int NextContainerRowId { get; set; } = 1;
     public int NextItemRowId { get; set; } = 1;

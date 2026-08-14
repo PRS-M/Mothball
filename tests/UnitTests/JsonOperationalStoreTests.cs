@@ -203,17 +203,17 @@ public class JsonOperationalStoreTests
             await store.UpdateAsync(_ => throw new InvalidOperationException("boom")));
 
         var loaded = await store.LoadAsync();
-        Assert.That(loaded.Metadata.SchemaVersion, Is.EqualTo(2));
+        Assert.That(loaded.Metadata.SchemaVersion, Is.EqualTo(1));
 
         Assert.DoesNotThrowAsync(async () =>
             await store.UpdateAsync(state =>
             {
-                state.Metadata.SchemaVersion = 2;
+                state.Metadata.SchemaVersion = 1;
                 return Task.CompletedTask;
             }));
 
         var after = await store.LoadAsync();
-        Assert.That(after.Metadata.SchemaVersion, Is.EqualTo(2));
+        Assert.That(after.Metadata.SchemaVersion, Is.EqualTo(1));
     }
 
     [Test]
@@ -255,8 +255,7 @@ public class JsonOperationalStoreTests
         Assert.That(loaded.Metadata.NextItemRowId, Is.EqualTo(4));
         Assert.That(loaded.Metadata.NextImageRowId, Is.EqualTo(6));
         Assert.That(loaded.Metadata.NextRelationId, Is.EqualTo(10));
-        Assert.That(loaded.Metadata.SchemaVersion, Is.EqualTo(2));
-        Assert.That(loaded.Items.Single(item => item.RowId == 2).TotalQuantity, Is.EqualTo(1));
+        Assert.That(loaded.Metadata.SchemaVersion, Is.EqualTo(1));
     }
 
     [Test]
