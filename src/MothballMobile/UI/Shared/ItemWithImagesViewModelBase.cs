@@ -19,6 +19,9 @@ public abstract class ItemWithImagesViewModelBase : ObservableObject
 
     public string Name => Item.Name;
     public string Description => Item.Description;
+    public int TotalQuantity => Item.TotalQuantity;
+    public int AssignedQuantity => Item.AssignedQuantity;
+    public int UnassignedQuantity => Item.UnassignedQuantity;
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 

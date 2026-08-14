@@ -38,7 +38,8 @@ public class ItemRepository : IItemRepository
         if (dbItem is null) return null;
 
         IEnumerable<DbImage> dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbItem.ItemId);
-        return dbItem.ToDomain(dbPhotos);
+        IEnumerable<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(r => r.ItemId == dbItem.ItemId);
+        return MapItem(dbItem, dbPhotos, relations);
     }
 
     private Task<List<Item>> GetAllWithPhotosAsync()
@@ -136,7 +137,8 @@ public class ItemRepository : IItemRepository
         // This query treats any presence in the relation table as "assigned".
         List<DbItem> unassigned = await items.QueryAsync(
             $"SELECT * FROM {nameof(DbItem)} " +
-            $"WHERE ItemId NOT IN (SELECT ItemId FROM {nameof(DbItemContainerRelation)}) " +
+            $"WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} " +
+            $"WHERE {nameof(DbItemContainerRelation)}.ItemId = {nameof(DbItem)}.ItemId AND Quantity > 0), 0) " +
             $"ORDER BY Name COLLATE NOCASE " +
             $"LIMIT ? OFFSET ?",
             pageSize,
@@ -162,7 +164,8 @@ public class ItemRepository : IItemRepository
 
         List<DbItem> itemsQuery = await items.QueryAsync(
             $@"SELECT * FROM {nameof(DbItem)}
-               WHERE ItemId NOT IN (SELECT ItemId FROM {nameof(DbItemContainerRelation)})
+                             WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                     WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
                  AND Name LIKE ? COLLATE NOCASE
                ORDER BY Name COLLATE NOCASE",
             pattern);
@@ -273,12 +276,29 @@ public class ItemRepository : IItemRepository
                 nameof(DbImage.OwnerUniqueId),
                 itemIds,
                 p => p.OwnerUniqueId);
+        Dictionary<Guid, IEnumerable<DbItemContainerRelation>> relationsByItem =
+            await RepositoryQueryHelpers.LoadLookupByIdsAsync(
+                itemContainerRelations,
+                nameof(DbItemContainerRelation.ItemId),
+                itemIds,
+                relation => relation.ItemId);
 
         return dbItems.Select(dbItem =>
         {
             photosByItem.TryGetValue(dbItem.ItemId, out var itemPhotos);
-            return dbItem.ToDomain(itemPhotos);
+            relationsByItem.TryGetValue(dbItem.ItemId, out var itemRelations);
+            return MapItem(dbItem, itemPhotos, itemRelations);
         }).ToList();
+    }
+
+    private static Item MapItem(
+        DbItem dbItem,
+        IEnumerable<DbImage>? dbPhotos,
+        IEnumerable<DbItemContainerRelation>? relations = null)
+    {
+        var item = dbItem.ToDomain(dbPhotos);
+        item.SetAssignedQuantity(relations?.Where(relation => relation.Quantity > 0).Sum(relation => relation.Quantity) ?? 0);
+        return item;
     }
 
     #endregion

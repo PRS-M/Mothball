@@ -59,7 +59,7 @@ public sealed class ListAndItemWorkflowHandlerTests
     [Test]
     public async Task ItemDetailsQueryHandler_WhenItemExists_ReturnsItemAndRelatedContainerId()
     {
-        var item = new Item(Guid.NewGuid(), "Hat", "Blue");
+        var item = new Item(Guid.NewGuid(), "Hat", "Blue", totalQuantity: 3);
         var container = new Container(Guid.NewGuid(), "Box", string.Empty);
         var queries = new Mock<IInventoryQueryRepository>();
         queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString()))
@@ -96,5 +96,6 @@ public sealed class ListAndItemWorkflowHandlerTests
 
         commands.Verify(c => c.InsertItemAsync(item), Times.Once);
         commands.Verify(c => c.InsertItemContainerRelation(item.ItemId, containerId, 3), Times.Once);
+        Assert.That(item.TotalQuantity, Is.EqualTo(3));
     }
 }

@@ -94,6 +94,9 @@
                                            Command="{Binding NavigateToItemDetailsCommand}"
                                            Name="{Binding Name}"
                                            Description="{Binding Description}"
+                                           TotalQuantity="{Binding TotalQuantity}"
+                                           AssignedQuantity="{Binding AssignedQuantity}"
+                                           UnassignedQuantity="{Binding UnassignedQuantity}"
                                            ImagePaths="{Binding ImagePaths}"
                                            ImageSize="125" />
                     </DataTemplate>

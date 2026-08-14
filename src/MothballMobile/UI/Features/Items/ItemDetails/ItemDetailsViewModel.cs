@@ -28,10 +28,20 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private string description = string.Empty;
 
     [ObservableProperty]
+    private int totalQuantity;
+
+    [ObservableProperty]
+    private int assignedQuantity;
+
+    [ObservableProperty]
+    private int unassignedQuantity;
+
+    [ObservableProperty]
     private string? containerId;
 
     public bool HasNoContainerRelation => string.IsNullOrWhiteSpace(this.ContainerId);
     public bool HasContainerRelation => !HasNoContainerRelation;
+    public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
     public bool ShowGoToContainerButton => HasContainerRelation
         && (string.IsNullOrWhiteSpace(sourceContainerId)
             || !string.Equals(ContainerId, sourceContainerId, StringComparison.OrdinalIgnoreCase));
@@ -92,6 +102,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             ItemId = itemId;
             ImagePaths.Clear();
             ContainerId = null;
+            TotalQuantity = 0;
+            AssignedQuantity = 0;
+            UnassignedQuantity = 0;
             NotifyContainerRelationStateChanged();
 
             var details = await itemDetailsQueries.GetDetailsAsync(itemId);
@@ -99,6 +112,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             {
                 Name = "Item not found";
                 Description = string.Empty;
+                OnPropertyChanged(nameof(HasDescription));
                 ImagePaths.Add(paths.GetFallbackImagePath());
                 return;
             }
@@ -107,6 +121,10 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             currentItem = item;
             Name = item.Name;
             Description = item.Description;
+            TotalQuantity = item.TotalQuantity;
+            AssignedQuantity = item.AssignedQuantity;
+            UnassignedQuantity = item.UnassignedQuantity;
+            OnPropertyChanged(nameof(HasDescription));
 
             ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(item));
 

@@ -71,6 +71,16 @@ public class CoreAppTests
     }
 
     [Test]
+    public void Item_InventorySummary_CalculatesUnassignedQuantity()
+    {
+        var item = new Item("Hat", "Blue", totalQuantity: 12);
+
+        item.SetAssignedQuantity(7);
+
+        Assert.That(item.UnassignedQuantity, Is.EqualTo(5));
+    }
+
+    [Test]
     public void Container_AddItem_AddsQuantity()
     {
         var container = new Container();

@@ -165,6 +165,39 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task ItemInventorySummary_AggregatesAllocationsAcrossContainers()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var firstContainer = new Container(Guid.NewGuid(), "Box", "");
+        var secondContainer = new Container(Guid.NewGuid(), "Drawer", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 12);
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(firstContainer);
+            await command.InsertContainerAsync(secondContainer);
+            await command.InsertItemAsync(item);
+            await command.InsertItemContainerRelation(item.ItemId, firstContainer.ContainerId, 3);
+            await command.InsertItemContainerRelation(item.ItemId, secondContainer.ContainerId, 4);
+        }
+
+        var sqliteListItem = (await sqlite.Query.QueryItemsWithPhotosAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
+        var jsonListItem = (await json.Query.QueryItemsWithPhotosAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
+        var sqliteDetailsItem = await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var jsonDetailsItem = await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+
+        Assert.Multiple(() =>
+        {
+            AssertInventorySummary(sqliteListItem);
+            AssertInventorySummary(jsonListItem);
+            AssertInventorySummary(sqliteDetailsItem!);
+            AssertInventorySummary(jsonDetailsItem!);
+        });
+    }
+
+    [Test]
     public async Task QueryContainerItemsWithPhotosAsync_PagesByRelationInsertionOrder()
     {
         await using var sqlite = await BuildSqliteAsync();
@@ -280,6 +313,13 @@ public class BackendParityTests
         var command = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
 
         return new SqliteHarness(dbPath, db, query, command);
+    }
+
+    private static void AssertInventorySummary(Item item)
+    {
+        Assert.That(item.TotalQuantity, Is.EqualTo(12));
+        Assert.That(item.AssignedQuantity, Is.EqualTo(7));
+        Assert.That(item.UnassignedQuantity, Is.EqualTo(5));
     }
 
     private static async Task<JsonHarness> BuildJsonAsync()

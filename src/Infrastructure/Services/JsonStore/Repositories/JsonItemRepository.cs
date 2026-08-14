@@ -130,10 +130,8 @@ public sealed class JsonItemRepository : IItemRepository
         int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var state = await store.LoadAsync().ConfigureAwait(false);
-        var assigned = state.Relations.Select(r => r.ItemId).ToHashSet();
-
         return state.Items
-            .Where(i => !assigned.Contains(i.ItemId))
+            .Where(i => i.TotalQuantity > GetAssignedQuantity(state, i.ItemId))
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.RowId)
             .Skip(offset)
@@ -156,10 +154,8 @@ public sealed class JsonItemRepository : IItemRepository
     private async Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
-        var assigned = state.Relations.Select(r => r.ItemId).ToHashSet();
-
         return state.Items
-            .Where(i => !assigned.Contains(i.ItemId)
+            .Where(i => i.TotalQuantity > GetAssignedQuantity(state, i.ItemId)
                 && i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.RowId)
@@ -309,8 +305,15 @@ public sealed class JsonItemRepository : IItemRepository
             .Select(p => new DbImage { ImageId = p.ImageId, OwnerUniqueId = p.OwnerUniqueId })
             .ToList();
 
-        return dbItem.ToDomain(photos);
+        var item = dbItem.ToDomain(photos);
+        item.SetAssignedQuantity(GetAssignedQuantity(state, row.ItemId));
+        return item;
     }
+
+    private static int GetAssignedQuantity(JsonInventoryStore.StoreState state, Guid itemId)
+        => state.Relations
+            .Where(relation => relation.ItemId == itemId && relation.Quantity > 0)
+            .Sum(relation => relation.Quantity);
 
     private static (string? term, bool hasSearch) NormalizeSearch(string? searchTerm)
     {

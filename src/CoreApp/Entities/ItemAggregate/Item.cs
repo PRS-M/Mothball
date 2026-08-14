@@ -28,6 +28,8 @@ public class Item : BaseEntity, IAggregateRoot
     public string Name { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
     public int TotalQuantity { get; private set; }
+    public int AssignedQuantity { get; private set; }
+    public int UnassignedQuantity => Math.Max(TotalQuantity - AssignedQuantity, 0);
     public IReadOnlyList<ImageItem> Photos => photos.AsReadOnly();
 
     public void UpdateDetails(string name, string description)
@@ -44,6 +46,16 @@ public class Item : BaseEntity, IAggregateRoot
         }
 
         TotalQuantity = totalQuantity;
+    }
+
+    public void SetAssignedQuantity(int assignedQuantity)
+    {
+        if (assignedQuantity < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(assignedQuantity), "Assigned quantity cannot be negative.");
+        }
+
+        AssignedQuantity = assignedQuantity;
     }
 
     public ImageItem AddImageItem()
