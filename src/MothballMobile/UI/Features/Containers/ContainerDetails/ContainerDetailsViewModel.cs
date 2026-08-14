@@ -114,7 +114,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
             hasMoreItems = false;
             IsItemListEmpty = true;
-            OnPropertyChanged(nameof(Rows));
             return;
         }
 
@@ -146,8 +145,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (clearExisting)
         {
             Items.Clear();
-            Rows.Clear();
-            Rows.Add(this);
+            ClearItemRows();
         }
 
         foreach (var item in items)
@@ -171,7 +169,20 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         // Force collection update notification to recalculate RemainingItemsThreshold
         IsItemListEmpty = Items.Count == 0;
         OnPropertyChanged(nameof(Items));
-        OnPropertyChanged(nameof(Rows));
+    }
+
+    private void ClearItemRows()
+    {
+        if (Rows.Count == 0)
+        {
+            Rows.Add(this);
+            return;
+        }
+
+        for (var index = Rows.Count - 1; index > 0; index--)
+        {
+            Rows.RemoveAt(index);
+        }
     }
 
     private Task OnItemQuantitySavedAsync(Guid itemId, int quantity)
