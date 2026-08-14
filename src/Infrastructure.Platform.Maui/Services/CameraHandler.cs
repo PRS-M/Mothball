@@ -23,18 +23,38 @@ public class CameraHandler : ICameraHandler
 
     public async Task<byte[]> CapturePhotoAsync(IProgress<double>? resizeProgress = null)
     {
-        IReadOnlyList<FileResult>? photos;
-        try
+        if (!mediaPicker.IsCaptureSupported)
         {
-            photos = await mediaPicker.PickPhotosAsync();
-        }
-        catch (OperationCanceledException ex)
-        {
-            logger.LogDebug(ex, "Photo selection was canceled.");
+            logger.LogWarning("Photo capture is not supported on this device.");
             return Array.Empty<byte>();
         }
 
-        FileResult? photo = photos?.FirstOrDefault();
+        return await GetPhotoBytesAsync(() => mediaPicker.CapturePhotoAsync(), "Photo capture", resizeProgress);
+    }
+
+    public async Task<byte[]> SelectPhotoAsync(IProgress<double>? resizeProgress = null)
+        => await GetPhotoBytesAsync(async () =>
+        {
+            IReadOnlyList<FileResult>? photos = await mediaPicker.PickPhotosAsync();
+            return photos?.FirstOrDefault();
+        }, "Photo selection", resizeProgress);
+
+    private async Task<byte[]> GetPhotoBytesAsync(
+        Func<Task<FileResult?>> getPhotoAsync,
+        string operationName,
+        IProgress<double>? resizeProgress)
+    {
+        FileResult? photo;
+        try
+        {
+            photo = await getPhotoAsync();
+        }
+        catch (OperationCanceledException ex)
+        {
+            logger.LogDebug(ex, "{OperationName} was canceled.", operationName);
+            return Array.Empty<byte>();
+        }
+
         if (photo == null) return Array.Empty<byte>();
 
         resizeProgress?.Report(0.05);

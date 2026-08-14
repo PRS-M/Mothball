@@ -6,7 +6,6 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
 using CoreApp.Specifications;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -18,7 +17,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
-    private readonly IPopupService popup;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -58,11 +56,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         INavigationService nav,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IDebouncer? debouncer = null)
-        : base(paths, imageService, photoBackgroundOperationTracker)
+        : base(paths, imageService, popup, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
-        this.popup = popup;
         this.nav = nav;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
 
@@ -287,19 +284,24 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     }
 
     [RelayCommand]
-    private Task AddPhotoAsync()
+    private async Task AddPhotoAsync()
     {
-        if (currentContainer is null) return Task.CompletedTask;
-        if (IsPhotoCaptureInProgress) return Task.CompletedTask;
+        if (currentContainer is null) return;
+        if (IsPhotoCaptureInProgress) return;
+
+        var source = await SelectPhotoSourceAsync();
+        if (source is null)
+        {
+            return;
+        }
 
         // Run in background so persistence can finish even if the user leaves this view.
         CaptureTrackedPhotoAsync(
             operationName: "Saving container photo",
-            captureAsync: progress => imageService.CaptureContainerPhotoAsync(currentContainer, progress),
+            captureAsync: progress => imageService.CaptureContainerPhotoAsync(currentContainer, progress, source.Value),
             targetPaths: ContainerImagePaths,
             refreshedPaths: () => paths.GetContainerPhotoPaths(currentContainer),
             shouldRefresh: () => !disposed).FireAndForget();
-        return Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -358,21 +360,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     }
 
     private bool disposed;
-
-    private async Task<ImageItem?> SelectPhotoAsync(IReadOnlyList<ImageItem> photos, string title)
-    {
-        var optionToPhoto = photos
-            .Select((photo, index) => new { Option = $"Photo {index + 1}", Photo = photo })
-            .ToList();
-
-        var selected = await popup.SelectOptionAsync(title, "Cancel", optionToPhoto.Select(x => x.Option).ToArray());
-        if (string.IsNullOrWhiteSpace(selected))
-        {
-            return null;
-        }
-
-        return optionToPhoto.FirstOrDefault(x => string.Equals(x.Option, selected, StringComparison.Ordinal))?.Photo;
-    }
 
     public void Dispose()
     {

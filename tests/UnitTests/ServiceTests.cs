@@ -14,7 +14,7 @@ public class ServiceTests
         var cameraMock = new Mock<ICameraHandler>();
         var repoMock = new Mock<IInventoryCommandRepository>();
         var fileHandlerMock = new Mock<IFileHandler>();
-        cameraMock.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(Array.Empty<byte>());
+        cameraMock.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(Array.Empty<byte>());
         var service = new ImageService(cameraMock.Object, repoMock.Object, fileHandlerMock.Object, NullLogger<ImageService>.Instance);
         Assert.ThrowsAsync<ArgumentNullException>(() => service.CaptureContainerPhotoAsync(null!));
     }

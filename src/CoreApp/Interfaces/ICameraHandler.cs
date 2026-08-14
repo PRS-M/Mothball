@@ -2,6 +2,12 @@ using System;
 
 namespace CoreApp.Interfaces;
 
+public enum PhotoSource
+{
+    Library,
+    Camera
+}
+
 /// <summary>
 /// Abstraction for capturing a photo from the device camera or gallery.
 /// Returns raw bytes; domain/application logic decides how to use them.
@@ -9,7 +15,12 @@ namespace CoreApp.Interfaces;
 public interface ICameraHandler
 {
     /// <summary>
-    /// Captures a photo and returns its bytes, or an empty array if the operation is canceled.
+    /// Selects a photo from the device photo library and returns its bytes, or an empty array if the operation is canceled.
+    /// </summary>
+    Task<byte[]> SelectPhotoAsync(IProgress<double>? resizeProgress = null);
+
+    /// <summary>
+    /// Captures a new photo from the device camera and returns its bytes, or an empty array if the operation is canceled.
     /// </summary>
     Task<byte[]> CapturePhotoAsync(IProgress<double>? resizeProgress = null);
 }

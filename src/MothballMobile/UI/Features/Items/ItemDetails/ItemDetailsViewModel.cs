@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
 using MothballMobile.Infrastructure;
@@ -14,7 +13,6 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService nav;
-    private readonly IPopupService popup;
     private Item? currentItem;
     private string? sourceContainerId;
 
@@ -39,12 +37,11 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public ObservableCollection<string> ImagePaths { get; } = new();
 
     public ItemDetailsViewModel(IInventoryQueryRepository inventoryQueries, IInventoryCommandRepository inventoryCommands, INavigationService nav, IImagePathResolver paths, IPopupService popup, ImageService imageService, IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
-        : base(paths, imageService, photoBackgroundOperationTracker)
+        : base(paths, imageService, popup, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
         this.nav = nav;
-        this.popup = popup;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -148,18 +145,23 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     }
 
     [RelayCommand]
-    private Task AddPhotoAsync()
+    private async Task AddPhotoAsync()
     {
-        if (currentItem is null) return Task.CompletedTask;
-        if (IsPhotoCaptureInProgress) return Task.CompletedTask;
+        if (currentItem is null) return;
+        if (IsPhotoCaptureInProgress) return;
+
+        var source = await SelectPhotoSourceAsync();
+        if (source is null)
+        {
+            return;
+        }
 
         // Run in background so persistence can finish even if the user leaves this view.
         CaptureTrackedPhotoAsync(
             operationName: "Saving item photo",
-            captureAsync: progress => imageService.CaptureItemPhotoAsync(currentItem, progress),
+            captureAsync: progress => imageService.CaptureItemPhotoAsync(currentItem, progress, source.Value),
             targetPaths: ImagePaths,
             refreshedPaths: () => paths.GetItemPhotoPaths(currentItem)).FireAndForget();
-        return Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -199,18 +201,4 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         });
     }
 
-    private async Task<ImageItem?> SelectPhotoAsync(IReadOnlyList<ImageItem> photos, string title)
-    {
-        var optionToPhoto = photos
-            .Select((photo, index) => new { Option = $"Photo {index + 1}", Photo = photo })
-            .ToList();
-
-        var selected = await popup.SelectOptionAsync(title, "Cancel", optionToPhoto.Select(x => x.Option).ToArray());
-        if (string.IsNullOrWhiteSpace(selected))
-        {
-            return null;
-        }
-
-        return optionToPhoto.FirstOrDefault(x => string.Equals(x.Option, selected, StringComparison.Ordinal))?.Photo;
-    }
 }

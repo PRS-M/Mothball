@@ -50,7 +50,10 @@ public class ImageService
     /// <returns>
     /// A task returning the number of bytes captured and saved; returns 0 if the capture was canceled.
     /// </returns>
-    public async Task<int> CaptureContainerPhotoAsync(Container container, IProgress<double>? resizeProgress = null)
+    public async Task<int> CaptureContainerPhotoAsync(
+        Container container,
+        IProgress<double>? resizeProgress = null,
+        PhotoSource source = PhotoSource.Library)
     {
         ArgumentNullException.ThrowIfNull(container);
         return await CaptureAndPersistPhotoAsync(
@@ -58,6 +61,7 @@ public class ImageService
             removeImageItem: container.RemoveImageItem,
             saveDirectory: Constants.PathToContainerPhotos,
             resizeProgress: resizeProgress,
+            source: source,
             persistAsync: async image =>
             {
                 await inventoryRepository.InsertImageItemAsync(image, container.ContainerId);
@@ -72,7 +76,10 @@ public class ImageService
     /// <returns>
     /// A task returning the number of bytes captured and saved; returns 0 if the capture was canceled.
     /// </returns>
-    public async Task<int> CaptureItemPhotoAsync(Item item, IProgress<double>? resizeProgress = null)
+    public async Task<int> CaptureItemPhotoAsync(
+        Item item,
+        IProgress<double>? resizeProgress = null,
+        PhotoSource source = PhotoSource.Library)
     {
         ArgumentNullException.ThrowIfNull(item);
         return await CaptureAndPersistPhotoAsync(
@@ -80,6 +87,7 @@ public class ImageService
             removeImageItem: item.RemoveImageItem,
             saveDirectory: Constants.PathToItemPhotos,
             resizeProgress: resizeProgress,
+            source: source,
             persistAsync: async image =>
             {
                 await inventoryRepository.InsertImageItemAsync(image, item.ItemId);
@@ -93,9 +101,11 @@ public class ImageService
     /// <returns>
     /// A temporary capture descriptor containing bytes and file path, or <see langword="null"/> when capture is canceled.
     /// </returns>
-    public async Task<TemporaryPhotoCapture?> CaptureTemporaryPhotoAsync(IProgress<double>? resizeProgress = null)
+    public async Task<TemporaryPhotoCapture?> CaptureTemporaryPhotoAsync(
+        IProgress<double>? resizeProgress = null,
+        PhotoSource source = PhotoSource.Library)
     {
-        byte[] bytes = await cameraHandler.CapturePhotoAsync(resizeProgress);
+        byte[] bytes = await GetPhotoBytesAsync(source, resizeProgress);
         if (bytes.Length == 0)
         {
             return null;
@@ -244,6 +254,7 @@ public class ImageService
         Action<Guid> removeImageItem,
         string saveDirectory,
         IProgress<double>? resizeProgress,
+        PhotoSource source,
         Func<ImageItem, Task> persistAsync)
     {
         ArgumentNullException.ThrowIfNull(addImageItem);
@@ -251,9 +262,17 @@ public class ImageService
         ArgumentNullException.ThrowIfNull(saveDirectory);
         ArgumentNullException.ThrowIfNull(persistAsync);
 
-        byte[] bytes = await cameraHandler.CapturePhotoAsync(resizeProgress);
+        byte[] bytes = await GetPhotoBytesAsync(source, resizeProgress);
         return await PersistPhotoBytesAsync(bytes, addImageItem, removeImageItem, saveDirectory, persistAsync);
     }
+
+    private Task<byte[]> GetPhotoBytesAsync(PhotoSource source, IProgress<double>? resizeProgress)
+        => source switch
+        {
+            PhotoSource.Camera => cameraHandler.CapturePhotoAsync(resizeProgress),
+            PhotoSource.Library => cameraHandler.SelectPhotoAsync(resizeProgress),
+            _ => throw new ArgumentOutOfRangeException(nameof(source), source, "Unknown photo source.")
+        };
 
     private async Task<int> PersistPhotoBytesAsync(
         byte[] bytes,

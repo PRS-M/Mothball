@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using MothballMobile.Infrastructure;
@@ -9,6 +10,7 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
 {
     protected readonly IImagePathResolver paths;
     protected readonly ImageService imageService;
+    protected readonly IPopupService popup;
     private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 
     private bool isPhotoCaptureInProgress;
@@ -16,11 +18,13 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
     protected PhotoDetailsViewModelBase(
         IImagePathResolver paths,
         ImageService imageService,
+        IPopupService popup,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
     {
-        this.paths = paths;
-        this.imageService = imageService;
-        this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
+        this.paths = paths ?? throw new ArgumentNullException(nameof(paths));
+        this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
+        this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
+        this.photoBackgroundOperationTracker = photoBackgroundOperationTracker ?? throw new ArgumentNullException(nameof(photoBackgroundOperationTracker));
     }
 
     protected bool IsPhotoCaptureInProgress
@@ -99,5 +103,37 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
         {
             target.Add(item);
         }
+    }
+
+    protected async Task<ImageItem?> SelectPhotoAsync(IReadOnlyList<ImageItem> photos, string title)
+    {
+        ArgumentNullException.ThrowIfNull(photos);
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+
+        var optionToPhoto = photos
+            .Select((photo, index) => new { Option = $"Photo {index + 1}", Photo = photo })
+            .ToList();
+
+        var selected = await popup.SelectOptionAsync(title, "Cancel", optionToPhoto.Select(x => x.Option).ToArray());
+        if (string.IsNullOrWhiteSpace(selected))
+        {
+            return null;
+        }
+
+        return optionToPhoto.FirstOrDefault(x => string.Equals(x.Option, selected, StringComparison.Ordinal))?.Photo;
+    }
+
+    protected async Task<PhotoSource?> SelectPhotoSourceAsync()
+    {
+        const string selectPhoto = "Select Photo";
+        const string capturePhoto = "Capture Photo";
+
+        var selected = await popup.SelectOptionAsync("Add photo", "Cancel", selectPhoto, capturePhoto);
+        return selected switch
+        {
+            selectPhoto => PhotoSource.Library,
+            capturePhoto => PhotoSource.Camera,
+            _ => null
+        };
     }
 }

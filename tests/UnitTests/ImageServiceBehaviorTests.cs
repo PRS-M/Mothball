@@ -22,7 +22,7 @@ public class ImageServiceBehaviorTests
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {1,2,3};
-        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(bytes);
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToContainerPhotos, bytes))
              .ReturnsAsync("/fake/path");
 
@@ -39,6 +39,28 @@ public class ImageServiceBehaviorTests
     }
 
     [Test]
+    public async Task CaptureItemPhotoAsync_WithCameraSource_CapturesNewPhoto()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var bytes = new byte[] { 4, 2 };
+        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos, bytes))
+             .ReturnsAsync("/fake/path");
+
+        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var item = new Item("Hat", string.Empty);
+
+        await service.CaptureItemPhotoAsync(item, source: PhotoSource.Camera);
+
+        Assert.That(item.Photos.Count, Is.EqualTo(1));
+        camera.Verify(c => c.CapturePhotoAsync(), Times.Once);
+        camera.Verify(c => c.SelectPhotoAsync(), Times.Never);
+    }
+
+    [Test]
     public async Task CaptureContainerPhotoAsync_SaveFails_RollsBackImage()
     {
         var camera = new Mock<ICameraHandler>();
@@ -46,7 +68,7 @@ public class ImageServiceBehaviorTests
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {1};
-        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(bytes);
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToContainerPhotos, bytes))
              .ThrowsAsync(new IOException("disk full"));
 
@@ -67,7 +89,7 @@ public class ImageServiceBehaviorTests
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {9,8};
-        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(bytes);
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos, bytes))
              .ReturnsAsync("/fake/path");
 
@@ -91,7 +113,7 @@ public class ImageServiceBehaviorTests
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {4, 5};
-        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(bytes);
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToContainerPhotos, bytes))
              .ReturnsAsync("/fake/path");
         repo.Setup(r => r.InsertImageItemAsync(It.IsAny<ImageItem>(), It.IsAny<Guid>()))
@@ -115,7 +137,7 @@ public class ImageServiceBehaviorTests
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {7, 6};
-        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(bytes);
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos, bytes))
              .ReturnsAsync("/fake/path");
         repo.Setup(r => r.InsertImageItemAsync(It.IsAny<ImageItem>(), It.IsAny<Guid>()))
@@ -139,7 +161,7 @@ public class ImageServiceBehaviorTests
         var files = new Mock<IFileHandler>();
 
         var bytes = new byte[] {10, 11, 12};
-        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(bytes);
+        camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(bytes);
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToTemporaryPhotos, bytes))
              .ReturnsAsync("/tmp/temp-photo.jpg");
 
@@ -163,7 +185,7 @@ public class ImageServiceBehaviorTests
         var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
-        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(Array.Empty<byte>());
+        camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(Array.Empty<byte>());
 
         var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
 
@@ -226,7 +248,7 @@ public class ImageServiceBehaviorTests
         var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
-        camera.Setup(c => c.CapturePhotoAsync()).ReturnsAsync(Array.Empty<byte>());
+        camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(Array.Empty<byte>());
 
         var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
         var item = new Item("Hat", string.Empty);
