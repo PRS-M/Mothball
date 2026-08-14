@@ -35,9 +35,13 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
     public ObservableCollection<ItemWithPhotosViewModel> Items { get; } = new();
+    public ObservableCollection<object> Rows { get; } = new();
 
     [ObservableProperty]
     private string searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private bool isItemListEmpty = true;
 
     private const int PageSize = 5;
     private int currentPage = 0;
@@ -95,16 +99,22 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         SearchQuery = string.Empty;
 
         Items.Clear();
+        Rows.Clear();
+        Rows.Add(this);
+        IsItemListEmpty = true;
         ContainerImagePaths.Clear();
 
         var container = await inventoryQueries.GetContainerAsync(containerId);
         if (container is null)
         {
+            currentContainer = null;
             Name = "Container not found";
             Notes = string.Empty;
             TotalItemCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
             hasMoreItems = false;
+            IsItemListEmpty = true;
+            OnPropertyChanged(nameof(Rows));
             return;
         }
 
@@ -136,6 +146,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (clearExisting)
         {
             Items.Clear();
+            Rows.Clear();
+            Rows.Add(this);
         }
 
         foreach (var item in items)
@@ -152,11 +164,14 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                 ContainerId,
                 OnItemQuantitySavedAsync);
             Items.Add(itemVm);
+            Rows.Add(itemVm);
             itemVm.LoadImagesAsync().FireAndForget();
         }
 
         // Force collection update notification to recalculate RemainingItemsThreshold
+        IsItemListEmpty = Items.Count == 0;
         OnPropertyChanged(nameof(Items));
+        OnPropertyChanged(nameof(Rows));
     }
 
     private Task OnItemQuantitySavedAsync(Guid itemId, int quantity)
