@@ -9,6 +9,11 @@ namespace MothballMobile;
 
 public partial class App : Application
 {
+#if IOS
+	private const string AppOpenTestAdUnitId = "ca-app-pub-3940256099942544/5575463023";
+#elif ANDROID
+	private const string AppOpenTestAdUnitId = "ca-app-pub-3940256099942544/9257395921";
+#endif
 	private readonly IAppStartupOrchestrator startupOrchestrator;
 	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 	private readonly ILogger<App> logger;
@@ -70,7 +75,7 @@ public partial class App : Application
 		appOpenAdService.OnAdLoaded += OnAdLoaded;
 		try
 		{
-			appOpenAdService.PrepareAd();
+			appOpenAdService.PrepareAd(AppOpenTestAdUnitId);
 			await Task.WhenAny(adLoaded.Task, Task.Delay(TimeSpan.FromSeconds(5)));
 
 			if (appOpenAdService.IsAdLoaded)

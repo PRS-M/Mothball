@@ -9,9 +9,19 @@ namespace MothballMobile.UI.Shared;
 
 public class BasePage : ContentPage
 {
+#if IOS
+    private const string BannerTestAdUnitId = "ca-app-pub-3940256099942544/2934735716";
+#elif ANDROID
+    private const string BannerTestAdUnitId = "ca-app-pub-3940256099942544/6300978111";
+#endif
     private IDisposable? previousDisposable;
     private readonly SemaphoreSlim initializationGate = new(1, 1);
     private bool contentWrappedWithAdBanner;
+
+    public BasePage()
+    {
+        Loaded += (_, _) => WrapContentWithAdBanner();
+    }
 
     protected override void OnHandlerChanged()
     {
@@ -49,6 +59,8 @@ public class BasePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        WrapContentWithAdBanner();
+
         if (BindingContext is IInitializable init)
         {
             await initializationGate.WaitAsync();
@@ -102,12 +114,7 @@ public class BasePage : ContentPage
         Grid.SetRow(pageContent, 0);
         layout.Add(pageContent);
 
-        var banner = new BannerAd
-        {
-            HeightRequest = 50,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.End
-        };
+        var banner = CreateAdBannerContent();
 
         Grid.SetRow(banner, 1);
         layout.Add(banner);
@@ -116,4 +123,61 @@ public class BasePage : ContentPage
         Content = layout;
 #endif
     }
+
+#if IOS || ANDROID
+    private static View CreateAdBannerContent()
+    {
+        var bannerHost = new Grid
+        {
+            HeightRequest = 50,
+            MinimumHeightRequest = 50,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.End,
+            BackgroundColor = Colors.Transparent
+        };
+
+        var banner = new BannerAd
+        {
+#if IOS || ANDROID
+            AdUnitId = BannerTestAdUnitId,
+#endif
+            HeightRequest = 50,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill
+        };
+        var placeholder = CreateDevelopmentAdPlaceholder();
+
+        banner.OnAdLoaded += (_, _) => placeholder.IsVisible = false;
+        banner.OnAdFailedToLoad += (_, _) => placeholder.IsVisible = true;
+
+        bannerHost.Add(banner);
+        bannerHost.Add(placeholder);
+
+        return bannerHost;
+    }
+
+    private static View CreateDevelopmentAdPlaceholder()
+    {
+        return new Border
+        {
+            HeightRequest = 50,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            InputTransparent = true,
+            StrokeThickness = 1,
+            Stroke = new SolidColorBrush(Colors.LightGray),
+            BackgroundColor = Color.FromArgb("#F2F2F2"),
+            Padding = new Thickness(12, 0),
+            Content = new Label
+            {
+                Text = "Test Ad",
+                FontSize = 12,
+                TextColor = Colors.DimGray,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalTextAlignment = TextAlignment.Center
+            }
+        };
+    }
+#endif
 }
