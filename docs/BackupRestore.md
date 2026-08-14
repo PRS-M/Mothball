@@ -52,7 +52,12 @@ ZIP archive layout:
 
 Missing photo files are skipped so a backup can still be created when metadata references a file that is no longer present.
 
-Current restore support imports the JSON envelope. Restoring photo file bytes from ZIP archives should be handled as a follow-up restore-path enhancement.
+ZIP import behavior:
+
+- Reads `backup.json` from the archive and applies the existing restore planner/service with the selected conflict policy.
+- Restores photo files from `images/items/` and `images/containers/` into the app photo folders after metadata restore completes.
+- Skips archive photo entries that have no matching image reference owner in `backup.json`.
+- Leaves JSON import/export available for metadata-only backup workflows.
 
 ## Restore Implementations
 

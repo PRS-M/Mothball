@@ -10,8 +10,6 @@ namespace CoreApp.Services;
 
 public sealed class InventoryBackupExporter : IInventoryBackupExporter
 {
-    private const string BackupJsonEntryName = "backup.json";
-
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IFileHandler fileHandler;
 
@@ -140,7 +138,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
         InventoryBackupEnvelope backup,
         CancellationToken cancellationToken)
     {
-        var entry = archive.CreateEntry(BackupJsonEntryName, CompressionLevel.Optimal);
+        var entry = archive.CreateEntry(InventoryBackupZipArchive.BackupJsonEntryName, CompressionLevel.Optimal);
         await using var stream = entry.Open();
         await using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         await writer.WriteAsync(SerializeBackup(backup).AsMemory(), cancellationToken).ConfigureAwait(false);
@@ -163,7 +161,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
                 continue;
             }
 
-            var entryPath = GetPhotoEntryPath(image.OwnerType, fileName);
+            var entryPath = InventoryBackupZipArchive.GetPhotoEntryPath(image.OwnerType, fileName);
             if (!addedEntries.Add(entryPath))
             {
                 continue;
@@ -173,7 +171,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
             try
             {
                 bytes = await fileHandler
-                    .ReadFileAsync(fileName, GetPhotoFolder(image.OwnerType))
+                    .ReadFileAsync(fileName, InventoryBackupZipArchive.GetPhotoFolder(image.OwnerType))
                     .ConfigureAwait(false);
             }
             catch (FileNotFoundException)
@@ -190,14 +188,4 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
             await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
         }
     }
-
-    private static string GetPhotoFolder(InventoryBackupOwnerType ownerType)
-        => ownerType == InventoryBackupOwnerType.Container
-            ? Constants.PathToContainerPhotos
-            : Constants.PathToItemPhotos;
-
-    private static string GetPhotoEntryPath(InventoryBackupOwnerType ownerType, string fileName)
-        => ownerType == InventoryBackupOwnerType.Container
-            ? $"images/containers/{fileName}"
-            : $"images/items/{fileName}";
 }

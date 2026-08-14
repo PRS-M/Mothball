@@ -14,6 +14,7 @@ public partial class SettingsViewModel : BaseViewModel
 
     private readonly IInventoryBackupExporter backupExporter;
     private readonly IInventoryBackupRestoreService backupRestoreService;
+    private readonly IInventoryBackupZipRestoreService backupZipRestoreService;
     private readonly IFileHandler fileHandler;
     private readonly INavigationService nav;
     private readonly IPopupService popup;
@@ -23,6 +24,7 @@ public partial class SettingsViewModel : BaseViewModel
     public SettingsViewModel(
         IInventoryBackupExporter backupExporter,
         IInventoryBackupRestoreService backupRestoreService,
+        IInventoryBackupZipRestoreService backupZipRestoreService,
         IFileHandler fileHandler,
         INavigationService nav,
         IPopupService popup,
@@ -31,6 +33,7 @@ public partial class SettingsViewModel : BaseViewModel
     {
         this.backupExporter = backupExporter;
         this.backupRestoreService = backupRestoreService;
+        this.backupZipRestoreService = backupZipRestoreService;
         this.fileHandler = fileHandler;
         this.nav = nav;
         this.popup = popup;
@@ -122,6 +125,39 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task ImportFromZipAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            var policy = await SelectRestorePolicyAsync();
+            if (policy is null)
+                return;
+
+            var fileName = await SelectZipBackupFileAsync();
+            if (string.IsNullOrWhiteSpace(fileName))
+                return;
+
+            try
+            {
+                var backupZip = await fileHandler.ReadFileAsync(fileName, BackupsFolder);
+                var options = new InventoryBackupRestoreOptions
+                {
+                    ConflictPolicy = policy.Value,
+                };
+
+                var restore = await backupZipRestoreService.RestoreFromZipAsync(backupZip, options);
+
+                await popup.ShowAlertAsync(popupDefinitions.RestoreCompleted(BuildRestoreSummary(restore.Result, policy.Value, fileName, restore.RestoredPhotoFiles)));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to import inventory backup from ZIP file {FileName}.", fileName);
+                await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
+            }
+        });
+    }
+
+    [RelayCommand]
     private async Task DeleteJsonAsync()
     {
         await RunCommandAsync(async () =>
@@ -180,15 +216,38 @@ public partial class SettingsViewModel : BaseViewModel
         return await popup.SelectOptionAsync(popupDefinitions.BackupFilePicker(fileNames));
     }
 
+    private async Task<string?> SelectZipBackupFileAsync()
+    {
+        var fileNames = fileHandler
+            .EnumerateFiles(BackupsFolder, "*.zip")
+            .OrderByDescending(name => name, StringComparer.Ordinal)
+            .Take(25)
+            .ToArray();
+
+        if (fileNames.Length == 0)
+        {
+            await popup.ShowAlertAsync(popupDefinitions.NoBackupsFound());
+            return null;
+        }
+
+        return await popup.SelectOptionAsync(popupDefinitions.BackupFilePicker(fileNames));
+    }
+
     private static string BuildRestoreSummary(
         InventoryBackupRestoreResult result,
         InventoryBackupConflictPolicy policy,
-        string fileName)
+        string fileName,
+        int? restoredPhotoFiles = null)
     {
+        var photoSummary = restoredPhotoFiles is null
+            ? string.Empty
+            : $"\nPhoto files restored: {restoredPhotoFiles}";
+
         return $"Mode: {policy}\nFile: {fileName}\n\n" +
                $"Added: containers {result.AddedContainers}, items {result.AddedItems}, relations {result.AddedRelations}, images {result.AddedImages}\n" +
                $"Updated: containers {result.UpdatedContainers}, items {result.UpdatedItems}\n" +
                $"Deleted: containers {result.DeletedContainers}, items {result.DeletedItems}, relations {result.DeletedRelations}, images {result.DeletedImages}\n" +
-               $"Skipped: containers {result.SkippedExistingContainers}, items {result.SkippedExistingItems}, relations {result.SkippedExistingRelations}, images {result.SkippedExistingImages}";
+               $"Skipped: containers {result.SkippedExistingContainers}, items {result.SkippedExistingItems}, relations {result.SkippedExistingRelations}, images {result.SkippedExistingImages}" +
+               photoSummary;
     }
 }
