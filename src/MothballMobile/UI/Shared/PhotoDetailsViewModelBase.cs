@@ -124,16 +124,5 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
     }
 
     protected async Task<PhotoSource?> SelectPhotoSourceAsync()
-    {
-        const string selectPhoto = "Select Photo";
-        const string capturePhoto = "Capture Photo";
-
-        var selected = await popup.SelectOptionAsync("Add photo", "Cancel", selectPhoto, capturePhoto);
-        return selected switch
-        {
-            selectPhoto => PhotoSource.Library,
-            capturePhoto => PhotoSource.Camera,
-            _ => null
-        };
-    }
+        => await PhotoSourceSelector.SelectPhotoSourceAsync(popup);
 }

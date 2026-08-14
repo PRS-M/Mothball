@@ -4,6 +4,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using MothballMobile.Infrastructure;
+using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;
 
@@ -12,16 +13,19 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly ImageService imageService;
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService navigationService;
+    private readonly IPopupService popup;
     private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     public AddContainerViewModel(
         ImageService imageService,
         IInventoryCommandRepository inventoryCommands,
-        INavigationService navigationService)
+        INavigationService navigationService,
+        IPopupService popup)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
     }
 
     [ObservableProperty]
@@ -72,13 +76,24 @@ public partial class AddContainerViewModel : BaseViewModel
     [RelayCommand]
     public async Task ChoosePhoto()
     {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        var source = await SelectPhotoSourceAsync();
+        if (source is null)
+        {
+            return;
+        }
+
         await RunCommandAsync(async () =>
         {
             ImageService.TemporaryPhotoCapture? selectedPhoto;
             IsPhotoProcessing = true;
             try
             {
-                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
+                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync(source: source.Value);
             }
             finally
             {
@@ -100,6 +115,9 @@ public partial class AddContainerViewModel : BaseViewModel
             ValidationMessage = null;
         });
     }
+
+    private async Task<PhotoSource?> SelectPhotoSourceAsync()
+        => await PhotoSourceSelector.SelectPhotoSourceAsync(popup);
 
     [RelayCommand(CanExecute = nameof(CanAddContainer))]
     public async Task SaveContainer()

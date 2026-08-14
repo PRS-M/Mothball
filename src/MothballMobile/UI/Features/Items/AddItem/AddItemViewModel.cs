@@ -5,6 +5,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure;
+using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Items.AddItem;
 
@@ -14,6 +15,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly Infrastructure.INavigationService nav;
     private readonly ILogger<AddItemViewModel> logger;
+    private readonly IPopupService popup;
     private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     [ObservableProperty]
@@ -42,12 +44,14 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         ImageService imageService,
         IInventoryCommandRepository inventoryCommands,
         Infrastructure.INavigationService nav,
-        ILogger<AddItemViewModel> logger)
+        ILogger<AddItemViewModel> logger,
+        IPopupService popup)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -91,13 +95,24 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     [RelayCommand]
     private async Task ChoosePhotoAsync()
     {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        var source = await SelectPhotoSourceAsync();
+        if (source is null)
+        {
+            return;
+        }
+
         await RunCommandAsync(async () =>
         {
             ImageService.TemporaryPhotoCapture? selectedPhoto;
             IsPhotoProcessing = true;
             try
             {
-                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
+                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync(source: source.Value);
             }
             finally
             {
@@ -119,6 +134,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             ValidationMessage = null;
         });
     }
+
+    private async Task<PhotoSource?> SelectPhotoSourceAsync()
+        => await PhotoSourceSelector.SelectPhotoSourceAsync(popup);
 
     [RelayCommand(CanExecute = nameof(CanAdd))]
     private async Task SaveAsync()
