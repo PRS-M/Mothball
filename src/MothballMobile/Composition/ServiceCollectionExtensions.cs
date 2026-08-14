@@ -29,9 +29,13 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddCoreApplication(this IServiceCollection services)
     {
         services.AddTransient<IDebouncer>(sp => new Debouncer(300, sp.GetRequiredService<ILogger<Debouncer>>()));
-        services.AddSingleton<ImageService>();
         services.AddSingleton<JsonHandler>();
         services.AddSingleton<InventoryJsonHandler>();
+        services.AddSingleton<IPhotoSourceReader, PhotoSourceReader>();
+        services.AddSingleton<IPhotoFilePersistenceService, PhotoFilePersistenceService>();
+        services.AddSingleton<ITemporaryPhotoService, TemporaryPhotoService>();
+        services.AddSingleton<IPhotoDeletionService, PhotoDeletionService>();
+        services.AddSingleton<ImageService>();
 
         services.AddSingleton<INavigationService, ShellNavigationService>();
         services.AddSingleton<IPopupService, MauiPopupService>();
