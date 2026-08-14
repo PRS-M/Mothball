@@ -65,7 +65,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
             services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
-            services.AddSingleton<IInventoryBackupRestoreService, InventoryBackupRestoreService>();
+            services.AddSingleton<IInventoryBackupRestoreService, JsonInventoryBackupRestoreService>();
         }
         else
         {
