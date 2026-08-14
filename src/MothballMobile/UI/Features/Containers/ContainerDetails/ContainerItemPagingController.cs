@@ -1,21 +1,20 @@
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
-using CoreApp.Specifications;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
 internal sealed class ContainerItemPagingController
 {
-    private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IContainerDetailsQueryHandler containerDetailsQueries;
     private readonly int pageSize;
     private int currentPage;
     private bool hasMoreItems = true;
     private int loadVersion;
     private string? activeSearchTerm;
 
-    public ContainerItemPagingController(IInventoryQueryRepository inventoryQueries, int pageSize)
+    public ContainerItemPagingController(IContainerDetailsQueryHandler containerDetailsQueries, int pageSize)
     {
-        this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
+        this.containerDetailsQueries = containerDetailsQueries ?? throw new ArgumentNullException(nameof(containerDetailsQueries));
         this.pageSize = pageSize;
     }
 
@@ -71,10 +70,5 @@ internal sealed class ContainerItemPagingController
     }
 
     private Task<List<Item>> QueryAsync(string containerId, int pageNumber, string? searchTerm)
-        => inventoryQueries.QueryContainerItemsWithPhotosAsync(
-            new ContainerItemsSpecification(
-                ContainerId: containerId,
-                SearchTerm: searchTerm,
-                PageNumber: pageNumber,
-                PageSize: pageSize));
+        => containerDetailsQueries.QueryItemsAsync(containerId, searchTerm, pageNumber, pageSize);
 }

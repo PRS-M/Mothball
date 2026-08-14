@@ -13,8 +13,8 @@ namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
 public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
 {
-    private readonly IInventoryQueryRepository inventoryQueries;
-    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IContainerDetailsQueryHandler containerDetailsQueries;
+    private readonly IDeleteContainerCommandHandler deleteContainerHandler;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
     private readonly ContainerItemPagingController itemPaging;
@@ -48,8 +48,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private const int PageSize = 5;
 
     public ContainerDetailsViewModel(
-        IInventoryQueryRepository inventoryQueries,
-        IInventoryCommandRepository inventoryCommands,
+        IContainerDetailsQueryHandler containerDetailsQueries,
+        IDeleteContainerCommandHandler deleteContainerHandler,
         IImagePathResolver paths,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
@@ -61,13 +61,13 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IDebouncer? debouncer = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
-        this.inventoryQueries = inventoryQueries;
-        this.inventoryCommands = inventoryCommands;
+        this.containerDetailsQueries = containerDetailsQueries;
+        this.deleteContainerHandler = deleteContainerHandler;
         this.nav = nav;
         this.quantityService = quantityService;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
-        itemPaging = new ContainerItemPagingController(inventoryQueries, PageSize);
+        itemPaging = new ContainerItemPagingController(containerDetailsQueries, PageSize);
         itemRows = new ContainerDetailsItemRowsViewModel(this, Items, Rows);
 
         // Debounce search query changes
@@ -106,8 +106,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IsItemListEmpty = true;
         ContainerImagePaths.Clear();
 
-        var container = await inventoryQueries.GetContainerAsync(containerId);
-        if (container is null)
+        var details = await containerDetailsQueries.GetDetailsAsync(containerId);
+        if (details is null)
         {
             currentContainer = null;
             Name = "Container not found";
@@ -119,12 +119,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             return;
         }
 
+        var container = details.Container;
         currentContainer = container;
         Name = container.Name;
         Notes = container.Notes;
-
-        // Get the total count from repository (sums all quantities, not just this page)
-        TotalItemCount = await inventoryQueries.GetItemCountInContainerAsync(containerId);
+        TotalItemCount = details.TotalItemCount;
 
         // Load container photos (all, as a small carousel)
         ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
@@ -240,7 +239,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         if (!confirmed) return;
 
-        await inventoryCommands.DeleteContainerAsync(ContainerId);
+        await deleteContainerHandler.DeleteAsync(ContainerId);
         await nav.GoBackAsync();
     }
 
