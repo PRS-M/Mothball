@@ -7,6 +7,7 @@ using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;
+using Infrastructure.Services.Repositories;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 
@@ -38,8 +39,8 @@ public sealed class JsonItemRepository : IItemRepository
 
     public async Task<List<Item>> GetAllWithPhotosAsync(int pageNumber, int pageSize)
     {
-        ValidatePaging(pageNumber, pageSize);
-        int offset = pageNumber * pageSize;
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var state = await store.LoadAsync().ConfigureAwait(false);
         return state.Items
@@ -79,8 +80,8 @@ public sealed class JsonItemRepository : IItemRepository
 
     public async Task<List<Item>> GetUnassignedWithPhotosAsync(int pageNumber, int pageSize)
     {
-        ValidatePaging(pageNumber, pageSize);
-        int offset = pageNumber * pageSize;
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var state = await store.LoadAsync().ConfigureAwait(false);
         var assigned = state.Relations.Select(r => r.ItemId).ToHashSet();
@@ -124,8 +125,8 @@ public sealed class JsonItemRepository : IItemRepository
     {
         if (!Guid.TryParse(containerId, out var cid)) return [];
 
-        ValidatePaging(pageNumber, pageSize);
-        int offset = pageNumber * pageSize;
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var state = await store.LoadAsync().ConfigureAwait(false);
 
@@ -256,11 +257,5 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
 
         return dbItem.ToDomain(photos);
-    }
-
-    private static void ValidatePaging(int pageNumber, int pageSize)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
-        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
     }
 }

@@ -7,6 +7,7 @@ using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;
+using Infrastructure.Services.Repositories;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 
@@ -41,8 +42,8 @@ public sealed class JsonContainerRepository : IContainerRepository
 
     public async Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
     {
-        ValidatePaging(pageNumber, pageSize);
-        int offset = pageNumber * pageSize;
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var state = await store.LoadAsync().ConfigureAwait(false);
         return state.Containers
@@ -55,8 +56,8 @@ public sealed class JsonContainerRepository : IContainerRepository
 
     public async Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize)
     {
-        ValidatePaging(pageNumber, pageSize);
-        int offset = pageNumber * pageSize;
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var state = await store.LoadAsync().ConfigureAwait(false);
         var nonEmpty = state.Relations.Select(r => r.ContainerId).ToHashSet();
@@ -116,8 +117,8 @@ public sealed class JsonContainerRepository : IContainerRepository
     {
         if (!Guid.TryParse(containerId, out var cid)) return null;
 
-        ValidatePaging(pageNumber, pageSize);
-        int offset = pageNumber * pageSize;
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var state = await store.LoadAsync().ConfigureAwait(false);
         var row = state.Containers.FirstOrDefault(c => c.ContainerId == cid);
@@ -297,11 +298,5 @@ public sealed class JsonContainerRepository : IContainerRepository
         }
 
         return dbContainer.ToDomain(photos, relations);
-    }
-
-    private static void ValidatePaging(int pageNumber, int pageSize)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
-        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
     }
 }

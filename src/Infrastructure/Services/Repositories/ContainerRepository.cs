@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Linq.Expressions;
 using CoreApp.Entities.ContainerAggregate;
 using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
@@ -48,8 +47,8 @@ public class ContainerRepository : IContainerRepository
 
     public async Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize)
     {
-        ValidatePaging(pageNumber, pageSize);
-        int offset = CalculateOffset(pageNumber, pageSize);
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         List<DbContainer> dbContainers = await containers.QueryAsync(
             $@"SELECT c.* FROM {nameof(DbContainer)} c
@@ -129,8 +128,8 @@ public class ContainerRepository : IContainerRepository
         DbContainer? dbContainer = await containers.GetAsync(containerId);
         if (dbContainer is null) return null;
 
-        ValidatePaging(pageNumber, pageSize);
-        int offset = CalculateOffset(pageNumber, pageSize);
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var sw = Stopwatch.StartNew();
         IEnumerable<DbImage> dbContainerPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
@@ -219,10 +218,10 @@ public class ContainerRepository : IContainerRepository
     {
         List<DbContainer> dbContainers;
 
-        if (TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
         {
-            ValidatePaging(pageNumberValue, pageSizeValue);
-            int offset = CalculateOffset(pageNumberValue, pageSizeValue);
+            RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
+            int offset = RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue);
             dbContainers = await containers.GetAllAsync(offset, pageSizeValue);
         }
         else
@@ -281,7 +280,7 @@ public class ContainerRepository : IContainerRepository
         if (ownerIds.Count == 0) return [];
 
         List<DbImage> photosList = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), ownerIds);
-        return GroupByKey(photosList, p => p.OwnerUniqueId);
+        return RepositoryQueryHelpers.GroupByKey(photosList, p => p.OwnerUniqueId);
     }
 
     private async Task<Dictionary<Guid, IEnumerable<DbItemContainerRelation>>> LoadRelationsByContainerIdsAsync(List<object> containerIds)
@@ -289,34 +288,7 @@ public class ContainerRepository : IContainerRepository
         if (containerIds.Count == 0) return [];
 
         List<DbItemContainerRelation> relations = await itemContainerRelations.WhereInAsync(nameof(DbItemContainerRelation.ContainerId), containerIds);
-        return GroupByKey(relations, r => r.ContainerId);
-    }
-
-    private static Dictionary<TKey, IEnumerable<T>> GroupByKey<T, TKey>(
-        IEnumerable<T> items,
-        Func<T, TKey> keySelector) where TKey : notnull
-        => items.GroupBy(keySelector).ToDictionary(g => g.Key, g => g.AsEnumerable());
-
-    #endregion
-
-    #region Private Helpers - CRUD
-
-    private async Task DeletePhotosForOwnerAsync(Guid ownerId)
-    {
-        IEnumerable<DbImage> images = await photos.WhereAsync(p => p.OwnerUniqueId == ownerId);
-        foreach (DbImage img in images)
-        {
-            await photos.DeleteAsync(img);
-        }
-    }
-
-    private async Task DeleteRelationsAsync(Expression<Func<DbItemContainerRelation, bool>> predicate)
-    {
-        IEnumerable<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(predicate);
-        foreach (DbItemContainerRelation rel in relations)
-        {
-            await itemContainerRelations.DeleteAsync(rel);
-        }
+        return RepositoryQueryHelpers.GroupByKey(relations, r => r.ContainerId);
     }
 
     #endregion
@@ -334,28 +306,6 @@ public class ContainerRepository : IContainerRepository
 
         return false;
     }
-
-    private static void ValidatePaging(int pageNumber, int pageSize)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
-        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
-    }
-
-    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
-    {
-        if (pageNumber.HasValue && pageSize.HasValue)
-        {
-            pageNumberValue = pageNumber.Value;
-            pageSizeValue = pageSize.Value;
-            return true;
-        }
-
-        pageNumberValue = default;
-        pageSizeValue = default;
-        return false;
-    }
-
-    private static int CalculateOffset(int pageNumber, int pageSize) => pageNumber * pageSize;
 
     #endregion
 }

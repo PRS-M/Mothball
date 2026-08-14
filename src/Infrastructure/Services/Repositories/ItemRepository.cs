@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Linq.Expressions;
 using CoreApp.Entities.ItemAggregate;
 using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
@@ -91,9 +90,9 @@ public class ItemRepository : IItemRepository
 
     public async Task<List<Item>> GetUnassignedWithPhotosAsync(int pageNumber, int pageSize)
     {
-        ValidatePaging(pageNumber, pageSize);
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
 
-        int offset = CalculateOffset(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         // NOTE: no uniqueness constraints are enforced; an item may have multiple relations.
         // This query treats any presence in the relation table as "assigned".
@@ -141,8 +140,8 @@ public class ItemRepository : IItemRepository
             return [];
         }
 
-        ValidatePaging(pageNumber, pageSize);
-        int offset = CalculateOffset(pageNumber, pageSize);
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
         string pattern = $"%{searchTerm}%";
 
         var sw = Stopwatch.StartNew();
@@ -206,10 +205,10 @@ public class ItemRepository : IItemRepository
     {
         List<DbItem> dbItems;
 
-        if (TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
         {
-            ValidatePaging(pageNumberValue, pageSizeValue);
-            int offset = CalculateOffset(pageNumberValue, pageSizeValue);
+            RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
+            int offset = RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue);
             dbItems = await items.GetAllAsync(offset, pageSizeValue);
         }
         else
@@ -251,34 +250,7 @@ public class ItemRepository : IItemRepository
         if (ownerIds.Count == 0) return [];
 
         List<DbImage> photosList = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), ownerIds);
-        return GroupByKey(photosList, p => p.OwnerUniqueId);
-    }
-
-    private static Dictionary<TKey, IEnumerable<T>> GroupByKey<T, TKey>(
-        IEnumerable<T> items,
-        Func<T, TKey> keySelector) where TKey : notnull
-        => items.GroupBy(keySelector).ToDictionary(g => g.Key, g => g.AsEnumerable());
-
-    #endregion
-
-    #region Private Helpers - CRUD
-
-    private async Task DeletePhotosForOwnerAsync(Guid ownerId)
-    {
-        IEnumerable<DbImage> images = await photos.WhereAsync(p => p.OwnerUniqueId == ownerId);
-        foreach (DbImage img in images)
-        {
-            await photos.DeleteAsync(img);
-        }
-    }
-
-    private async Task DeleteRelationsAsync(Expression<Func<DbItemContainerRelation, bool>> predicate)
-    {
-        IEnumerable<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(predicate);
-        foreach (DbItemContainerRelation rel in relations)
-        {
-            await itemContainerRelations.DeleteAsync(rel);
-        }
+        return RepositoryQueryHelpers.GroupByKey(photosList, p => p.OwnerUniqueId);
     }
 
     #endregion
@@ -296,28 +268,6 @@ public class ItemRepository : IItemRepository
 
         return false;
     }
-
-    private static void ValidatePaging(int pageNumber, int pageSize)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
-        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
-    }
-
-    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
-    {
-        if (pageNumber.HasValue && pageSize.HasValue)
-        {
-            pageNumberValue = pageNumber.Value;
-            pageSizeValue = pageSize.Value;
-            return true;
-        }
-
-        pageNumberValue = default;
-        pageSizeValue = default;
-        return false;
-    }
-
-    private static int CalculateOffset(int pageNumber, int pageSize) => pageNumber * pageSize;
 
     #endregion
 }

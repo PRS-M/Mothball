@@ -73,7 +73,7 @@ public class InventoryQueryRepository : IInventoryQueryRepository
                 : containerRepo.SearchAsync(term!);
         }
 
-        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
         {
             return specification.Filter == ContainerQueryFilter.Empty
             ? containerRepo.GetEmptyAsync(pageNumberValue, pageSizeValue)
@@ -96,7 +96,7 @@ public class InventoryQueryRepository : IInventoryQueryRepository
                 : itemRepo.SearchWithPhotosAsync(term!);
         }
 
-        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
         {
             return specification.Filter == ItemQueryFilter.Unassigned
             ? itemRepo.GetUnassignedWithPhotosAsync(pageNumberValue, pageSizeValue)
@@ -112,7 +112,7 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     {
         var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
 
-        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
         {
             if (hasSearch)
             {
@@ -135,19 +135,5 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     {
         var term = searchTerm?.Trim();
         return (term, !string.IsNullOrWhiteSpace(term));
-    }
-
-    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
-    {
-        if (pageNumber.HasValue && pageSize.HasValue)
-        {
-            pageNumberValue = pageNumber.Value;
-            pageSizeValue = pageSize.Value;
-            return true;
-        }
-
-        pageNumberValue = default;
-        pageSizeValue = default;
-        return false;
     }
 }
