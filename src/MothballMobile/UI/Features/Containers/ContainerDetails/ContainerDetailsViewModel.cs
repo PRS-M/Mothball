@@ -144,10 +144,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                 currentContainer?.ContainerId ?? Guid.Empty,
                 paths,
                 nav,
-                inventoryCommands,
                 popup,
                 ContainerId,
-                OnItemQuantitySavedAsync);
+                SaveItemQuantityAsync);
             Items.Add(itemVm);
             Rows.Add(itemVm);
             itemVm.LoadImagesAsync().FireAndForget();
@@ -172,9 +171,34 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
     }
 
-    private Task OnItemQuantitySavedAsync(Guid itemId, int quantity)
+    private async Task SaveItemQuantityAsync(Guid itemId, int quantity)
     {
         var vm = Items.FirstOrDefault(x => x.Item.ItemId == itemId);
+        if (quantity <= 0)
+        {
+            if (currentContainer is not null)
+            {
+                await inventoryCommands.DeleteItemContainerRelation(itemId, currentContainer.ContainerId);
+            }
+
+            if (vm is not null)
+            {
+                Items.Remove(vm);
+                Rows.Remove(vm);
+            }
+
+            currentContainer?.RemoveItem(itemId);
+            TotalItemCount = currentContainer?.ItemCount ?? 0;
+            IsItemListEmpty = Items.Count == 0;
+            OnPropertyChanged(nameof(Items));
+            return;
+        }
+
+        if (currentContainer is not null)
+        {
+            await inventoryCommands.ReplaceItemContainerRelationQuantity(itemId, currentContainer.ContainerId, quantity);
+        }
+
         if (vm is not null && vm.Quantity != quantity)
         {
             vm.Quantity = quantity;
@@ -187,7 +211,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             TotalItemCount = currentContainer.ItemCount;
         }
 
-        return Task.CompletedTask;
+        return;
     }
 
     [RelayCommand]

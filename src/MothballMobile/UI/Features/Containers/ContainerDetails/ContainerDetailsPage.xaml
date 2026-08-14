@@ -102,6 +102,8 @@
                                ShowQuantity="True"
                                ShowEditQuantity="True"
                                EditQuantityCommand="{Binding EditQuantityCommand}"
+                               ShowRemove="True"
+                               RemoveCommand="{Binding RemoveFromContainerCommand}"
                                Description="{Binding Description}"
                                Command="{Binding NavigateToItemDetailsCommand}"
                                ImagePaths="{Binding ImagePaths}"
