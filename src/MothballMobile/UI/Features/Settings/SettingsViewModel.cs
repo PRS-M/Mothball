@@ -3,6 +3,8 @@ using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Shared;
@@ -18,6 +20,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IInventoryBackupZipRestoreService backupZipRestoreService;
     private readonly IFileHandler fileHandler;
     private readonly IShare share;
+    private readonly IFilePicker filePicker;
     private readonly INavigationService nav;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
@@ -30,6 +33,7 @@ public partial class SettingsViewModel : BaseViewModel
         IInventoryBackupZipRestoreService backupZipRestoreService,
         IFileHandler fileHandler,
         IShare share,
+        IFilePicker filePicker,
         INavigationService nav,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
@@ -40,6 +44,7 @@ public partial class SettingsViewModel : BaseViewModel
         this.backupZipRestoreService = backupZipRestoreService;
         this.fileHandler = fileHandler;
         this.share = share;
+        this.filePicker = filePicker;
         this.nav = nav;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
@@ -126,18 +131,40 @@ public partial class SettingsViewModel : BaseViewModel
             try
             {
                 var backupJson = await fileHandler.ReadTextFileAsync(fileName, BackupsFolder);
-                var options = new InventoryBackupRestoreOptions
-                {
-                    ConflictPolicy = policy.Value,
-                };
-
-                var result = await backupRestoreService.RestoreFromJsonAsync(backupJson, options);
-
-                await popup.ShowAlertAsync(popupDefinitions.RestoreCompleted(BuildRestoreSummary(result, policy.Value, fileName)));
+                await RestoreJsonAsync(backupJson, policy.Value, fileName);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to import inventory backup from JSON file {FileName}.", fileName);
+                await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
+            }
+        });
+    }
+
+    [RelayCommand]
+    private async Task ImportJsonFromFileSystemAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            var policy = await SelectRestorePolicyAsync();
+            if (policy is null)
+                return;
+
+            var file = await PickBackupFileAsync("Choose JSON backup", JsonBackupFileType);
+            if (file is null)
+                return;
+
+            try
+            {
+                await using var stream = await file.OpenReadAsync();
+                using var reader = new StreamReader(stream);
+                var backupJson = await reader.ReadToEndAsync();
+
+                await RestoreJsonAsync(backupJson, policy.Value, file.FileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to import inventory backup from external JSON file {FileName}.", file.FileName);
                 await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
             }
         });
@@ -172,18 +199,40 @@ public partial class SettingsViewModel : BaseViewModel
             try
             {
                 var backupZip = await fileHandler.ReadFileAsync(fileName, BackupsFolder);
-                var options = new InventoryBackupRestoreOptions
-                {
-                    ConflictPolicy = policy.Value,
-                };
-
-                var restore = await backupZipRestoreService.RestoreFromZipAsync(backupZip, options);
-
-                await popup.ShowAlertAsync(popupDefinitions.RestoreCompleted(BuildRestoreSummary(restore.Result, policy.Value, fileName, restore.RestoredPhotoFiles)));
+                await RestoreZipAsync(backupZip, policy.Value, fileName);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to import inventory backup from ZIP file {FileName}.", fileName);
+                await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
+            }
+        });
+    }
+
+    [RelayCommand]
+    private async Task ImportZipFromFileSystemAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            var policy = await SelectRestorePolicyAsync();
+            if (policy is null)
+                return;
+
+            var file = await PickBackupFileAsync("Choose ZIP backup", ZipBackupFileType);
+            if (file is null)
+                return;
+
+            try
+            {
+                await using var stream = await file.OpenReadAsync();
+                using var memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+
+                await RestoreZipAsync(memory.ToArray(), policy.Value, file.FileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to import inventory backup from external ZIP file {FileName}.", file.FileName);
                 await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
             }
         });
@@ -271,6 +320,36 @@ public partial class SettingsViewModel : BaseViewModel
     private async Task<InventoryBackupConflictPolicy?> SelectRestorePolicyAsync()
         => await popup.SelectValueOptionAsync(popupDefinitions.RestorePolicyPicker());
 
+    private async Task RestoreJsonAsync(
+        string backupJson,
+        InventoryBackupConflictPolicy policy,
+        string fileName)
+    {
+        var options = new InventoryBackupRestoreOptions
+        {
+            ConflictPolicy = policy,
+        };
+
+        var result = await backupRestoreService.RestoreFromJsonAsync(backupJson, options);
+
+        await popup.ShowAlertAsync(popupDefinitions.RestoreCompleted(BuildRestoreSummary(result, policy, fileName)));
+    }
+
+    private async Task RestoreZipAsync(
+        byte[] backupZip,
+        InventoryBackupConflictPolicy policy,
+        string fileName)
+    {
+        var options = new InventoryBackupRestoreOptions
+        {
+            ConflictPolicy = policy,
+        };
+
+        var restore = await backupZipRestoreService.RestoreFromZipAsync(backupZip, options);
+
+        await popup.ShowAlertAsync(popupDefinitions.RestoreCompleted(BuildRestoreSummary(restore.Result, policy, fileName, restore.RestoredPhotoFiles)));
+    }
+
     private async Task ShareBackupFileAsync(string fileName, string title)
     {
         try
@@ -288,6 +367,31 @@ public partial class SettingsViewModel : BaseViewModel
             await popup.ShowAlertAsync(popupDefinitions.BackupShareFailed(ex.Message));
         }
     }
+
+    private async Task<FileResult?> PickBackupFileAsync(string title, FilePickerFileType fileType)
+        => await filePicker.PickAsync(new PickOptions
+        {
+            PickerTitle = title,
+            FileTypes = fileType,
+        });
+
+    private static FilePickerFileType JsonBackupFileType => new(new Dictionary<DevicePlatform, IEnumerable<string>>
+    {
+        [DevicePlatform.iOS] = ["public.json"],
+        [DevicePlatform.MacCatalyst] = ["public.json"],
+        [DevicePlatform.Android] = ["application/json", "text/json", "text/plain"],
+        [DevicePlatform.WinUI] = [".json"],
+        [DevicePlatform.Tizen] = ["application/json", "text/json", "text/plain"],
+    });
+
+    private static FilePickerFileType ZipBackupFileType => new(new Dictionary<DevicePlatform, IEnumerable<string>>
+    {
+        [DevicePlatform.iOS] = ["public.zip-archive", "com.pkware.zip-archive"],
+        [DevicePlatform.MacCatalyst] = ["public.zip-archive", "com.pkware.zip-archive"],
+        [DevicePlatform.Android] = ["application/zip", "application/x-zip-compressed"],
+        [DevicePlatform.WinUI] = [".zip"],
+        [DevicePlatform.Tizen] = ["application/zip", "application/x-zip-compressed"],
+    });
 
     private async Task<string?> SelectBackupFileAsync()
     {

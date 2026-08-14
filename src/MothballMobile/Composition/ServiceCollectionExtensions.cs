@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Media;
+using Microsoft.Maui.Storage;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Features.Containers.AddContainer;
@@ -117,6 +118,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(FileSystem.Current);
         services.AddSingleton(MediaPicker.Default);
         services.AddSingleton<IShare>(Share.Default);
+        services.AddSingleton<IFilePicker>(FilePicker.Default);
 
         return services;
     }
