@@ -133,6 +133,7 @@ public class BasePage : ContentPage
             MinimumHeightRequest = 50,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.End,
+            IsClippedToBounds = true,
             BackgroundColor = Colors.Transparent
         };
 
