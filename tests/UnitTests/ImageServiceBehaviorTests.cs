@@ -14,6 +14,20 @@ namespace UnitTests;
 [TestFixture]
 public class ImageServiceBehaviorTests
 {
+    private static ImageService CreateService(
+        Mock<ICameraHandler> camera,
+        Mock<IInventoryCommandRepository> repo,
+        Mock<IFileHandler> files)
+    {
+        var photoSourceReader = new PhotoSourceReader(camera.Object);
+        return new ImageService(
+            photoSourceReader,
+            new PhotoFilePersistenceService(files.Object, NullLogger<PhotoFilePersistenceService>.Instance),
+            new TemporaryPhotoService(photoSourceReader, files.Object, NullLogger<TemporaryPhotoService>.Instance),
+            new PhotoDeletionService(repo.Object, files.Object, NullLogger<PhotoDeletionService>.Instance),
+            repo.Object);
+    }
+
     [Test]
     public async Task CaptureContainerPhotoAsync_SavesBytes_AddsImage_AndPersists()
     {
@@ -26,7 +40,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToContainerPhotos, bytes))
              .ReturnsAsync("/fake/path");
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var container = new Container(Guid.NewGuid(), "Box", "notes");
 
         await service.CaptureContainerPhotoAsync(container);
@@ -50,7 +64,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos, bytes))
              .ReturnsAsync("/fake/path");
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var item = new Item("Hat", string.Empty);
 
         await service.CaptureItemPhotoAsync(item, source: PhotoSource.Camera);
@@ -72,7 +86,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToContainerPhotos, bytes))
              .ThrowsAsync(new IOException("disk full"));
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var container = new Container(Guid.NewGuid(), "Box", "notes");
 
         Assert.ThrowsAsync<IOException>(() => service.CaptureContainerPhotoAsync(container));
@@ -93,7 +107,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos, bytes))
              .ReturnsAsync("/fake/path");
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var item = new Item("Hat", string.Empty);
 
         await service.CaptureItemPhotoAsync(item);
@@ -119,7 +133,7 @@ public class ImageServiceBehaviorTests
         repo.Setup(r => r.InsertImageItemAsync(It.IsAny<ImageItem>(), It.IsAny<Guid>()))
             .ThrowsAsync(new InvalidOperationException("db write failed"));
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var container = new Container(Guid.NewGuid(), "Box", "notes");
 
         Assert.ThrowsAsync<InvalidOperationException>(() => service.CaptureContainerPhotoAsync(container));
@@ -143,7 +157,7 @@ public class ImageServiceBehaviorTests
         repo.Setup(r => r.InsertImageItemAsync(It.IsAny<ImageItem>(), It.IsAny<Guid>()))
             .ThrowsAsync(new InvalidOperationException("db write failed"));
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var item = new Item("Hat", string.Empty);
 
         Assert.ThrowsAsync<InvalidOperationException>(() => service.CaptureItemPhotoAsync(item));
@@ -165,7 +179,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToTemporaryPhotos, bytes))
              .ReturnsAsync("/tmp/temp-photo.jpg");
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
 
         var result = await service.CaptureTemporaryPhotoAsync();
 
@@ -187,7 +201,7 @@ public class ImageServiceBehaviorTests
 
         camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(Array.Empty<byte>());
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
 
         var result = await service.CaptureTemporaryPhotoAsync();
 
@@ -201,7 +215,7 @@ public class ImageServiceBehaviorTests
         var camera = new Mock<ICameraHandler>();
         var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
 
         await service.DeleteTemporaryPhotoAsync("   ");
 
@@ -218,7 +232,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.DeleteFileAsync("temp.jpg", Constants.PathToTemporaryPhotos))
             .ThrowsAsync(new FileNotFoundException());
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
 
         Assert.DoesNotThrowAsync(async () => await service.DeleteTemporaryPhotoAsync("temp.jpg"));
         files.Verify(f => f.DeleteFileAsync("temp.jpg", Constants.PathToTemporaryPhotos), Times.Once);
@@ -234,7 +248,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.DeleteFileAsync("temp.jpg", Constants.PathToTemporaryPhotos))
             .Returns(Task.CompletedTask);
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
 
         await service.DeleteTemporaryPhotoAsync("temp.jpg");
 
@@ -250,7 +264,7 @@ public class ImageServiceBehaviorTests
 
         camera.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(Array.Empty<byte>());
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var item = new Item("Hat", string.Empty);
 
         var saved = await service.CaptureItemPhotoAsync(item);
@@ -273,7 +287,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToContainerPhotos, bytes))
              .ReturnsAsync("/fake/path");
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var container = new Container(Guid.NewGuid(), "Box", "N");
 
         await service.SaveContainerPhotoAsync(container, bytes);
@@ -300,7 +314,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.DeleteFileAsync(It.IsAny<string>(), Constants.PathToContainerPhotos))
             .ThrowsAsync(new IOException("cleanup failed"));
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var container = new Container(Guid.NewGuid(), "Box", "N");
 
         var ex = Assert.ThrowsAsync<InvalidOperationException>(async () => await service.SaveContainerPhotoAsync(container, bytes));
@@ -322,7 +336,7 @@ public class ImageServiceBehaviorTests
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToItemPhotos, bytes))
              .ReturnsAsync("/fake/path");
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var item = new Item("Lamp", string.Empty);
 
         await service.SaveItemPhotoAsync(item, bytes);
@@ -341,7 +355,7 @@ public class ImageServiceBehaviorTests
         var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var container = new Container(Guid.NewGuid(), "Box", "N");
         var image = container.AddImageItem();
 
@@ -361,7 +375,7 @@ public class ImageServiceBehaviorTests
         var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var container = new Container(Guid.NewGuid(), "Box", "N");
 
         var deleted = await service.DeleteContainerPhotoAsync(container, Guid.NewGuid());
@@ -379,7 +393,7 @@ public class ImageServiceBehaviorTests
         var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var container = new Container(Guid.NewGuid(), "Box", "N");
         var image = container.AddImageItem();
 
@@ -403,7 +417,7 @@ public class ImageServiceBehaviorTests
         var repo = new Mock<IInventoryCommandRepository>();
         var files = new Mock<IFileHandler>();
 
-        var service = new ImageService(camera.Object, repo.Object, files.Object, NullLogger<ImageService>.Instance);
+        var service = CreateService(camera, repo, files);
         var item = new Item("Lamp", string.Empty);
         var image = item.AddImageItem();
 

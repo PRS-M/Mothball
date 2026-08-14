@@ -3,8 +3,6 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
-using Microsoft.Extensions.Logging;
-
 namespace CoreApp.Services;
 
 /// <summary>
@@ -20,32 +18,6 @@ public class ImageService
     private readonly ITemporaryPhotoService temporaryPhotos;
     private readonly IPhotoDeletionService photoDeletion;
     private readonly IInventoryCommandRepository inventoryRepository;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ImageService"/> class.
-    /// </summary>
-    /// <param name="cameraHandler">Service used to capture photos from the device camera.</param>
-    /// <param name="inventoryRepository">Domain repository for inserting and updating image-related data.</param>
-    /// <param name="fileHandler">Service used to persist captured photos to storage.</param>
-    public ImageService(
-        ICameraHandler cameraHandler,
-        IInventoryCommandRepository inventoryRepository,
-        IFileHandler fileHandler,
-        ILogger<ImageService> logger)
-        : this(
-            new PhotoSourceReader(cameraHandler),
-            new PhotoFilePersistenceService(fileHandler, new ImageServiceLoggerAdapter<PhotoFilePersistenceService>(logger)),
-            new TemporaryPhotoService(
-                new PhotoSourceReader(cameraHandler),
-                fileHandler,
-                new ImageServiceLoggerAdapter<TemporaryPhotoService>(logger)),
-            new PhotoDeletionService(
-                inventoryRepository,
-                fileHandler,
-                new ImageServiceLoggerAdapter<PhotoDeletionService>(logger)),
-            inventoryRepository)
-    {
-    }
 
     public ImageService(
         IPhotoSourceReader photoSourceReader,
@@ -227,28 +199,4 @@ public class ImageService
             removeImageItem,
             saveDirectory,
             persistAsync);
-
-    private sealed class ImageServiceLoggerAdapter<T> : ILogger<T>
-    {
-        private readonly ILogger<ImageService> logger;
-
-        public ImageServiceLoggerAdapter(ILogger<ImageService> logger)
-        {
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
-            => logger.BeginScope(state);
-
-        public bool IsEnabled(LogLevel logLevel)
-            => logger.IsEnabled(logLevel);
-
-        public void Log<TState>(
-            LogLevel logLevel,
-            EventId eventId,
-            TState state,
-            Exception? exception,
-            Func<TState, Exception?, string> formatter)
-            => logger.Log(logLevel, eventId, state, exception, formatter);
-    }
 }

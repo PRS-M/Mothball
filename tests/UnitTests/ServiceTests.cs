@@ -11,11 +11,15 @@ public class ServiceTests
     [Test]
     public async Task ImageService_CaptureContainerPhotoAsync_ThrowsOnNull()
     {
-        var cameraMock = new Mock<ICameraHandler>();
         var repoMock = new Mock<IInventoryCommandRepository>();
-        var fileHandlerMock = new Mock<IFileHandler>();
-        cameraMock.Setup(c => c.SelectPhotoAsync()).ReturnsAsync(Array.Empty<byte>());
-        var service = new ImageService(cameraMock.Object, repoMock.Object, fileHandlerMock.Object, NullLogger<ImageService>.Instance);
+
+        var service = new ImageService(
+            Mock.Of<IPhotoSourceReader>(),
+            Mock.Of<IPhotoFilePersistenceService>(),
+            Mock.Of<ITemporaryPhotoService>(),
+            Mock.Of<IPhotoDeletionService>(),
+            repoMock.Object);
+
         Assert.ThrowsAsync<ArgumentNullException>(() => service.CaptureContainerPhotoAsync(null!));
     }
 
