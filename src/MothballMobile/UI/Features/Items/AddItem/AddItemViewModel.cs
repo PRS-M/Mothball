@@ -23,6 +23,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private string containerId = string.Empty;
 
+    public bool IsAddingToContainer => Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty;
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private string name = string.Empty;
@@ -65,6 +67,11 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         {
             ContainerId = id;
         }
+    }
+
+    partial void OnContainerIdChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsAddingToContainer));
     }
 
     public bool HasTemporaryPhoto => !string.IsNullOrWhiteSpace(PhotoThumbnailPath);
@@ -152,7 +159,10 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             return;
         }
 
-        if (!int.TryParse(Quantity?.Trim(), out var parsedQuantity) || parsedQuantity <= 0)
+        var isAddingToContainer = IsAddingToContainer;
+        var parsedQuantity = 1;
+        if (isAddingToContainer &&
+            (!int.TryParse(Quantity?.Trim(), out parsedQuantity) || parsedQuantity <= 0))
         {
             ValidationMessage = "Quantity must be a positive number.";
             return;
@@ -172,7 +182,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                     await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
                 }
 
-                if (Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
+                if (isAddingToContainer && Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
                 {
                     await inventoryCommands.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
                 }
