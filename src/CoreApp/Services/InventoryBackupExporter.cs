@@ -1,3 +1,5 @@
+using System.IO.Compression;
+using System.Text;
 using System.Text.Json;
 using CoreApp.Contracts;
 using CoreApp.Interfaces;
@@ -8,7 +10,10 @@ namespace CoreApp.Services;
 
 public sealed class InventoryBackupExporter : IInventoryBackupExporter
 {
+    private const string BackupJsonEntryName = "backup.json";
+
     private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IFileHandler fileHandler;
 
     private static readonly JsonSerializerOptions BackupJsonOptions = new()
     {
@@ -16,9 +21,12 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
         WriteIndented = false,
     };
 
-    public InventoryBackupExporter(IInventoryQueryRepository inventoryQueries)
+    public InventoryBackupExporter(
+        IInventoryQueryRepository inventoryQueries,
+        IFileHandler fileHandler)
     {
-        this.inventoryQueries = inventoryQueries;
+        this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
+        this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
     public async Task<InventoryBackupEnvelope> ExportAsync(CancellationToken cancellationToken = default)
@@ -107,6 +115,89 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
     public async Task<string> ExportAsJsonAsync(CancellationToken cancellationToken = default)
     {
         var backup = await ExportAsync(cancellationToken).ConfigureAwait(false);
-        return JsonSerializer.Serialize(backup, BackupJsonOptions);
+        return SerializeBackup(backup);
     }
+
+    public async Task<byte[]> ExportAsZipAsync(CancellationToken cancellationToken = default)
+    {
+        var backup = await ExportAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var zipStream = new MemoryStream();
+        using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            await WriteJsonEntryAsync(archive, backup, cancellationToken).ConfigureAwait(false);
+            await WritePhotoEntriesAsync(archive, backup.Data.Images, cancellationToken).ConfigureAwait(false);
+        }
+
+        return zipStream.ToArray();
+    }
+
+    private static string SerializeBackup(InventoryBackupEnvelope backup)
+        => JsonSerializer.Serialize(backup, BackupJsonOptions);
+
+    private static async Task WriteJsonEntryAsync(
+        ZipArchive archive,
+        InventoryBackupEnvelope backup,
+        CancellationToken cancellationToken)
+    {
+        var entry = archive.CreateEntry(BackupJsonEntryName, CompressionLevel.Optimal);
+        await using var stream = entry.Open();
+        await using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        await writer.WriteAsync(SerializeBackup(backup).AsMemory(), cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task WritePhotoEntriesAsync(
+        ZipArchive archive,
+        IEnumerable<InventoryBackupImageRef> images,
+        CancellationToken cancellationToken)
+    {
+        var addedEntries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var image in images)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var fileName = Path.GetFileName(image.FileName);
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                continue;
+            }
+
+            var entryPath = GetPhotoEntryPath(image.OwnerType, fileName);
+            if (!addedEntries.Add(entryPath))
+            {
+                continue;
+            }
+
+            byte[] bytes;
+            try
+            {
+                bytes = await fileHandler
+                    .ReadFileAsync(fileName, GetPhotoFolder(image.OwnerType))
+                    .ConfigureAwait(false);
+            }
+            catch (FileNotFoundException)
+            {
+                continue;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                continue;
+            }
+
+            var entry = archive.CreateEntry(entryPath, CompressionLevel.Optimal);
+            await using var stream = entry.Open();
+            await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static string GetPhotoFolder(InventoryBackupOwnerType ownerType)
+        => ownerType == InventoryBackupOwnerType.Container
+            ? Constants.PathToContainerPhotos
+            : Constants.PathToItemPhotos;
+
+    private static string GetPhotoEntryPath(InventoryBackupOwnerType ownerType, string fileName)
+        => ownerType == InventoryBackupOwnerType.Container
+            ? $"images/containers/{fileName}"
+            : $"images/items/{fileName}";
 }

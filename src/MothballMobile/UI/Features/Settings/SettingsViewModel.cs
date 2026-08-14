@@ -68,6 +68,27 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task ExportToZipAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            try
+            {
+                var backupZip = await backupExporter.ExportAsZipAsync();
+                var fileName = BuildBackupZipFileName();
+                var fullPath = await fileHandler.SaveFileAsync(fileName, BackupsFolder, backupZip);
+
+                await popup.ShowAlertAsync(popupDefinitions.BackupExported(fullPath));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to export inventory backup to ZIP.");
+                await popup.ShowAlertAsync(popupDefinitions.BackupExportFailed(ex.Message));
+            }
+        });
+    }
+
+    [RelayCommand]
     private async Task ImportFromJsonAsync()
     {
         await RunCommandAsync(async () =>
@@ -131,6 +152,12 @@ public partial class SettingsViewModel : BaseViewModel
     {
         var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
         return $"mothball-backup-{stamp}Z.json";
+    }
+
+    private static string BuildBackupZipFileName()
+    {
+        var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
+        return $"mothball-backup-{stamp}Z.zip";
     }
 
     private async Task<InventoryBackupConflictPolicy?> SelectRestorePolicyAsync()

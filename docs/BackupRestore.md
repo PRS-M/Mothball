@@ -34,6 +34,7 @@ Exporter behavior:
 - Includes containers, items, item-container relations, and image references.
 - Emits a versioned envelope (`PayloadVersion`, `SchemaVersion`, `CreatedUtc`, `Source`).
 - Computes and attaches integrity checksum metadata.
+- Can emit either raw JSON or a ZIP archive containing the JSON payload plus photo files.
 
 Resulting payload shape:
 
@@ -42,6 +43,16 @@ Resulting payload shape:
 - `data.items`
 - `data.relations`
 - `data.images`
+
+ZIP archive layout:
+
+- `backup.json`: the same JSON envelope produced by the JSON export path.
+- `images/items/{imageId}.jpg`: item photo files that exist in app storage.
+- `images/containers/{imageId}.jpg`: container photo files that exist in app storage.
+
+Missing photo files are skipped so a backup can still be created when metadata references a file that is no longer present.
+
+Current restore support imports the JSON envelope. Restoring photo file bytes from ZIP archives should be handled as a follow-up restore-path enhancement.
 
 ## Restore Implementations
 

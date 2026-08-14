@@ -28,7 +28,7 @@
                            Style="{StaticResource HeadlineSmall}"
                            TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
 
-                    <Label Text="Export a full inventory backup to a local JSON file."
+                    <Label Text="Export inventory metadata as JSON, or create a ZIP backup that also includes photo files."
                            Style="{StaticResource BodyMedium}"
                            TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
 
@@ -40,6 +40,10 @@
                     <Button Text="Export to JSON"
                             Command="{Binding ExportToJsonCommand}"
                             SemanticProperties.Hint="Create a local backup JSON file with full inventory data" />
+
+                    <Button Text="Export with photos"
+                            Command="{Binding ExportToZipCommand}"
+                            SemanticProperties.Hint="Create a local ZIP backup with inventory data and photo files" />
 
                     <Button Text="Import from JSON"
                             Command="{Binding ImportFromJsonCommand}"
