@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
-using CoreApp.Specifications;
 using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure;
@@ -18,7 +17,7 @@ public enum ItemsListFilter
 public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewModel>, IDisposable
 {
     private readonly IImagePathResolver paths;
-    private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IItemsListQueryHandler itemListQueries;
     private readonly INavigationService nav;
     private readonly IDebouncer debouncer;
     private readonly IBackgroundTaskObserver backgroundTasks;
@@ -48,14 +47,14 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
 
     public ItemsListViewModel(
         IImagePathResolver paths,
-        IInventoryQueryRepository inventoryQueries,
+        IItemsListQueryHandler itemListQueries,
         INavigationService nav,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
     {
         this.paths = paths;
-        this.inventoryQueries = inventoryQueries;
+        this.itemListQueries = itemListQueries;
         this.nav = nav;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
@@ -140,10 +139,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         }
         else
         {
-            var items = await inventoryQueries.QueryItemsWithPhotosAsync(
-                new ItemListSpecification(
-                    Filter: ToQueryFilter(SelectedFilter),
-                    SearchTerm: query));
+            var items = await itemListQueries.QueryAsync(IsUnassignedFilterSelected(), query);
 
             ReplaceWithFullResultSet(items);
         }
@@ -160,13 +156,9 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryQueries.QueryItemsWithPhotosAsync(
-            new ItemListSpecification(
-                Filter: ToQueryFilter(SelectedFilter),
-                PageNumber: pageNumber,
-                PageSize: pageSize));
+        => itemListQueries.QueryAsync(IsUnassignedFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);
 
-    private static ItemQueryFilter ToQueryFilter(ItemsListFilter filter)
-        => filter == ItemsListFilter.Unassigned ? ItemQueryFilter.Unassigned : ItemQueryFilter.All;
+    private bool IsUnassignedFilterSelected()
+        => SelectedFilter == ItemsListFilter.Unassigned;
 
 }

@@ -11,8 +11,6 @@
                SearchCommand="{Binding Source={x:Reference this}, Path=SearchCommand}"
                Background="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}"
                Margin="0,1"
-               HeightRequest="24"
-               MinimumHeightRequest="20"
                FontSize="12"
                TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
                PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"

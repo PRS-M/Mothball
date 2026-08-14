@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,7 @@ namespace MothballMobile.UI.Features.Items.AddItem;
 public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly ImageService imageService;
-    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly ICreateItemCommandHandler createItem;
     private readonly Infrastructure.INavigationService nav;
     private readonly ILogger<AddItemViewModel> logger;
     private readonly IPopupService popup;
@@ -46,14 +45,14 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
     public AddItemViewModel(
         ImageService imageService,
-        IInventoryCommandRepository inventoryCommands,
+        ICreateItemCommandHandler createItem,
         Infrastructure.INavigationService nav,
         ILogger<AddItemViewModel> logger,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
-        this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
+        this.createItem = createItem ?? throw new ArgumentNullException(nameof(createItem));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
@@ -172,19 +171,20 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         {
             try
             {
-                var item = new Item(trimmed, Description?.Trim() ?? string.Empty);
+                Guid? cid = isAddingToContainer && Guid.TryParse(ContainerId, out var parsedContainerId) && parsedContainerId != Guid.Empty
+                    ? parsedContainerId
+                    : null;
 
-                await inventoryCommands.InsertItemAsync(item);
+                await createItem.CreateAsync(
+                    trimmed,
+                    Description?.Trim() ?? string.Empty,
+                    cid,
+                    parsedQuantity,
+                    pendingPhoto?.Bytes);
 
                 if (pendingPhoto is not null)
                 {
-                    await imageService.SaveItemPhotoAsync(item, pendingPhoto.Bytes);
                     await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
-                }
-
-                if (isAddingToContainer && Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
-                {
-                    await inventoryCommands.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
                 }
 
                 pendingPhoto = null;

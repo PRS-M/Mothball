@@ -1,10 +1,19 @@
 ﻿using MothballMobile.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+#if IOS || ANDROID
+using Plugin.AdMob.Services;
+#endif
 
 namespace MothballMobile;
 
 public partial class App : Application
 {
+#if IOS
+	private const string AppOpenTestAdUnitId = "ca-app-pub-3940256099942544/5575463023";
+#elif ANDROID
+	private const string AppOpenTestAdUnitId = "ca-app-pub-3940256099942544/9257395921";
+#endif
 	private readonly IAppStartupOrchestrator startupOrchestrator;
 	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 	private readonly ILogger<App> logger;
@@ -35,6 +44,7 @@ public partial class App : Application
 		try
 		{
 			await startupOrchestrator.StartAsync();
+			await ShowStartupAdAsync();
 			window.Page = new AppShell(photoBackgroundOperationTracker, appShellLogger);
 		}
 		catch (Exception ex)
@@ -42,6 +52,48 @@ public partial class App : Application
 			logger.LogError(ex, "Application startup failed.");
 			window.Page = CreateStartupErrorPage(window, ex.Message);
 		}
+	}
+
+	private async Task ShowStartupAdAsync()
+	{
+#if IOS || ANDROID
+		var appOpenAdService = IPlatformApplication.Current?.Services.GetService<IAppOpenAdService>();
+		if (appOpenAdService is null)
+		{
+			return;
+		}
+
+		if (appOpenAdService.IsAdLoaded)
+		{
+			appOpenAdService.ShowAd();
+			return;
+		}
+
+		var adLoaded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		void OnAdLoaded(object? sender, EventArgs args) => adLoaded.TrySetResult(true);
+
+		appOpenAdService.OnAdLoaded += OnAdLoaded;
+		try
+		{
+			appOpenAdService.PrepareAd(AppOpenTestAdUnitId);
+			await Task.WhenAny(adLoaded.Task, Task.Delay(TimeSpan.FromSeconds(5)));
+
+			if (appOpenAdService.IsAdLoaded)
+			{
+				appOpenAdService.ShowAd();
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.LogWarning(ex, "Startup app-open ad failed.");
+		}
+		finally
+		{
+			appOpenAdService.OnAdLoaded -= OnAdLoaded;
+		}
+#else
+		await Task.CompletedTask;
+#endif
 	}
 
 	private static Page CreateStartupErrorPage(Window window, string message)

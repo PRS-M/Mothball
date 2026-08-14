@@ -3,6 +3,12 @@
 Mothball is a .NET MAUI inventory app focused on organizing household or workshop storage.
 You can manage containers and items, track quantities, attach photos, and keep your data portable with backup/restore.
 
+<p align="center">
+  <video src="docs/MothballOverview_iPhone%2016%20Pro%20-%202026-08-14.mp4" controls width="360">
+    <a href="docs/MothballOverview_iPhone%2016%20Pro%20-%202026-08-14.mp4">Overview video</a>
+  </video>
+</p>
+
 ## What the app does
 
 - Organize things into containers and items.
@@ -53,6 +59,8 @@ You can manage containers and items, track quantities, attach photos, and keep y
 
 ## Documentation index
 
+- [Overview video](<docs/MothballOverview_iPhone 16 Pro - 2026-08-14.mp4>)
+  - Shows the app running on an iPhone 16 Pro simulator.
 - [Backup and Restore](docs/BackupRestore.md)
   - Explains export format, restore strategies, conflict policies, integrity checks, and usage examples.
 - [Debouncer](docs/Debouncer.md)

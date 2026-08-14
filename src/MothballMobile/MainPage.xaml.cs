@@ -1,6 +1,8 @@
-﻿namespace MothballMobile;
+﻿using MothballMobile.UI.Shared;
 
-public partial class MainPage : ContentPage
+namespace MothballMobile;
+
+public partial class MainPage : BasePage
 {
 	public MainPage()
 	{

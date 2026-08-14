@@ -11,8 +11,8 @@ namespace MothballMobile.UI.Features.Items.ItemDetails;
 
 public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable
 {
-    private readonly IInventoryQueryRepository inventoryQueries;
-    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IItemDetailsQueryHandler itemDetailsQueries;
+    private readonly IDeleteItemCommandHandler deleteItemHandler;
     private readonly INavigationService nav;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private Item? currentItem;
@@ -39,8 +39,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public ObservableCollection<string> ImagePaths { get; } = new();
 
     public ItemDetailsViewModel(
-        IInventoryQueryRepository inventoryQueries,
-        IInventoryCommandRepository inventoryCommands,
+        IItemDetailsQueryHandler itemDetailsQueries,
+        IDeleteItemCommandHandler deleteItemHandler,
         INavigationService nav,
         IImagePathResolver paths,
         IPopupService popup,
@@ -50,8 +50,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IBackgroundTaskObserver backgroundTasks)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
-        this.inventoryQueries = inventoryQueries;
-        this.inventoryCommands = inventoryCommands;
+        this.itemDetailsQueries = itemDetailsQueries;
+        this.deleteItemHandler = deleteItemHandler;
         this.nav = nav;
         this.backgroundTasks = backgroundTasks;
     }
@@ -94,8 +94,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             ContainerId = null;
             NotifyContainerRelationStateChanged();
 
-            var item = await inventoryQueries.GetItemWithPhotosAsync(itemId);
-            if (item is null)
+            var details = await itemDetailsQueries.GetDetailsAsync(itemId);
+            if (details is null)
             {
                 Name = "Item not found";
                 Description = string.Empty;
@@ -103,15 +103,14 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 return;
             }
 
+            var item = details.Item;
             currentItem = item;
             Name = item.Name;
             Description = item.Description;
 
             ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(item));
 
-            // Use repository to find related container, if any
-            var container = await inventoryQueries.GetContainerForItemAsync(item.ItemId.ToString());
-            ContainerId = container?.ContainerId.ToString();
+            ContainerId = details.ContainerId?.ToString();
             NotifyContainerRelationStateChanged();
         });
     }
@@ -148,7 +147,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteItem());
         if (!confirmed) return;
 
-        await inventoryCommands.DeleteItemAsync(ItemId);
+        await deleteItemHandler.DeleteAsync(ItemId);
         await nav.GoBackAsync();
     }
 

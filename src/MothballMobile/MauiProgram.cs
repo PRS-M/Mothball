@@ -3,6 +3,10 @@ using Microsoft.Extensions.Configuration;
 using MothballMobile.Composition;
 using MothballMobile.Infrastructure;
 using Microsoft.Maui.Handlers;
+#if IOS || ANDROID
+using Plugin.AdMob;
+using Plugin.AdMob.Configuration;
+#endif
 
 #if IOS || MACCATALYST
 using UIKit;
@@ -29,9 +33,11 @@ public static class MauiProgram
 						: backendOverride
 			});
 
-		builder
-			.UseMauiApp<App>()
-			.ConfigureFonts(fonts =>
+		builder.UseMauiApp<App>();
+#if IOS || ANDROID
+		builder.UseAdMob();
+#endif
+		builder.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
@@ -41,6 +47,10 @@ public static class MauiProgram
 			});
 #if MAUI_DEVFLOW
 		builder.AddMauiDevFlowAgent();
+#endif
+#if IOS || ANDROID
+		AdConfig.UseTestAdUnitIds = true;
+		AdConfig.DisableConsentCheck = true;
 #endif
 #if DEBUG
 		builder.Logging.AddDebug();

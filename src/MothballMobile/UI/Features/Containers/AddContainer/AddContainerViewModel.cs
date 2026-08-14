@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using MothballMobile.Infrastructure;
@@ -12,7 +11,7 @@ namespace MothballMobile.UI.Features.Containers.AddContainer;
 public partial class AddContainerViewModel : BaseViewModel
 {
     private readonly ImageService imageService;
-    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly ICreateContainerCommandHandler createContainer;
     private readonly INavigationService navigationService;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
@@ -20,13 +19,13 @@ public partial class AddContainerViewModel : BaseViewModel
 
     public AddContainerViewModel(
         ImageService imageService,
-        IInventoryCommandRepository inventoryCommands,
+        ICreateContainerCommandHandler createContainer,
         INavigationService navigationService,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
-        this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
+        this.createContainer = createContainer ?? throw new ArgumentNullException(nameof(createContainer));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
@@ -135,17 +134,13 @@ public partial class AddContainerViewModel : BaseViewModel
 
         await RunCommandAsync(async () =>
         {
-            var container = new Container(
-                containerId: Guid.NewGuid(),
-                name: trimmedName,
-                notes: string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim()
-            );
-
-            await inventoryCommands.InsertContainerAsync(container);
+            await createContainer.CreateAsync(
+                trimmedName,
+                string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim(),
+                pendingPhoto?.Bytes);
 
             if (pendingPhoto is not null)
             {
-                await imageService.SaveContainerPhotoAsync(container, pendingPhoto.Bytes);
                 await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
             }
 
