@@ -46,7 +46,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private const int PageSize = 5;
     private int currentPage = 0;
     private bool hasMoreItems = true;
-    private bool isSearchActive = false;
+    private int itemLoadVersion = 0;
+    private string? activeSearchTerm;
 
     public ContainerDetailsViewModel(
         IInventoryQueryRepository inventoryQueries,
@@ -95,7 +96,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         ContainerId = containerId;
         currentPage = 0;
         hasMoreItems = true;
-        isSearchActive = false;
         SearchQuery = string.Empty;
 
         Items.Clear();
@@ -127,17 +127,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         // Load container photos (all, as a small carousel)
         ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
 
-        var items = await inventoryQueries.QueryContainerItemsWithPhotosAsync(
-            new ContainerItemsSpecification(
-                ContainerId: containerId,
-                PageNumber: currentPage,
-                PageSize: PageSize));
-
-        // Map items and load their images (carousel per item)
-        AddItemsToCollectionAsync(items, clearExisting: false);
-
-        // Check if we have more items to load
-        hasMoreItems = items.Count == PageSize;
+        await ReloadItemsAsync(searchTerm: null);
     }
 
     private void AddItemsToCollectionAsync(List<Item> items, bool clearExisting = false)
@@ -212,13 +202,19 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             // Guard against attempting to load when no more items exist
             if (!hasMoreItems || string.IsNullOrWhiteSpace(ContainerId)) return;
 
+            var loadVersion = itemLoadVersion;
             currentPage++;
             var items = await inventoryQueries.QueryContainerItemsWithPhotosAsync(
                 new ContainerItemsSpecification(
                     ContainerId: ContainerId,
-                    SearchTerm: isSearchActive ? SearchQuery : null,
+                    SearchTerm: activeSearchTerm,
                     PageNumber: currentPage,
                     PageSize: PageSize));
+
+            if (loadVersion != itemLoadVersion)
+            {
+                return;
+            }
 
             // Only add items if we got any
             if (items.Count > 0)
@@ -236,27 +232,35 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return;
 
-        currentPage = 0;
+        var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
+        await ReloadItemsAsync(searchTerm);
+    }
 
-        if (string.IsNullOrWhiteSpace(SearchQuery))
+    private async Task ReloadItemsAsync(string? searchTerm)
+    {
+        var loadVersion = ++itemLoadVersion;
+
+        currentPage = 0;
+        hasMoreItems = false;
+        activeSearchTerm = searchTerm;
+        Items.Clear();
+        ClearItemRows();
+        IsItemListEmpty = false;
+
+        var results = await inventoryQueries.QueryContainerItemsWithPhotosAsync(
+            new ContainerItemsSpecification(
+                ContainerId: ContainerId,
+                SearchTerm: searchTerm,
+                PageNumber: currentPage,
+                PageSize: PageSize));
+
+        if (loadVersion != itemLoadVersion)
         {
-            // Clear search - reload all items from beginning
-            isSearchActive = false;
-            await InitializeAsync(ContainerId);
+            return;
         }
-        else
-        {
-            // Perform search
-            isSearchActive = true;
-            var searchResults = await inventoryQueries.QueryContainerItemsWithPhotosAsync(
-                new ContainerItemsSpecification(
-                    ContainerId: ContainerId,
-                    SearchTerm: SearchQuery,
-                    PageNumber: currentPage,
-                    PageSize: PageSize));
-            AddItemsToCollectionAsync(searchResults, clearExisting: true);
-            hasMoreItems = searchResults.Count == PageSize;
-        }
+
+        AddItemsToCollectionAsync(results, clearExisting: false);
+        hasMoreItems = results.Count == PageSize;
     }
 
     [RelayCommand]
