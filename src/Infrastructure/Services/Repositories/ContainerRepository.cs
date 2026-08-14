@@ -191,11 +191,15 @@ public class ContainerRepository : IContainerRepository
         {
             RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
             int offset = RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue);
-            dbContainers = await containers.GetAllAsync(offset, pageSizeValue);
+            dbContainers = await containers.QueryAsync(
+                $"SELECT * FROM {nameof(DbContainer)} ORDER BY rowid LIMIT ? OFFSET ?",
+                pageSizeValue,
+                offset);
         }
         else
         {
-            dbContainers = await containers.GetAllAsync();
+            dbContainers = await containers.QueryAsync(
+                $"SELECT * FROM {nameof(DbContainer)} ORDER BY rowid");
         }
 
         return await MapContainersWithPhotosAndRelationsAsync(dbContainers);

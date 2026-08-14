@@ -103,7 +103,8 @@ public class ItemRepository : IItemRepository
 
         var sw = Stopwatch.StartNew();
         IEnumerable<DbItemContainerRelation> relations = (await itemContainerRelations.WhereAsync(r => r.ContainerId == cid))
-            .Where(r => r.Quantity > 0);
+            .Where(r => r.Quantity > 0)
+            .OrderBy(r => r.Id);
         if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
         {
             relations = relations
@@ -148,7 +149,7 @@ public class ItemRepository : IItemRepository
     {
         string pattern = $"%{searchTerm}%";
         List<DbItem> itemsQuery = await items.QueryAsync(
-            $"SELECT * FROM {nameof(DbItem)} WHERE Name LIKE ? COLLATE NOCASE",
+            $"SELECT * FROM {nameof(DbItem)} WHERE Name LIKE ? COLLATE NOCASE ORDER BY rowid",
             pattern);
 
         logger.LogDebug("SearchWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
@@ -188,6 +189,7 @@ public class ItemRepository : IItemRepository
             $@"SELECT i.* FROM {nameof(DbItem)} i
                INNER JOIN {nameof(DbItemContainerRelation)} r ON i.ItemId = r.ItemId
                WHERE r.ContainerId = ? AND i.Name LIKE ? COLLATE NOCASE
+               ORDER BY r.Id
                LIMIT ? OFFSET ?",
             cid, pattern, pageSize, offset);
 
@@ -246,11 +248,15 @@ public class ItemRepository : IItemRepository
         {
             RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
             int offset = RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue);
-            dbItems = await items.GetAllAsync(offset, pageSizeValue);
+            dbItems = await items.QueryAsync(
+                $"SELECT * FROM {nameof(DbItem)} ORDER BY rowid LIMIT ? OFFSET ?",
+                pageSizeValue,
+                offset);
         }
         else
         {
-            dbItems = await items.GetAllAsync();
+            dbItems = await items.QueryAsync(
+                $"SELECT * FROM {nameof(DbItem)} ORDER BY rowid");
         }
 
         return await MapItemsWithPhotosAsync(dbItems);

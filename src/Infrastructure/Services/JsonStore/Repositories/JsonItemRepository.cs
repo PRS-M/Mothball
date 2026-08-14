@@ -176,7 +176,7 @@ public sealed class JsonItemRepository : IItemRepository
 
         var state = await store.LoadAsync().ConfigureAwait(false);
 
-        // Match current SQLite join behavior: duplicates are possible if there are duplicate relations.
+        // Container-item search is relation-row based: duplicate relations intentionally produce duplicate item rows.
         var matches = state.Relations
             .Where(r => r.ContainerId == cid)
             .OrderBy(r => r.Id)
