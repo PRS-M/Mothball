@@ -1,4 +1,5 @@
 using CoreApp.Contracts;
+using Microsoft.Extensions.Logging;
 
 namespace CoreApp.Utilities;
 
@@ -26,9 +27,10 @@ public static class InventoryBackupRestorePlanner
 
     public static void ValidateIntegrity(
         InventoryBackupEnvelope backup,
-        InventoryBackupRestoreOptions options)
+        InventoryBackupRestoreOptions options,
+        ILogger? logger = null)
     {
-        InventoryBackupPayloadIntegrity.ValidateIntegrity(backup, options);
+        InventoryBackupPayloadIntegrity.ValidateIntegrity(backup, options, logger);
     }
 
     public static InventoryBackupRestorePlan BuildPlan(

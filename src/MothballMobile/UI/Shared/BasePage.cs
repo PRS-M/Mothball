@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
+using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure;
-using System.Diagnostics;
 
 namespace MothballMobile.UI.Shared;
 
@@ -48,7 +48,8 @@ public class BasePage : ContentPage
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Initialization failed for {GetType().Name}: {ex}");
+                MauiLogger.For(GetType(), this)
+                    ?.LogError(ex, "Page initialization failed for {PageType}.", GetType().Name);
             }
             finally
             {

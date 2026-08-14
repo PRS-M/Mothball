@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
 using Microsoft.Extensions.Logging;
@@ -154,7 +153,6 @@ public class CameraHandler : ICameraHandler
                 {
                     // Guard the thumbnail pipeline; any SkiaSharp issue should fall back to original image bytes.
                     logger.LogWarning(ex, "SkiaSharp thumbnail generation failed; falling back to original image bytes.");
-                    Debug.WriteLine($"SkiaSharp thumbnail generation failed: {ex}");
                     return null;
                 }
             });

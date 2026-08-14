@@ -1,11 +1,16 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Extensions.Logging;
 
 namespace MothballMobile;
 
 public partial class AppShell : Shell
 {
-	public AppShell(Infrastructure.IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
+	private readonly ILogger<AppShell> logger;
+
+	public AppShell(
+		Infrastructure.IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+		ILogger<AppShell> logger)
 	{
+		this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		InitializeComponent();
 		BindingContext = photoBackgroundOperationTracker;
 		RegisterRoutes();
@@ -19,7 +24,7 @@ public partial class AppShell : Shell
 		}
 		catch (Exception ex)
 		{
-			Debug.WriteLine($"Background operations navigation failed: {ex}");
+			logger.LogWarning(ex, "Background operations navigation failed.");
 			// Best-effort UX: ignore navigation failures from banner tap.
 		}
 	}

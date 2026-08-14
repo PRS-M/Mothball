@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using MothballMobile.Composition;
+using MothballMobile.Infrastructure;
 using Microsoft.Maui.Handlers;
-using System.Diagnostics;
 
 #if IOS || MACCATALYST
 using UIKit;
@@ -91,7 +91,8 @@ public static class MauiProgram
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine($"SearchBar platform styling failed: {ex}");
+				MauiLogger.For("MothballMobile.PlatformHandlers")
+					?.LogWarning(ex, "SearchBar platform styling failed.");
 				// Best-effort platform polish only.
 			}
 		});

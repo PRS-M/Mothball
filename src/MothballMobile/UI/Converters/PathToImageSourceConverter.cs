@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
-using System.Diagnostics;
+using Microsoft.Extensions.Logging;
+using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.Converters;
 
@@ -52,13 +53,15 @@ public class PathToImageSourceConverter : IValueConverter
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Image source conversion failed for '{s}': {ex}");
+            MauiLogger.For<PathToImageSourceConverter>()
+                ?.LogWarning(ex, "Image source conversion failed for {ImagePath}.", s);
             // Fallback placeholder (must exist in Resources/Images)
             const string fallback = "mothball_logo.png";
             try { return ImageSource.FromFile(fallback); }
             catch (Exception fallbackEx)
             {
-                Debug.WriteLine($"Fallback image source conversion failed for '{fallback}': {fallbackEx}");
+                MauiLogger.For<PathToImageSourceConverter>()
+                    ?.LogError(fallbackEx, "Fallback image source conversion failed for {FallbackImagePath}.", fallback);
                 return null;
             }
         }
