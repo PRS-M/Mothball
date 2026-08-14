@@ -20,6 +20,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly ILogger<SettingsViewModel> logger;
+    private bool isZipBackupMode;
 
     public SettingsViewModel(
         IInventoryBackupExporter backupExporter,
@@ -40,6 +41,20 @@ public partial class SettingsViewModel : BaseViewModel
         this.popupDefinitions = popupDefinitions;
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+
+    public bool IsZipBackupMode
+    {
+        get => isZipBackupMode;
+        set
+        {
+            if (SetProperty(ref isZipBackupMode, value))
+            {
+                OnPropertyChanged(nameof(IsJsonBackupMode));
+            }
+        }
+    }
+
+    public bool IsJsonBackupMode => !IsZipBackupMode;
 
     [RelayCommand]
     private Task NavigateToBackgroundOperationsAsync()
@@ -179,6 +194,33 @@ public partial class SettingsViewModel : BaseViewModel
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to delete inventory backup JSON file {FileName}.", fileName);
+                await popup.ShowAlertAsync(popupDefinitions.DeleteBackupFailed(ex.Message));
+            }
+        });
+    }
+
+    [RelayCommand]
+    private async Task DeleteZipAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            var fileName = await SelectZipBackupFileAsync();
+            if (string.IsNullOrWhiteSpace(fileName))
+                return;
+
+            var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteBackup(fileName));
+
+            if (!confirmed)
+                return;
+
+            try
+            {
+                await fileHandler.DeleteFileAsync(fileName, BackupsFolder);
+                await popup.ShowAlertAsync(popupDefinitions.BackupDeleted(fileName));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to delete inventory backup ZIP file {FileName}.", fileName);
                 await popup.ShowAlertAsync(popupDefinitions.DeleteBackupFailed(ex.Message));
             }
         });
