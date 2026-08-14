@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Settings.ImportDocumentationPage"
+                Title="Documentation / Help"
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+            <controls:PageHeader Title="Documentation / Help"
+                                 Subtitle="Backup import modes"
+                                 TitleFontSize="22"
+                                 SubtitleFontSize="12"
+                                 Spacing="2"
+                                 HeaderMargin="0,0,0,6" />
+
+            <Border Padding="14"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeShape="RoundRectangle 16"
+                    Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Choosing an import mode"
+                           Style="{StaticResource HeadlineSmall}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                    <Label Text="Import modes control how records already in the app are handled when a backup JSON file is restored. Choose the least destructive mode that matches what you need."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeShape="RoundRectangle 16"
+                    Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Add only"
+                           Style="{StaticResource TitleMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                    <Label Text="Adds containers, items, relation quantity deltas, and images that are present in the backup but missing from the app."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                    <Label Text="Existing containers, items, relations, and images are left unchanged. This is the safest choice when you want to merge a backup without modifying current data."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeShape="RoundRectangle 16"
+                    Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Add + upsert metadata"
+                           Style="{StaticResource TitleMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                    <Label Text="Adds missing records just like Add only."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                    <Label Text="For existing containers, it updates name and notes when the backup differs. For existing items, it updates name and description when the backup differs."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                    <Label Text="Relations and image references remain additive for existing records."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeShape="RoundRectangle 16"
+                    Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Full sync (roots)"
+                           Style="{StaticResource TitleMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                    <Label Text="Includes Add + upsert metadata behavior."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                    <Label Text="Deletes containers and items that exist in the app but are not present in the backup. This makes the top-level inventory match the backup."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                    <Label Text="For surviving containers and items, relation and image restore remains additive. Missing relation quantities and image references are added, but omitted relation pairs and image references are not removed."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    StrokeShape="RoundRectangle 16"
+                    Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Strict full sync"
+                           Style="{StaticResource TitleMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                    <Label Text="Includes Full sync root behavior, including deletion of containers and items that are not in the backup."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                    <Label Text="For surviving relation pairs, the app is reconciled to the backup exactly. Missing pairs are inserted, extra pairs are deleted, and existing pair quantities are set to the backup quantity."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                    <Label Text="For surviving image references, missing owner-image references are inserted and extra owner-image references are deleted."
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</views:BasePage>

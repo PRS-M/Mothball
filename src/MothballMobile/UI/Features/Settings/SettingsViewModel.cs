@@ -43,6 +43,10 @@ public partial class SettingsViewModel : BaseViewModel
         => nav.GoToAsync(NavigationRoutes.BackgroundOperations);
 
     [RelayCommand]
+    private Task NavigateToImportDocumentationAsync()
+        => nav.GoToAsync(NavigationRoutes.ImportDocumentation);
+
+    [RelayCommand]
     private async Task ExportToJsonAsync()
     {
         await RunCommandAsync(async () =>
