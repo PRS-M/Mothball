@@ -1,9 +1,12 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Services;
+using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
+using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Items.AddItem;
 
@@ -11,12 +14,16 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly ImageService imageService;
     private readonly IInventoryCommandRepository inventoryCommands;
-    private readonly IRetryService retryService;
     private readonly Infrastructure.INavigationService nav;
+    private readonly ILogger<AddItemViewModel> logger;
+    private readonly IPopupService popup;
+    private readonly IPopupDefinitionService popupDefinitions;
     private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     [ObservableProperty]
     private string containerId = string.Empty;
+
+    public bool IsAddingToContainer => Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -40,13 +47,17 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     public AddItemViewModel(
         ImageService imageService,
         IInventoryCommandRepository inventoryCommands,
-        IRetryService retryService,
-        Infrastructure.INavigationService nav)
+        Infrastructure.INavigationService nav,
+        ILogger<AddItemViewModel> logger,
+        IPopupService popup,
+        IPopupDefinitionService popupDefinitions)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
-        this.retryService = retryService ?? throw new ArgumentNullException(nameof(retryService));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
+        this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -56,6 +67,11 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         {
             ContainerId = id;
         }
+    }
+
+    partial void OnContainerIdChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsAddingToContainer));
     }
 
     public bool HasTemporaryPhoto => !string.IsNullOrWhiteSpace(PhotoThumbnailPath);
@@ -90,30 +106,31 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     [RelayCommand]
     private async Task ChoosePhotoAsync()
     {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        var source = await SelectPhotoSourceAsync();
+        if (source is null)
+        {
+            return;
+        }
+
         await RunCommandAsync(async () =>
         {
-            ImageService.TemporaryPhotoCapture? selectedPhoto = null;
+            ImageService.TemporaryPhotoCapture? selectedPhoto;
+            IsPhotoProcessing = true;
+            try
+            {
+                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync(source: source.Value);
+            }
+            finally
+            {
+                IsPhotoProcessing = false;
+            }
 
-            bool photoSelected = await retryService.RetryAsync(
-                async () =>
-                {
-                    IsPhotoProcessing = true;
-                    try
-                    {
-                        selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
-                        return selectedPhoto is not null;
-                    }
-                    finally
-                    {
-                        IsPhotoProcessing = false;
-                    }
-                },
-                canceledTitle: "Photo capture canceled",
-                canceledMessage: "Please try again or continue without a photo.",
-                retryButton: "Retry",
-                continueButton: "Continue");
-
-            if (!photoSelected || selectedPhoto is null)
+            if (selectedPhoto is null)
             {
                 return;
             }
@@ -129,6 +146,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         });
     }
 
+    private async Task<PhotoSource?> SelectPhotoSourceAsync()
+        => await PhotoSourceSelector.SelectPhotoSourceAsync(popup, popupDefinitions);
+
     [RelayCommand(CanExecute = nameof(CanAdd))]
     private async Task SaveAsync()
     {
@@ -139,7 +159,10 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             return;
         }
 
-        if (!int.TryParse(Quantity?.Trim(), out var parsedQuantity) || parsedQuantity <= 0)
+        var isAddingToContainer = IsAddingToContainer;
+        var parsedQuantity = 1;
+        if (isAddingToContainer &&
+            (!int.TryParse(Quantity?.Trim(), out parsedQuantity) || parsedQuantity <= 0))
         {
             ValidationMessage = "Quantity must be a positive number.";
             return;
@@ -149,11 +172,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         {
             try
             {
-                var item = new Item
-                {
-                    Name = trimmed,
-                    Description = Description?.Trim() ?? string.Empty
-                };
+                var item = new Item(trimmed, Description?.Trim() ?? string.Empty);
 
                 await inventoryCommands.InsertItemAsync(item);
 
@@ -163,7 +182,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                     await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
                 }
 
-                if (Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
+                if (isAddingToContainer && Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty)
                 {
                     await inventoryCommands.InsertItemContainerRelation(item.ItemId, cid, parsedQuantity);
                 }
@@ -175,6 +194,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to save item.");
                 ValidationMessage = $"Failed to save item: {ex.Message}";
             }
         });

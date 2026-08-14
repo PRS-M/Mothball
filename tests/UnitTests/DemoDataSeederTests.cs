@@ -2,6 +2,7 @@ using CoreApp.Interfaces;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace UnitTests;
@@ -63,7 +64,8 @@ public class DemoDataSeederTests
             itemsRepo.Object,
             photosRepo.Object,
             relationRepo.Object,
-            fileHandler.Object);
+            fileHandler.Object,
+            NullLogger<DemoDataSeeder>.Instance);
 
         await sut.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: false);
 

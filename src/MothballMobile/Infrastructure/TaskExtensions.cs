@@ -1,20 +1,21 @@
-using System.Diagnostics;
-
 namespace MothballMobile.Infrastructure;
 
 public static class TaskExtensions
 {
-    public static void FireAndForget(this Task task)
+    public static void FireAndForget(this Task task, IBackgroundTaskObserver observer, string operationName)
     {
+        ArgumentNullException.ThrowIfNull(task);
+        ArgumentNullException.ThrowIfNull(observer);
+
         if (task.IsCompletedSuccessfully)
         {
             return;
         }
 
-        _ = ObserveAsync(task);
+        _ = ObserveAsync(task, observer, operationName);
     }
 
-    private static async Task ObserveAsync(Task task)
+    private static async Task ObserveAsync(Task task, IBackgroundTaskObserver observer, string operationName)
     {
         try
         {
@@ -22,7 +23,7 @@ public static class TaskExtensions
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Unobserved task failure: {ex}");
+            observer.OnFailure(operationName, ex);
         }
     }
 }

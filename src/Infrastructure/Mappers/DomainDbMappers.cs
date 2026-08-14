@@ -57,10 +57,9 @@ public static class ContainerMapper
 
     private static void ConvertAndAddPhotos(IEnumerable<DbImage>? photos, Container result)
     {
-        if (photos is not null && photos.Any())
+        if (photos is not null)
         {
-            List<ImageItem> convertedPhotos = [.. photos.Select(p => p.ToDomain())];
-            result.Photos.AddRange(convertedPhotos);
+            result.AddImageItems(photos.Select(p => p.ToDomain()));
         }
     }
 
@@ -91,20 +90,13 @@ public static class ItemMapper
     public static Item ToDomain(this DbItem dbItem, IEnumerable<DbImage>? dbPhotos = null)
     {
         ArgumentNullException.ThrowIfNull(dbItem);
-        var item = new Item
-        {
-            ItemId = dbItem.ItemId,
-            Name = dbItem.Name,
-            Description = dbItem.Description,
-        };
+        var item = new Item(dbItem.ItemId, dbItem.Name, dbItem.Description);
 
         if (dbPhotos is not null)
         {
-            foreach (var p in dbPhotos.Where(p => !string.IsNullOrWhiteSpace(p.FileName)))
-            {
-                // Use the ImageId directly; FileName includes an extension and is not a valid GUID string
-                item.Photos.Add(p.ToDomain());
-            }
+            item.AddImageItems(dbPhotos
+                .Where(p => !string.IsNullOrWhiteSpace(p.FileName))
+                .Select(p => p.ToDomain()));
         }
 
         return item;

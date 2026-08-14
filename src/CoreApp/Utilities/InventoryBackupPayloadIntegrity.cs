@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using CoreApp.Contracts;
+using Microsoft.Extensions.Logging;
 
 namespace CoreApp.Utilities;
 
@@ -46,7 +47,8 @@ internal static class InventoryBackupPayloadIntegrity
 
     public static void ValidateIntegrity(
         InventoryBackupEnvelope backup,
-        InventoryBackupRestoreOptions options)
+        InventoryBackupRestoreOptions options,
+        ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(backup);
         ArgumentNullException.ThrowIfNull(backup.Data);
@@ -99,7 +101,7 @@ internal static class InventoryBackupPayloadIntegrity
         }
 
         string expected = ComputeHmacSignature(backup.Data, options.SignatureSecret);
-        if (!FixedTimeEqualsBase64(expected, integrity.Signature!))
+        if (!FixedTimeEqualsBase64(expected, integrity.Signature!, logger))
         {
             throw new InvalidDataException("Backup signature verification failed.");
         }
@@ -124,7 +126,7 @@ internal static class InventoryBackupPayloadIntegrity
         return Convert.ToBase64String(signatureBytes);
     }
 
-    private static bool FixedTimeEqualsBase64(string expectedBase64, string providedBase64)
+    private static bool FixedTimeEqualsBase64(string expectedBase64, string providedBase64, ILogger? logger)
     {
         byte[] expected;
         byte[] provided;
@@ -133,8 +135,9 @@ internal static class InventoryBackupPayloadIntegrity
             expected = Convert.FromBase64String(expectedBase64);
             provided = Convert.FromBase64String(providedBase64);
         }
-        catch (FormatException)
+        catch (FormatException ex)
         {
+            logger?.LogDebug(ex, "Backup signature base64 decoding failed.");
             return false;
         }
 

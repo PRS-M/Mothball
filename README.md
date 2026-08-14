@@ -99,6 +99,12 @@ Or build just the app project:
 dotnet build src/MothballMobile/MothballMobile.csproj
 ```
 
+For fast local app verification on macOS, build the iOS target explicitly:
+
+```bash
+dotnet build src/MothballMobile/MothballMobile.csproj -f net10.0-ios --no-restore
+```
+
 ## Run tests
 
 Run unit tests:
@@ -106,6 +112,26 @@ Run unit tests:
 ```bash
 dotnet test tests/UnitTests/UnitTests.csproj -v minimal
 ```
+
+Or use the test-only solution filter:
+
+```bash
+dotnet test Mothball.Tests.slnf -v minimal
+```
+
+For a full solution verification from a clean or stale restore state, let the solution restore first:
+
+```bash
+dotnet test Mothball.sln
+```
+
+Use `--no-restore` only after a successful solution restore:
+
+```bash
+dotnet test Mothball.sln --no-restore
+```
+
+The solution includes MAUI iOS and Mac Catalyst projects. On Apple Silicon, Mac Catalyst uses the active `maccatalyst-arm64` runtime, so a project-only restore for iOS is not enough for `dotnet test Mothball.sln --no-restore`.
 
 ## Run the app
 
@@ -148,6 +174,7 @@ Accepted JSON backend values include `Json` and `JsonOperationalStore`.
 Main solution:
 
 - `Mothball.sln`
+- `Mothball.Tests.slnf` for unit-test-only solution-level verification
 
 Projects included:
 

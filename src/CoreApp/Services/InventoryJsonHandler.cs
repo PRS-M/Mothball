@@ -1,6 +1,8 @@
 using System;
+using CoreApp.Contracts;
 using CoreApp.Utilities;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Shared;
 
 namespace CoreApp.Services;
 
@@ -15,7 +17,11 @@ public class InventoryJsonHandler
 
     public async Task<List<Container>> LoadAsync()
     {
-        return await jsonHandler.DeserializeFromFile<List<Container>>(Constants.InventoryFileName, Constants.PathToData);
+        var storedContainers = await jsonHandler.DeserializeFromFile<List<InventoryContainerDto>>(
+            Constants.InventoryFileName,
+            Constants.PathToData);
+
+        return storedContainers.Select(ToDomain).ToList();
     }
 
     public Task SaveAsync(Container container)
@@ -27,6 +33,29 @@ public class InventoryJsonHandler
     public Task SaveAsync(List<Container> containers)
     {
         ArgumentNullException.ThrowIfNull(containers);
-        return jsonHandler.SerializeToFile(Constants.InventoryFileName, Constants.PathToData, containers);
+        return jsonHandler.SerializeToFile(
+            Constants.InventoryFileName,
+            Constants.PathToData,
+            containers.Select(ToDto).ToList());
+    }
+
+    private static InventoryContainerDto ToDto(Container container) => new(
+        container.ContainerId,
+        container.Name,
+        container.Notes,
+        container.Photos.Select(p => new InventoryImageDto(p.ImageId)).ToList(),
+        container.Items.Select(i => new InventoryStoredItemDto(i.ItemId, i.Quantity)).ToList());
+
+    private static Container ToDomain(InventoryContainerDto stored)
+    {
+        var container = new Container(stored.ContainerId, stored.Name, stored.Notes);
+        container.AddImageItems((stored.Photos ?? []).Select(p => new ImageItem(p.ImageId)));
+
+        foreach (var item in stored.Items ?? [])
+        {
+            container.AddItem(item.ItemId, item.Quantity);
+        }
+
+        return container;
     }
 }

@@ -1,32 +1,34 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
-using CoreApp.Specifications;
 using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 
 public partial class AddExistingItemToContainerViewModel : PagedListViewModelBase<Item, UnassignedItemViewModel>, IQueryAttributable
 {
-    private readonly IInventoryQueryRepository inventoryQueries;
-    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IContainerAssociationQueryHandler associationQueries;
+    private readonly IAssignItemToContainerCommandHandler assignItemToContainer;
     private readonly IImagePathResolver paths;
     private readonly INavigationService nav;
+    private readonly IBackgroundTaskObserver backgroundTasks;
 
     [ObservableProperty]
     private string containerId = string.Empty;
 
     public AddExistingItemToContainerViewModel(
-        IInventoryQueryRepository inventoryQueries,
-        IInventoryCommandRepository inventoryCommands,
+        IContainerAssociationQueryHandler associationQueries,
+        IAssignItemToContainerCommandHandler assignItemToContainer,
         IImagePathResolver paths,
-        INavigationService nav)
+        INavigationService nav,
+        IBackgroundTaskObserver backgroundTasks)
     {
-        this.inventoryQueries = inventoryQueries;
-        this.inventoryCommands = inventoryCommands;
+        this.associationQueries = associationQueries;
+        this.assignItemToContainer = assignItemToContainer;
         this.paths = paths;
         this.nav = nav;
+        this.backgroundTasks = backgroundTasks;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -47,14 +49,10 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         => new(source, paths, AssignAsync);
 
     protected override void OnViewModelAdded(UnassignedItemViewModel vm)
-        => _ = vm.LoadImagesAsync();
+        => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load unassigned item images");
 
     protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryQueries.QueryItemsWithPhotosAsync(
-            new ItemListSpecification(
-                Filter: ItemQueryFilter.Unassigned,
-                PageNumber: pageNumber,
-                PageSize: pageSize));
+        => associationQueries.QueryUnassignedItemsAsync(pageNumber, pageSize);
 
     private async Task AssignAsync(Guid itemId)
     {
@@ -63,7 +61,7 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
 
         await RunCommandAsync(async () =>
         {
-            await inventoryCommands.InsertItemContainerRelation(itemId, cid, quantity: 1);
+            await assignItemToContainer.AssignAsync(itemId, cid);
             await nav.GoBackAsync();
         });
     }

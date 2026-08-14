@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace MothballMobile.Infrastructure;
 
@@ -8,12 +9,14 @@ public sealed class Debouncer : IDebouncer, IDisposable
 {
     private readonly object sync = new();
     private CancellationTokenSource? cts;
+    private readonly ILogger<Debouncer> logger;
     private readonly int delayMs;
     private bool isDisposed;
 
-    public Debouncer(int delayMs)
+    public Debouncer(int delayMs, ILogger<Debouncer> logger)
     {
         this.delayMs = delayMs;
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public Task DebounceAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
@@ -56,8 +59,9 @@ public sealed class Debouncer : IDebouncer, IDisposable
 
             await action(token).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (token.IsCancellationRequested)
         {
+            logger.LogDebug(ex, "Debounced operation was canceled.");
             // Ignore cancellation from newer debounced requests or disposal.
         }
         finally
@@ -92,8 +96,9 @@ public sealed class Debouncer : IDebouncer, IDisposable
         {
             toDispose?.Cancel();
         }
-        catch (ObjectDisposedException)
+        catch (ObjectDisposedException ex)
         {
+            logger.LogDebug(ex, "Debouncer cancellation token source was already disposed.");
             // already disposed
         }
         finally

@@ -3,6 +3,7 @@ using CoreApp.Interfaces;
 using CoreApp.Utilities;
 using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
@@ -21,19 +22,22 @@ public class DemoDataSeeder
     private readonly IRepository<DbImage> photos;
     private readonly IRepository<DbItemContainerRelation> itemContainerRelations;
     private readonly IFileHandler fileHandler;
+    private readonly ILogger<DemoDataSeeder> logger;
 
     public DemoDataSeeder(
         IRepository<DbContainer> containers,
         IRepository<DbItem> items,
         IRepository<DbImage> photos,
         IRepository<DbItemContainerRelation> itemContainerRelations,
-        IFileHandler fileHandler)
+        IFileHandler fileHandler,
+        ILogger<DemoDataSeeder> logger)
     {
         this.containers = containers;
         this.items = items;
         this.photos = photos;
         this.itemContainerRelations = itemContainerRelations;
         this.fileHandler = fileHandler;
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -148,8 +152,9 @@ public class DemoDataSeeder
                     {
                         await fileHandler.CopyFileFromRawToAppDataAsync("mothball_logo.png", img.FileName, Constants.PathToItemPhotos);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        logger.LogWarning(ex, "Failed to copy demo item photo {SourceFileName} to {TargetFileName}.", "mothball_logo.png", img.FileName);
                         // Ignore copy errors in demo seeding; UI will use its own fallback
                     }
                 }

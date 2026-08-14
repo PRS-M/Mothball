@@ -25,129 +25,21 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     public Task<Container?> GetContainerAsync(string containerId)
         => containerRepo.GetAsync(containerId);
 
-    public async Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId)
-    {
-        var container = await containerRepo.GetWithItemsAndPhotosAsync(containerId);
-        if (container is null) return null;
-
-        // Avoid re-querying relations; use IDs already hydrated into the container aggregate.
-        var itemIds = container.Items.Select(s => s.ItemId);
-        var items = await itemRepo.GetByIdsWithPhotosAsync(itemIds);
-        return (container, items);
-    }
-
-    public async Task<(Container container, List<Item> items)?> GetContainerWithItemsAndPhotosAsync(string containerId, int pageNumber, int pageSize)
-    {
-        var container = await containerRepo.GetWithItemsAndPhotosAsync(containerId, pageNumber, pageSize);
-        if (container is null) return null;
-
-        // Avoid re-querying relations; use IDs already hydrated into the container aggregate.
-        var itemIds = container.Items.Select(s => s.ItemId);
-        var items = await itemRepo.GetByIdsWithPhotosAsync(itemIds);
-        return (container, items);
-    }
-
     public Task<int> GetItemCountInContainerAsync(string containerId)
         => containerRepo.GetItemCountInContainerAsync(containerId);
 
     public Task<Container?> GetContainerForItemAsync(string itemId)
         => containerRepo.GetContainerForItemAsync(itemId);
 
-    public Task<List<Item>> GetItemsForContainerAsync(string containerId)
-        => itemRepo.GetItemsForContainerAsync(containerId);
-
     public Task<Item?> GetItemWithPhotosAsync(string itemId)
         => itemRepo.GetWithPhotosAsync(itemId);
 
-    public Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
-        => itemRepo.SearchItemsInContainerAsync(containerId, searchTerm, pageNumber, pageSize);
-
     public Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification)
-    {
-        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
-
-        if (hasSearch)
-        {
-            return specification.Filter == ContainerQueryFilter.Empty
-                ? containerRepo.SearchEmptyAsync(term!)
-                : containerRepo.SearchAsync(term!);
-        }
-
-        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
-        {
-            return specification.Filter == ContainerQueryFilter.Empty
-            ? containerRepo.GetEmptyAsync(pageNumberValue, pageSizeValue)
-            : containerRepo.GetAllAsync(pageNumberValue, pageSizeValue);
-        }
-
-        return specification.Filter == ContainerQueryFilter.Empty
-            ? containerRepo.SearchEmptyAsync(string.Empty)
-            : containerRepo.GetAllAsync();
-    }
+        => containerRepo.QueryAsync(specification);
 
     public Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification)
-    {
-        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+        => itemRepo.QueryWithPhotosAsync(specification);
 
-        if (hasSearch)
-        {
-            return specification.Filter == ItemQueryFilter.Unassigned
-                ? itemRepo.SearchUnassignedWithPhotosAsync(term!)
-                : itemRepo.SearchWithPhotosAsync(term!);
-        }
-
-        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
-        {
-            return specification.Filter == ItemQueryFilter.Unassigned
-            ? itemRepo.GetUnassignedWithPhotosAsync(pageNumberValue, pageSizeValue)
-            : itemRepo.GetAllWithPhotosAsync(pageNumberValue, pageSizeValue);
-        }
-
-        return specification.Filter == ItemQueryFilter.Unassigned
-            ? itemRepo.SearchUnassignedWithPhotosAsync(string.Empty)
-            : itemRepo.GetAllWithPhotosAsync();
-    }
-
-    public async Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
-    {
-        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
-
-        if (TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
-        {
-            if (hasSearch)
-            {
-                return await itemRepo.SearchItemsInContainerAsync(specification.ContainerId, term!, pageNumberValue, pageSizeValue);
-            }
-
-            var result = await GetContainerWithItemsAndPhotosAsync(specification.ContainerId, pageNumberValue, pageSizeValue);
-            return result?.items ?? [];
-        }
-
-        if (hasSearch)
-        {
-            return await itemRepo.SearchItemsInContainerAsync(specification.ContainerId, term!, pageNumber: 0, pageSize: int.MaxValue);
-        }
-
-        return await itemRepo.GetItemsForContainerAsync(specification.ContainerId);
-    }
-
-    private static (string? term, bool hasSearch) NormalizeSearch(string? searchTerm)
-    {
-        var term = searchTerm?.Trim();
-        return (term, !string.IsNullOrWhiteSpace(term));
-    }
-
-    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
-    {
-        if (pageNumber.HasValue && pageSize.HasValue)
-        {
-            pageNumberValue = pageNumber.Value;
-            pageSizeValue = pageSize.Value;
-            return true;
-        }
-
-        pageNumberValue = default;
-        pageSizeValue = default;
-        return false;
-    }
+    public Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
+        => itemRepo.QueryContainerItemsWithPhotosAsync(specification);
 }

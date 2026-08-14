@@ -1,4 +1,4 @@
-namespace MothballMobile.UI.Controls;
+﻿namespace MothballMobile.UI.Controls;
 
 #if IOS || MACCATALYST
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -10,8 +10,19 @@ public partial class NumberPickerModalPage : ContentPage
     private readonly TaskCompletionSource<int?> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly int min;
     private readonly int max;
+    private readonly string invalidNumberMessage;
+    private readonly string outOfRangeMessage;
 
-    public NumberPickerModalPage(string title, int min, int max, int initialValue, string accept, string cancel)
+    public NumberPickerModalPage(
+        string title,
+        int min,
+        int max,
+        int initialValue,
+        string accept,
+        string cancel,
+        string placeholder,
+        string invalidNumberMessage,
+        string outOfRangeMessage)
     {
         InitializeComponent();
 
@@ -22,10 +33,13 @@ public partial class NumberPickerModalPage : ContentPage
 
         this.min = min;
         this.max = max;
+        this.invalidNumberMessage = invalidNumberMessage;
+        this.outOfRangeMessage = outOfRangeMessage;
 
         TitleLabel.Text = title;
         AcceptButton.Text = accept;
         CancelButton.Text = cancel;
+        QuantityEntry.Placeholder = placeholder;
 
         QuantityEntry.Text = Math.Clamp(initialValue, min, max).ToString();
         QuantityEntry.CursorPosition = QuantityEntry.Text.Length;
@@ -59,13 +73,13 @@ public partial class NumberPickerModalPage : ContentPage
         var raw = QuantityEntry.Text?.Trim();
         if (!int.TryParse(raw, out var parsed))
         {
-            ShowValidation($"Enter a number between {min} and {max}.");
+            ShowValidation(invalidNumberMessage);
             return;
         }
 
         if (parsed < min || parsed > max)
         {
-            ShowValidation($"Value must be between {min} and {max}.");
+            ShowValidation(outOfRangeMessage);
             return;
         }
 

@@ -31,13 +31,8 @@ public class InventoryBackupRestoreServiceTests
         existingContainer.AddItem(item1Id, 2);
         existingContainer.AddImageItem(existingContainerPhoto);
 
-        var existingItem = new Item
-        {
-            ItemId = item1Id,
-            Name = "Existing item",
-            Description = "desc",
-            Photos = [new ImageItem(existingItemPhoto)],
-        };
+        var existingItem = new Item(item1Id, "Existing item", "desc");
+        existingItem.AddImageItem(existingItemPhoto);
 
         var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
         {
@@ -180,12 +175,7 @@ public class InventoryBackupRestoreServiceTests
         var itemId = Guid.NewGuid();
 
         var existingContainer = new Container(containerId, "Old", "Old Notes");
-        var existingItem = new Item
-        {
-            ItemId = itemId,
-            Name = "Old Item",
-            Description = "Old Description",
-        };
+        var existingItem = new Item(itemId, "Old Item", "Old Description");
 
         var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
         {
@@ -229,12 +219,7 @@ public class InventoryBackupRestoreServiceTests
     public async Task RestoreAsync_FullSync_DeletesMissingRootEntities()
     {
         var existingContainer = new Container(Guid.NewGuid(), "Existing", "Notes");
-        var existingItem = new Item
-        {
-            ItemId = Guid.NewGuid(),
-            Name = "Existing Item",
-            Description = "Description",
-        };
+        var existingItem = new Item("Existing Item", "Description");
 
         var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
         {
@@ -322,19 +307,9 @@ public class InventoryBackupRestoreServiceTests
         existingContainer.AddImageItem(keepImageId);
         existingContainer.AddImageItem(deleteImageId);
 
-        var existingItem1 = new Item
-        {
-            ItemId = item1Id,
-            Name = "Item 1",
-            Description = "D1",
-        };
+        var existingItem1 = new Item(item1Id, "Item 1", "D1");
 
-        var existingItem2 = new Item
-        {
-            ItemId = item2Id,
-            Name = "Item 2",
-            Description = "D2",
-        };
+        var existingItem2 = new Item(item2Id, "Item 2", "D2");
 
         var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
         {

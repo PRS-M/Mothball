@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using System.Linq.Expressions;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Specifications;
 using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
@@ -40,16 +40,39 @@ public class ContainerRepository : IContainerRepository
         return await MapContainerWithPhotosAndRelationsAsync(dbContainer);
     }
 
-    public Task<List<Container>> GetAllAsync()
+    private Task<List<Container>> GetAllAsync()
         => GetContainersInternalAsync();
 
-    public Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
+    private Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
         => GetContainersInternalAsync(pageNumber, pageSize);
 
-    public async Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize)
+    public Task<List<Container>> QueryAsync(ContainerListSpecification specification)
     {
-        ValidatePaging(pageNumber, pageSize);
-        int offset = CalculateOffset(pageNumber, pageSize);
+        var (term, hasSearch) = RepositoryQueryHelpers.NormalizeSearch(specification.SearchTerm);
+
+        if (hasSearch)
+        {
+            return specification.Filter == ContainerQueryFilter.Empty
+                ? SearchEmptyAsync(term!)
+                : SearchAsync(term!);
+        }
+
+        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            return specification.Filter == ContainerQueryFilter.Empty
+                ? GetEmptyAsync(pageNumberValue, pageSizeValue)
+                : GetAllAsync(pageNumberValue, pageSizeValue);
+        }
+
+        return specification.Filter == ContainerQueryFilter.Empty
+            ? SearchEmptyAsync(string.Empty)
+            : GetAllAsync();
+    }
+
+    private async Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize)
+    {
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         List<DbContainer> dbContainers = await containers.QueryAsync(
             $@"SELECT c.* FROM {nameof(DbContainer)} c
@@ -64,7 +87,7 @@ public class ContainerRepository : IContainerRepository
         return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
     }
 
-    public async Task<List<Container>> SearchAsync(string searchTerm)
+    private async Task<List<Container>> SearchAsync(string searchTerm)
     {
         string pattern = $"%{searchTerm}%";
 
@@ -79,7 +102,7 @@ public class ContainerRepository : IContainerRepository
         return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
     }
 
-    public async Task<List<Container>> SearchEmptyAsync(string searchTerm)
+    private async Task<List<Container>> SearchEmptyAsync(string searchTerm)
     {
         string pattern = $"%{searchTerm}%";
 
@@ -97,66 +120,11 @@ public class ContainerRepository : IContainerRepository
         return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
     }
 
-    public async Task<Container?> GetWithItemsAndPhotosAsync(string containerId)
-    {
-        logger.LogDebug("GetWithItemsAndPhotosAsync: containerId={ContainerId}", containerId);
-
-        DbContainer? dbContainer = await containers.GetAsync(containerId);
-        if (dbContainer is null) return null;
-
-        var sw = Stopwatch.StartNew();
-        (IEnumerable<DbImage> dbContainerPhotosEnum, IEnumerable<DbItemContainerRelation> relationsEnum) =
-            await LoadContainerPhotosAndRelationsAsync(dbContainer.ContainerId);
-        var dbContainerPhotos = dbContainerPhotosEnum.ToList();
-        var relations = relationsEnum.ToList();
-        sw.Stop();
-
-        logger.LogInformation(
-            "GetWithItemsAndPhotosAsync: containerId={ContainerId}, photos={PhotoCount}, relations={RelationCount}, elapsedMs={Elapsed}",
-            containerId,
-            dbContainerPhotos.Count,
-            relations.Count,
-            sw.ElapsedMilliseconds);
-
-        return dbContainer.ToDomain(dbContainerPhotos, relations);
-    }
-
-    public async Task<Container?> GetWithItemsAndPhotosAsync(string containerId, int pageNumber, int pageSize)
-    {
-        logger.LogDebug("GetWithItemsAndPhotosAsync (paginated): containerId={ContainerId}, page={PageNumber}, size={PageSize}",
-            containerId, pageNumber, pageSize);
-
-        DbContainer? dbContainer = await containers.GetAsync(containerId);
-        if (dbContainer is null) return null;
-
-        ValidatePaging(pageNumber, pageSize);
-        int offset = CalculateOffset(pageNumber, pageSize);
-
-        var sw = Stopwatch.StartNew();
-        IEnumerable<DbImage> dbContainerPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbContainer.ContainerId);
-
-        // Get paginated relations
-        List<DbItemContainerRelation> allRelations = await itemContainerRelations.WhereAsync(r => r.ContainerId == dbContainer.ContainerId);
-        var paginatedRelations = allRelations.Skip(offset).Take(pageSize).ToList();
-
-        sw.Stop();
-
-        logger.LogInformation(
-            "GetWithItemsAndPhotosAsync (paginated): containerId={ContainerId}, photos={PhotoCount}, totalRelations={TotalRelations}, pageRelations={PageRelations}, elapsedMs={Elapsed}",
-            containerId,
-            dbContainerPhotos.Count(),
-            allRelations.Count,
-            paginatedRelations.Count,
-            sw.ElapsedMilliseconds);
-
-        return dbContainer.ToDomain(dbContainerPhotos, paginatedRelations);
-    }
-
     public async Task<int> GetItemCountInContainerAsync(string containerId)
     {
         logger.LogDebug("GetItemCountInContainerAsync: containerId={ContainerId}", containerId);
 
-        if (!TryParseGuid(containerId, out Guid cid)) return 0;
+        if (!RepositoryQueryHelpers.TryParseGuid(containerId, out Guid cid, logger)) return 0;
 
         List<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
         // Sum quantities to match domain model behavior and guard against duplicate rows
@@ -167,7 +135,7 @@ public class ContainerRepository : IContainerRepository
     {
         logger.LogDebug("GetContainerForItemAsync: itemId={ItemId}", itemId);
 
-        if (!TryParseGuid(itemId, out Guid iid)) return null;
+        if (!RepositoryQueryHelpers.TryParseGuid(itemId, out Guid iid, logger)) return null;
 
         DbItemContainerRelation? relation = (await itemContainerRelations.WhereAsync(r => r.ItemId == iid)).FirstOrDefault();
         if (relation is null) return null;
@@ -203,7 +171,7 @@ public class ContainerRepository : IContainerRepository
 
     public async Task DeleteAsync(string containerId)
     {
-        if (!TryParseGuid(containerId, out Guid cid)) return;
+        if (!RepositoryQueryHelpers.TryParseGuid(containerId, out Guid cid, logger)) return;
 
         await transactionRunner.RunAsync(scope =>
         {
@@ -217,18 +185,10 @@ public class ContainerRepository : IContainerRepository
 
     private async Task<List<Container>> GetContainersInternalAsync(int? pageNumber = null, int? pageSize = null)
     {
-        List<DbContainer> dbContainers;
-
-        if (TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
-        {
-            ValidatePaging(pageNumberValue, pageSizeValue);
-            int offset = CalculateOffset(pageNumberValue, pageSizeValue);
-            dbContainers = await containers.GetAllAsync(offset, pageSizeValue);
-        }
-        else
-        {
-            dbContainers = await containers.GetAllAsync();
-        }
+        List<DbContainer> dbContainers = await RepositoryQueryHelpers.QueryAllOrderedByRowIdAsync(
+            containers,
+            pageNumber,
+            pageSize);
 
         return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
     }
@@ -258,7 +218,12 @@ public class ContainerRepository : IContainerRepository
 
         var sw = Stopwatch.StartNew();
         List<object> containerIds = dbContainers.Select(c => (object)c.ContainerId).ToList();
-        Dictionary<Guid, IEnumerable<DbImage>> photosByContainer = await LoadPhotosByOwnerIdsAsync(containerIds);
+        Dictionary<Guid, IEnumerable<DbImage>> photosByContainer =
+            await RepositoryQueryHelpers.LoadLookupByIdsAsync(
+                photos,
+                nameof(DbImage.OwnerUniqueId),
+                containerIds,
+                p => p.OwnerUniqueId);
         Dictionary<Guid, IEnumerable<DbItemContainerRelation>> relByContainer = await LoadRelationsByContainerIdsAsync(containerIds);
         sw.Stop();
         logger.LogInformation(
@@ -276,86 +241,13 @@ public class ContainerRepository : IContainerRepository
         }).ToList();
     }
 
-    private async Task<Dictionary<Guid, IEnumerable<DbImage>>> LoadPhotosByOwnerIdsAsync(List<object> ownerIds)
-    {
-        if (ownerIds.Count == 0) return [];
-
-        List<DbImage> photosList = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), ownerIds);
-        return GroupByKey(photosList, p => p.OwnerUniqueId);
-    }
-
     private async Task<Dictionary<Guid, IEnumerable<DbItemContainerRelation>>> LoadRelationsByContainerIdsAsync(List<object> containerIds)
     {
         if (containerIds.Count == 0) return [];
 
         List<DbItemContainerRelation> relations = await itemContainerRelations.WhereInAsync(nameof(DbItemContainerRelation.ContainerId), containerIds);
-        return GroupByKey(relations, r => r.ContainerId);
+        return RepositoryQueryHelpers.GroupByKey(relations, r => r.ContainerId);
     }
-
-    private static Dictionary<TKey, IEnumerable<T>> GroupByKey<T, TKey>(
-        IEnumerable<T> items,
-        Func<T, TKey> keySelector) where TKey : notnull
-        => items.GroupBy(keySelector).ToDictionary(g => g.Key, g => g.AsEnumerable());
-
-    #endregion
-
-    #region Private Helpers - CRUD
-
-    private async Task DeletePhotosForOwnerAsync(Guid ownerId)
-    {
-        IEnumerable<DbImage> images = await photos.WhereAsync(p => p.OwnerUniqueId == ownerId);
-        foreach (DbImage img in images)
-        {
-            await photos.DeleteAsync(img);
-        }
-    }
-
-    private async Task DeleteRelationsAsync(Expression<Func<DbItemContainerRelation, bool>> predicate)
-    {
-        IEnumerable<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(predicate);
-        foreach (DbItemContainerRelation rel in relations)
-        {
-            await itemContainerRelations.DeleteAsync(rel);
-        }
-    }
-
-    #endregion
-
-    #region Private Helpers - Validation & Utilities
-
-    private bool TryParseGuid(string value, out Guid result, string? methodName = null, string? logValue = null)
-    {
-        if (Guid.TryParse(value, out result)) return true;
-
-        if (methodName is not null)
-        {
-            logger.LogWarning("{MethodName}: invalid GUID format: {Value}", methodName, logValue ?? value);
-        }
-
-        return false;
-    }
-
-    private static void ValidatePaging(int pageNumber, int pageSize)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
-        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
-    }
-
-    private static bool TryGetPaging(int? pageNumber, int? pageSize, out int pageNumberValue, out int pageSizeValue)
-    {
-        if (pageNumber.HasValue && pageSize.HasValue)
-        {
-            pageNumberValue = pageNumber.Value;
-            pageSizeValue = pageSize.Value;
-            return true;
-        }
-
-        pageNumberValue = default;
-        pageSizeValue = default;
-        return false;
-    }
-
-    private static int CalculateOffset(int pageNumber, int pageSize) => pageNumber * pageSize;
 
     #endregion
 }

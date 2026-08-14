@@ -1,12 +1,15 @@
 using System.Text.Json;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
+using Microsoft.Extensions.Logging.Abstractions;
 using Infrastructure.Services.Repositories;
 using Moq;
 
@@ -16,20 +19,183 @@ namespace UnitTests;
 public class BackendParityTests
 {
     [Test]
-    public async Task GetItemsForContainerAsync_InvalidId_ReturnsEmpty_ForSqliteAndJson()
+    public async Task QueryContainersAsync_OrdersAllResultsByInsertionAndPagesConsistently()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
 
-        var sqliteItems = await sqlite.Query.GetItemsForContainerAsync("not-a-guid");
-        var jsonItems = await json.Query.GetItemsForContainerAsync("not-a-guid");
+        var ids = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+
+        foreach (var id in ids)
+        {
+            await sqlite.Command.InsertContainerAsync(new Container(id, $"Container {id:N}", ""));
+            await json.Command.InsertContainerAsync(new Container(id, $"Container {id:N}", ""));
+        }
+
+        var specification = new ContainerListSpecification(
+            ContainerQueryFilter.All,
+            PageNumber: 1,
+            PageSize: 1);
+
+        var sqliteContainers = await sqlite.Query.QueryContainersAsync(specification);
+        var jsonContainers = await json.Query.QueryContainersAsync(specification);
+
+        Assert.That(sqliteContainers.Select(c => c.ContainerId), Is.EqualTo(new[] { ids[1] }));
+        Assert.That(jsonContainers.Select(c => c.ContainerId), Is.EqualTo(new[] { ids[1] }));
+    }
+
+    [Test]
+    public async Task QueryContainersAsync_EmptySearchOrdersByNameCaseInsensitively()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var assigned = new Container(Guid.NewGuid(), "Assigned", "");
+        var beta = new Container(Guid.NewGuid(), "beta", "storage shelf");
+        var alpha = new Container(Guid.NewGuid(), "Alpha", "storage shelf");
+        var item = new Item(Guid.NewGuid(), "Item", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(assigned);
+            await command.InsertContainerAsync(beta);
+            await command.InsertContainerAsync(alpha);
+            await command.InsertItemAsync(item);
+            await command.InsertItemContainerRelation(item.ItemId, assigned.ContainerId, 1);
+        }
+
+        var specification = new ContainerListSpecification(
+            ContainerQueryFilter.Empty,
+            SearchTerm: "storage");
+
+        var sqliteContainers = await sqlite.Query.QueryContainersAsync(specification);
+        var jsonContainers = await json.Query.QueryContainersAsync(specification);
+
+        Assert.That(sqliteContainers.Select(c => c.Name), Is.EqualTo(new[] { "Alpha", "beta" }));
+        Assert.That(jsonContainers.Select(c => c.Name), Is.EqualTo(new[] { "Alpha", "beta" }));
+    }
+
+    [Test]
+    public async Task QueryItemsWithPhotosAsync_SearchKeepsInsertionOrderAndPhotoOwnership()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var firstItem = new Item(Guid.NewGuid(), "Cable", "USB-C");
+        var secondItem = new Item(Guid.NewGuid(), "cable tie", "Velcro");
+        var firstPhotoId = Guid.NewGuid();
+        var secondPhotoId = Guid.NewGuid();
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertItemAsync(firstItem);
+            await command.InsertItemAsync(secondItem);
+            await command.InsertImageItemAsync(new ImageItem(firstPhotoId), firstItem.ItemId);
+            await command.InsertImageItemAsync(new ImageItem(secondPhotoId), secondItem.ItemId);
+        }
+
+        var specification = new ItemListSpecification(
+            ItemQueryFilter.All,
+            SearchTerm: "CABLE");
+
+        var sqliteItems = await sqlite.Query.QueryItemsWithPhotosAsync(specification);
+        var jsonItems = await json.Query.QueryItemsWithPhotosAsync(specification);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItems.Select(i => i.ItemId), Is.EqualTo(new[] { firstItem.ItemId, secondItem.ItemId }));
+            Assert.That(jsonItems.Select(i => i.ItemId), Is.EqualTo(new[] { firstItem.ItemId, secondItem.ItemId }));
+            Assert.That(sqliteItems.SelectMany(i => i.Photos.Select(p => p.ImageId)), Is.EqualTo(new[] { firstPhotoId, secondPhotoId }));
+            Assert.That(jsonItems.SelectMany(i => i.Photos.Select(p => p.ImageId)), Is.EqualTo(new[] { firstPhotoId, secondPhotoId }));
+        });
+    }
+
+    [Test]
+    public async Task GetContainerAsync_AggregatesDuplicateRelationQuantitiesAndOwnsPhotos()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var photoId = Guid.NewGuid();
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(item);
+            await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 2);
+            await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 3);
+            await command.InsertImageItemAsync(new ImageItem(photoId), container.ContainerId);
+        }
+
+        var sqliteContainer = await sqlite.Query.GetContainerAsync(container.ContainerId.ToString());
+        var jsonContainer = await json.Query.GetContainerAsync(container.ContainerId.ToString());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteContainer, Is.Not.Null);
+            Assert.That(jsonContainer, Is.Not.Null);
+            Assert.That(sqliteContainer!.Items.Single().Quantity, Is.EqualTo(5));
+            Assert.That(jsonContainer!.Items.Single().Quantity, Is.EqualTo(5));
+            Assert.That(sqliteContainer.Photos.Select(p => p.ImageId), Is.EqualTo(new[] { photoId }));
+            Assert.That(jsonContainer.Photos.Select(p => p.ImageId), Is.EqualTo(new[] { photoId }));
+        });
+    }
+
+    [Test]
+    public async Task QueryContainerItemsWithPhotosAsync_PagesByRelationInsertionOrder()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var items = new[]
+        {
+            new Item(Guid.NewGuid(), "First", ""),
+            new Item(Guid.NewGuid(), "Second", ""),
+            new Item(Guid.NewGuid(), "Third", ""),
+        };
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            foreach (var item in items)
+            {
+                await command.InsertItemAsync(item);
+                await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 1);
+            }
+        }
+
+        var specification = new ContainerItemsSpecification(
+            container.ContainerId.ToString(),
+            PageNumber: 1,
+            PageSize: 1);
+
+        var sqliteItems = await sqlite.Query.QueryContainerItemsWithPhotosAsync(specification);
+        var jsonItems = await json.Query.QueryContainerItemsWithPhotosAsync(specification);
+
+        Assert.That(sqliteItems.Select(i => i.ItemId), Is.EqualTo(new[] { items[1].ItemId }));
+        Assert.That(jsonItems.Select(i => i.ItemId), Is.EqualTo(new[] { items[1].ItemId }));
+    }
+
+    [Test]
+    public async Task QueryContainerItemsWithPhotosAsync_InvalidId_ReturnsEmpty_ForSqliteAndJson()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var specification = new ContainerItemsSpecification("not-a-guid");
+
+        var sqliteItems = await sqlite.Query.QueryContainerItemsWithPhotosAsync(specification);
+        var jsonItems = await json.Query.QueryContainerItemsWithPhotosAsync(specification);
 
         Assert.That(sqliteItems, Is.Empty);
         Assert.That(jsonItems, Is.Empty);
     }
 
     [Test]
-    public async Task SearchItemsInContainerAsync_DuplicateRelations_ParitiesAcrossBackends()
+    public async Task QueryContainerItemsWithPhotosAsync_DuplicateRelations_ParitiesAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
@@ -39,8 +205,8 @@ public class BackendParityTests
         await sqlite.Command.InsertContainerAsync(sqliteContainer);
         await json.Command.InsertContainerAsync(jsonContainer);
 
-        var sqliteItem = new Item { Name = "Hat", Description = "Desc" };
-        var jsonItem = new Item { Name = "Hat", Description = "Desc" };
+        var sqliteItem = new Item("Hat", "Desc");
+        var jsonItem = new Item("Hat", "Desc");
         await sqlite.Command.InsertItemAsync(sqliteItem);
         await json.Command.InsertItemAsync(jsonItem);
 
@@ -49,17 +215,19 @@ public class BackendParityTests
         await json.Command.InsertItemContainerRelation(jsonItem.ItemId, jsonContainer.ContainerId, 1);
         await json.Command.InsertItemContainerRelation(jsonItem.ItemId, jsonContainer.ContainerId, 1);
 
-        var sqliteResults = await sqlite.Query.SearchItemsInContainerAsync(
-            sqliteContainer.ContainerId.ToString(),
-            "hat",
-            pageNumber: 0,
-            pageSize: 10);
+        var sqliteResults = await sqlite.Query.QueryContainerItemsWithPhotosAsync(
+            new ContainerItemsSpecification(
+                sqliteContainer.ContainerId.ToString(),
+                SearchTerm: "hat",
+                PageNumber: 0,
+                PageSize: 10));
 
-        var jsonResults = await json.Query.SearchItemsInContainerAsync(
-            jsonContainer.ContainerId.ToString(),
-            "hat",
-            pageNumber: 0,
-            pageSize: 10);
+        var jsonResults = await json.Query.QueryContainerItemsWithPhotosAsync(
+            new ContainerItemsSpecification(
+                jsonContainer.ContainerId.ToString(),
+                SearchTerm: "hat",
+                PageNumber: 0,
+                PageSize: 10));
 
         Assert.That(sqliteResults.Count, Is.EqualTo(2));
         Assert.That(jsonResults.Count, Is.EqualTo(2));
@@ -96,7 +264,7 @@ public class BackendParityTests
     private static async Task<JsonHarness> BuildJsonAsync()
     {
         var files = CreateInMemoryJsonFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
         await store.TryRecoverAsync();
 
         var containerRepo = new JsonContainerRepository(store);

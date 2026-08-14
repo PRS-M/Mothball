@@ -1,10 +1,8 @@
-using System;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
-
 namespace CoreApp.Services;
 
 /// <summary>
@@ -15,25 +13,24 @@ public class ImageService
 {
     public sealed record TemporaryPhotoCapture(byte[] Bytes, string FileName, string FolderPath, string FullPath);
 
-    private readonly ICameraHandler cameraHandler;
+    private readonly IPhotoSourceReader photoSourceReader;
+    private readonly IPhotoFilePersistenceService photoFilePersistence;
+    private readonly ITemporaryPhotoService temporaryPhotos;
+    private readonly IPhotoDeletionService photoDeletion;
     private readonly IInventoryCommandRepository inventoryRepository;
-    private readonly IFileHandler fileHandler;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ImageService"/> class.
-    /// </summary>
-    /// <param name="cameraHandler">Service used to capture photos from the device camera.</param>
-    /// <param name="inventoryRepository">Domain repository for inserting and updating image-related data.</param>
-    /// <param name="fileHandler">Service used to persist captured photos to storage.</param>
-    public ImageService(ICameraHandler cameraHandler, IInventoryCommandRepository inventoryRepository, IFileHandler fileHandler)
+    public ImageService(
+        IPhotoSourceReader photoSourceReader,
+        IPhotoFilePersistenceService photoFilePersistence,
+        ITemporaryPhotoService temporaryPhotos,
+        IPhotoDeletionService photoDeletion,
+        IInventoryCommandRepository inventoryRepository)
     {
-        ArgumentNullException.ThrowIfNull(cameraHandler);
-        ArgumentNullException.ThrowIfNull(inventoryRepository);
-        ArgumentNullException.ThrowIfNull(fileHandler);
-
-        this.cameraHandler = cameraHandler;
-        this.inventoryRepository = inventoryRepository;
-        this.fileHandler = fileHandler;
+        this.photoSourceReader = photoSourceReader ?? throw new ArgumentNullException(nameof(photoSourceReader));
+        this.photoFilePersistence = photoFilePersistence ?? throw new ArgumentNullException(nameof(photoFilePersistence));
+        this.temporaryPhotos = temporaryPhotos ?? throw new ArgumentNullException(nameof(temporaryPhotos));
+        this.photoDeletion = photoDeletion ?? throw new ArgumentNullException(nameof(photoDeletion));
+        this.inventoryRepository = inventoryRepository ?? throw new ArgumentNullException(nameof(inventoryRepository));
     }
 
     /// <summary>
@@ -43,13 +40,18 @@ public class ImageService
     /// <returns>
     /// A task returning the number of bytes captured and saved; returns 0 if the capture was canceled.
     /// </returns>
-    public async Task<int> CaptureContainerPhotoAsync(Container container)
+    public async Task<int> CaptureContainerPhotoAsync(
+        Container container,
+        IProgress<double>? resizeProgress = null,
+        PhotoSource source = PhotoSource.Library)
     {
         ArgumentNullException.ThrowIfNull(container);
         return await CaptureAndPersistPhotoAsync(
             addImageItem: container.AddImageItem,
             removeImageItem: container.RemoveImageItem,
             saveDirectory: Constants.PathToContainerPhotos,
+            resizeProgress: resizeProgress,
+            source: source,
             persistAsync: async image =>
             {
                 await inventoryRepository.InsertImageItemAsync(image, container.ContainerId);
@@ -64,13 +66,18 @@ public class ImageService
     /// <returns>
     /// A task returning the number of bytes captured and saved; returns 0 if the capture was canceled.
     /// </returns>
-    public async Task<int> CaptureItemPhotoAsync(Item item)
+    public async Task<int> CaptureItemPhotoAsync(
+        Item item,
+        IProgress<double>? resizeProgress = null,
+        PhotoSource source = PhotoSource.Library)
     {
         ArgumentNullException.ThrowIfNull(item);
         return await CaptureAndPersistPhotoAsync(
             addImageItem: item.AddImageItem,
             removeImageItem: item.RemoveImageItem,
             saveDirectory: Constants.PathToItemPhotos,
+            resizeProgress: resizeProgress,
+            source: source,
             persistAsync: async image =>
             {
                 await inventoryRepository.InsertImageItemAsync(image, item.ItemId);
@@ -84,38 +91,16 @@ public class ImageService
     /// <returns>
     /// A temporary capture descriptor containing bytes and file path, or <see langword="null"/> when capture is canceled.
     /// </returns>
-    public async Task<TemporaryPhotoCapture?> CaptureTemporaryPhotoAsync()
-    {
-        byte[] bytes = await cameraHandler.CapturePhotoAsync();
-        if (bytes.Length == 0)
-        {
-            return null;
-        }
-
-        string tempFileName = $"temp-{Guid.NewGuid():N}.jpg";
-        string fullPath = await fileHandler.SaveFileAsync(tempFileName, Constants.PathToTemporaryPhotos, bytes);
-        return new TemporaryPhotoCapture(bytes, tempFileName, Constants.PathToTemporaryPhotos, fullPath);
-    }
+    public Task<TemporaryPhotoCapture?> CaptureTemporaryPhotoAsync(
+        IProgress<double>? resizeProgress = null,
+        PhotoSource source = PhotoSource.Library)
+        => temporaryPhotos.CaptureTemporaryPhotoAsync(resizeProgress, source);
 
     /// <summary>
     /// Deletes a temporary photo if it exists.
     /// </summary>
-    public async Task DeleteTemporaryPhotoAsync(string fileName)
-    {
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            return;
-        }
-
-        try
-        {
-            await fileHandler.DeleteFileAsync(fileName, Constants.PathToTemporaryPhotos);
-        }
-        catch (FileNotFoundException)
-        {
-            // Best-effort cleanup only.
-        }
-    }
+    public Task DeleteTemporaryPhotoAsync(string fileName)
+        => temporaryPhotos.DeleteTemporaryPhotoAsync(fileName);
 
     /// <summary>
     /// Persists previously captured photo bytes for a container.
@@ -161,59 +146,15 @@ public class ImageService
     /// Deletes a photo for the specified container and removes persisted metadata.
     /// </summary>
     /// <returns><c>true</c> when the photo was found and deleted; otherwise <c>false</c>.</returns>
-    public async Task<bool> DeleteContainerPhotoAsync(Container container, Guid imageId)
-    {
-        ArgumentNullException.ThrowIfNull(container);
-
-        if (!container.Photos.Any(p => p.ImageId == imageId))
-        {
-            return false;
-        }
-
-        container.RemoveImageItem(imageId);
-
-        try
-        {
-            await inventoryRepository.DeleteContainerPhotoAsync(container, imageId).ConfigureAwait(false);
-        }
-        catch
-        {
-            container.AddImageItem(imageId);
-            throw;
-        }
-
-        await DeletePhotoFileBestEffortAsync(imageId, Constants.PathToContainerPhotos).ConfigureAwait(false);
-        return true;
-    }
+    public Task<bool> DeleteContainerPhotoAsync(Container container, Guid imageId)
+        => photoDeletion.DeleteContainerPhotoAsync(container, imageId);
 
     /// <summary>
     /// Deletes a photo for the specified item and removes persisted metadata.
     /// </summary>
     /// <returns><c>true</c> when the photo was found and deleted; otherwise <c>false</c>.</returns>
-    public async Task<bool> DeleteItemPhotoAsync(Item item, Guid imageId)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-
-        if (!item.Photos.Any(p => p.ImageId == imageId))
-        {
-            return false;
-        }
-
-        item.RemoveImageItem(imageId);
-
-        try
-        {
-            await inventoryRepository.DeleteItemPhotoAsync(item, imageId).ConfigureAwait(false);
-        }
-        catch
-        {
-            item.AddImageItem(imageId);
-            throw;
-        }
-
-        await DeletePhotoFileBestEffortAsync(imageId, Constants.PathToItemPhotos).ConfigureAwait(false);
-        return true;
-    }
+    public Task<bool> DeleteItemPhotoAsync(Item item, Guid imageId)
+        => photoDeletion.DeleteItemPhotoAsync(item, imageId);
 
     /// <summary>
     /// Captures a photo, saves the file, and persists metadata using the provided delegates.
@@ -233,6 +174,8 @@ public class ImageService
         Func<ImageItem> addImageItem,
         Action<Guid> removeImageItem,
         string saveDirectory,
+        IProgress<double>? resizeProgress,
+        PhotoSource source,
         Func<ImageItem, Task> persistAsync)
     {
         ArgumentNullException.ThrowIfNull(addImageItem);
@@ -240,71 +183,20 @@ public class ImageService
         ArgumentNullException.ThrowIfNull(saveDirectory);
         ArgumentNullException.ThrowIfNull(persistAsync);
 
-        byte[] bytes = await cameraHandler.CapturePhotoAsync();
+        byte[] bytes = await photoSourceReader.GetPhotoBytesAsync(source, resizeProgress);
         return await PersistPhotoBytesAsync(bytes, addImageItem, removeImageItem, saveDirectory, persistAsync);
     }
 
-    private async Task<int> PersistPhotoBytesAsync(
+    private Task<int> PersistPhotoBytesAsync(
         byte[] bytes,
         Func<ImageItem> addImageItem,
         Action<Guid> removeImageItem,
         string saveDirectory,
         Func<ImageItem, Task> persistAsync)
-    {
-        ArgumentNullException.ThrowIfNull(bytes);
-        ArgumentNullException.ThrowIfNull(addImageItem);
-        ArgumentNullException.ThrowIfNull(removeImageItem);
-        ArgumentNullException.ThrowIfNull(saveDirectory);
-        ArgumentNullException.ThrowIfNull(persistAsync);
-
-        if (bytes.Length == 0)
-        {
-            return 0;
-        }
-
-        ImageItem image = addImageItem();
-        try
-        {
-            await fileHandler.SaveFileAsync(image.FileName, saveDirectory, bytes);
-        }
-        catch
-        {
-            removeImageItem(image.ImageId);
-            throw;
-        }
-
-        try
-        {
-            await persistAsync(image);
-        }
-        catch
-        {
-            removeImageItem(image.ImageId);
-
-            try
-            {
-                await fileHandler.DeleteFileAsync(image.FileName, saveDirectory);
-            }
-            catch
-            {
-                // Best-effort cleanup only; preserve the original persistence error.
-            }
-
-            throw;
-        }
-
-        return bytes.Length;
-    }
-
-    private async Task DeletePhotoFileBestEffortAsync(Guid imageId, string folderPath)
-    {
-        try
-        {
-            await fileHandler.DeleteFileAsync($"{imageId}.jpg", folderPath).ConfigureAwait(false);
-        }
-        catch (FileNotFoundException)
-        {
-            // Best-effort cleanup only.
-        }
-    }
+        => photoFilePersistence.PersistPhotoBytesAsync(
+            bytes,
+            addImageItem,
+            removeImageItem,
+            saveDirectory,
+            persistAsync);
 }

@@ -1,4 +1,5 @@
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Specifications;
 
 namespace Infrastructure.Interfaces;
 
@@ -8,13 +9,7 @@ namespace Infrastructure.Interfaces;
 public interface IContainerRepository
 {
     Task<Container?> GetAsync(string containerId);
-    Task<List<Container>> GetAllAsync();
-    Task<List<Container>> GetAllAsync(int pageNumber, int pageSize);
-    Task<List<Container>> GetEmptyAsync(int pageNumber, int pageSize);
-    Task<List<Container>> SearchAsync(string searchTerm);
-    Task<List<Container>> SearchEmptyAsync(string searchTerm);
-    Task<Container?> GetWithItemsAndPhotosAsync(string containerId);
-    Task<Container?> GetWithItemsAndPhotosAsync(string containerId, int pageNumber, int pageSize);
+    Task<List<Container>> QueryAsync(ContainerListSpecification specification);
     Task<int> GetItemCountInContainerAsync(string containerId);
     Task<Container?> GetContainerForItemAsync(string itemId);
     Task InsertAsync(Container container);

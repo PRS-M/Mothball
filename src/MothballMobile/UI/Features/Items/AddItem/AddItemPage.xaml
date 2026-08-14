@@ -44,7 +44,8 @@
                                                WrapperStyle="{StaticResource InputWrapper}"
                                                Keyboard="Numeric"
                                                Placeholder="e.g. 1"
-                                               Text="{Binding Quantity}" />
+                                               Text="{Binding Quantity}"
+                                               IsVisible="{Binding IsAddingToContainer}" />
 
                     <Button Text="Choose Photo"
                             Style="{StaticResource OutlinedButton}"

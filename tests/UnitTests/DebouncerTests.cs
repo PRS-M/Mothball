@@ -1,4 +1,5 @@
 using MothballMobile.Infrastructure;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace UnitTests;
 
@@ -7,7 +8,7 @@ public class DebouncerTests
     [Test]
     public async Task Debounce_ExecutesOnlyOnce_WhenCalledMultipleTimesQuickly()
     {
-        var debouncer = new Debouncer(50);
+        var debouncer = new Debouncer(50, NullLogger<Debouncer>.Instance);
         int count = 0;
 
         _ = debouncer.DebounceAsync(_ =>
@@ -33,7 +34,7 @@ public class DebouncerTests
     [Test]
     public async Task Debounce_CanBeDisposed_SuppressesFurtherExecutions()
     {
-        var debouncer = new Debouncer(50);
+        var debouncer = new Debouncer(50, NullLogger<Debouncer>.Instance);
         int count = 0;
 
         _ = debouncer.DebounceAsync(_ =>

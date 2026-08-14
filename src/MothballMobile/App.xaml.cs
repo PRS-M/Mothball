@@ -1,15 +1,26 @@
 ﻿using MothballMobile.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace MothballMobile;
 
 public partial class App : Application
 {
 	private readonly IAppStartupOrchestrator startupOrchestrator;
+	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
+	private readonly ILogger<App> logger;
+	private readonly ILogger<AppShell> appShellLogger;
 
-	public App(IAppStartupOrchestrator startupOrchestrator)
+	public App(
+		IAppStartupOrchestrator startupOrchestrator,
+		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+		ILogger<App> logger,
+		ILogger<AppShell> appShellLogger)
 	{
 		InitializeComponent();
 		this.startupOrchestrator = startupOrchestrator;
+		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
+		this.logger = logger;
+		this.appShellLogger = appShellLogger;
 	}
 
 	protected override Window CreateWindow(IActivationState? activationState)
@@ -24,10 +35,11 @@ public partial class App : Application
 		try
 		{
 			await startupOrchestrator.StartAsync();
-			window.Page = new AppShell();
+			window.Page = new AppShell(photoBackgroundOperationTracker, appShellLogger);
 		}
 		catch (Exception ex)
 		{
+			logger.LogError(ex, "Application startup failed.");
 			window.Page = CreateStartupErrorPage(window, ex.Message);
 		}
 	}

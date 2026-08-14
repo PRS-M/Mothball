@@ -1,8 +1,7 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
-using CoreApp.Specifications;
 using MothballMobile.Infrastructure;
 using Infrastructure.Services;
 
@@ -11,25 +10,28 @@ namespace MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 public partial class AssociateItemWithContainerViewModel : PagedListViewModelBase<Container, SelectableContainerViewModel>, IQueryAttributable
 {
     private readonly IImagePathResolver imagePaths;
-    private readonly IInventoryQueryRepository inventoryQueries;
-    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IContainerAssociationQueryHandler associationQueries;
+    private readonly IAssignItemToContainerCommandHandler assignItemToContainer;
     private readonly Infrastructure.INavigationService nav;
+    private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly DemoDataSeeder? demoSeeder;
 
     private string? itemId;
 
     public AssociateItemWithContainerViewModel(
         IImagePathResolver imagePaths,
-        IInventoryQueryRepository inventoryQueries,
-        IInventoryCommandRepository inventoryCommands,
+        IContainerAssociationQueryHandler associationQueries,
+        IAssignItemToContainerCommandHandler assignItemToContainer,
         Infrastructure.INavigationService nav,
+        IBackgroundTaskObserver backgroundTasks,
         DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
     {
         this.imagePaths = imagePaths;
-        this.inventoryQueries = inventoryQueries;
-        this.inventoryCommands = inventoryCommands;
+        this.associationQueries = associationQueries;
+        this.assignItemToContainer = assignItemToContainer;
         this.nav = nav;
+        this.backgroundTasks = backgroundTasks;
         this.demoSeeder = demoSeeder;
     }
 
@@ -52,17 +54,13 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     }
 
     protected override Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => inventoryQueries.QueryContainersAsync(
-            new ContainerListSpecification(
-                Filter: ContainerQueryFilter.All,
-                PageNumber: pageNumber,
-                PageSize: pageSize));
+        => associationQueries.QueryContainersAsync(pageNumber, pageSize);
 
     protected override SelectableContainerViewModel MapToViewModel(Container source)
         => new(source, imagePaths, AssociateWithContainerAsync);
 
     protected override void OnViewModelAdded(SelectableContainerViewModel vm)
-        => _ = vm.LoadImagesAsync();
+        => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load selectable container images");
 
     private async Task AssociateWithContainerAsync(Guid containerId)
     {
@@ -71,7 +69,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
 
         await RunCommandAsync(async () =>
         {
-            await inventoryCommands.InsertItemContainerRelation(parsedItemId, containerId, quantity: 1);
+            await assignItemToContainer.AssignAsync(parsedItemId, containerId);
             await nav.GoBackAsync();
         });
     }

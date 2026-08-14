@@ -8,8 +8,10 @@ using Infrastructure.Services.JsonStore.Repositories;
 using Infrastructure.Services.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Media;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Features.Containers.AddContainer;
 using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
@@ -26,18 +28,30 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCoreApplication(this IServiceCollection services)
     {
-        services.AddTransient<IDebouncer>(_ => new Debouncer(300));
-        services.AddSingleton<ImageService>();
+        services.AddTransient<IDebouncer>(sp => new Debouncer(300, sp.GetRequiredService<ILogger<Debouncer>>()));
         services.AddSingleton<JsonHandler>();
         services.AddSingleton<InventoryJsonHandler>();
+        services.AddSingleton<IPhotoSourceReader, PhotoSourceReader>();
+        services.AddSingleton<IPhotoFilePersistenceService, PhotoFilePersistenceService>();
+        services.AddSingleton<ITemporaryPhotoService, TemporaryPhotoService>();
+        services.AddSingleton<IPhotoDeletionService, PhotoDeletionService>();
+        services.AddSingleton<ImageService>();
 
         services.AddSingleton<INavigationService, ShellNavigationService>();
         services.AddSingleton<IPopupService, MauiPopupService>();
+        services.AddSingleton<IPopupDefinitionService, PopupDefinitionService>();
         services.AddSingleton<IRetryService, RetryService>();
+        services.AddSingleton<IBackgroundTaskObserver, LoggingBackgroundTaskObserver>();
+        services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
+        services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
+        services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
+        services.AddSingleton<IContainerAssociationQueryHandler, ContainerAssociationQueryHandler>();
+        services.AddSingleton<IAssignItemToContainerCommandHandler, AssignItemToContainerCommandHandler>();
+        services.AddSingleton<IDeleteContainerCommandHandler, DeleteContainerCommandHandler>();
 
         return services;
     }
@@ -60,7 +74,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
             services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
             services.AddSingleton<IImagePathResolver, ImagePathResolver>();
-            services.AddSingleton<IInventoryBackupRestoreService, InventoryBackupRestoreService>();
+            services.AddSingleton<IInventoryBackupRestoreService, JsonInventoryBackupRestoreService>();
         }
         else
         {
@@ -91,6 +105,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<ICameraHandler, CameraHandler>();
         services.AddSingleton<IFileHandler, MobileFileHandler>();
+        services.AddSingleton<IImageMetadataReader, SkiaImageMetadataReader>();
         services.AddSingleton(FileSystem.Current);
         services.AddSingleton(MediaPicker.Default);
 

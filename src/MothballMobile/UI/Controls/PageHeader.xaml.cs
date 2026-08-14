@@ -1,4 +1,4 @@
-namespace MothballMobile.UI.Controls;
+﻿namespace MothballMobile.UI.Controls;
 
 public partial class PageHeader : ContentView
 {

@@ -1,9 +1,10 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Specifications;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
+using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure;
 using Infrastructure.Services;
 
@@ -21,6 +22,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     private readonly INavigationService nav;
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IDebouncer debouncer;
+    private readonly IBackgroundTaskObserver backgroundTasks;
 
     private readonly DemoDataSeeder? demoSeeder; // optional in debug
 
@@ -41,17 +43,25 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
                 return;
             }
 
-            _ = MainThread.InvokeOnMainThreadAsync(SearchAsync);
+            MainThread.InvokeOnMainThreadAsync(SearchAsync)
+                .FireAndForget(backgroundTasks, "Search containers");
         }
     }
 
-    public ContainerListViewModel(IImagePathResolver imagePaths, IInventoryQueryRepository inventoryQueries, INavigationService nav, IDebouncer? debouncer = null, DemoDataSeeder? demoSeeder = null)
+    public ContainerListViewModel(
+        IImagePathResolver imagePaths,
+        IInventoryQueryRepository inventoryQueries,
+        INavigationService nav,
+        IBackgroundTaskObserver backgroundTasks,
+        IDebouncer? debouncer = null,
+        DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
     {
         this.imagePaths = imagePaths;
         this.inventoryQueries = inventoryQueries;
         this.nav = nav;
-        this.debouncer = debouncer ?? new Debouncer(300);
+        this.backgroundTasks = backgroundTasks;
+        this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
     }
 
@@ -103,7 +113,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         => new ContainerViewModel(source, imagePaths, nav);
 
     protected override void OnViewModelAdded(ContainerViewModel vm)
-        => _ = vm.LoadImageAsync();
+        => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load container thumbnail");
 
     [RelayCommand]
     private async Task SearchAsync()
@@ -151,7 +161,8 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 
     partial void OnQueryChanged(string value)
     {
-        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync)).FireAndForget();
+        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync))
+            .FireAndForget(backgroundTasks, "Search containers");
     }
 
     private static ContainerQueryFilter ToQueryFilter(ContainerListFilter filter)

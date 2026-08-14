@@ -5,6 +5,7 @@ using Infrastructure.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using Infrastructure.Services.Repositories;
 
 namespace UnitTests;
@@ -55,8 +56,9 @@ public class RepositoryIntegrationTests
                 await db.DisposeAsync();
             }
         }
-        catch
+        catch (Exception ex)
         {
+            TestContext.Error.WriteLine($"Failed to dispose test database: {ex}");
             // ignore disposal issues in tests
         }
 
@@ -67,8 +69,9 @@ public class RepositoryIntegrationTests
                 File.Delete(dbPath);
             }
         }
-        catch (IOException)
+        catch (IOException ex)
         {
+            TestContext.Error.WriteLine($"Failed to delete test database '{dbPath}': {ex}");
             // Best effort cleanup in tests; ignore file locks
         }
     }
@@ -91,11 +94,12 @@ public class RepositoryIntegrationTests
     {
         var c = new Container(Guid.NewGuid(), "C1", "");
         await commandRepo.InsertContainerAsync(c);
-        var i = new Item { Name = "ItemA", Description = "DescA" };
+        var i = new Item("ItemA", "DescA");
         await commandRepo.InsertItemAsync(i);
         await commandRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId, quantity: 2);
 
-        var itemsForContainer = await queryRepo.GetItemsForContainerAsync(c.ContainerId.ToString());
+        var itemsForContainer = await queryRepo.QueryContainerItemsWithPhotosAsync(
+            new ContainerItemsSpecification(c.ContainerId.ToString()));
         Assert.That(itemsForContainer.Count, Is.EqualTo(1));
         Assert.That(itemsForContainer[0].Name, Is.EqualTo("ItemA"));
         Assert.That(itemsForContainer[0].Description, Is.EqualTo("DescA"));

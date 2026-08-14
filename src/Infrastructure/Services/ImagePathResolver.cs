@@ -3,6 +3,7 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
 
@@ -13,10 +14,12 @@ namespace Infrastructure.Services;
 public sealed class ImagePathResolver : IImagePathResolver
 {
     private readonly IFileHandler fileHandler;
+    private readonly ILogger<ImagePathResolver> logger;
 
-    public ImagePathResolver(IFileHandler fileHandler)
+    public ImagePathResolver(IFileHandler fileHandler, ILogger<ImagePathResolver> logger)
     {
-        this.fileHandler = fileHandler;
+        this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <inheritdoc />
@@ -57,8 +60,9 @@ public sealed class ImagePathResolver : IImagePathResolver
             var root = fileHandler.AppDataPath;
             return Path.Combine(root, folder, fileName);
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogWarning(ex, "Failed to build image path for file {FileName} in {Folder}; using fallback image.", fileName, folder);
             return GetFallbackImagePath();
         }
     }

@@ -95,7 +95,7 @@
                                            Name="{Binding Name}"
                                            Description="{Binding Description}"
                                            ImagePaths="{Binding ImagePaths}"
-                                           ImageSize="72" />
+                                           ImageSize="125" />
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

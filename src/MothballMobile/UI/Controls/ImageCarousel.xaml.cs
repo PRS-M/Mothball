@@ -1,12 +1,22 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Specialized;
+using CoreApp.Entities.Shared;
+using CoreApp.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace MothballMobile.UI.Controls;
 
 public partial class ImageCarousel
 {
+	private const double DefaultCarouselHeight = 220d;
+	private const double FallbackAspectRatio = 4d / 3d;
+	private const uint HeightAnimationDuration = 150;
+	private const string HeightAnimationName = "ImageCarouselHeight";
+
 	private INotifyCollectionChanged? observedCollection;
+	private readonly Dictionary<string, double> aspectRatioCache = new(StringComparer.Ordinal);
+	private int sizingRequestId;
 
 	public ImageCarousel()
 	{
@@ -41,6 +51,18 @@ public partial class ImageCarousel
 					control.UpdateCounter();
 			});
 
+	public static readonly BindableProperty UseDynamicAspectRatioProperty =
+		BindableProperty.Create(
+			nameof(UseDynamicAspectRatio),
+			typeof(bool),
+			typeof(ImageCarousel),
+			false,
+			propertyChanged: static (bindable, _, __) =>
+			{
+				if (bindable is ImageCarousel control)
+					control.UpdateCarouselHeight();
+			});
+
 	public IEnumerable? ImagePaths
 	{
 		get => (IEnumerable?)GetValue(ImagePathsProperty);
@@ -59,12 +81,18 @@ public partial class ImageCarousel
 		set => SetValue(ShowCounterProperty, value);
 	}
 
+	public bool UseDynamicAspectRatio
+	{
+		get => (bool)GetValue(UseDynamicAspectRatioProperty);
+		set => SetValue(UseDynamicAspectRatioProperty, value);
+	}
+
 	protected override void OnPropertyChanged(string? propertyName = null)
 	{
 		base.OnPropertyChanged(propertyName);
 
 		if (propertyName is nameof(HeightRequest) or nameof(WidthRequest))
-			ApplyToCarousel();
+			UpdateCarouselHeight();
 	}
 
 	void ApplyToCarousel()
@@ -73,11 +101,13 @@ public partial class ImageCarousel
 		Carousel.ItemsSource = ImagePaths;
 		AttachObservedCollection();
 		UpdateCounter();
+		UpdateCarouselHeight();
 	}
 
 	void Carousel_OnPositionChanged(object? sender, PositionChangedEventArgs e)
 	{
 		UpdateCounter();
+		UpdateCarouselHeight();
 	}
 
 	void AttachObservedCollection()
@@ -101,6 +131,7 @@ public partial class ImageCarousel
 	void OnImagePathsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		UpdateCounter();
+		UpdateCarouselHeight();
 	}
 
 	void UpdateCounter()
@@ -138,6 +169,112 @@ public partial class ImageCarousel
 
 		return count;
 	}
+
+	protected override void OnSizeAllocated(double width, double height)
+	{
+		base.OnSizeAllocated(width, height);
+		UpdateCarouselHeight();
+	}
+
+	void UpdateCarouselHeight()
+	{
+		if (!UseDynamicAspectRatio)
+			return;
+
+		var width = Carousel.Width > 0 ? Carousel.Width : Width;
+		if (width <= 0)
+		{
+			if (Carousel.HeightRequest <= 0)
+				Carousel.HeightRequest = DefaultCarouselHeight;
+
+			return;
+		}
+
+		var imagePath = GetImagePathAt(Carousel.Position);
+		if (string.IsNullOrWhiteSpace(imagePath))
+		{
+			ApplyCarouselHeight(width / FallbackAspectRatio, animate: false);
+			return;
+		}
+
+		if (aspectRatioCache.TryGetValue(imagePath, out var cached))
+		{
+			ApplyCarouselHeight(width / cached, animate: true);
+			return;
+		}
+
+		var reader = GetImageMetadataReader();
+		if (reader is null)
+		{
+			ApplyCarouselHeight(width / FallbackAspectRatio, animate: false);
+			return;
+		}
+
+		_ = UpdateCarouselHeightAsync(reader, imagePath, width, ++sizingRequestId);
+	}
+
+	async Task UpdateCarouselHeightAsync(IImageMetadataReader reader, string imagePath, double width, int requestId)
+	{
+		ImageDimensions? dimensions;
+		try
+		{
+			dimensions = await reader.ReadDimensionsAsync(imagePath);
+		}
+		catch
+		{
+			dimensions = null;
+		}
+
+		var aspectRatio = dimensions?.AspectRatio ?? FallbackAspectRatio;
+		aspectRatioCache[imagePath] = aspectRatio;
+
+		if (requestId != sizingRequestId || GetImagePathAt(Carousel.Position) != imagePath)
+			return;
+
+		ApplyCarouselHeight(width / aspectRatio, animate: true);
+	}
+
+	void ApplyCarouselHeight(double height, bool animate)
+	{
+		if (Math.Abs(Carousel.HeightRequest - height) > 0.5)
+		{
+			if (!animate || Carousel.HeightRequest <= 0)
+			{
+				Carousel.AbortAnimation(HeightAnimationName);
+				Carousel.HeightRequest = height;
+				return;
+			}
+
+			Carousel.Animate(
+				HeightAnimationName,
+				value => Carousel.HeightRequest = value,
+				Carousel.HeightRequest,
+				height,
+				length: HeightAnimationDuration,
+				easing: Easing.SinInOut);
+		}
+	}
+
+	string? GetImagePathAt(int position)
+	{
+		if (position < 0 || ImagePaths is null)
+			return null;
+
+		var index = 0;
+		foreach (var item in ImagePaths)
+		{
+			if (index == position)
+				return item as string;
+
+			index++;
+		}
+
+		return null;
+	}
+
+	IImageMetadataReader? GetImageMetadataReader()
+		=> Handler?.MauiContext?.Services.GetService<IImageMetadataReader>()
+			?? Application.Current?.Handler?.MauiContext?.Services.GetService<IImageMetadataReader>();
 
 	void Image_OnSizeChanged(object? sender, EventArgs e)
 	{

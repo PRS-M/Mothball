@@ -1,9 +1,9 @@
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using MothballMobile.Infrastructure;
-using System.Threading.Tasks;
+using MothballMobile.Infrastructure.Popups;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -12,9 +12,9 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     private readonly INavigationService navigation;
     private readonly string? sourceContainerId;
     private readonly Guid ownerContainerId;
-    private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IPopupService popup;
-    private readonly Func<Guid, int, Task>? onQuantitySaved;
+    private readonly IPopupDefinitionService popupDefinitions;
+    private readonly Func<Guid, int, Task> saveQuantity;
 
     public ItemWithPhotosViewModel(
         Item item,
@@ -22,19 +22,19 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         Guid ownerContainerId,
         IImagePathResolver paths,
         INavigationService navigation,
-        IInventoryCommandRepository inventoryCommands,
         IPopupService popup,
+        IPopupDefinitionService popupDefinitions,
         string? sourceContainerId,
-        Func<Guid, int, Task>? onQuantitySaved = null)
+        Func<Guid, int, Task> saveQuantity)
         : base(item, paths)
     {
         this.quantity = quantity;
         this.ownerContainerId = ownerContainerId;
         this.navigation = navigation;
-        this.inventoryCommands = inventoryCommands;
         this.popup = popup;
+        this.popupDefinitions = popupDefinitions;
         this.sourceContainerId = sourceContainerId;
-        this.onQuantitySaved = onQuantitySaved;
+        this.saveQuantity = saveQuantity;
     }
 
     [ObservableProperty]
@@ -71,25 +71,46 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
             return;
         }
 
-        var selectedQuantity = await popup.PickNumberAsync(
-            title: "Set quantity",
-            min: 1,
-            max: 1000,
-            initialValue: Quantity,
-            accept: "Set",
-            cancel: "Cancel");
+        var selectedQuantity = await popup.PickNumberAsync(popupDefinitions.SetQuantity(Quantity));
 
         if (selectedQuantity is null || selectedQuantity.Value == Quantity)
         {
             return;
         }
 
-        await inventoryCommands.ReplaceItemContainerRelationQuantity(Item.ItemId, ownerContainerId, selectedQuantity.Value);
-        Quantity = selectedQuantity.Value;
-
-        if (onQuantitySaved is not null)
+        if (selectedQuantity.Value == 0)
         {
-            await onQuantitySaved(Item.ItemId, selectedQuantity.Value);
+            var confirmed = await popup.ConfirmAsync(popupDefinitions.RemoveItemFromContainer(Name));
+
+            if (!confirmed)
+            {
+                return;
+            }
         }
+
+        await SaveQuantityAsync(selectedQuantity.Value);
+    }
+
+    [RelayCommand]
+    private async Task RemoveFromContainerAsync()
+    {
+        if (ownerContainerId == Guid.Empty)
+        {
+            return;
+        }
+
+        var confirmed = await popup.ConfirmAsync(popupDefinitions.RemoveItemFromContainer(Name));
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        await SaveQuantityAsync(0);
+    }
+
+    private async Task SaveQuantityAsync(int selectedQuantity)
+    {
+        await saveQuantity(Item.ItemId, selectedQuantity);
     }
 }

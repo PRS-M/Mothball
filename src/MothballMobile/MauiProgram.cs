@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using MothballMobile.Composition;
+using MothballMobile.Infrastructure;
 using Microsoft.Maui.Handlers;
 
 #if IOS || MACCATALYST
@@ -88,8 +89,10 @@ public static class MauiProgram
 					tf.Layer.MasksToBounds = true;
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
+				MauiLogger.For("MothballMobile.PlatformHandlers")
+					?.LogWarning(ex, "SearchBar platform styling failed.");
 				// Best-effort platform polish only.
 			}
 		});

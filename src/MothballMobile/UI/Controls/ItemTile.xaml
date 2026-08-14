@@ -42,23 +42,56 @@
                 CornerRadius="{Binding Source={x:Reference this}, Path=ImageCornerRadius}"
                 ImagePaths="{Binding Source={x:Reference this}, Path=ImagePaths}" />
 
-            <VerticalStackLayout Grid.Column="1"
-                                 Spacing="4">
-                  <Label Text="{Binding Source={x:Reference this}, Path=Name}"
-                      FontAttributes="Bold"
-                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+            <Grid Grid.Column="1"
+                  RowDefinitions="Auto,Auto,Auto,Auto"
+                  ColumnDefinitions="*,Auto"
+                  RowSpacing="4"
+                  ColumnSpacing="8">
+                <Label Grid.Row="0"
+                       Grid.Column="0"
+                       Text="{Binding Source={x:Reference this}, Path=Name}"
+                       FontAttributes="Bold"
+                       LineBreakMode="TailTruncation"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
 
-                  <Label IsVisible="{Binding Source={x:Reference this}, Path=ShowQuantity}"
-                      Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat='Qty: {0}'}"
-                      TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                      FontSize="11" />
+                <Button Grid.Row="0"
+                        Grid.Column="1"
+                        IsVisible="{Binding Source={x:Reference this}, Path=ShowRemove}"
+                        Command="{Binding Source={x:Reference this}, Path=RemoveCommand}"
+                        Background="Transparent"
+                        Padding="0"
+                        WidthRequest="32"
+                        HeightRequest="32"
+                        MinimumWidthRequest="32"
+                        MinimumHeightRequest="32"
+                        HorizontalOptions="End"
+                        VerticalOptions="Start"
+                        ZIndex="1">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="FontAwesomeSolid"
+                                         Glyph="&#xF00D;"
+                                         Color="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"
+                                         Size="16" />
+                    </Button.ImageSource>
+                </Button>
 
-                <Label Text="{Binding Source={x:Reference this}, Path=Description}"
+                <Label Grid.Row="1"
+                       Grid.ColumnSpan="2"
+                       IsVisible="{Binding Source={x:Reference this}, Path=ShowQuantity}"
+                       Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat='Qty: {0}'}"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                       FontSize="11" />
+
+                <Label Grid.Row="2"
+                       Grid.ColumnSpan="2"
+                       Text="{Binding Source={x:Reference this}, Path=Description}"
                        TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                        FontSize="12"
                        LineBreakMode="TailTruncation" />
 
-                <Button Text="Edit quantity"
+                <Button Grid.Row="3"
+                        Grid.Column="1"
+                        Text="Edit quantity"
                         IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"
                         Command="{Binding Source={x:Reference this}, Path=EditQuantityCommand}"
                         Style="{StaticResource OutlinedButton}"
@@ -67,7 +100,7 @@
                         Padding="8,0"
                         HorizontalOptions="End"
                         VerticalOptions="End" />
-            </VerticalStackLayout>
+            </Grid>
         </Grid>
     </Border>
 </ContentView>

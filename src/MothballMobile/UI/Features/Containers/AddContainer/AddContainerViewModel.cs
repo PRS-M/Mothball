@@ -1,9 +1,11 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
+using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;
 
@@ -12,19 +14,22 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly ImageService imageService;
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService navigationService;
-    private readonly IRetryService retryService;
+    private readonly IPopupService popup;
+    private readonly IPopupDefinitionService popupDefinitions;
     private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     public AddContainerViewModel(
         ImageService imageService,
         IInventoryCommandRepository inventoryCommands,
         INavigationService navigationService,
-        IRetryService retryService)
+        IPopupService popup,
+        IPopupDefinitionService popupDefinitions)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-        this.retryService = retryService ?? throw new ArgumentNullException(nameof(retryService));
+        this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
+        this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
     }
 
     [ObservableProperty]
@@ -75,30 +80,31 @@ public partial class AddContainerViewModel : BaseViewModel
     [RelayCommand]
     public async Task ChoosePhoto()
     {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        var source = await SelectPhotoSourceAsync();
+        if (source is null)
+        {
+            return;
+        }
+
         await RunCommandAsync(async () =>
         {
-            ImageService.TemporaryPhotoCapture? selectedPhoto = null;
+            ImageService.TemporaryPhotoCapture? selectedPhoto;
+            IsPhotoProcessing = true;
+            try
+            {
+                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync(source: source.Value);
+            }
+            finally
+            {
+                IsPhotoProcessing = false;
+            }
 
-            bool photoSelected = await retryService.RetryAsync(
-                async () =>
-                {
-                    IsPhotoProcessing = true;
-                    try
-                    {
-                        selectedPhoto = await imageService.CaptureTemporaryPhotoAsync();
-                        return selectedPhoto is not null;
-                    }
-                    finally
-                    {
-                        IsPhotoProcessing = false;
-                    }
-                },
-                canceledTitle: "Photo capture canceled",
-                canceledMessage: "Please try again or continue without a photo.",
-                retryButton: "Retry",
-                continueButton: "Continue");
-
-            if (!photoSelected || selectedPhoto is null)
+            if (selectedPhoto is null)
             {
                 return;
             }
@@ -113,6 +119,9 @@ public partial class AddContainerViewModel : BaseViewModel
             ValidationMessage = null;
         });
     }
+
+    private async Task<PhotoSource?> SelectPhotoSourceAsync()
+        => await PhotoSourceSelector.SelectPhotoSourceAsync(popup, popupDefinitions);
 
     [RelayCommand(CanExecute = nameof(CanAddContainer))]
     public async Task SaveContainer()

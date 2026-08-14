@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoreApp.Interfaces;
 using Infrastructure.Services.JsonStore.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services.JsonStore;
 
@@ -15,6 +16,7 @@ namespace Infrastructure.Services.JsonStore;
 public sealed partial class JsonInventoryStore
 {
     private readonly IFileHandler files;
+    private readonly ILogger<JsonInventoryStore> logger;
     private readonly SemaphoreSlim writeLock = new(1, 1);
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -23,9 +25,10 @@ public sealed partial class JsonInventoryStore
         WriteIndented = false,
     };
 
-    public JsonInventoryStore(IFileHandler files)
+    public JsonInventoryStore(IFileHandler files, ILogger<JsonInventoryStore> logger)
     {
-        this.files = files;
+        this.files = files ?? throw new ArgumentNullException(nameof(files));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<bool> TryRecoverAsync()
@@ -54,8 +57,9 @@ public sealed partial class JsonInventoryStore
             await WriteManifestAsync(JsonStoreConstants.ManifestAFileName, initial).ConfigureAwait(false);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogWarning(ex, "JSON inventory store recovery failed.");
             return false;
         }
         finally
@@ -90,8 +94,9 @@ public sealed partial class JsonInventoryStore
             await WriteManifestAsync(inactiveManifest, rollback).ConfigureAwait(false);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogWarning(ex, "JSON inventory store rollback failed.");
             return false;
         }
         finally

@@ -1,10 +1,10 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
 using CoreApp.Services;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;
@@ -14,7 +14,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService nav;
-    private readonly IPopupService popup;
+    private readonly IBackgroundTaskObserver backgroundTasks;
     private Item? currentItem;
     private string? sourceContainerId;
 
@@ -38,13 +38,22 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemDetailsViewModel(IInventoryQueryRepository inventoryQueries, IInventoryCommandRepository inventoryCommands, INavigationService nav, IImagePathResolver paths, IPopupService popup, ImageService imageService, IRetryService retryService)
-        : base(paths, imageService, retryService)
+    public ItemDetailsViewModel(
+        IInventoryQueryRepository inventoryQueries,
+        IInventoryCommandRepository inventoryCommands,
+        INavigationService nav,
+        IImagePathResolver paths,
+        IPopupService popup,
+        IPopupDefinitionService popupDefinitions,
+        ImageService imageService,
+        IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+        IBackgroundTaskObserver backgroundTasks)
+        : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
         this.nav = nav;
-        this.popup = popup;
+        this.backgroundTasks = backgroundTasks;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -136,11 +145,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private async Task DeleteItemAsync()
     {
         if (string.IsNullOrWhiteSpace(ItemId)) return;
-        var confirmed = await popup.ConfirmAsync(
-            title: "Delete item",
-            message: "Are you sure you want to delete this item? This cannot be undone.",
-            accept: "Delete",
-            cancel: "Cancel");
+        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteItem());
         if (!confirmed) return;
 
         await inventoryCommands.DeleteItemAsync(ItemId);
@@ -151,17 +156,20 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private async Task AddPhotoAsync()
     {
         if (currentItem is null) return;
+        if (IsPhotoCaptureInProgress) return;
 
-        await RunCommandAsync(async () =>
+        var source = await SelectPhotoSourceAsync();
+        if (source is null)
         {
-            var captured = await CaptureWithDefaultRetryAsync(
-                attempt: async () => (await imageService.CaptureItemPhotoAsync(currentItem)) > 0);
+            return;
+        }
 
-            if (captured)
-            {
-                ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(currentItem));
-            }
-        });
+        // Run in background so persistence can finish even if the user leaves this view.
+        CaptureTrackedPhotoAsync(
+            operationName: "Saving item photo",
+            captureAsync: progress => imageService.CaptureItemPhotoAsync(currentItem, progress, source.Value),
+            targetPaths: ImagePaths,
+            refreshedPaths: () => paths.GetItemPhotoPaths(currentItem)).FireAndForget(backgroundTasks, "Save item photo");
     }
 
     [RelayCommand]
@@ -170,21 +178,17 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         if (currentItem is null) return;
         if (currentItem.Photos.Count == 0)
         {
-            await popup.ShowAlertAsync("No photos", "This item does not have any photos to delete.");
+            await popup.ShowAlertAsync(popupDefinitions.NoItemPhotos());
             return;
         }
 
-        var selectedPhoto = await SelectPhotoAsync(currentItem.Photos, "Choose item photo to delete");
+        var selectedPhoto = await SelectPhotoAsync(popupDefinitions.ItemPhotoDeletePicker(currentItem.Photos));
         if (selectedPhoto is null)
         {
             return;
         }
 
-        var confirmed = await popup.ConfirmAsync(
-            title: "Delete photo",
-            message: "Delete the selected photo?",
-            accept: "Delete",
-            cancel: "Cancel");
+        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeletePhoto());
 
         if (!confirmed)
         {
@@ -201,18 +205,4 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         });
     }
 
-    private async Task<ImageItem?> SelectPhotoAsync(IReadOnlyList<ImageItem> photos, string title)
-    {
-        var optionToPhoto = photos
-            .Select((photo, index) => new { Option = $"Photo {index + 1}", Photo = photo })
-            .ToList();
-
-        var selected = await popup.SelectOptionAsync(title, "Cancel", optionToPhoto.Select(x => x.Option).ToArray());
-        if (string.IsNullOrWhiteSpace(selected))
-        {
-            return null;
-        }
-
-        return optionToPhoto.FirstOrDefault(x => string.Equals(x.Option, selected, StringComparison.Ordinal))?.Photo;
-    }
 }

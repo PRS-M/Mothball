@@ -1,11 +1,32 @@
-﻿namespace MothballMobile;
+﻿using Microsoft.Extensions.Logging;
+
+namespace MothballMobile;
 
 public partial class AppShell : Shell
 {
-	public AppShell()
+	private readonly ILogger<AppShell> logger;
+
+	public AppShell(
+		Infrastructure.IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+		ILogger<AppShell> logger)
 	{
+		this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		InitializeComponent();
+		BindingContext = photoBackgroundOperationTracker;
 		RegisterRoutes();
+	}
+
+	private async void OnBackgroundOperationsBannerTapped(object? sender, TappedEventArgs e)
+	{
+		try
+		{
+			await GoToAsync(Infrastructure.NavigationRoutes.BackgroundOperations);
+		}
+		catch (Exception ex)
+		{
+			logger.LogWarning(ex, "Background operations navigation failed.");
+			// Best-effort UX: ignore navigation failures from banner tap.
+		}
 	}
 
 	private static void RegisterRoutes()
@@ -19,5 +40,6 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddItem, typeof(UI.Features.Items.AddItem.AddItemPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddExistingItemToContainer, typeof(UI.Features.Containers.AddExistingItemToContainer.AddExistingItemToContainerPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AssociateItemWithContainer, typeof(UI.Features.Containers.AssociateItemWithContainer.AssociateItemWithContainerPage));
+		Routing.RegisterRoute(Infrastructure.NavigationRoutes.BackgroundOperations, typeof(UI.Features.BackgroundOperations.BackgroundOperationsPage));
 	}
 }

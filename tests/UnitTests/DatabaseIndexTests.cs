@@ -41,8 +41,17 @@ public class DatabaseIndexTests
     [TearDown]
     public async Task Teardown()
     {
-        try { if (db != null) await db.DisposeAsync(); } catch { }
-        try { if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath)) File.Delete(dbPath); } catch { }
+        try { if (db != null) await db.DisposeAsync(); }
+        catch (Exception ex)
+        {
+            TestContext.Error.WriteLine($"Failed to dispose test database: {ex}");
+        }
+
+        try { if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath)) File.Delete(dbPath); }
+        catch (Exception ex)
+        {
+            TestContext.Error.WriteLine($"Failed to delete test database '{dbPath}': {ex}");
+        }
     }
 
     private async Task<bool> ColumnHasIndexAsync(string table, string column)

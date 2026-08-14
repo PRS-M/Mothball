@@ -1,8 +1,10 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Specifications;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.JsonStore.Repositories;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json;
 
 namespace UnitTests;
@@ -102,7 +104,7 @@ public class JsonOperationalStoreTests
     public async Task TryRecoverAsync_FirstRun_CreatesReadableStore()
     {
         var files = new InMemoryFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
 
         var ok = await store.TryRecoverAsync();
         Assert.That(ok, Is.True);
@@ -118,7 +120,7 @@ public class JsonOperationalStoreTests
     public async Task Rollback_RevertsLastCommit_MetadataOnly()
     {
         var files = new InMemoryFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
         var maintenance = new JsonInventoryMaintenanceService(store);
 
         var containers = new JsonContainerRepository(store);
@@ -129,17 +131,17 @@ public class JsonOperationalStoreTests
         var c2 = new Container(Guid.NewGuid(), "Crate", "N2");
 
         await containers.InsertAsync(c1);
-        var afterFirst = await containers.GetAllAsync();
+        var afterFirst = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
         Assert.That(afterFirst.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
 
         await containers.InsertAsync(c2);
-        var afterSecond = await containers.GetAllAsync();
+        var afterSecond = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
         Assert.That(afterSecond.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId, c2.ContainerId }));
 
         var rolledBack = await maintenance.TryRollbackLastCommitAsync();
         Assert.That(rolledBack, Is.True);
 
-        var afterRollback = await containers.GetAllAsync();
+        var afterRollback = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
         Assert.That(afterRollback.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
     }
 
@@ -147,7 +149,7 @@ public class JsonOperationalStoreTests
     public async Task TryRecoverAsync_WhenStoreAlreadyValid_IsIdempotent()
     {
         var files = new InMemoryFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
 
         Assert.That(await store.TryRecoverAsync(), Is.True);
 
@@ -167,7 +169,7 @@ public class JsonOperationalStoreTests
     public async Task LoadAsync_WithoutManifest_AutoRecoversToEmptyStore()
     {
         var files = new InMemoryFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
 
         var loaded = await store.LoadAsync();
 
@@ -182,7 +184,7 @@ public class JsonOperationalStoreTests
     public async Task TryRollbackLastCommitAsync_FirstGeneration_ReturnsFalse()
     {
         var files = new InMemoryFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
 
         Assert.That(await store.TryRecoverAsync(), Is.True);
 
@@ -194,7 +196,7 @@ public class JsonOperationalStoreTests
     public async Task UpdateAsync_WhenUpdaterThrows_DoesNotCommitPartialMutation()
     {
         var files = new InMemoryFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
         Assert.That(await store.TryRecoverAsync(), Is.True);
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -218,7 +220,7 @@ public class JsonOperationalStoreTests
     public async Task LoadAsync_WhenCurrentSlotIsIncomplete_FallsBackToPreviousSlot()
     {
         var files = new InMemoryFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
         var containers = new JsonContainerRepository(store);
 
         Assert.That(await store.TryRecoverAsync(), Is.True);
@@ -235,7 +237,7 @@ public class JsonOperationalStoreTests
         var currentSlotFolder = JsonStoreConstants.SlotFolder(activeManifest!.CurrentSlot);
         files.DeleteRaw(JsonStoreConstants.MetadataFileName, currentSlotFolder);
 
-        var loaded = await containers.GetAllAsync();
+        var loaded = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
         Assert.That(loaded.Select(x => x.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
     }
 
@@ -243,7 +245,7 @@ public class JsonOperationalStoreTests
     public async Task LoadAsync_WhenMetadataCountersAreStale_RecomputesFromRows()
     {
         var files = new InMemoryFileHandler();
-        var store = new JsonInventoryStore(files);
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
 
         await SeedSlotAAsync(files);
 
@@ -258,7 +260,7 @@ public class JsonOperationalStoreTests
     [Test]
     public async Task StartupInitializer_WhenRecoverFails_ThrowsInvalidOperationException()
     {
-        var store = new JsonInventoryStore(new FailingWriteFileHandler());
+        var store = new JsonInventoryStore(new FailingWriteFileHandler(), NullLogger<JsonInventoryStore>.Instance);
         var initializer = new JsonStoreStartupInitializer(store);
 
         Assert.ThrowsAsync<InvalidOperationException>(async () => await initializer.InitializeAsync());

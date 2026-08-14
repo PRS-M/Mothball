@@ -1,0 +1,224 @@
+using CoreApp.Contracts;
+using CoreApp.Interfaces;
+using CoreApp.Utilities;
+using Infrastructure.Services.JsonStore;
+using Infrastructure.Services.JsonStore.Models;
+
+namespace Infrastructure.Services.Restore;
+
+public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreService
+{
+    private readonly JsonInventoryStore store;
+
+    public JsonInventoryBackupRestoreService(JsonInventoryStore store)
+    {
+        this.store = store ?? throw new ArgumentNullException(nameof(store));
+    }
+
+    public async Task<InventoryBackupRestoreResult> RestoreFromJsonAsync(
+        string backupJson,
+        InventoryBackupRestoreOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        var backup = InventoryBackupRestorePlanner.ParseBackupJson(backupJson);
+        return await RestoreAsync(backup, options, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<InventoryBackupRestoreResult> RestoreAsync(
+        InventoryBackupEnvelope backup,
+        InventoryBackupRestoreOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        options ??= new InventoryBackupRestoreOptions();
+
+        ArgumentNullException.ThrowIfNull(backup);
+        ArgumentNullException.ThrowIfNull(backup.Data);
+        InventoryBackupRestorePlanner.ValidatePayloadVersion(backup);
+        InventoryBackupRestorePlanner.ValidateIntegrity(backup, options);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        InventoryBackupRestoreResult result = new();
+
+        await store.UpdateAsync(state =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var existingState = CreateExistingState(state);
+            var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState, options.ConflictPolicy);
+            ApplyPlan(state, plan, cancellationToken);
+            result = plan.Result;
+
+            return Task.CompletedTask;
+        }).ConfigureAwait(false);
+
+        return result;
+    }
+
+    private static InventoryBackupExistingState CreateExistingState(JsonInventoryStore.StoreState state)
+    {
+        var containerIds = state.Containers.Select(c => c.ContainerId).ToHashSet();
+        var itemIds = state.Items.Select(i => i.ItemId).ToHashSet();
+
+        var containerImages = state.Images
+            .Where(image => containerIds.Contains(image.OwnerUniqueId))
+            .Select(image => new InventoryBackupImageOwnership(image.OwnerUniqueId, image.ImageId))
+            .ToList();
+
+        var itemImages = state.Images
+            .Where(image => itemIds.Contains(image.OwnerUniqueId))
+            .Select(image => new InventoryBackupImageOwnership(image.OwnerUniqueId, image.ImageId))
+            .ToList();
+
+        return new InventoryBackupExistingState(
+            state.Containers
+                .Select(container => new InventoryBackupExistingContainer(container.ContainerId, container.Name, container.Notes))
+                .ToList(),
+            state.Items
+                .Select(item => new InventoryBackupExistingItem(item.ItemId, item.Name, item.Description))
+                .ToList(),
+            containerImages,
+            itemImages,
+            state.Relations
+                .Select(relation => new InventoryBackupExistingRelation(relation.ContainerId, relation.ItemId, relation.Quantity))
+                .ToList());
+    }
+
+    private static void ApplyPlan(
+        JsonInventoryStore.StoreState state,
+        InventoryBackupRestorePlan plan,
+        CancellationToken cancellationToken)
+    {
+        foreach (var container in plan.ContainersToInsert)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            state.Containers.Add(new JsonContainerRow
+            {
+                RowId = state.Metadata.NextContainerRowId++,
+                ContainerId = container.ContainerId,
+                Name = container.Name,
+                Notes = container.Notes,
+            });
+        }
+
+        foreach (var container in plan.ContainersToUpdate)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var existing = state.Containers.FirstOrDefault(c => c.ContainerId == container.ContainerId);
+            if (existing is null)
+            {
+                state.Containers.Add(new JsonContainerRow
+                {
+                    RowId = state.Metadata.NextContainerRowId++,
+                    ContainerId = container.ContainerId,
+                    Name = container.Name,
+                    Notes = container.Notes,
+                });
+                continue;
+            }
+
+            existing.Name = container.Name;
+            existing.Notes = container.Notes;
+        }
+
+        foreach (var item in plan.ItemsToInsert)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            state.Items.Add(new JsonItemRow
+            {
+                RowId = state.Metadata.NextItemRowId++,
+                ItemId = item.ItemId,
+                Name = item.Name,
+                Description = item.Description,
+            });
+        }
+
+        foreach (var item in plan.ItemsToUpdate)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var existing = state.Items.FirstOrDefault(i => i.ItemId == item.ItemId);
+            if (existing is null)
+            {
+                state.Items.Add(new JsonItemRow
+                {
+                    RowId = state.Metadata.NextItemRowId++,
+                    ItemId = item.ItemId,
+                    Name = item.Name,
+                    Description = item.Description,
+                });
+                continue;
+            }
+
+            existing.Name = item.Name;
+            existing.Description = item.Description;
+        }
+
+        foreach (var relation in plan.RelationsToInsert)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            state.Relations.Add(new JsonRelationRow
+            {
+                Id = state.Metadata.NextRelationId++,
+                ItemId = relation.ItemId,
+                ContainerId = relation.ContainerId,
+                Quantity = relation.QuantityToInsert,
+            });
+        }
+
+        foreach (var relation in plan.RelationsToSet)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            state.Relations.RemoveAll(r => r.ItemId == relation.ItemId && r.ContainerId == relation.ContainerId);
+
+            if (relation.Quantity > 0)
+            {
+                state.Relations.Add(new JsonRelationRow
+                {
+                    Id = state.Metadata.NextRelationId++,
+                    ItemId = relation.ItemId,
+                    ContainerId = relation.ContainerId,
+                    Quantity = relation.Quantity,
+                });
+            }
+        }
+
+        foreach (var relation in plan.RelationsToDelete)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            state.Relations.RemoveAll(r => r.ItemId == relation.ItemId && r.ContainerId == relation.ContainerId);
+        }
+
+        foreach (var image in plan.ImagesToInsert)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            state.Images.Add(new JsonImageRow
+            {
+                RowId = state.Metadata.NextImageRowId++,
+                ImageId = image.ImageId,
+                OwnerUniqueId = image.OwnerId,
+                ImageDataBase64 = null,
+            });
+        }
+
+        foreach (var image in plan.ImagesToDelete)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            state.Images.RemoveAll(i => i.ImageId == image.ImageId && i.OwnerUniqueId == image.OwnerId);
+        }
+
+        foreach (var itemId in plan.ItemIdsToDelete)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            state.Images.RemoveAll(image => image.OwnerUniqueId == itemId);
+            state.Relations.RemoveAll(relation => relation.ItemId == itemId);
+            state.Items.RemoveAll(item => item.ItemId == itemId);
+        }
+
+        foreach (var containerId in plan.ContainerIdsToDelete)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            state.Images.RemoveAll(image => image.OwnerUniqueId == containerId);
+            state.Relations.RemoveAll(relation => relation.ContainerId == containerId);
+            state.Containers.RemoveAll(container => container.ContainerId == containerId);
+        }
+    }
+}

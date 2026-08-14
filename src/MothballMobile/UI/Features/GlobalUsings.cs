@@ -1,1 +1,1 @@
-global using MothballMobile.UI.Shared;
+﻿global using MothballMobile.UI.Shared;

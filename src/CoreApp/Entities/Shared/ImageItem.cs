@@ -7,9 +7,9 @@ public record ImageItem // Value Object
         ImageId = Guid.NewGuid();
     }
 
-    public ImageItem(Guid photoId)
+    public ImageItem(Guid imageId)
     {
-        ImageId = photoId;
+        ImageId = imageId;
     }
 
     public Guid ImageId { get; }
