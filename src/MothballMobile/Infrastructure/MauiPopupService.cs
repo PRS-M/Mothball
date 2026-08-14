@@ -72,6 +72,38 @@ public sealed class MauiPopupService : IPopupService
     }
 
     /// <inheritdoc />
+    public async Task<T?> SelectValueOptionAsync<T>(OptionPickerPopupDefinition<T> definition)
+        where T : struct
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+
+        if (definition.Options.Count == 0)
+        {
+            return null;
+        }
+
+        var selected = await SelectOptionAsync(
+            definition.Title,
+            definition.Cancel,
+            definition.Options.Select(option => option.Label).ToArray());
+
+        if (string.IsNullOrWhiteSpace(selected))
+        {
+            return null;
+        }
+
+        foreach (var option in definition.Options)
+        {
+            if (string.Equals(option.Label, selected, StringComparison.Ordinal))
+            {
+                return option.Value;
+            }
+        }
+
+        return null;
+    }
+
+    /// <inheritdoc />
     public async Task<string?> SelectOptionAsync(string title, string cancel, params string[] options)
     {
         var page = TryGetCurrentPage();

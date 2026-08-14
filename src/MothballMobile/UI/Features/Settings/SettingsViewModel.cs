@@ -130,7 +130,7 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     private async Task<InventoryBackupConflictPolicy?> SelectRestorePolicyAsync()
-        => await popup.SelectOptionAsync(popupDefinitions.RestorePolicyPicker());
+        => await popup.SelectValueOptionAsync(popupDefinitions.RestorePolicyPicker());
 
     private async Task<string?> SelectBackupFileAsync()
     {

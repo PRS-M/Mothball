@@ -11,6 +11,6 @@ public static class PhotoSourceSelector
         ArgumentNullException.ThrowIfNull(popup);
         ArgumentNullException.ThrowIfNull(popupDefinitions);
 
-        return await popup.SelectOptionAsync(popupDefinitions.PhotoSourcePicker());
+        return await popup.SelectValueOptionAsync(popupDefinitions.PhotoSourcePicker());
     }
 }

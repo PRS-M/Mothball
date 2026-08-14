@@ -36,6 +36,13 @@ public interface IPopupService
     Task<T?> SelectOptionAsync<T>(OptionPickerPopupDefinition<T> definition);
 
     /// <summary>
+    /// Shows a typed value list picker from a reusable popup definition.
+    /// Returns <c>null</c> when the user cancels.
+    /// </summary>
+    Task<T?> SelectValueOptionAsync<T>(OptionPickerPopupDefinition<T> definition)
+        where T : struct;
+
+    /// <summary>
     /// Shows a list picker using an action sheet and returns the selected option.
     /// Returns <c>null</c> when the user cancels.
     /// </summary>
