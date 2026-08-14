@@ -49,7 +49,7 @@ public class ItemRepository : IItemRepository
 
     public Task<List<Item>> QueryWithPhotosAsync(ItemListSpecification specification)
     {
-        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+        var (term, hasSearch) = RepositoryQueryHelpers.NormalizeSearch(specification.SearchTerm);
 
         if (hasSearch)
         {
@@ -72,7 +72,7 @@ public class ItemRepository : IItemRepository
 
     public Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
     {
-        var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+        var (term, hasSearch) = RepositoryQueryHelpers.NormalizeSearch(specification.SearchTerm);
         var hasPaging = RepositoryQueryHelpers.TryGetPaging(
             specification.PageNumber,
             specification.PageSize,
@@ -96,7 +96,7 @@ public class ItemRepository : IItemRepository
 
     private async Task<List<Item>> GetItemsForContainerAsync(string containerId, int? pageNumber = null, int? pageSize = null)
     {
-        if (!TryParseGuid(containerId, out Guid cid, "GetItemsForContainerAsync", containerId))
+        if (!RepositoryQueryHelpers.TryParseGuid(containerId, out Guid cid, logger, "GetItemsForContainerAsync", containerId))
         {
             return [];
         }
@@ -173,7 +173,7 @@ public class ItemRepository : IItemRepository
 
     private async Task<List<Item>> SearchItemsInContainerAsync(string containerId, string searchTerm, int pageNumber, int pageSize)
     {
-        if (!TryParseGuid(containerId, out Guid cid, "SearchItemsInContainerAsync", containerId))
+        if (!RepositoryQueryHelpers.TryParseGuid(containerId, out Guid cid, logger, "SearchItemsInContainerAsync", containerId))
         {
             return [];
         }
@@ -228,7 +228,7 @@ public class ItemRepository : IItemRepository
 
     public async Task DeleteAsync(string itemId)
     {
-        if (!TryParseGuid(itemId, out Guid iid)) return;
+        if (!RepositoryQueryHelpers.TryParseGuid(itemId, out Guid iid, logger)) return;
 
         await transactionRunner.RunAsync(scope =>
         {
@@ -242,22 +242,10 @@ public class ItemRepository : IItemRepository
 
     private async Task<List<Item>> GetItemsInternalAsync(int? pageNumber = null, int? pageSize = null)
     {
-        List<DbItem> dbItems;
-
-        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
-        {
-            RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
-            int offset = RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue);
-            dbItems = await items.QueryAsync(
-                $"SELECT * FROM {nameof(DbItem)} ORDER BY rowid LIMIT ? OFFSET ?",
-                pageSizeValue,
-                offset);
-        }
-        else
-        {
-            dbItems = await items.QueryAsync(
-                $"SELECT * FROM {nameof(DbItem)} ORDER BY rowid");
-        }
+        List<DbItem> dbItems = await RepositoryQueryHelpers.QueryAllOrderedByRowIdAsync(
+            items,
+            pageNumber,
+            pageSize);
 
         return await MapItemsWithPhotosAsync(dbItems);
     }
@@ -279,43 +267,18 @@ public class ItemRepository : IItemRepository
         if (dbItems.Count == 0) return [];
 
         List<object> itemIds = dbItems.Select(i => (object)i.ItemId).ToList();
-        Dictionary<Guid, IEnumerable<DbImage>> photosByItem = await LoadPhotosByOwnerIdsAsync(itemIds);
+        Dictionary<Guid, IEnumerable<DbImage>> photosByItem =
+            await RepositoryQueryHelpers.LoadLookupByIdsAsync(
+                photos,
+                nameof(DbImage.OwnerUniqueId),
+                itemIds,
+                p => p.OwnerUniqueId);
 
         return dbItems.Select(dbItem =>
         {
             photosByItem.TryGetValue(dbItem.ItemId, out var itemPhotos);
             return dbItem.ToDomain(itemPhotos);
         }).ToList();
-    }
-
-    private async Task<Dictionary<Guid, IEnumerable<DbImage>>> LoadPhotosByOwnerIdsAsync(List<object> ownerIds)
-    {
-        if (ownerIds.Count == 0) return [];
-
-        List<DbImage> photosList = await photos.WhereInAsync(nameof(DbImage.OwnerUniqueId), ownerIds);
-        return RepositoryQueryHelpers.GroupByKey(photosList, p => p.OwnerUniqueId);
-    }
-
-    #endregion
-
-    #region Private Helpers - Validation & Utilities
-
-    private bool TryParseGuid(string value, out Guid result, string? methodName = null, string? logValue = null)
-    {
-        if (Guid.TryParse(value, out result)) return true;
-
-        if (methodName is not null)
-        {
-            logger.LogWarning("{MethodName}: invalid GUID format: {Value}", methodName, logValue ?? value);
-        }
-
-        return false;
-    }
-
-    private static (string? term, bool hasSearch) NormalizeSearch(string? searchTerm)
-    {
-        var term = searchTerm?.Trim();
-        return (term, !string.IsNullOrWhiteSpace(term));
     }
 
     #endregion
