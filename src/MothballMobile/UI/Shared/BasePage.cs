@@ -1,6 +1,9 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure;
+#if IOS || ANDROID
+using Plugin.AdMob;
+#endif
 
 namespace MothballMobile.UI.Shared;
 
@@ -8,6 +11,13 @@ public class BasePage : ContentPage
 {
     private IDisposable? previousDisposable;
     private readonly SemaphoreSlim initializationGate = new(1, 1);
+    private bool contentWrappedWithAdBanner;
+
+    protected override void OnHandlerChanged()
+    {
+        base.OnHandlerChanged();
+        WrapContentWithAdBanner();
+    }
 
     /// <summary>
     /// Handles changes to the <see cref="P:Microsoft.Maui.Controls.BindableObject.BindingContext"/>.
@@ -68,5 +78,42 @@ public class BasePage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
+    }
+
+    private void WrapContentWithAdBanner()
+    {
+#if IOS || ANDROID
+        if (contentWrappedWithAdBanner || Content is null)
+        {
+            return;
+        }
+
+        var pageContent = Content;
+        var layout = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Star),
+                new RowDefinition(GridLength.Auto)
+            }
+        };
+
+        Content = null;
+        Grid.SetRow(pageContent, 0);
+        layout.Add(pageContent);
+
+        var banner = new BannerAd
+        {
+            HeightRequest = 50,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.End
+        };
+
+        Grid.SetRow(banner, 1);
+        layout.Add(banner);
+
+        contentWrappedWithAdBanner = true;
+        Content = layout;
+#endif
     }
 }

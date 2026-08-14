@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using MothballMobile.Composition;
 using MothballMobile.Infrastructure;
 using Microsoft.Maui.Handlers;
+using Plugin.AdMob;
+using Plugin.AdMob.Configuration;
 
 #if IOS || MACCATALYST
 using UIKit;
@@ -31,6 +33,7 @@ public static class MauiProgram
 
 		builder
 			.UseMauiApp<App>()
+			.UseAdMob()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -42,6 +45,7 @@ public static class MauiProgram
 #if MAUI_DEVFLOW
 		builder.AddMauiDevFlowAgent();
 #endif
+		AdConfig.UseTestAdUnitIds = true;
 #if DEBUG
 		builder.Logging.AddDebug();
 #endif

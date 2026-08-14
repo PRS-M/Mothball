@@ -71,13 +71,15 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" />
 		<PackageReference Include="Microsoft.Maui.Controls" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+		<PackageReference Include="Plugin.AdMob" />
 		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
 		<PackageReference Update="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Update="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Update="Microsoft.Maui.Controls" Version="10.0.90" />
 		<PackageReference Update="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+		<PackageReference Update="Plugin.AdMob" Version="10.0.90" />
 		<PackageReference Update="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
 	</ItemGroup>
 
@@ -86,5 +88,23 @@
 	  <ProjectReference Include="../Infrastructure/Infrastructure.Persistence.csproj" />
 	  <ProjectReference Include="../Infrastructure.Platform.Maui/Infrastructure.Platform.Maui.csproj" />
 	</ItemGroup>
+
+	<Target Name="LinkWithSwift"
+	        Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'"
+	        DependsOnTargets="_ParseBundlerArguments;_DetectSdkLocations"
+	        BeforeTargets="_LinkNativeExecutable">
+		<PropertyGroup>
+			<_SwiftPlatform Condition="$(RuntimeIdentifier.StartsWith('iossimulator-'))">iphonesimulator</_SwiftPlatform>
+			<_SwiftPlatform Condition="$(RuntimeIdentifier.StartsWith('ios-'))">iphoneos</_SwiftPlatform>
+		</PropertyGroup>
+		<ItemGroup>
+			<_CustomLinkFlags Include="-L" />
+			<_CustomLinkFlags Include="/usr/lib/swift" />
+			<_CustomLinkFlags Include="-L" />
+			<_CustomLinkFlags Include="$(_SdkDevPath)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(_SwiftPlatform)" />
+			<_CustomLinkFlags Include="-Wl,-rpath" />
+			<_CustomLinkFlags Include="-Wl,/usr/lib/swift" />
+		</ItemGroup>
+	</Target>
 
 </Project>
