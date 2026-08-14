@@ -1,23 +1,16 @@
 using CoreApp.Interfaces;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
 
 namespace MothballMobile.UI.Shared;
 
 public static class PhotoSourceSelector
 {
-    public static async Task<PhotoSource?> SelectPhotoSourceAsync(IPopupService popup)
+    public static async Task<PhotoSource?> SelectPhotoSourceAsync(IPopupService popup, IPopupDefinitionService popupDefinitions)
     {
         ArgumentNullException.ThrowIfNull(popup);
+        ArgumentNullException.ThrowIfNull(popupDefinitions);
 
-        const string selectPhoto = "Select Photo";
-        const string capturePhoto = "Capture Photo";
-
-        var selected = await popup.SelectOptionAsync("Add photo", "Cancel", selectPhoto, capturePhoto);
-        return selected switch
-        {
-            selectPhoto => PhotoSource.Library,
-            capturePhoto => PhotoSource.Camera,
-            _ => null
-        };
+        return await popup.SelectOptionAsync(popupDefinitions.PhotoSourcePicker());
     }
 }

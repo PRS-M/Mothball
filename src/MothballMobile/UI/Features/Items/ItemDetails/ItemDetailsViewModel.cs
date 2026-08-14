@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
 using CoreApp.Services;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;
@@ -36,8 +37,16 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
-    public ItemDetailsViewModel(IInventoryQueryRepository inventoryQueries, IInventoryCommandRepository inventoryCommands, INavigationService nav, IImagePathResolver paths, IPopupService popup, ImageService imageService, IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
-        : base(paths, imageService, popup, photoBackgroundOperationTracker)
+    public ItemDetailsViewModel(
+        IInventoryQueryRepository inventoryQueries,
+        IInventoryCommandRepository inventoryCommands,
+        INavigationService nav,
+        IImagePathResolver paths,
+        IPopupService popup,
+        IPopupDefinitionService popupDefinitions,
+        ImageService imageService,
+        IPhotoBackgroundOperationTracker photoBackgroundOperationTracker)
+        : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
@@ -133,11 +142,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private async Task DeleteItemAsync()
     {
         if (string.IsNullOrWhiteSpace(ItemId)) return;
-        var confirmed = await popup.ConfirmAsync(
-            title: "Delete item",
-            message: "Are you sure you want to delete this item? This cannot be undone.",
-            accept: "Delete",
-            cancel: "Cancel");
+        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteItem());
         if (!confirmed) return;
 
         await inventoryCommands.DeleteItemAsync(ItemId);
@@ -170,21 +175,17 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         if (currentItem is null) return;
         if (currentItem.Photos.Count == 0)
         {
-            await popup.ShowAlertAsync("No photos", "This item does not have any photos to delete.");
+            await popup.ShowAlertAsync(popupDefinitions.NoItemPhotos());
             return;
         }
 
-        var selectedPhoto = await SelectPhotoAsync(currentItem.Photos, "Choose item photo to delete");
+        var selectedPhoto = await SelectPhotoAsync(popupDefinitions.ItemPhotoDeletePicker(currentItem.Photos));
         if (selectedPhoto is null)
         {
             return;
         }
 
-        var confirmed = await popup.ConfirmAsync(
-            title: "Delete photo",
-            message: "Delete the selected photo?",
-            accept: "Delete",
-            cancel: "Cancel");
+        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeletePhoto());
 
         if (!confirmed)
         {

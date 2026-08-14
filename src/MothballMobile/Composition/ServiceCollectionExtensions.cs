@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Media;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Features.Containers.AddContainer;
 using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
@@ -34,6 +35,7 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<INavigationService, ShellNavigationService>();
         services.AddSingleton<IPopupService, MauiPopupService>();
+        services.AddSingleton<IPopupDefinitionService, PopupDefinitionService>();
         services.AddSingleton<IRetryService, RetryService>();
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();

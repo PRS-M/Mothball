@@ -1,4 +1,5 @@
 using MothballMobile.UI.Controls;
+using MothballMobile.Infrastructure.Popups;
 
 namespace MothballMobile.Infrastructure;
 
@@ -7,6 +8,13 @@ namespace MothballMobile.Infrastructure;
 /// </summary>
 public sealed class MauiPopupService : IPopupService
 {
+    /// <inheritdoc />
+    public Task ShowAlertAsync(AlertPopupDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        return ShowAlertAsync(definition.Title, definition.Message, definition.Cancel);
+    }
+
     /// <inheritdoc />
     public Task ShowAlertAsync(string title, string message, string cancel = "OK")
     {
@@ -17,12 +25,50 @@ public sealed class MauiPopupService : IPopupService
     }
 
     /// <inheritdoc />
+    public Task<bool> ConfirmAsync(ConfirmationPopupDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        return ConfirmAsync(definition.Title, definition.Message, definition.Accept, definition.Cancel);
+    }
+
+    /// <inheritdoc />
     public Task<bool> ConfirmAsync(string title, string message, string accept, string cancel)
     {
         var page = TryGetCurrentPage();
         if (page is null)
             return Task.FromResult(false);
         return page.DisplayAlertAsync(title, message, accept, cancel);
+    }
+
+    /// <inheritdoc />
+    public async Task<T?> SelectOptionAsync<T>(OptionPickerPopupDefinition<T> definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+
+        if (definition.Options.Count == 0)
+        {
+            return default;
+        }
+
+        var selected = await SelectOptionAsync(
+            definition.Title,
+            definition.Cancel,
+            definition.Options.Select(option => option.Label).ToArray());
+
+        if (string.IsNullOrWhiteSpace(selected))
+        {
+            return default;
+        }
+
+        foreach (var option in definition.Options)
+        {
+            if (string.Equals(option.Label, selected, StringComparison.Ordinal))
+            {
+                return option.Value;
+            }
+        }
+
+        return default;
     }
 
     /// <inheritdoc />
@@ -43,7 +89,44 @@ public sealed class MauiPopupService : IPopupService
     }
 
     /// <inheritdoc />
+    public Task<int?> PickNumberAsync(NumberPickerPopupDefinition definition)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        return PickNumberAsync(
+            definition.Title,
+            definition.Min,
+            definition.Max,
+            definition.InitialValue,
+            definition.Accept,
+            definition.Cancel,
+            definition.Placeholder,
+            definition.InvalidNumberMessage,
+            definition.OutOfRangeMessage);
+    }
+
+    /// <inheritdoc />
     public async Task<int?> PickNumberAsync(string title, int min, int max, int initialValue, string accept = "Set", string cancel = "Cancel")
+        => await PickNumberAsync(
+            title,
+            min,
+            max,
+            initialValue,
+            accept,
+            cancel,
+            "Enter quantity",
+            $"Enter a number between {min} and {max}.",
+            $"Value must be between {min} and {max}.");
+
+    private async Task<int?> PickNumberAsync(
+        string title,
+        int min,
+        int max,
+        int initialValue,
+        string accept,
+        string cancel,
+        string placeholder,
+        string invalidNumberMessage,
+        string outOfRangeMessage)
     {
         var page = TryGetCurrentPage();
         if (page is null)
@@ -53,7 +136,16 @@ public sealed class MauiPopupService : IPopupService
             return null;
 
         var clampedInitial = Math.Clamp(initialValue, min, max);
-        var pickerPage = new NumberPickerModalPage(title, min, max, clampedInitial, accept, cancel);
+        var pickerPage = new NumberPickerModalPage(
+            title,
+            min,
+            max,
+            clampedInitial,
+            accept,
+            cancel,
+            placeholder,
+            invalidNumberMessage,
+            outOfRangeMessage);
 
         await page.Navigation.PushModalAsync(pickerPage, false);
         return await pickerPage.WaitForResultAsync();

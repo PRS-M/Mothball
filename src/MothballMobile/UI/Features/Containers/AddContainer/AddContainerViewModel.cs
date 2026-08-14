@@ -4,6 +4,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;
@@ -14,18 +15,21 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly INavigationService navigationService;
     private readonly IPopupService popup;
+    private readonly IPopupDefinitionService popupDefinitions;
     private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     public AddContainerViewModel(
         ImageService imageService,
         IInventoryCommandRepository inventoryCommands,
         INavigationService navigationService,
-        IPopupService popup)
+        IPopupService popup,
+        IPopupDefinitionService popupDefinitions)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
+        this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
     }
 
     [ObservableProperty]
@@ -117,7 +121,7 @@ public partial class AddContainerViewModel : BaseViewModel
     }
 
     private async Task<PhotoSource?> SelectPhotoSourceAsync()
-        => await PhotoSourceSelector.SelectPhotoSourceAsync(popup);
+        => await PhotoSourceSelector.SelectPhotoSourceAsync(popup, popupDefinitions);
 
     [RelayCommand(CanExecute = nameof(CanAddContainer))]
     public async Task SaveContainer()

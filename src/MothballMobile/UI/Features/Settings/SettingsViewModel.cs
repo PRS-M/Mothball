@@ -3,6 +3,7 @@ using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Settings;
@@ -16,6 +17,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IFileHandler fileHandler;
     private readonly INavigationService nav;
     private readonly IPopupService popup;
+    private readonly IPopupDefinitionService popupDefinitions;
     private readonly ILogger<SettingsViewModel> logger;
 
     public SettingsViewModel(
@@ -24,6 +26,7 @@ public partial class SettingsViewModel : BaseViewModel
         IFileHandler fileHandler,
         INavigationService nav,
         IPopupService popup,
+        IPopupDefinitionService popupDefinitions,
         ILogger<SettingsViewModel> logger)
     {
         this.backupExporter = backupExporter;
@@ -31,6 +34,7 @@ public partial class SettingsViewModel : BaseViewModel
         this.fileHandler = fileHandler;
         this.nav = nav;
         this.popup = popup;
+        this.popupDefinitions = popupDefinitions;
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -49,16 +53,12 @@ public partial class SettingsViewModel : BaseViewModel
                 var fileName = BuildBackupFileName();
                 var fullPath = await fileHandler.SaveTextFileAsync(fileName, BackupsFolder, backupJson);
 
-                await popup.ShowAlertAsync(
-                    "Backup Exported",
-                    $"Backup saved to:\n{fullPath}");
+                await popup.ShowAlertAsync(popupDefinitions.BackupExported(fullPath));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to export inventory backup to JSON.");
-                await popup.ShowAlertAsync(
-                    "Export Failed",
-                    $"Could not export backup to JSON.\n\n{ex.Message}");
+                await popup.ShowAlertAsync(popupDefinitions.BackupExportFailed(ex.Message));
             }
         });
     }
@@ -86,16 +86,12 @@ public partial class SettingsViewModel : BaseViewModel
 
                 var result = await backupRestoreService.RestoreFromJsonAsync(backupJson, options);
 
-                await popup.ShowAlertAsync(
-                    "Restore Completed",
-                    BuildRestoreSummary(result, policy.Value, fileName));
+                await popup.ShowAlertAsync(popupDefinitions.RestoreCompleted(BuildRestoreSummary(result, policy.Value, fileName)));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to import inventory backup from JSON file {FileName}.", fileName);
-                await popup.ShowAlertAsync(
-                    "Restore Failed",
-                    $"Could not import backup from JSON.\n\n{ex.Message}");
+                await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
             }
         });
     }
@@ -109,11 +105,7 @@ public partial class SettingsViewModel : BaseViewModel
             if (string.IsNullOrWhiteSpace(fileName))
                 return;
 
-            var confirmed = await popup.ConfirmAsync(
-                "Delete backup",
-                $"Delete '{fileName}' from local backup storage?",
-                "Delete",
-                "Cancel");
+            var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteBackup(fileName));
 
             if (!confirmed)
                 return;
@@ -121,16 +113,12 @@ public partial class SettingsViewModel : BaseViewModel
             try
             {
                 await fileHandler.DeleteFileAsync(fileName, BackupsFolder);
-                await popup.ShowAlertAsync(
-                    "Backup deleted",
-                    $"Deleted: {fileName}");
+                await popup.ShowAlertAsync(popupDefinitions.BackupDeleted(fileName));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to delete inventory backup JSON file {FileName}.", fileName);
-                await popup.ShowAlertAsync(
-                    "Delete failed",
-                    $"Could not delete backup JSON.\n\n{ex.Message}");
+                await popup.ShowAlertAsync(popupDefinitions.DeleteBackupFailed(ex.Message));
             }
         });
     }
@@ -142,29 +130,7 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     private async Task<InventoryBackupConflictPolicy?> SelectRestorePolicyAsync()
-    {
-        const string addOnlyLabel = "Add only";
-        const string addAndUpsertLabel = "Add + upsert metadata";
-        const string fullSyncLabel = "Full sync (roots)";
-        const string strictFullSyncLabel = "Strict full sync";
-
-        var selected = await popup.SelectOptionAsync(
-            "Restore mode",
-            "Cancel",
-            addOnlyLabel,
-            addAndUpsertLabel,
-            fullSyncLabel,
-            strictFullSyncLabel);
-
-        return selected switch
-        {
-            addOnlyLabel => InventoryBackupConflictPolicy.AddOnly,
-            addAndUpsertLabel => InventoryBackupConflictPolicy.AddAndUpsertMetadata,
-            fullSyncLabel => InventoryBackupConflictPolicy.FullSync,
-            strictFullSyncLabel => InventoryBackupConflictPolicy.StrictFullSync,
-            _ => null,
-        };
-    }
+        => await popup.SelectOptionAsync(popupDefinitions.RestorePolicyPicker());
 
     private async Task<string?> SelectBackupFileAsync()
     {
@@ -176,16 +142,11 @@ public partial class SettingsViewModel : BaseViewModel
 
         if (fileNames.Length == 0)
         {
-            await popup.ShowAlertAsync(
-                "No backups found",
-                "No JSON backup files were found in local backup storage.");
+            await popup.ShowAlertAsync(popupDefinitions.NoBackupsFound());
             return null;
         }
 
-        return await popup.SelectOptionAsync(
-            "Choose backup file",
-            "Cancel",
-            fileNames);
+        return await popup.SelectOptionAsync(popupDefinitions.BackupFilePicker(fileNames));
     }
 
     private static string BuildRestoreSummary(

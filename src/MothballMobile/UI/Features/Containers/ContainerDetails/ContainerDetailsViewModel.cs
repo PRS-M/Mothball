@@ -8,6 +8,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Specifications;
 using Microsoft.Extensions.Logging.Abstractions;
+using MothballMobile.Infrastructure.Popups;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -52,11 +53,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IInventoryCommandRepository inventoryCommands,
         IImagePathResolver paths,
         IPopupService popup,
+        IPopupDefinitionService popupDefinitions,
         ImageService imageService,
         INavigationService nav,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IDebouncer? debouncer = null)
-        : base(paths, imageService, popup, photoBackgroundOperationTracker)
+        : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
@@ -145,6 +147,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                 paths,
                 nav,
                 popup,
+                popupDefinitions,
                 ContainerId,
                 SaveItemQuantityAsync);
             Items.Add(itemVm);
@@ -295,11 +298,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return;
 
-        var confirmed = await popup.ConfirmAsync(
-            title: "Delete container",
-            message: "Delete this container? Items inside will not be deleted, only the relation.",
-            accept: "Delete",
-            cancel: "Cancel");
+        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteContainer());
 
         if (!confirmed) return;
 
@@ -334,21 +333,17 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (currentContainer is null) return;
         if (currentContainer.Photos.Count == 0)
         {
-            await popup.ShowAlertAsync("No photos", "This container does not have any photos to delete.");
+            await popup.ShowAlertAsync(popupDefinitions.NoContainerPhotos());
             return;
         }
 
-        var selectedPhoto = await SelectPhotoAsync(currentContainer.Photos, "Choose container photo to delete");
+        var selectedPhoto = await SelectPhotoAsync(popupDefinitions.ContainerPhotoDeletePicker(currentContainer.Photos));
         if (selectedPhoto is null)
         {
             return;
         }
 
-        var confirmed = await popup.ConfirmAsync(
-            title: "Delete photo",
-            message: "Delete the selected photo?",
-            accept: "Delete",
-            cancel: "Cancel");
+        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeletePhoto());
 
         if (!confirmed)
         {

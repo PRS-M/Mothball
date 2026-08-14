@@ -5,6 +5,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Items.AddItem;
@@ -16,6 +17,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly Infrastructure.INavigationService nav;
     private readonly ILogger<AddItemViewModel> logger;
     private readonly IPopupService popup;
+    private readonly IPopupDefinitionService popupDefinitions;
     private ImageService.TemporaryPhotoCapture? pendingPhoto;
 
     [ObservableProperty]
@@ -45,13 +47,15 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         IInventoryCommandRepository inventoryCommands,
         Infrastructure.INavigationService nav,
         ILogger<AddItemViewModel> logger,
-        IPopupService popup)
+        IPopupService popup,
+        IPopupDefinitionService popupDefinitions)
     {
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
+        this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -136,7 +140,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     }
 
     private async Task<PhotoSource?> SelectPhotoSourceAsync()
-        => await PhotoSourceSelector.SelectPhotoSourceAsync(popup);
+        => await PhotoSourceSelector.SelectPhotoSourceAsync(popup, popupDefinitions);
 
     [RelayCommand(CanExecute = nameof(CanAdd))]
     private async Task SaveAsync()

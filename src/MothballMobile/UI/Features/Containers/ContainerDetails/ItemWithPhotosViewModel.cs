@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -12,6 +13,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     private readonly string? sourceContainerId;
     private readonly Guid ownerContainerId;
     private readonly IPopupService popup;
+    private readonly IPopupDefinitionService popupDefinitions;
     private readonly Func<Guid, int, Task> saveQuantity;
 
     public ItemWithPhotosViewModel(
@@ -21,6 +23,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         IImagePathResolver paths,
         INavigationService navigation,
         IPopupService popup,
+        IPopupDefinitionService popupDefinitions,
         string? sourceContainerId,
         Func<Guid, int, Task> saveQuantity)
         : base(item, paths)
@@ -29,6 +32,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         this.ownerContainerId = ownerContainerId;
         this.navigation = navigation;
         this.popup = popup;
+        this.popupDefinitions = popupDefinitions;
         this.sourceContainerId = sourceContainerId;
         this.saveQuantity = saveQuantity;
     }
@@ -67,13 +71,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
             return;
         }
 
-        var selectedQuantity = await popup.PickNumberAsync(
-            title: "Set quantity",
-            min: 0,
-            max: 1000,
-            initialValue: Quantity,
-            accept: "Set",
-            cancel: "Cancel");
+        var selectedQuantity = await popup.PickNumberAsync(popupDefinitions.SetQuantity(Quantity));
 
         if (selectedQuantity is null || selectedQuantity.Value == Quantity)
         {
@@ -82,11 +80,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
 
         if (selectedQuantity.Value == 0)
         {
-            var confirmed = await popup.ConfirmAsync(
-                title: "Remove item",
-                message: $"Remove '{Name}' from this container? The item itself will not be deleted.",
-                accept: "Remove",
-                cancel: "Cancel");
+            var confirmed = await popup.ConfirmAsync(popupDefinitions.RemoveItemFromContainer(Name));
 
             if (!confirmed)
             {
@@ -105,11 +99,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
             return;
         }
 
-        var confirmed = await popup.ConfirmAsync(
-            title: "Remove item",
-            message: $"Remove '{Name}' from this container? The item itself will not be deleted.",
-            accept: "Remove",
-            cancel: "Cancel");
+        var confirmed = await popup.ConfirmAsync(popupDefinitions.RemoveItemFromContainer(Name));
 
         if (!confirmed)
         {
