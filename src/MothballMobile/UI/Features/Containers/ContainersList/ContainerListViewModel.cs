@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Specifications;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,7 +19,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 {
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService nav;
-    private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IContainerListQueryHandler containerListQueries;
     private readonly IDebouncer debouncer;
     private readonly IBackgroundTaskObserver backgroundTasks;
 
@@ -50,7 +49,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 
     public ContainerListViewModel(
         IImagePathResolver imagePaths,
-        IInventoryQueryRepository inventoryQueries,
+        IContainerListQueryHandler containerListQueries,
         INavigationService nav,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
@@ -58,7 +57,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         : base(pageSize: 10)
     {
         this.imagePaths = imagePaths;
-        this.inventoryQueries = inventoryQueries;
+        this.containerListQueries = containerListQueries;
         this.nav = nav;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
@@ -100,14 +99,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     }
 
     protected override async Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-    {
-        var specification = new ContainerListSpecification(
-            Filter: ToQueryFilter(SelectedFilter),
-            PageNumber: pageNumber,
-            PageSize: pageSize);
-
-        return await inventoryQueries.QueryContainersAsync(specification);
-    }
+        => await containerListQueries.QueryAsync(IsEmptyFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);
 
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav);
@@ -151,10 +143,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
             return;
         }
 
-        var filtered = await inventoryQueries.QueryContainersAsync(
-            new ContainerListSpecification(
-                Filter: ToQueryFilter(SelectedFilter),
-                SearchTerm: searchQuery));
+        var filtered = await containerListQueries.QueryAsync(IsEmptyFilterSelected(), searchQuery);
 
         ReplaceWithFullResultSet(filtered);
     }
@@ -165,7 +154,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
             .FireAndForget(backgroundTasks, "Search containers");
     }
 
-    private static ContainerQueryFilter ToQueryFilter(ContainerListFilter filter)
-        => filter == ContainerListFilter.Empty ? ContainerQueryFilter.Empty : ContainerQueryFilter.All;
+    private bool IsEmptyFilterSelected()
+        => SelectedFilter == ContainerListFilter.Empty;
 
 }

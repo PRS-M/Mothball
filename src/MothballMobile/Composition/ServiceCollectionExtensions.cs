@@ -52,6 +52,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IContainerAssociationQueryHandler, ContainerAssociationQueryHandler>();
         services.AddSingleton<IAssignItemToContainerCommandHandler, AssignItemToContainerCommandHandler>();
         services.AddSingleton<IDeleteContainerCommandHandler, DeleteContainerCommandHandler>();
+        services.AddSingleton<IContainerListQueryHandler, ContainerListQueryHandler>();
+        services.AddSingleton<ICreateContainerCommandHandler, CreateContainerCommandHandler>();
+        services.AddSingleton<IItemsListQueryHandler, ItemsListQueryHandler>();
+        services.AddSingleton<IItemDetailsQueryHandler, ItemDetailsQueryHandler>();
+        services.AddSingleton<ICreateItemCommandHandler, CreateItemCommandHandler>();
+        services.AddSingleton<IDeleteItemCommandHandler, DeleteItemCommandHandler>();
 
         return services;
     }

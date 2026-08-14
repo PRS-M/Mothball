@@ -14,9 +14,8 @@ public partial class ImageCarousel
 	private const uint HeightAnimationDuration = 150;
 	private const string HeightAnimationName = "ImageCarouselHeight";
 
+	private readonly ImageCarouselStateController state = new();
 	private INotifyCollectionChanged? observedCollection;
-	private readonly Dictionary<string, double> aspectRatioCache = new(StringComparer.Ordinal);
-	private int sizingRequestId;
 
 	public ImageCarousel()
 	{
@@ -136,38 +135,21 @@ public partial class ImageCarousel
 
 	void UpdateCounter()
 	{
-		var total = CountImages(ImagePaths);
-
-		if (!ShowCounter || total <= 1)
+		var counter = state.GetCounterState(ImagePaths, ShowCounter, Carousel.Position);
+		if (!counter.IsVisible)
 		{
 			CounterLabel.IsVisible = false;
 			CounterLabel.Text = string.Empty;
 			return;
 		}
 
-		var position = Carousel.Position;
-		if (position < 0 || position >= total)
+		if (Carousel.Position != counter.Position)
 		{
-			position = 0;
-			Carousel.Position = 0;
+			Carousel.Position = counter.Position;
 		}
 
 		CounterLabel.IsVisible = true;
-		CounterLabel.Text = $"{position + 1}/{total}";
-	}
-
-	static int CountImages(IEnumerable? source)
-	{
-		if (source is null)
-			return 0;
-
-		var count = 0;
-		foreach (var _ in source)
-		{
-			count++;
-		}
-
-		return count;
+		CounterLabel.Text = counter.Text;
 	}
 
 	protected override void OnSizeAllocated(double width, double height)
@@ -190,14 +172,14 @@ public partial class ImageCarousel
 			return;
 		}
 
-		var imagePath = GetImagePathAt(Carousel.Position);
+		var imagePath = ImageCarouselStateController.GetImagePathAt(ImagePaths, Carousel.Position);
 		if (string.IsNullOrWhiteSpace(imagePath))
 		{
 			ApplyCarouselHeight(width / FallbackAspectRatio, animate: false);
 			return;
 		}
 
-		if (aspectRatioCache.TryGetValue(imagePath, out var cached))
+		if (state.TryGetAspectRatio(imagePath, out var cached))
 		{
 			ApplyCarouselHeight(width / cached, animate: true);
 			return;
@@ -210,7 +192,7 @@ public partial class ImageCarousel
 			return;
 		}
 
-		_ = UpdateCarouselHeightAsync(reader, imagePath, width, ++sizingRequestId);
+		_ = UpdateCarouselHeightAsync(reader, imagePath, width, state.NextSizingRequestId());
 	}
 
 	async Task UpdateCarouselHeightAsync(IImageMetadataReader reader, string imagePath, double width, int requestId)
@@ -226,9 +208,9 @@ public partial class ImageCarousel
 		}
 
 		var aspectRatio = dimensions?.AspectRatio ?? FallbackAspectRatio;
-		aspectRatioCache[imagePath] = aspectRatio;
+		state.CacheAspectRatio(imagePath, aspectRatio);
 
-		if (requestId != sizingRequestId || GetImagePathAt(Carousel.Position) != imagePath)
+		if (!state.IsCurrentSizingRequest(requestId, ImagePaths, Carousel.Position, imagePath))
 			return;
 
 		ApplyCarouselHeight(width / aspectRatio, animate: true);
@@ -253,23 +235,6 @@ public partial class ImageCarousel
 				length: HeightAnimationDuration,
 				easing: Easing.SinInOut);
 		}
-	}
-
-	string? GetImagePathAt(int position)
-	{
-		if (position < 0 || ImagePaths is null)
-			return null;
-
-		var index = 0;
-		foreach (var item in ImagePaths)
-		{
-			if (index == position)
-				return item as string;
-
-			index++;
-		}
-
-		return null;
 	}
 
 	IImageMetadataReader? GetImageMetadataReader()
