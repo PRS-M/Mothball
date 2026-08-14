@@ -42,6 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
+        services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
 
         return services;
     }

@@ -6,7 +6,6 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Specifications;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure.Popups;
 
@@ -18,6 +17,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
+    private readonly ContainerItemPagingController itemPaging;
+    private readonly ContainerDetailsItemRowsViewModel itemRows;
+    private readonly IContainerItemQuantityService quantityService;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -43,10 +45,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private bool isItemListEmpty = true;
 
     private const int PageSize = 5;
-    private int currentPage = 0;
-    private bool hasMoreItems = true;
-    private int itemLoadVersion = 0;
-    private string? activeSearchTerm;
 
     public ContainerDetailsViewModel(
         IInventoryQueryRepository inventoryQueries,
@@ -57,13 +55,17 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         ImageService imageService,
         INavigationService nav,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+        IContainerItemQuantityService quantityService,
         IDebouncer? debouncer = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.inventoryQueries = inventoryQueries;
         this.inventoryCommands = inventoryCommands;
         this.nav = nav;
+        this.quantityService = quantityService;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
+        itemPaging = new ContainerItemPagingController(inventoryQueries, PageSize);
+        itemRows = new ContainerDetailsItemRowsViewModel(this, Items, Rows);
 
         // Debounce search query changes
         PropertyChanged += (s, e) =>
@@ -93,13 +95,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (string.IsNullOrWhiteSpace(containerId)) return;
 
         ContainerId = containerId;
-        currentPage = 0;
-        hasMoreItems = true;
+        itemPaging.Reset();
         SearchQuery = string.Empty;
 
-        Items.Clear();
-        Rows.Clear();
-        Rows.Add(this);
+        itemRows.Reset();
         IsItemListEmpty = true;
         ContainerImagePaths.Clear();
 
@@ -111,7 +110,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             Notes = string.Empty;
             TotalItemCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
-            hasMoreItems = false;
+            itemPaging.MarkComplete();
             IsItemListEmpty = true;
             return;
         }
@@ -129,77 +128,48 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         await ReloadItemsAsync(searchTerm: null);
     }
 
-    private void AddItemsToCollectionAsync(List<Item> items, bool clearExisting = false)
+    private void AddItemsToCollection(IEnumerable<Item> items)
     {
-        if (clearExisting)
-        {
-            Items.Clear();
-            ClearItemRows();
-        }
+        itemRows.Append(
+            items,
+            item =>
+            {
+                var quantity = currentContainer?.Items.FirstOrDefault(x => x.ItemId == item.ItemId)?.Quantity ?? 0;
+                var itemVm = new ItemWithPhotosViewModel(
+                    item,
+                    quantity,
+                    currentContainer?.ContainerId ?? Guid.Empty,
+                    paths,
+                    nav,
+                    popup,
+                    popupDefinitions,
+                    ContainerId,
+                    SaveItemQuantityAsync);
+                itemVm.LoadImagesAsync().FireAndForget();
+                return itemVm;
+            });
 
-        foreach (var item in items)
-        {
-            var quantity = currentContainer?.Items.FirstOrDefault(x => x.ItemId == item.ItemId)?.Quantity ?? 0;
-            var itemVm = new ItemWithPhotosViewModel(
-                item,
-                quantity,
-                currentContainer?.ContainerId ?? Guid.Empty,
-                paths,
-                nav,
-                popup,
-                popupDefinitions,
-                ContainerId,
-                SaveItemQuantityAsync);
-            Items.Add(itemVm);
-            Rows.Add(itemVm);
-            itemVm.LoadImagesAsync().FireAndForget();
-        }
-
-        // Force collection update notification to recalculate RemainingItemsThreshold
-        IsItemListEmpty = Items.Count == 0;
+        IsItemListEmpty = itemRows.IsEmpty;
         OnPropertyChanged(nameof(Items));
-    }
-
-    private void ClearItemRows()
-    {
-        if (Rows.Count == 0)
-        {
-            Rows.Add(this);
-            return;
-        }
-
-        for (var index = Rows.Count - 1; index > 0; index--)
-        {
-            Rows.RemoveAt(index);
-        }
     }
 
     private async Task SaveItemQuantityAsync(Guid itemId, int quantity)
     {
-        var vm = Items.FirstOrDefault(x => x.Item.ItemId == itemId);
-        if (quantity <= 0)
+        if (currentContainer is null)
         {
-            if (currentContainer is not null)
-            {
-                await inventoryCommands.DeleteItemContainerRelation(itemId, currentContainer.ContainerId);
-            }
-
-            if (vm is not null)
-            {
-                Items.Remove(vm);
-                Rows.Remove(vm);
-            }
-
-            currentContainer?.RemoveItem(itemId);
-            TotalItemCount = currentContainer?.ItemCount ?? 0;
-            IsItemListEmpty = Items.Count == 0;
-            OnPropertyChanged(nameof(Items));
             return;
         }
 
-        if (currentContainer is not null)
+        var vm = itemRows.Find(itemId);
+        var result = await quantityService.SaveQuantityAsync(currentContainer, itemId, quantity);
+
+        if (result.Removed)
         {
-            await inventoryCommands.ReplaceItemContainerRelationQuantity(itemId, currentContainer.ContainerId, quantity);
+            itemRows.Remove(itemId);
+            TotalItemCount = result.TotalItemCount;
+            IsItemListEmpty = itemRows.IsEmpty;
+            OnPropertyChanged(nameof(Items));
+            return;
         }
 
         if (vm is not null && vm.Quantity != quantity)
@@ -207,14 +177,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             vm.Quantity = quantity;
         }
 
-        if (currentContainer is not null)
-        {
-            currentContainer.RemoveItem(itemId);
-            currentContainer.AddItem(itemId, quantity);
-            TotalItemCount = currentContainer.ItemCount;
-        }
-
-        return;
+        TotalItemCount = result.TotalItemCount;
     }
 
     [RelayCommand]
@@ -223,32 +186,16 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         // Use RunCommandAsync to prevent concurrent loads and manage busy state
         await RunCommandAsync(async () =>
         {
-            // Guard against attempting to load when no more items exist
-            if (!hasMoreItems || string.IsNullOrWhiteSpace(ContainerId)) return;
-
-            var loadVersion = itemLoadVersion;
-            currentPage++;
-            var items = await inventoryQueries.QueryContainerItemsWithPhotosAsync(
-                new ContainerItemsSpecification(
-                    ContainerId: ContainerId,
-                    SearchTerm: activeSearchTerm,
-                    PageNumber: currentPage,
-                    PageSize: PageSize));
-
-            if (loadVersion != itemLoadVersion)
+            var page = await itemPaging.LoadMoreAsync(ContainerId);
+            if (page.IsStale)
             {
                 return;
             }
 
-            // Only add items if we got any
-            if (items.Count > 0)
+            if (page.Items.Count > 0)
             {
-                AddItemsToCollectionAsync(items, clearExisting: false);
+                AddItemsToCollection(page.Items);
             }
-
-            // Check if there are more items to load
-            // If we got fewer items than the page size, we've reached the end
-            hasMoreItems = items.Count == PageSize;
         });
     }
 
@@ -262,29 +209,16 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     private async Task ReloadItemsAsync(string? searchTerm)
     {
-        var loadVersion = ++itemLoadVersion;
-
-        currentPage = 0;
-        hasMoreItems = false;
-        activeSearchTerm = searchTerm;
-        Items.Clear();
-        ClearItemRows();
+        itemRows.ClearItems();
         IsItemListEmpty = false;
 
-        var results = await inventoryQueries.QueryContainerItemsWithPhotosAsync(
-            new ContainerItemsSpecification(
-                ContainerId: ContainerId,
-                SearchTerm: searchTerm,
-                PageNumber: currentPage,
-                PageSize: PageSize));
-
-        if (loadVersion != itemLoadVersion)
+        var page = await itemPaging.ReloadAsync(ContainerId, searchTerm);
+        if (page.IsStale)
         {
             return;
         }
 
-        AddItemsToCollectionAsync(results, clearExisting: false);
-        hasMoreItems = results.Count == PageSize;
+        AddItemsToCollection(page.Items);
     }
 
     [RelayCommand]
