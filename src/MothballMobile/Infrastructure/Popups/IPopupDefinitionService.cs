@@ -10,6 +10,8 @@ public interface IPopupDefinitionService
 
     AlertPopupDefinition BackupExportFailed(string errorMessage);
 
+    AlertPopupDefinition BackupShareFailed(string errorMessage);
+
     AlertPopupDefinition RestoreCompleted(string summary);
 
     AlertPopupDefinition RestoreFailed(string errorMessage);

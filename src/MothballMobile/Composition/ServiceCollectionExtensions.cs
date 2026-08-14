@@ -9,7 +9,9 @@ using Infrastructure.Services.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Media;
+using Microsoft.Maui.Storage;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Features.Containers.AddContainer;
@@ -46,6 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
+        services.AddSingleton<IInventoryBackupZipRestoreService, InventoryBackupZipRestoreService>();
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
         services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
         services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
@@ -114,6 +117,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IImageMetadataReader, SkiaImageMetadataReader>();
         services.AddSingleton(FileSystem.Current);
         services.AddSingleton(MediaPicker.Default);
+        services.AddSingleton<IShare>(Share.Default);
+        services.AddSingleton<IFilePicker>(FilePicker.Default);
 
         return services;
     }

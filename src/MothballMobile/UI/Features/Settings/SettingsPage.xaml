@@ -24,25 +24,96 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Backup"
-                           Style="{StaticResource HeadlineSmall}"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <Grid ColumnDefinitions="Auto,*"
+                          ColumnSpacing="12"
+                          RowDefinitions="Auto">
+                        <Label Grid.Column="0"
+                               Text="Backup"
+                               Style="{StaticResource HeadlineSmall}"
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
 
-                    <Label Text="Export a full inventory backup to a local JSON file."
+                        <Grid Grid.Column="1"
+                              ColumnDefinitions="*,Auto,*"
+                              ColumnSpacing="8"
+                              HorizontalOptions="End"
+                              VerticalOptions="Center">
+                            <Label Grid.Column="0"
+                                   Text="JSON&#10;(Metadata)"
+                                   Style="{StaticResource LabelSmall}"
+                                   MaxLines="2"
+                                   LineBreakMode="WordWrap"
+                                   HorizontalTextAlignment="End"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding IsZipBackupMode, Mode=TwoWay}"
+                                    VerticalOptions="Center"
+                                    SemanticProperties.Hint="Switch between JSON metadata backups and ZIP backups with photos" />
+                            <Label Grid.Column="2"
+                                   Text="ZIP&#10;(with Photos)"
+                                   Style="{StaticResource LabelSmall}"
+                                   MaxLines="2"
+                                   LineBreakMode="WordWrap"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                        </Grid>
+                    </Grid>
+
+                    <Label Text="Export inventory metadata as JSON, or create a ZIP backup that also includes photo files."
                            Style="{StaticResource BodyMedium}"
                            TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
 
-                    <Button Text="Export to JSON"
-                            Command="{Binding ExportToJsonCommand}"
-                            SemanticProperties.Hint="Create a local backup JSON file with full inventory data" />
+                    <Button Text="Documentation / Help"
+                            Style="{StaticResource OutlinedButton}"
+                            Command="{Binding NavigateToImportDocumentationCommand}"
+                            SemanticProperties.Hint="Open documentation that explains backup import modes" />
+
+                    <VerticalStackLayout Spacing="10"
+                                         IsVisible="{Binding IsJsonBackupMode}">
+                        <Button Text="Export to JSON"
+                                Command="{Binding ExportToJsonCommand}"
+                                SemanticProperties.Hint="Create a local backup JSON file with full inventory data" />
 
                         <Button Text="Import from JSON"
-                            Command="{Binding ImportFromJsonCommand}"
-                            SemanticProperties.Hint="Choose restore mode and import a local backup JSON file" />
+                                Command="{Binding ImportFromJsonCommand}"
+                                SemanticProperties.Hint="Choose restore mode and import a local backup JSON file" />
+
+                        <Button Text="Import from JSON from files"
+                                Command="{Binding ImportJsonFromFileSystemCommand}"
+                                SemanticProperties.Hint="Choose restore mode and import a JSON backup from the file system" />
+
+                        <Button Text="Share backup JSON"
+                                Command="{Binding ShareJsonCommand}"
+                                SemanticProperties.Hint="Choose and share a local backup JSON file outside the app" />
 
                         <Button Text="Delete backup JSON"
-                            Command="{Binding DeleteJsonCommand}"
-                            SemanticProperties.Hint="Choose and delete a local backup JSON file" />
+                                Command="{Binding DeleteJsonCommand}"
+                                SemanticProperties.Hint="Choose and delete a local backup JSON file" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="10"
+                                         IsVisible="{Binding IsZipBackupMode}">
+                        <Button Text="Export with photos to ZIP"
+                                Command="{Binding ExportToZipCommand}"
+                                SemanticProperties.Hint="Create a local ZIP backup with inventory data and photo files" />
+
+                        <Button Text="Import with photos from ZIP"
+                                Command="{Binding ImportFromZipCommand}"
+                                SemanticProperties.Hint="Choose restore mode and import a local ZIP backup with photo files" />
+
+                        <Button Text="Import from ZIP from files"
+                                Command="{Binding ImportZipFromFileSystemCommand}"
+                                SemanticProperties.Hint="Choose restore mode and import a ZIP backup from the file system" />
+
+                        <Button Text="Share backup ZIP"
+                                Command="{Binding ShareZipCommand}"
+                                SemanticProperties.Hint="Choose and share a local backup ZIP file outside the app" />
+
+                        <Button Text="Delete backup ZIP"
+                                Command="{Binding DeleteZipCommand}"
+                                SemanticProperties.Hint="Choose and delete a local backup ZIP file" />
+                    </VerticalStackLayout>
 
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}"

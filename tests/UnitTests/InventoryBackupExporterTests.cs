@@ -3,7 +3,9 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
 using CoreApp.Services;
+using CoreApp.Utilities;
 using Moq;
+using System.IO.Compression;
 
 namespace UnitTests;
 
@@ -28,7 +30,7 @@ public class InventoryBackupExporterTests
             .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
             .ReturnsAsync([item]);
 
-        var sut = new InventoryBackupExporter(queries.Object);
+        var sut = new InventoryBackupExporter(queries.Object, Mock.Of<IFileHandler>());
 
         var backup = await sut.ExportAsync();
 
@@ -56,7 +58,7 @@ public class InventoryBackupExporterTests
             .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
             .ReturnsAsync(new List<Item>());
 
-        var sut = new InventoryBackupExporter(queries.Object);
+        var sut = new InventoryBackupExporter(queries.Object, Mock.Of<IFileHandler>());
 
         string json = await sut.ExportAsJsonAsync();
 
@@ -68,6 +70,78 @@ public class InventoryBackupExporterTests
             Assert.That(json, Does.Contain("integrity"));
             Assert.That(json, Does.Contain("payloadChecksum"));
             Assert.That(json, Does.Contain("data"));
+        });
+    }
+
+    [Test]
+    public async Task ExportAsZipAsync_IncludesJsonAndPhotoFiles()
+    {
+        var container = new Container(Guid.NewGuid(), "Garage", "Shelf A");
+        var item = new Item("Zip Ties", "Black 8 inch");
+        var containerPhoto = container.AddImageItem(Guid.NewGuid());
+        var itemPhoto = item.AddImageItem(Guid.NewGuid());
+
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries
+            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Specifications.ContainerListSpecification>()))
+            .ReturnsAsync([container]);
+        queries
+            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .ReturnsAsync([item]);
+
+        var fileHandler = new Mock<IFileHandler>();
+        fileHandler
+            .Setup(f => f.ReadFileAsync(containerPhoto.FileName, Constants.PathToContainerPhotos))
+            .ReturnsAsync([1, 2, 3]);
+        fileHandler
+            .Setup(f => f.ReadFileAsync(itemPhoto.FileName, Constants.PathToItemPhotos))
+            .ReturnsAsync([4, 5, 6]);
+
+        var sut = new InventoryBackupExporter(queries.Object, fileHandler.Object);
+
+        byte[] zipBytes = await sut.ExportAsZipAsync();
+
+        using var zipStream = new MemoryStream(zipBytes);
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(archive.GetEntry("backup.json"), Is.Not.Null);
+            Assert.That(archive.GetEntry($"images/containers/{containerPhoto.FileName}"), Is.Not.Null);
+            Assert.That(archive.GetEntry($"images/items/{itemPhoto.FileName}"), Is.Not.Null);
+        });
+    }
+
+    [Test]
+    public async Task ExportAsZipAsync_SkipsMissingPhotoFiles()
+    {
+        var container = new Container(Guid.NewGuid(), "Garage", "Shelf A");
+        var missingPhoto = container.AddImageItem(Guid.NewGuid());
+
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries
+            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Specifications.ContainerListSpecification>()))
+            .ReturnsAsync([container]);
+        queries
+            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .ReturnsAsync([]);
+
+        var fileHandler = new Mock<IFileHandler>();
+        fileHandler
+            .Setup(f => f.ReadFileAsync(missingPhoto.FileName, Constants.PathToContainerPhotos))
+            .ThrowsAsync(new FileNotFoundException());
+
+        var sut = new InventoryBackupExporter(queries.Object, fileHandler.Object);
+
+        byte[] zipBytes = await sut.ExportAsZipAsync();
+
+        using var zipStream = new MemoryStream(zipBytes);
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(archive.GetEntry("backup.json"), Is.Not.Null);
+            Assert.That(archive.GetEntry($"images/containers/{missingPhoto.FileName}"), Is.Null);
         });
     }
 }

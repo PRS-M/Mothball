@@ -129,7 +129,7 @@ public class BasePage : ContentPage
     {
         var bannerHost = new Grid
         {
-            HeightRequest = 50,
+            HeightRequest = 60,
             MinimumHeightRequest = 50,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.End,
@@ -142,7 +142,7 @@ public class BasePage : ContentPage
 #if IOS || ANDROID
             AdUnitId = BannerTestAdUnitId,
 #endif
-            HeightRequest = 50,
+            HeightRequest = 60,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill
         };
@@ -161,7 +161,7 @@ public class BasePage : ContentPage
     {
         return new Border
         {
-            HeightRequest = 50,
+            HeightRequest = 60,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill,
             InputTransparent = true,
