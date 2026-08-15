@@ -150,7 +150,8 @@ public sealed class ItemDetailsViewModelTests
             itemDetails.Object,
             inventoryQueries.Object,
             paths.Object,
-            Mock.Of<INavigationService>());
+            Mock.Of<INavigationService>(),
+            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true));
         viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ItemId] = item.ItemId.ToString() });
 
         await viewModel.InitializeAsync();
@@ -241,6 +242,7 @@ public sealed class ItemDetailsViewModelTests
             Mock.Of<IDeleteItemCommandHandler>(),
             Mock.Of<IUpdateItemDescriptionCommandHandler>(),
             nav ?? Mock.Of<INavigationService>(),
+            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true),
             CreatePaths(),
             popup,
             new PopupDefinitionService(),

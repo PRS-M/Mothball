@@ -12,6 +12,8 @@ public interface IInventoryQueryRepository
 
     Task<int> GetItemCountInContainerAsync(string containerId);
 
+    Task<int> GetDistinctItemCountInContainerAsync(string containerId);
+
     Task<Item?> GetItemWithPhotosAsync(string itemId);
 
     Task<InventorySnapshot?> GetInventorySnapshotAsync(Guid itemId);

@@ -131,6 +131,7 @@ public sealed class ContainerWorkflowHandlerTests
             itemDetails.Object,
             assign.Object,
             nav.Object,
+            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true),
             popup.Object,
             new PopupDefinitionService(),
             Mock.Of<IBackgroundTaskObserver>());
@@ -179,6 +180,7 @@ public sealed class ContainerWorkflowHandlerTests
             itemDetails.Object,
             assign.Object,
             nav.Object,
+            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true),
             popup.Object,
             new PopupDefinitionService(),
             Mock.Of<IBackgroundTaskObserver>());

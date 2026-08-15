@@ -136,6 +136,18 @@ public sealed class JsonContainerRepository : IContainerRepository
         return state.Relations.Where(r => r.ContainerId == cid).Sum(r => r.Quantity);
     }
 
+    public async Task<int> GetDistinctItemCountInContainerAsync(string containerId)
+    {
+        if (!Guid.TryParse(containerId, out var cid)) return 0;
+
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        return state.Relations
+            .Where(r => r.ContainerId == cid && r.Quantity > 0)
+            .Select(r => r.ItemId)
+            .Distinct()
+            .Count();
+    }
+
     public async Task<Container?> GetContainerForItemAsync(string itemId)
     {
         if (!Guid.TryParse(itemId, out var iid)) return null;

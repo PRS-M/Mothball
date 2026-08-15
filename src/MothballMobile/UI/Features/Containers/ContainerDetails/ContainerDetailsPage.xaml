@@ -42,8 +42,7 @@
                                    LineBreakMode="TailTruncation"
                                    MaxLines="2"
                                    Style="{StaticResource TitleLarge}"/>
-                            <Label Text="{Binding TotalItemCount, StringFormat='Items stored: {0}'}"
-                                   IsVisible="{Binding ShowQuantityManagement}"
+                            <Label Text="{Binding ItemsStoredText}"
                                    Style="{StaticResource BodyMedium}"/>
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="Description"

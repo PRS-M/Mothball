@@ -58,6 +58,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private const int PageSize = 5;
     public bool IsViewingNotes => !IsEditingNotes;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
+    public string ItemsStoredText => $"Items stored: {TotalItemCount}";
+
+    partial void OnTotalItemCountChanged(int value)
+        => OnPropertyChanged(nameof(ItemsStoredText));
 
     public ContainerDetailsViewModel(
         IContainerDetailsQueryHandler containerDetailsQueries,
@@ -143,7 +147,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         Notes = container.Notes;
         NotesDraft = container.Notes;
         IsEditingNotes = false;
-        TotalItemCount = details.TotalItemCount;
+        TotalItemCount = ShowQuantityManagement
+            ? details.TotalItemCount
+            : await containerDetailsQueries.GetDistinctItemCountAsync(containerId);
 
         // Load container photos (all, as a small carousel)
         ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));

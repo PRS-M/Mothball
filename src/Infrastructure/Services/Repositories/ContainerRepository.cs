@@ -133,6 +133,20 @@ public class ContainerRepository : IContainerRepository
         return relations.Sum(r => r.Quantity);
     }
 
+    public async Task<int> GetDistinctItemCountInContainerAsync(string containerId)
+    {
+        logger.LogDebug("GetDistinctItemCountInContainerAsync: containerId={ContainerId}", containerId);
+
+        if (!RepositoryQueryHelpers.TryParseGuid(containerId, out Guid cid, logger)) return 0;
+
+        List<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == cid);
+        return relations
+            .Where(r => r.Quantity > 0)
+            .Select(r => r.ItemId)
+            .Distinct()
+            .Count();
+    }
+
     public async Task<Container?> GetContainerForItemAsync(string itemId)
     {
         logger.LogDebug("GetContainerForItemAsync: itemId={ItemId}", itemId);

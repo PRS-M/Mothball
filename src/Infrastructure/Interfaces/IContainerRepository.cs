@@ -13,6 +13,7 @@ public interface IContainerRepository
     Task<Container?> GetAsync(string containerId);
     Task<List<Container>> QueryAsync(ContainerListSpecification specification);
     Task<int> GetItemCountInContainerAsync(string containerId);
+    Task<int> GetDistinctItemCountInContainerAsync(string containerId);
     Task<Container?> GetContainerForItemAsync(string itemId);
     Task<List<ItemContainerAllocation>> GetItemContainerAllocationsAsync(Guid itemId);
     Task<IReadOnlyDictionary<Guid, IReadOnlyList<ItemContainerAllocation>>> GetItemContainerAllocationsAsync(

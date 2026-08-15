@@ -26,6 +26,9 @@ public sealed class ContainerDetailsQueryHandler : IContainerDetailsQueryHandler
         return new ContainerDetailsResult(container, totalItemCount);
     }
 
+    public Task<int> GetDistinctItemCountAsync(string containerId)
+        => inventoryQueries.GetDistinctItemCountInContainerAsync(containerId);
+
     public Task<List<ContainerItemInventoryEntry>> QueryItemsAsync(
         string containerId,
         string? searchTerm,

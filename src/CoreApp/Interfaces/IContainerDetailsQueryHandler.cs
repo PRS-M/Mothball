@@ -7,6 +7,8 @@ public interface IContainerDetailsQueryHandler
 {
     Task<ContainerDetailsResult?> GetDetailsAsync(string containerId);
 
+    Task<int> GetDistinctItemCountAsync(string containerId);
+
     Task<List<ContainerItemInventoryEntry>> QueryItemsAsync(
         string containerId,
         string? searchTerm,
