@@ -53,7 +53,16 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load unassigned item images");
 
     protected override Task<List<ItemInventorySummary>> LoadAsync(int pageNumber, int pageSize)
-        => associationQueries.QueryUnassignedItemsAsync(pageNumber, pageSize);
+    {
+        Guid? excludedContainerId = Guid.TryParse(ContainerId, out var parsedContainerId)
+            ? parsedContainerId
+            : null;
+
+        return associationQueries.QueryUnassignedItemsAsync(
+            pageNumber,
+            pageSize,
+            excludedContainerId);
+    }
 
     private async Task AssignAsync(Guid itemId)
     {

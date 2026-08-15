@@ -22,10 +22,14 @@ public sealed class ContainerAssociationQueryHandler : IContainerAssociationQuer
                 PageNumber: pageNumber,
                 PageSize: pageSize));
 
-    public Task<List<ItemInventorySummary>> QueryUnassignedItemsAsync(int pageNumber, int pageSize)
+    public Task<List<ItemInventorySummary>> QueryUnassignedItemsAsync(
+        int pageNumber,
+        int pageSize,
+        Guid? excludedContainerId = null)
         => inventoryQueries.QueryItemInventorySummariesAsync(
             new ItemListSpecification(
                 Filter: ItemQueryFilter.Unassigned,
                 PageNumber: pageNumber,
-                PageSize: pageSize));
+                PageSize: pageSize,
+                ExcludedContainerId: excludedContainerId));
 }

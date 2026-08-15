@@ -71,13 +71,85 @@ public sealed class ItemInventoryAdjustmentSessionTests
     }
 
     [Test]
+    public void ExistingUnassignedStock_ExactAssignedWithdrawal_CommitsWithoutExtraWarning()
+    {
+        var session = CreateSession(
+            total: 10,
+            requestedTotal: 5,
+            (BoxId, "Box", 7));
+
+        session.WithdrawAssigned(BoxId, 5);
+
+        var plan = session.BuildPlan();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(session.State, Is.EqualTo(ItemInventoryAdjustmentState.ReadyToCommit));
+            Assert.That(plan.TotalQuantity, Is.EqualTo(5));
+            Assert.That(plan.AssignedQuantity, Is.EqualTo(2));
+            Assert.That(plan.UnassignedQuantity, Is.EqualTo(3));
+        });
+    }
+
+    [Test]
+    public void AssignedWithdrawalInsufficient_DecliningUnassignedWithdrawal_CommitsAssignedOnlyTotal()
+    {
+        var session = CreateSession(
+            total: 10,
+            requestedTotal: 5,
+            (BoxId, "Box", 3));
+
+        session.WithdrawAssigned(BoxId, 3);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(session.State, Is.EqualTo(ItemInventoryAdjustmentState.ConfirmUnassignedWithdrawal));
+            Assert.That(session.UnassignedQuantity, Is.EqualTo(7));
+        });
+
+        session.DeclineUnassignedWithdrawal();
+        var plan = session.BuildPlan();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.TotalQuantity, Is.EqualTo(7));
+            Assert.That(plan.AssignedQuantity, Is.Zero);
+            Assert.That(plan.UnassignedQuantity, Is.EqualTo(7));
+        });
+    }
+
+    [Test]
+    public void AssignedWithdrawalInsufficient_AcceptingUnassignedWithdrawal_CanReachRequestedTotal()
+    {
+        var session = CreateSession(
+            total: 10,
+            requestedTotal: 5,
+            (BoxId, "Box", 3));
+
+        session.WithdrawAssigned(BoxId, 3);
+        session.AcceptUnassignedWithdrawal();
+        session.WithdrawUnassigned(2);
+        session.WithdrawUnassigned(0);
+
+        var plan = session.BuildPlan();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(session.State, Is.EqualTo(ItemInventoryAdjustmentState.ReadyToCommit));
+            Assert.That(plan.TotalQuantity, Is.EqualTo(5));
+            Assert.That(plan.AssignedQuantity, Is.Zero);
+            Assert.That(plan.UnassignedQuantity, Is.EqualTo(5));
+        });
+    }
+
+    [Test]
     public void AcceptedUnassignedWithdrawal_CanRepeatUntilZeroDeletesItem()
     {
         var session = CreateSession(total: 2, requestedTotal: 1);
 
         Assert.That(session.State, Is.EqualTo(ItemInventoryAdjustmentState.ConfirmUnassignedWithdrawal));
         session.AcceptUnassignedWithdrawal();
-        session.WithdrawUnassigned(1);
+        session.WithdrawUnassigned(2);
 
         Assert.That(session.State, Is.EqualTo(ItemInventoryAdjustmentState.ReadyToCommit));
         Assert.That(session.BuildPlan().DeleteItem, Is.True);

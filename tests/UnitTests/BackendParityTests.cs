@@ -113,6 +113,113 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task QueryItemsWithPhotosAsync_SearchWithPaging_ReturnsRequestedPageAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var items = new[]
+        {
+            new Item(Guid.NewGuid(), "Cable A", ""),
+            new Item(Guid.NewGuid(), "Cable B", ""),
+            new Item(Guid.NewGuid(), "Cable C", ""),
+        };
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            foreach (var item in items)
+            {
+                await command.InsertItemAsync(item);
+            }
+        }
+
+        var specification = new ItemListSpecification(
+            ItemQueryFilter.All,
+            SearchTerm: "cable",
+            PageNumber: 1,
+            PageSize: 1);
+
+        var sqliteItems = await sqlite.Query.QueryItemsWithPhotosAsync(specification);
+        var jsonItems = await json.Query.QueryItemsWithPhotosAsync(specification);
+
+        Assert.That(sqliteItems.Select(i => i.ItemId), Is.EqualTo(new[] { items[1].ItemId }));
+        Assert.That(jsonItems.Select(i => i.ItemId), Is.EqualTo(new[] { items[1].ItemId }));
+    }
+
+    [Test]
+    public async Task QueryItemInventorySummariesAsync_UnassignedSearchWithPaging_ReturnsRequestedPageAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var assignedOnly = new Item(Guid.NewGuid(), "Cable Assigned", "", totalQuantity: 1);
+        var firstUnassigned = new Item(Guid.NewGuid(), "Cable Alpha", "", totalQuantity: 3);
+        var secondUnassigned = new Item(Guid.NewGuid(), "Cable Beta", "", totalQuantity: 3);
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(assignedOnly);
+            await command.InsertItemAsync(firstUnassigned);
+            await command.InsertItemAsync(secondUnassigned);
+            await command.InsertItemContainerRelation(assignedOnly.ItemId, container.ContainerId, 1);
+            await command.InsertItemContainerRelation(firstUnassigned.ItemId, container.ContainerId, 2);
+        }
+
+        var specification = new ItemListSpecification(
+            ItemQueryFilter.Unassigned,
+            SearchTerm: "cable",
+            PageNumber: 1,
+            PageSize: 1);
+
+        var sqliteItems = await sqlite.Query.QueryItemInventorySummariesAsync(specification);
+        var jsonItems = await json.Query.QueryItemInventorySummariesAsync(specification);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { secondUnassigned.ItemId }));
+            Assert.That(jsonItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { secondUnassigned.ItemId }));
+            Assert.That(sqliteItems.Single().UnassignedQuantity, Is.EqualTo(3));
+            Assert.That(jsonItems.Single().UnassignedQuantity, Is.EqualTo(3));
+        });
+    }
+
+    [Test]
+    public async Task QueryItemInventorySummariesAsync_UnassignedWithExcludedContainer_FiltersBeforePagingAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var targetContainer = new Container(Guid.NewGuid(), "Target", "");
+        var otherContainer = new Container(Guid.NewGuid(), "Other", "");
+        var alreadyInTarget = new Item(Guid.NewGuid(), "Cable Alpha", "", totalQuantity: 3);
+        var availableFromOther = new Item(Guid.NewGuid(), "Cable Beta", "", totalQuantity: 3);
+        var fullyUnassigned = new Item(Guid.NewGuid(), "Cable Gamma", "", totalQuantity: 3);
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(targetContainer);
+            await command.InsertContainerAsync(otherContainer);
+            await command.InsertItemAsync(alreadyInTarget);
+            await command.InsertItemAsync(availableFromOther);
+            await command.InsertItemAsync(fullyUnassigned);
+            await command.InsertItemContainerRelation(alreadyInTarget.ItemId, targetContainer.ContainerId, 1);
+            await command.InsertItemContainerRelation(availableFromOther.ItemId, otherContainer.ContainerId, 1);
+        }
+
+        var specification = new ItemListSpecification(
+            ItemQueryFilter.Unassigned,
+            PageNumber: 0,
+            PageSize: 1,
+            ExcludedContainerId: targetContainer.ContainerId);
+
+        var sqliteItems = await sqlite.Query.QueryItemInventorySummariesAsync(specification);
+        var jsonItems = await json.Query.QueryItemInventorySummariesAsync(specification);
+
+        Assert.That(sqliteItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { availableFromOther.ItemId }));
+        Assert.That(jsonItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { availableFromOther.ItemId }));
+    }
+
+    [Test]
     public async Task GetContainerAsync_AggregatesDuplicateRelationQuantitiesAndOwnsPhotos()
     {
         await using var sqlite = await BuildSqliteAsync();

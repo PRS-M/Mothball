@@ -65,7 +65,11 @@ public sealed class ContainerWorkflowHandlerTests
 
         var handler = new ContainerAssociationQueryHandler(queries.Object);
 
-        var result = await handler.QueryUnassignedItemsAsync(pageNumber: 2, pageSize: 10);
+        var excludedContainerId = Guid.NewGuid();
+        var result = await handler.QueryUnassignedItemsAsync(
+            pageNumber: 2,
+            pageSize: 10,
+            excludedContainerId);
 
         Assert.That(result, Is.SameAs(expected));
         Assert.That(capturedSpecification, Is.Not.Null);
@@ -74,6 +78,7 @@ public sealed class ContainerWorkflowHandlerTests
             Assert.That(capturedSpecification!.Filter, Is.EqualTo(ItemQueryFilter.Unassigned));
             Assert.That(capturedSpecification.PageNumber, Is.EqualTo(2));
             Assert.That(capturedSpecification.PageSize, Is.EqualTo(10));
+            Assert.That(capturedSpecification.ExcludedContainerId, Is.EqualTo(excludedContainerId));
         });
     }
 

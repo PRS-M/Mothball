@@ -158,20 +158,26 @@ public sealed class ItemInventoryAdjustmentSession
         }
 
         BuildCurrentPlan();
-        State = plan!.UnassignedQuantity > 0
+        State = ShouldOfferUnassignedWithdrawal()
             ? ItemInventoryAdjustmentState.ConfirmUnassignedWithdrawal
             : ItemInventoryAdjustmentState.ReadyToCommit;
     }
 
     private void BuildCurrentPlan()
     {
+        int totalAfterAssignedWithdrawals = inventory.TotalQuantity - assignedWithdrawn;
+        int stagedTotal = Math.Max(requestedTotal, totalAfterAssignedWithdrawals);
         plan = ItemInventoryWithdrawalPlanner.Plan(
             inventory.TotalQuantity,
             inventory.Allocations,
             assignedWithdrawals,
             unassignedWithdrawals,
-            requestedTotal);
+            stagedTotal);
     }
+
+    private bool ShouldOfferUnassignedWithdrawal()
+        => plan!.UnassignedQuantity > 0
+            && (plan.TotalQuantity > requestedTotal || assignedWithdrawn > requiredAssignedWithdrawal);
 
     private void EnsureState(ItemInventoryAdjustmentState expected)
     {

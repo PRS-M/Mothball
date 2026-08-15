@@ -50,23 +50,38 @@ public class ItemRepository : IItemRepository
     public Task<List<Item>> QueryWithPhotosAsync(ItemListSpecification specification)
     {
         var (term, hasSearch) = RepositoryQueryHelpers.NormalizeSearch(specification.SearchTerm);
+        var hasPaging = RepositoryQueryHelpers.TryGetPaging(
+            specification.PageNumber,
+            specification.PageSize,
+            out var pageNumberValue,
+            out var pageSizeValue);
 
         if (hasSearch)
         {
             return specification.Filter == ItemQueryFilter.Unassigned
-                ? SearchUnassignedWithPhotosAsync(term!)
-                : SearchWithPhotosAsync(term!);
+                ? SearchUnassignedWithPhotosAsync(
+                    term!,
+                    specification.ExcludedContainerId,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null)
+                : SearchWithPhotosAsync(
+                    term!,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null);
         }
 
-        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        if (hasPaging)
         {
             return specification.Filter == ItemQueryFilter.Unassigned
-                ? GetUnassignedWithPhotosAsync(pageNumberValue, pageSizeValue)
+                ? GetUnassignedWithPhotosAsync(
+                    pageNumberValue,
+                    pageSizeValue,
+                    specification.ExcludedContainerId)
                 : GetAllWithPhotosAsync(pageNumberValue, pageSizeValue);
         }
 
         return specification.Filter == ItemQueryFilter.Unassigned
-            ? SearchUnassignedWithPhotosAsync(string.Empty)
+            ? SearchUnassignedWithPhotosAsync(string.Empty, specification.ExcludedContainerId)
             : GetAllWithPhotosAsync();
     }
 
@@ -126,48 +141,143 @@ public class ItemRepository : IItemRepository
         return itemsWithPhotos;
     }
 
-    private async Task<List<Item>> GetUnassignedWithPhotosAsync(int pageNumber, int pageSize)
+    private async Task<List<Item>> GetUnassignedWithPhotosAsync(
+        int pageNumber,
+        int pageSize,
+        Guid? excludedContainerId = null)
     {
         RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
 
         int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
-        // NOTE: no uniqueness constraints are enforced; an item may have multiple relations.
-        // This query treats any presence in the relation table as "assigned".
-        List<DbItem> unassigned = await items.QueryAsync(
-            $"SELECT * FROM {nameof(DbItem)} " +
-            $"WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} " +
-            $"WHERE {nameof(DbItemContainerRelation)}.ItemId = {nameof(DbItem)}.ItemId AND Quantity > 0), 0) " +
-            $"ORDER BY Name COLLATE NOCASE " +
-            $"LIMIT ? OFFSET ?",
-            pageSize,
-            offset);
+        List<DbItem> unassigned;
+        if (excludedContainerId is Guid containerId)
+        {
+            unassigned = await items.QueryAsync(
+                $"SELECT * FROM {nameof(DbItem)} " +
+                $"WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} " +
+                $"WHERE {nameof(DbItemContainerRelation)}.ItemId = {nameof(DbItem)}.ItemId AND Quantity > 0), 0) " +
+                $"AND NOT EXISTS (SELECT 1 FROM {nameof(DbItemContainerRelation)} r " +
+                $"WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.ContainerId = ? AND r.Quantity > 0) " +
+                $"ORDER BY Name COLLATE NOCASE " +
+                $"LIMIT ? OFFSET ?",
+                containerId,
+                pageSize,
+                offset);
+        }
+        else
+        {
+            unassigned = await items.QueryAsync(
+                $"SELECT * FROM {nameof(DbItem)} " +
+                $"WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} " +
+                $"WHERE {nameof(DbItemContainerRelation)}.ItemId = {nameof(DbItem)}.ItemId AND Quantity > 0), 0) " +
+                $"ORDER BY Name COLLATE NOCASE " +
+                $"LIMIT ? OFFSET ?",
+                pageSize,
+                offset);
+        }
 
         return unassigned.Count == 0 ? [] : await MapItemsWithPhotosAsync(unassigned);
     }
 
-    private async Task<List<Item>> SearchWithPhotosAsync(string searchTerm)
+    private async Task<List<Item>> SearchWithPhotosAsync(
+        string searchTerm,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         string pattern = $"%{searchTerm}%";
-        List<DbItem> itemsQuery = await items.QueryAsync(
-            $"SELECT * FROM {nameof(DbItem)} WHERE Name LIKE ? COLLATE NOCASE ORDER BY rowid",
-            pattern);
+        List<DbItem> itemsQuery;
+
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            itemsQuery = await items.QueryAsync(
+                $"SELECT * FROM {nameof(DbItem)} WHERE Name LIKE ? COLLATE NOCASE ORDER BY rowid LIMIT ? OFFSET ?",
+                pattern,
+                pageSizeValue,
+                RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue));
+        }
+        else
+        {
+            itemsQuery = await items.QueryAsync(
+                $"SELECT * FROM {nameof(DbItem)} WHERE Name LIKE ? COLLATE NOCASE ORDER BY rowid",
+                pattern);
+        }
 
         logger.LogDebug("SearchWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
         return await MapItemsWithPhotosAsync(itemsQuery);
     }
 
-    private async Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm)
+    private async Task<List<Item>> SearchUnassignedWithPhotosAsync(
+        string searchTerm,
+        Guid? excludedContainerId = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         string pattern = $"%{searchTerm}%";
+        List<DbItem> itemsQuery;
 
-        List<DbItem> itemsQuery = await items.QueryAsync(
-            $@"SELECT * FROM {nameof(DbItem)}
-                             WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
-                                     WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
-                 AND Name LIKE ? COLLATE NOCASE
-               ORDER BY Name COLLATE NOCASE",
-            pattern);
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            if (excludedContainerId is Guid containerId)
+            {
+                itemsQuery = await items.QueryAsync(
+                    $@"SELECT * FROM {nameof(DbItem)}
+                                     WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                             WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
+                         AND Name LIKE ? COLLATE NOCASE
+                         AND NOT EXISTS (SELECT 1 FROM {nameof(DbItemContainerRelation)} xr
+                                         WHERE xr.ItemId = {nameof(DbItem)}.ItemId
+                                           AND xr.ContainerId = ?
+                                           AND xr.Quantity > 0)
+                       ORDER BY Name COLLATE NOCASE
+                       LIMIT ? OFFSET ?",
+                    pattern,
+                    containerId,
+                    pageSizeValue,
+                    RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue));
+            }
+            else
+            {
+                itemsQuery = await items.QueryAsync(
+                    $@"SELECT * FROM {nameof(DbItem)}
+                                     WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                             WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
+                         AND Name LIKE ? COLLATE NOCASE
+                       ORDER BY Name COLLATE NOCASE
+                       LIMIT ? OFFSET ?",
+                    pattern,
+                    pageSizeValue,
+                    RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue));
+            }
+        }
+        else
+        {
+            if (excludedContainerId is Guid containerId)
+            {
+                itemsQuery = await items.QueryAsync(
+                    $@"SELECT * FROM {nameof(DbItem)}
+                                     WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                             WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
+                         AND Name LIKE ? COLLATE NOCASE
+                         AND NOT EXISTS (SELECT 1 FROM {nameof(DbItemContainerRelation)} xr
+                                         WHERE xr.ItemId = {nameof(DbItem)}.ItemId
+                                           AND xr.ContainerId = ?
+                                           AND xr.Quantity > 0)
+                       ORDER BY Name COLLATE NOCASE",
+                    pattern,
+                    containerId);
+            }
+            else
+            {
+                itemsQuery = await items.QueryAsync(
+                    $@"SELECT * FROM {nameof(DbItem)}
+                                     WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                             WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
+                         AND Name LIKE ? COLLATE NOCASE
+                       ORDER BY Name COLLATE NOCASE",
+                    pattern);
+            }
+        }
 
         logger.LogDebug("SearchUnassignedWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
         return await MapItemsWithPhotosAsync(itemsQuery);

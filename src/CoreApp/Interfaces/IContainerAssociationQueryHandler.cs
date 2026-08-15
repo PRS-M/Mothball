@@ -8,5 +8,8 @@ public interface IContainerAssociationQueryHandler
 {
     Task<List<Container>> QueryContainersAsync(int pageNumber, int pageSize);
 
-    Task<List<ItemInventorySummary>> QueryUnassignedItemsAsync(int pageNumber, int pageSize);
+    Task<List<ItemInventorySummary>> QueryUnassignedItemsAsync(
+        int pageNumber,
+        int pageSize,
+        Guid? excludedContainerId = null);
 }

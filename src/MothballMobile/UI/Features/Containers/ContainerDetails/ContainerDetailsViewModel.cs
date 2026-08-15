@@ -163,18 +163,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
 
         var result = await quantityService.SaveQuantityAsync(currentContainer, itemId, quantity);
-
-        if (result.Removed)
-        {
-            itemRows.Remove(itemId);
-            TotalItemCount = result.TotalItemCount;
-            IsItemListEmpty = itemRows.IsEmpty;
-            OnPropertyChanged(nameof(Items));
-            return;
-        }
-
         TotalItemCount = result.TotalItemCount;
-        await ReloadItemsAsync(searchTerm: null);
+        var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
+        await ReloadItemsAsync(searchTerm);
     }
 
     [RelayCommand]
