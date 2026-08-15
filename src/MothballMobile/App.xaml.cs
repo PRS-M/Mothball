@@ -44,8 +44,10 @@ public partial class App : Application
 		try
 		{
 			await startupOrchestrator.StartAsync();
-			await ShowStartupAdAsync();
 			window.Page = new AppShell(photoBackgroundOperationTracker, appShellLogger);
+
+			await Task.Yield();
+			await ShowStartupAdAsync();
 		}
 		catch (Exception ex)
 		{
