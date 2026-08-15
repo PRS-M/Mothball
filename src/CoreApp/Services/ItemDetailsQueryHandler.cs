@@ -14,13 +14,12 @@ public sealed class ItemDetailsQueryHandler : IItemDetailsQueryHandler
 
     public async Task<ItemDetailsResult?> GetDetailsAsync(string itemId)
     {
-        var item = await inventoryQueries.GetItemWithPhotosAsync(itemId);
-        if (item is null)
+        if (!Guid.TryParse(itemId, out var parsedItemId))
         {
             return null;
         }
 
-        var container = await inventoryQueries.GetContainerForItemAsync(item.ItemId.ToString());
-        return new ItemDetailsResult(item, container?.ContainerId);
+        var summary = await inventoryQueries.GetItemInventorySummaryAsync(parsedItemId);
+        return summary is null ? null : new ItemDetailsResult(summary);
     }
 }

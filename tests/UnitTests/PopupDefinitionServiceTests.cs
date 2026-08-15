@@ -69,4 +69,88 @@ public class PopupDefinitionServiceTests
         Assert.That(definition.InvalidNumberMessage, Is.EqualTo("Enter a number between 0 and 1000."));
         Assert.That(definition.OutOfRangeMessage, Is.EqualTo("Value must be between 0 and 1000."));
     }
+
+    [Test]
+    public void SetTotalQuantity_AllowsZeroToEnterDeletionWorkflow()
+    {
+        var definition = service.SetTotalQuantity(initialValue: 7, assignedQuantity: 5);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(definition.Title, Is.EqualTo("Set total quantity"));
+            Assert.That(definition.Min, Is.Zero);
+            Assert.That(definition.InitialValue, Is.EqualTo(7));
+        });
+    }
+
+    [Test]
+    public void SetTotalQuantity_WhenNothingAssigned_StillAllowsDeletionWorkflow()
+    {
+        var definition = service.SetTotalQuantity(initialValue: 1, assignedQuantity: 0);
+
+        Assert.That(definition.Min, Is.Zero);
+    }
+
+    [Test]
+    public void WithdrawalContainerPicker_ListsOnlyProvidedRemainingAllocations()
+    {
+        var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 3);
+
+        var definition = service.WithdrawalContainerPicker([allocation]);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(definition.Options, Has.Count.EqualTo(1));
+            Assert.That(definition.Options[0].Label, Is.EqualTo("Box (3)"));
+            Assert.That(definition.Options[0].Value, Is.EqualTo(allocation));
+        });
+    }
+
+    [Test]
+    public void WithdrawFromContainer_DefaultsToRemainingRequiredQuantity()
+    {
+        var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 10);
+
+        var definition = service.WithdrawFromContainer(
+            allocation,
+            carriedQuantity: 0,
+            requiredQuantity: 4);
+
+        Assert.That(definition.InitialValue, Is.EqualTo(4));
+    }
+
+    [Test]
+    public void WithdrawFromContainer_WhenCarryIsHigher_DefaultsToCarry()
+    {
+        var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 3);
+
+        var definition = service.WithdrawFromContainer(
+            allocation,
+            carriedQuantity: 5,
+            requiredQuantity: 2);
+
+        Assert.That(definition.InitialValue, Is.EqualTo(5));
+    }
+
+    [Test]
+    public void ConfirmUnassignedWithdrawal_ExplainsThatTotalWillDecrease()
+    {
+        var definition = service.ConfirmUnassignedWithdrawal(4);
+
+        Assert.That(definition.Message, Does.Contain("unassigned"));
+        Assert.That(definition.Message, Does.Contain("reduce the total quantity"));
+    }
+
+    [Test]
+    public void DeleteItemBySettingTotalToZero_ExplainsPermanentRemoval()
+    {
+        var definition = service.DeleteItemBySettingTotalToZero("Widget");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(definition.Message, Does.Contain("Widget"));
+            Assert.That(definition.Message, Does.Contain("permanently remove"));
+            Assert.That(definition.Message, Does.Contain("photos"));
+        });
+    }
 }

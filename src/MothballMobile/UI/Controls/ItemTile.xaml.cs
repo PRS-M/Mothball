@@ -26,6 +26,18 @@ public partial class ItemTile : ContentView
 	public static readonly BindableProperty ShowQuantityProperty =
 		BindableProperty.Create(nameof(ShowQuantity), typeof(bool), typeof(ItemTile), false);
 
+	public static readonly BindableProperty ShowInventorySummaryProperty =
+		BindableProperty.Create(nameof(ShowInventorySummary), typeof(bool), typeof(ItemTile), false);
+
+	public static readonly BindableProperty TotalQuantityProperty =
+		BindableProperty.Create(nameof(TotalQuantity), typeof(int), typeof(ItemTile), 0);
+
+	public static readonly BindableProperty AssignedQuantityProperty =
+		BindableProperty.Create(nameof(AssignedQuantity), typeof(int), typeof(ItemTile), 0);
+
+	public static readonly BindableProperty UnassignedQuantityProperty =
+		BindableProperty.Create(nameof(UnassignedQuantity), typeof(int), typeof(ItemTile), 0);
+
 	public static readonly BindableProperty EditQuantityCommandProperty =
 		BindableProperty.Create(nameof(EditQuantityCommand), typeof(ICommand), typeof(ItemTile), null);
 
@@ -75,6 +87,30 @@ public partial class ItemTile : ContentView
 	{
 		get => (bool)GetValue(ShowQuantityProperty);
 		set => SetValue(ShowQuantityProperty, value);
+	}
+
+	public bool ShowInventorySummary
+	{
+		get => (bool)GetValue(ShowInventorySummaryProperty);
+		set => SetValue(ShowInventorySummaryProperty, value);
+	}
+
+	public int TotalQuantity
+	{
+		get => (int)GetValue(TotalQuantityProperty);
+		set => SetValue(TotalQuantityProperty, value);
+	}
+
+	public int AssignedQuantity
+	{
+		get => (int)GetValue(AssignedQuantityProperty);
+		set => SetValue(AssignedQuantityProperty, value);
+	}
+
+	public int UnassignedQuantity
+	{
+		get => (int)GetValue(UnassignedQuantityProperty);
+		set => SetValue(UnassignedQuantityProperty, value);
 	}
 
 	public ICommand? EditQuantityCommand

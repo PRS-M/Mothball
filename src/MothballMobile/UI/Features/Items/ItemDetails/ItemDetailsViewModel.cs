@@ -1,21 +1,27 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
 using CoreApp.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;
 
 public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable
 {
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
+    private readonly IItemInventoryCommandService inventoryCommands;
     private readonly IDeleteItemCommandHandler deleteItemHandler;
     private readonly INavigationService nav;
     private readonly IBackgroundTaskObserver backgroundTasks;
+    private readonly ILogger<ItemDetailsViewModel> logger;
     private Item? currentItem;
+    private ItemInventorySummary? currentInventory;
+    private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
 
     [ObservableProperty]
@@ -28,10 +34,20 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private string description = string.Empty;
 
     [ObservableProperty]
+    private int totalQuantity;
+
+    [ObservableProperty]
+    private int assignedQuantity;
+
+    [ObservableProperty]
+    private int unassignedQuantity;
+
+    [ObservableProperty]
     private string? containerId;
 
     public bool HasNoContainerRelation => string.IsNullOrWhiteSpace(this.ContainerId);
     public bool HasContainerRelation => !HasNoContainerRelation;
+    public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
     public bool ShowGoToContainerButton => HasContainerRelation
         && (string.IsNullOrWhiteSpace(sourceContainerId)
             || !string.Equals(ContainerId, sourceContainerId, StringComparison.OrdinalIgnoreCase));
@@ -40,6 +56,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public ItemDetailsViewModel(
         IItemDetailsQueryHandler itemDetailsQueries,
+        IItemInventoryCommandService inventoryCommands,
         IDeleteItemCommandHandler deleteItemHandler,
         INavigationService nav,
         IImagePathResolver paths,
@@ -47,13 +64,16 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IPopupDefinitionService popupDefinitions,
         ImageService imageService,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
-        IBackgroundTaskObserver backgroundTasks)
+        IBackgroundTaskObserver backgroundTasks,
+        ILogger<ItemDetailsViewModel> logger)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.itemDetailsQueries = itemDetailsQueries;
+        this.inventoryCommands = inventoryCommands;
         this.deleteItemHandler = deleteItemHandler;
         this.nav = nav;
         this.backgroundTasks = backgroundTasks;
+        this.logger = logger;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -99,18 +119,25 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             {
                 Name = "Item not found";
                 Description = string.Empty;
+                OnPropertyChanged(nameof(HasDescription));
                 ImagePaths.Add(paths.GetFallbackImagePath());
                 return;
             }
 
-            var item = details.Item;
+            var item = details.Inventory.Item;
             currentItem = item;
+            currentInventory = details.Inventory;
+            currentAllocations = details.Inventory.Allocations;
             Name = item.Name;
             Description = item.Description;
+            TotalQuantity = details.Inventory.TotalQuantity;
+            AssignedQuantity = details.Inventory.AssignedQuantity;
+            UnassignedQuantity = details.Inventory.UnassignedQuantity;
+            OnPropertyChanged(nameof(HasDescription));
 
             ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(item));
 
-            ContainerId = details.ContainerId?.ToString();
+            ContainerId = details.Inventory.Allocations.FirstOrDefault()?.ContainerId.ToString();
             NotifyContainerRelationStateChanged();
         });
     }
@@ -138,6 +165,211 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         return nav.GoToAsync(
             Infrastructure.NavigationRoutes.AssociateItemWithContainer,
             new Dictionary<string, object> { [NavigationParams.ItemId] = ItemId });
+    }
+
+    [RelayCommand]
+    private async Task SetTotalQuantityAsync()
+    {
+        if (!await RefreshInventoryForQuantityEditAsync())
+        {
+            return;
+        }
+
+        var snapshot = new QuantityEditSnapshot(currentItem!, currentInventory!);
+
+        var selectedQuantity = await popup.PickNumberAsync(
+            popupDefinitions.SetTotalQuantity(snapshot.TotalQuantity, snapshot.AssignedQuantity));
+
+        if (selectedQuantity is null || selectedQuantity.Value == snapshot.TotalQuantity)
+        {
+            return;
+        }
+
+        try
+        {
+            await ApplyTotalQuantitySelectionAsync(snapshot, selectedQuantity.Value);
+        }
+        catch (Exception ex)
+        {
+            await popup.ShowAlertAsync(popupDefinitions.InventoryQuantityUpdateFailed(ex.Message));
+        }
+    }
+
+    private async Task ApplyTotalQuantitySelectionAsync(QuantityEditSnapshot snapshot, int selectedQuantity)
+    {
+        logger.LogInformation(
+            "Set item total requested: itemId={ItemId}, selected={Selected}, currentTotal={CurrentTotal}, assigned={Assigned}, sourceContainer={SourceContainer}",
+            snapshot.Item.ItemId,
+            selectedQuantity,
+            snapshot.TotalQuantity,
+            snapshot.AssignedQuantity,
+            sourceContainerId);
+
+        if (selectedQuantity == 0)
+        {
+            await DeleteBySettingTotalToZeroAsync(snapshot.Item);
+            return;
+        }
+
+        if (selectedQuantity > snapshot.TotalQuantity)
+        {
+            await IncreaseTotalQuantityAsync(snapshot.Item, selectedQuantity);
+            return;
+        }
+
+        logger.LogDebug("Routing item total request to withdrawal workflow.");
+        await RunWithdrawalWorkflowAsync(selectedQuantity, snapshot.Inventory, snapshot.Item);
+    }
+
+    private async Task DeleteBySettingTotalToZeroAsync(Item item)
+    {
+        if (!await popup.ConfirmAsync(popupDefinitions.DeleteItemBySettingTotalToZero(Name)))
+        {
+            return;
+        }
+
+        var deletionPlan = new ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
+        var deletionResult = await inventoryCommands.ApplyWithdrawalAsync(item.ItemId, deletionPlan);
+        if (deletionResult.ItemDeleted)
+        {
+            await nav.GoBackAsync();
+        }
+    }
+
+    private async Task IncreaseTotalQuantityAsync(Item item, int selectedQuantity)
+    {
+        logger.LogDebug("Routing item total request to increase command.");
+        var result = await inventoryCommands.IncreaseTotalQuantityAsync(item.ItemId, selectedQuantity);
+        ApplyInventoryResult(result);
+    }
+
+    private async Task<bool> RefreshInventoryForQuantityEditAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ItemId))
+        {
+            return false;
+        }
+
+        var details = await itemDetailsQueries.GetDetailsAsync(ItemId);
+        if (details is null)
+        {
+            return false;
+        }
+
+        currentItem = details.Inventory.Item;
+        currentInventory = details.Inventory;
+        currentAllocations = details.Inventory.Allocations;
+        TotalQuantity = details.Inventory.TotalQuantity;
+        AssignedQuantity = details.Inventory.AssignedQuantity;
+        UnassignedQuantity = details.Inventory.UnassignedQuantity;
+        return true;
+    }
+
+    private async Task RunWithdrawalWorkflowAsync(
+        int requestedTotal,
+        ItemInventorySummary inventorySnapshot,
+        Item itemSnapshot)
+    {
+        Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
+            ? parsedSourceContainerId
+            : null;
+        var session = new ItemInventoryAdjustmentSession(
+            inventorySnapshot,
+            requestedTotal,
+            preferredContainerId);
+
+        while (true)
+        {
+            switch (session.State)
+            {
+                case ItemInventoryAdjustmentState.WithdrawAssigned:
+                    var selectedContainer = session.PreferredAllocation
+                        ?? await popup.SelectOptionAsync(
+                            popupDefinitions.WithdrawalContainerPicker(session.RemainingAllocations));
+                    if (selectedContainer is null)
+                    {
+                        session.Cancel();
+                        continue;
+                    }
+
+                    var assignedWithdrawal = await popup.PickNumberAsync(
+                        popupDefinitions.WithdrawFromContainer(
+                            selectedContainer,
+                            session.CarriedWithdrawal,
+                            session.SuggestedAssignedWithdrawal));
+                    if (assignedWithdrawal is null)
+                    {
+                        session.Cancel();
+                        continue;
+                    }
+
+                    try
+                    {
+                        session.WithdrawAssigned(selectedContainer.ContainerId, assignedWithdrawal.Value);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        await popup.ShowAlertAsync(
+                            popupDefinitions.WithdrawalCarryTooSmall(session.CarriedWithdrawal));
+                    }
+                    break;
+
+                case ItemInventoryAdjustmentState.ConfirmUnassignedWithdrawal:
+                    if (await popup.ConfirmAsync(
+                        popupDefinitions.ConfirmUnassignedWithdrawal(session.UnassignedQuantity)))
+                    {
+                        session.AcceptUnassignedWithdrawal();
+                    }
+                    else
+                    {
+                        session.DeclineUnassignedWithdrawal();
+                    }
+                    break;
+
+                case ItemInventoryAdjustmentState.WithdrawUnassigned:
+                    var unassignedWithdrawal = await popup.PickNumberAsync(
+                        popupDefinitions.WithdrawUnassignedQuantity(session.UnassignedQuantity));
+                    session.WithdrawUnassigned(unassignedWithdrawal ?? 0);
+                    break;
+
+                case ItemInventoryAdjustmentState.ReadyToCommit:
+                    var plan = session.BuildPlan();
+                    var result = await inventoryCommands.ApplyWithdrawalAsync(itemSnapshot.ItemId, plan);
+                    if (result.ItemDeleted)
+                    {
+                        await nav.GoBackAsync();
+                        return;
+                    }
+
+                    currentAllocations = plan.Allocations;
+                    ApplyInventoryResult(result);
+                    return;
+
+                case ItemInventoryAdjustmentState.Cancelled:
+                    return;
+
+                default:
+                    throw new InvalidOperationException($"Unsupported adjustment state {session.State}.");
+            }
+        }
+    }
+
+    private void ApplyInventoryResult(ItemInventoryUpdateResult result)
+    {
+        currentItem!.SetTotalQuantity(result.TotalQuantity);
+        currentInventory = new ItemInventorySummary(
+            currentItem,
+            result.AssignedQuantity,
+            currentAllocations);
+        TotalQuantity = result.TotalQuantity;
+        AssignedQuantity = result.AssignedQuantity;
+        UnassignedQuantity = result.UnassignedQuantity;
+    }
+
+    private sealed record QuantityEditSnapshot(Item Item, ItemInventorySummary Inventory)
+    {
+        public int TotalQuantity => Inventory.TotalQuantity;
+        public int AssignedQuantity => Inventory.AssignedQuantity;
     }
 
     [RelayCommand]

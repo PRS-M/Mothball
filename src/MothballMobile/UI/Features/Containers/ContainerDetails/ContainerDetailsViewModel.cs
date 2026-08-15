@@ -6,6 +6,7 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure.Popups;
 
@@ -131,16 +132,14 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         await ReloadItemsAsync(searchTerm: null);
     }
 
-    private void AddItemsToCollection(IEnumerable<Item> items)
+    private void AddItemsToCollection(IEnumerable<ContainerItemInventoryEntry> items)
     {
         itemRows.Append(
             items,
-            item =>
+            entry =>
             {
-                var quantity = currentContainer?.Items.FirstOrDefault(x => x.ItemId == item.ItemId)?.Quantity ?? 0;
                 var itemVm = new ItemWithPhotosViewModel(
-                    item,
-                    quantity,
+                    entry,
                     currentContainer?.ContainerId ?? Guid.Empty,
                     paths,
                     nav,
@@ -163,24 +162,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             return;
         }
 
-        var vm = itemRows.Find(itemId);
         var result = await quantityService.SaveQuantityAsync(currentContainer, itemId, quantity);
-
-        if (result.Removed)
-        {
-            itemRows.Remove(itemId);
-            TotalItemCount = result.TotalItemCount;
-            IsItemListEmpty = itemRows.IsEmpty;
-            OnPropertyChanged(nameof(Items));
-            return;
-        }
-
-        if (vm is not null && vm.Quantity != quantity)
-        {
-            vm.Quantity = quantity;
-        }
-
         TotalItemCount = result.TotalItemCount;
+        var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
+        await ReloadItemsAsync(searchTerm);
     }
 
     [RelayCommand]

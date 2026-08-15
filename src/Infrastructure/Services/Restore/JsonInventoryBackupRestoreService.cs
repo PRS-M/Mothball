@@ -129,6 +129,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                 ItemId = item.ItemId,
                 Name = item.Name,
                 Description = item.Description,
+                TotalQuantity = item.TotalQuantity,
             });
         }
 
@@ -144,12 +145,14 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    TotalQuantity = item.TotalQuantity,
                 });
                 continue;
             }
 
             existing.Name = item.Name;
             existing.Description = item.Description;
+            existing.TotalQuantity = item.TotalQuantity;
         }
 
         foreach (var relation in plan.RelationsToInsert)

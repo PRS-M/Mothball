@@ -32,6 +32,10 @@
                                            Command="{Binding AssignToContainerCommand}"
                                            Name="{Binding Name}"
                                            Description="{Binding Description}"
+                                           TotalQuantity="{Binding TotalQuantity}"
+                                           AssignedQuantity="{Binding AssignedQuantity}"
+                                           UnassignedQuantity="{Binding UnassignedQuantity}"
+                                           ShowInventorySummary="True"
                                            ImagePaths="{Binding ImagePaths}"
                                            ImageSize="72" />
                     </DataTemplate>

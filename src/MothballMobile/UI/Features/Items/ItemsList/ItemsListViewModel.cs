@@ -5,6 +5,7 @@ using CoreApp.Interfaces;
 using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure;
+using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
 
@@ -14,7 +15,7 @@ public enum ItemsListFilter
     Unassigned,
 }
 
-public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewModel>, IDisposable
+public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySummary, ItemViewModel>, IDisposable
 {
     private readonly IImagePathResolver paths;
     private readonly IItemsListQueryHandler itemListQueries;
@@ -86,7 +87,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
         }
     }
 
-    protected override ItemViewModel MapToViewModel(Item source)
+    protected override ItemViewModel MapToViewModel(ItemInventorySummary source)
     {
         return new ItemViewModel(source, paths, nav);
     }
@@ -155,7 +156,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<Item, ItemViewM
     protected override void OnViewModelAdded(ItemViewModel vm)
         => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
 
-    protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
+    protected override Task<List<ItemInventorySummary>> LoadAsync(int pageNumber, int pageSize)
         => itemListQueries.QueryAsync(IsUnassignedFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);
 
     private bool IsUnassignedFilterSelected()

@@ -69,7 +69,8 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Border Style="{StaticResource Card}">
+                <Border Style="{StaticResource Card}"
+                    IsVisible="{Binding HasDescription}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Description"
                            FontAttributes="Bold"
@@ -78,6 +79,41 @@
                               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                 </VerticalStackLayout>
             </Border>
+
+                 <Border Style="{StaticResource Card}">
+                  <VerticalStackLayout Spacing="8">
+                      <Label Text="Inventory"
+                          FontAttributes="Bold"
+                          TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                      <Grid ColumnDefinitions="*,Auto"
+                         RowDefinitions="Auto,Auto,Auto"
+                         RowSpacing="6">
+                       <Label Text="Total quantity"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                       <Label Grid.Column="1"
+                           Text="{Binding TotalQuantity}"
+                           FontAttributes="Bold" />
+                       <Label Grid.Row="1"
+                           Text="Assigned quantity"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                       <Label Grid.Row="1"
+                           Grid.Column="1"
+                           Text="{Binding AssignedQuantity}"
+                           FontAttributes="Bold" />
+                       <Label Grid.Row="2"
+                           Text="Unassigned quantity"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                       <Label Grid.Row="2"
+                           Grid.Column="1"
+                           Text="{Binding UnassignedQuantity}"
+                           FontAttributes="Bold" />
+                      </Grid>
+                      <Button Text="Set total quantity"
+                              Style="{StaticResource OutlinedButton}"
+                              HorizontalOptions="Start"
+                              Command="{Binding SetTotalQuantityCommand}" />
+                  </VerticalStackLayout>
+                 </Border>
 
         </VerticalStackLayout>
     </ScrollView>

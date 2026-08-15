@@ -1,4 +1,4 @@
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using CoreApp.Specifications;
 
@@ -13,8 +13,12 @@ public sealed class ItemsListQueryHandler : IItemsListQueryHandler
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
     }
 
-    public Task<List<Item>> QueryAsync(bool unassignedOnly, string? searchTerm = null, int? pageNumber = null, int? pageSize = null)
-        => inventoryQueries.QueryItemsWithPhotosAsync(
+    public Task<List<ItemInventorySummary>> QueryAsync(
+        bool unassignedOnly,
+        string? searchTerm = null,
+        int? pageNumber = null,
+        int? pageSize = null)
+        => inventoryQueries.QueryItemInventorySummariesAsync(
             new ItemListSpecification(
                 Filter: unassignedOnly ? ItemQueryFilter.Unassigned : ItemQueryFilter.All,
                 SearchTerm: searchTerm,

@@ -52,16 +52,24 @@ public sealed class ContainerWorkflowHandlerTests
     public async Task ContainerAssociationQueryHandler_QueryUnassignedItems_UsesUnassignedFilter()
     {
         var queries = new Mock<IInventoryQueryRepository>();
-        var expected = new List<Item> { new("Hammer", string.Empty) };
+        var item = new Item("Hammer", string.Empty, totalQuantity: 3);
+        var expected = new List<CoreApp.Contracts.ItemInventorySummary>
+        {
+            new(item, 1, [new CoreApp.Contracts.ItemContainerAllocation(Guid.NewGuid(), "Box", 1)]),
+        };
         ItemListSpecification? capturedSpecification = null;
 
-        queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
+        queries.Setup(q => q.QueryItemInventorySummariesAsync(It.IsAny<ItemListSpecification>()))
             .Callback<ItemListSpecification>(s => capturedSpecification = s)
             .ReturnsAsync(expected);
 
         var handler = new ContainerAssociationQueryHandler(queries.Object);
 
-        var result = await handler.QueryUnassignedItemsAsync(pageNumber: 2, pageSize: 10);
+        var excludedContainerId = Guid.NewGuid();
+        var result = await handler.QueryUnassignedItemsAsync(
+            pageNumber: 2,
+            pageSize: 10,
+            excludedContainerId);
 
         Assert.That(result, Is.SameAs(expected));
         Assert.That(capturedSpecification, Is.Not.Null);
@@ -70,6 +78,7 @@ public sealed class ContainerWorkflowHandlerTests
             Assert.That(capturedSpecification!.Filter, Is.EqualTo(ItemQueryFilter.Unassigned));
             Assert.That(capturedSpecification.PageNumber, Is.EqualTo(2));
             Assert.That(capturedSpecification.PageSize, Is.EqualTo(10));
+            Assert.That(capturedSpecification.ExcludedContainerId, Is.EqualTo(excludedContainerId));
         });
     }
 
@@ -78,11 +87,11 @@ public sealed class ContainerWorkflowHandlerTests
     {
         var itemId = Guid.NewGuid();
         var containerId = Guid.NewGuid();
-        var commands = new Mock<IInventoryCommandRepository>();
+        var commands = new Mock<IItemInventoryCommandService>();
         var handler = new AssignItemToContainerCommandHandler(commands.Object);
 
         await handler.AssignAsync(itemId, containerId);
 
-        commands.Verify(c => c.InsertItemContainerRelation(itemId, containerId, 1), Times.Once);
+        commands.Verify(c => c.SetContainerAllocationAsync(itemId, containerId, 1), Times.Once);
     }
 }

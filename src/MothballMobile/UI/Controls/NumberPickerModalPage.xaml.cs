@@ -12,6 +12,7 @@ public partial class NumberPickerModalPage : ContentPage
     private readonly int max;
     private readonly string invalidNumberMessage;
     private readonly string outOfRangeMessage;
+    private bool isClosing;
 
     public NumberPickerModalPage(
         string title,
@@ -101,17 +102,25 @@ public partial class NumberPickerModalPage : ContentPage
 
     private async Task CloseAsync(int? value)
     {
-        if (!tcs.TrySetResult(value))
+        if (isClosing || tcs.Task.IsCompleted)
         {
             return;
         }
 
-        await Navigation.PopModalAsync(false);
+        isClosing = true;
+        try
+        {
+            await Navigation.PopModalAsync(false);
+        }
+        finally
+        {
+            tcs.TrySetResult(value);
+        }
     }
 
     protected override void OnDisappearing()
     {
-        if (!tcs.Task.IsCompleted)
+        if (!isClosing && !tcs.Task.IsCompleted)
         {
             tcs.TrySetResult(null);
         }

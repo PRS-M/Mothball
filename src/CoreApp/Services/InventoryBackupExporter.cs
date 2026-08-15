@@ -58,6 +58,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
                 ItemId = i.ItemId,
                 Name = i.Name,
                 Description = i.Description,
+                TotalQuantity = i.TotalQuantity,
             })
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.ItemId)

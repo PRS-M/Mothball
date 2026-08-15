@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Repositories;
+using CoreApp.Entities.ItemAggregate;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 
@@ -48,6 +49,68 @@ public sealed class JsonRelationRepository : IRelationRepository
                     ItemId = itemId,
                     ContainerId = containerId,
                     Quantity = quantity,
+                });
+            }
+
+            return Task.CompletedTask;
+        });
+    }
+
+    public Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentOutOfRangeException.ThrowIfNegative(quantity);
+
+        return store.UpdateAsync(state =>
+        {
+            var itemRow = state.Items.FirstOrDefault(row => row.ItemId == item.ItemId)
+                ?? throw new KeyNotFoundException($"Item '{item.ItemId}' was not found.");
+            itemRow.Name = item.Name;
+            itemRow.Description = item.Description;
+            itemRow.TotalQuantity = item.TotalQuantity;
+
+            state.Relations.RemoveAll(relation =>
+                relation.ItemId == item.ItemId && relation.ContainerId == containerId);
+
+            if (quantity > 0)
+            {
+                state.Relations.Add(new JsonRelationRow
+                {
+                    Id = state.Metadata.NextRelationId++,
+                    ItemId = item.ItemId,
+                    ContainerId = containerId,
+                    Quantity = quantity,
+                });
+            }
+
+            return Task.CompletedTask;
+        });
+    }
+
+    public Task ApplyItemInventoryWithdrawalAsync(
+        Item item,
+        IReadOnlyCollection<CoreApp.Contracts.ItemContainerAllocation> allocations)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(allocations);
+
+        return store.UpdateAsync(state =>
+        {
+            var itemRow = state.Items.FirstOrDefault(row => row.ItemId == item.ItemId)
+                ?? throw new KeyNotFoundException($"Item '{item.ItemId}' was not found.");
+            itemRow.Name = item.Name;
+            itemRow.Description = item.Description;
+            itemRow.TotalQuantity = item.TotalQuantity;
+
+            state.Relations.RemoveAll(relation => relation.ItemId == item.ItemId);
+            foreach (var allocation in allocations.Where(allocation => allocation.Quantity > 0))
+            {
+                state.Relations.Add(new JsonRelationRow
+                {
+                    Id = state.Metadata.NextRelationId++,
+                    ItemId = item.ItemId,
+                    ContainerId = allocation.ContainerId,
+                    Quantity = allocation.Quantity,
                 });
             }
 

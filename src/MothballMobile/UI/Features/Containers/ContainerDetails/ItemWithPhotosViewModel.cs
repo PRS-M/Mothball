@@ -4,6 +4,7 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
+using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -17,8 +18,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     private readonly Func<Guid, int, Task> saveQuantity;
 
     public ItemWithPhotosViewModel(
-        Item item,
-        int quantity,
+        ContainerItemInventoryEntry entry,
         Guid ownerContainerId,
         IImagePathResolver paths,
         INavigationService navigation,
@@ -26,9 +26,9 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         IPopupDefinitionService popupDefinitions,
         string? sourceContainerId,
         Func<Guid, int, Task> saveQuantity)
-        : base(item, paths)
+        : base(entry.Inventory, paths)
     {
-        this.quantity = quantity;
+        quantity = entry.ContainerQuantity;
         this.ownerContainerId = ownerContainerId;
         this.navigation = navigation;
         this.popup = popup;

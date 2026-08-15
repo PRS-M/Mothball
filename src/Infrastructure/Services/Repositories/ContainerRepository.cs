@@ -5,6 +5,7 @@ using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using Microsoft.Extensions.Logging;
+using CoreApp.Contracts;
 
 namespace Infrastructure.Services.Repositories;
 
@@ -144,6 +145,30 @@ public class ContainerRepository : IContainerRepository
         if (dbContainer is null) return null;
 
         return await MapContainerWithPhotosAndRelationsAsync(dbContainer);
+    }
+
+    public async Task<List<ItemContainerAllocation>> GetItemContainerAllocationsAsync(Guid itemId)
+    {
+        var relations = (await itemContainerRelations.WhereAsync(
+                relation => relation.ItemId == itemId && relation.Quantity > 0))
+            .GroupBy(relation => relation.ContainerId)
+            .Select(group => new { ContainerId = group.Key, Quantity = group.Sum(row => row.Quantity) })
+            .ToList();
+        var result = new List<ItemContainerAllocation>(relations.Count);
+
+        foreach (var relation in relations)
+        {
+            var container = await containers.GetAsync(relation.ContainerId.ToString());
+            if (container is not null)
+            {
+                result.Add(new ItemContainerAllocation(
+                    relation.ContainerId,
+                    container.Name,
+                    relation.Quantity));
+            }
+        }
+
+        return result.OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     public async Task InsertAsync(Container container)

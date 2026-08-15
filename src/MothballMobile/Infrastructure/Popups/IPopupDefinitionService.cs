@@ -40,11 +40,31 @@ public interface IPopupDefinitionService
 
     ConfirmationPopupDefinition DeleteItem();
 
+    ConfirmationPopupDefinition DeleteItemBySettingTotalToZero(string itemName);
+
     ConfirmationPopupDefinition DeleteContainer();
 
     ConfirmationPopupDefinition DeletePhoto();
 
     NumberPickerPopupDefinition SetQuantity(int initialValue);
+
+    NumberPickerPopupDefinition SetTotalQuantity(int initialValue, int assignedQuantity);
+
+    AlertPopupDefinition InventoryQuantityUpdateFailed(string message);
+
+    OptionPickerPopupDefinition<ItemContainerAllocation> WithdrawalContainerPicker(
+        IReadOnlyList<ItemContainerAllocation> allocations);
+
+    NumberPickerPopupDefinition WithdrawFromContainer(
+        ItemContainerAllocation allocation,
+        int carriedQuantity,
+        int requiredQuantity);
+
+    AlertPopupDefinition WithdrawalCarryTooSmall(int carriedQuantity);
+
+    ConfirmationPopupDefinition ConfirmUnassignedWithdrawal(int unassignedQuantity);
+
+    NumberPickerPopupDefinition WithdrawUnassignedQuantity(int availableQuantity);
 
     ConfirmationPopupDefinition RemoveItemFromContainer(string itemName);
 }

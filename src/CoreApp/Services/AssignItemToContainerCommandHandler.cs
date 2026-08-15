@@ -4,13 +4,13 @@ namespace CoreApp.Services;
 
 public sealed class AssignItemToContainerCommandHandler : IAssignItemToContainerCommandHandler
 {
-    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IItemInventoryCommandService inventoryCommands;
 
-    public AssignItemToContainerCommandHandler(IInventoryCommandRepository inventoryCommands)
+    public AssignItemToContainerCommandHandler(IItemInventoryCommandService inventoryCommands)
     {
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
 
-    public Task AssignAsync(Guid itemId, Guid containerId, int quantity = 1)
-        => inventoryCommands.InsertItemContainerRelation(itemId, containerId, quantity);
+    public async Task AssignAsync(Guid itemId, Guid containerId, int quantity = 1)
+        => await inventoryCommands.SetContainerAllocationAsync(itemId, containerId, quantity);
 }

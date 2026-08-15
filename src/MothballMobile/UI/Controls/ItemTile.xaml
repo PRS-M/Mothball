@@ -43,7 +43,7 @@
                 ImagePaths="{Binding Source={x:Reference this}, Path=ImagePaths}" />
 
             <Grid Grid.Column="1"
-                  RowDefinitions="Auto,Auto,Auto,Auto"
+                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
                   ColumnDefinitions="*,Auto"
                   RowSpacing="4"
                   ColumnSpacing="8">
@@ -78,18 +78,37 @@
                 <Label Grid.Row="1"
                        Grid.ColumnSpan="2"
                        IsVisible="{Binding Source={x:Reference this}, Path=ShowQuantity}"
-                       Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat='Qty: {0}'}"
+                       Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat='In this container: {0}'}"
                        TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                        FontSize="11" />
 
                 <Label Grid.Row="2"
+                      Grid.ColumnSpan="2"
+                      IsVisible="{Binding Source={x:Reference this}, Path=ShowInventorySummary}"
+                      Text="{Binding Source={x:Reference this}, Path=TotalQuantity, StringFormat='Total: {0}'}"
+                      TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                      FontSize="11" />
+
+                  <HorizontalStackLayout Grid.Row="3"
+                                Grid.ColumnSpan="2"
+                                IsVisible="{Binding Source={x:Reference this}, Path=ShowInventorySummary}"
+                                Spacing="12">
+                      <Label Text="{Binding Source={x:Reference this}, Path=AssignedQuantity, StringFormat='Assigned: {0}'}"
+                          TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                          FontSize="11" />
+                      <Label Text="{Binding Source={x:Reference this}, Path=UnassignedQuantity, StringFormat='Unassigned: {0}'}"
+                          TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                          FontSize="11" />
+                  </HorizontalStackLayout>
+
+                  <Label Grid.Row="4"
                        Grid.ColumnSpan="2"
                        Text="{Binding Source={x:Reference this}, Path=Description}"
                        TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
                        FontSize="12"
                        LineBreakMode="TailTruncation" />
 
-                <Button Grid.Row="3"
+                <Button Grid.Row="5"
                         Grid.Column="1"
                         Text="Edit quantity"
                         IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"

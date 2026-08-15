@@ -1,5 +1,4 @@
 using CoreApp.Contracts;
-using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Specifications;
 
@@ -26,8 +25,12 @@ public sealed class ContainerDetailsQueryHandler : IContainerDetailsQueryHandler
         return new ContainerDetailsResult(container, totalItemCount);
     }
 
-    public Task<List<Item>> QueryItemsAsync(string containerId, string? searchTerm, int pageNumber, int pageSize)
-        => inventoryQueries.QueryContainerItemsWithPhotosAsync(
+    public Task<List<ContainerItemInventoryEntry>> QueryItemsAsync(
+        string containerId,
+        string? searchTerm,
+        int pageNumber,
+        int pageSize)
+        => inventoryQueries.QueryContainerItemInventoryAsync(
             new ContainerItemsSpecification(
                 ContainerId: containerId,
                 SearchTerm: searchTerm,

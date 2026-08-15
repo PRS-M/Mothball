@@ -1,5 +1,7 @@
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
-internal sealed record ContainerItemPageLoad(IReadOnlyList<Item> Items, bool IsStale);
+internal sealed record ContainerItemPageLoad(
+	IReadOnlyList<ContainerItemInventoryEntry> Items,
+	bool IsStale);

@@ -40,7 +40,7 @@ public class RepositoryIntegrationTests
         var containerRepo = new ContainerRepository(transactionRunner, containers, photos, relations, containerLogger);
         var itemRepo = new ItemRepository(transactionRunner, items, photos, relations, itemLogger);
         var imageRepo = new ImageRepository(photos);
-        var relationRepo = new RelationRepository(relations);
+        var relationRepo = new RelationRepository(relations, transactionRunner);
 
         queryRepo = new InventoryQueryRepository(containerRepo, itemRepo);
         commandRepo = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
@@ -94,7 +94,7 @@ public class RepositoryIntegrationTests
     {
         var c = new Container(Guid.NewGuid(), "C1", "");
         await commandRepo.InsertContainerAsync(c);
-        var i = new Item("ItemA", "DescA");
+        var i = new Item("ItemA", "DescA", totalQuantity: 2);
         await commandRepo.InsertItemAsync(i);
         await commandRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId, quantity: 2);
 

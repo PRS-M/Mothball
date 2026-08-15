@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -44,7 +45,9 @@ internal sealed class ContainerDetailsItemRowsViewModel
         }
     }
 
-    public void Append(IEnumerable<Item> sourceItems, Func<Item, ItemWithPhotosViewModel> createViewModel)
+    public void Append(
+        IEnumerable<ContainerItemInventoryEntry> sourceItems,
+        Func<ContainerItemInventoryEntry, ItemWithPhotosViewModel> createViewModel)
     {
         ArgumentNullException.ThrowIfNull(sourceItems);
         ArgumentNullException.ThrowIfNull(createViewModel);

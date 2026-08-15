@@ -2,6 +2,7 @@
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using System.Threading.Tasks;
+using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
 
@@ -9,8 +10,11 @@ public partial class ItemViewModel : ItemWithImagesViewModelBase
 {
     private readonly Infrastructure.INavigationService nav;
 
-    public ItemViewModel(Item item, IImagePathResolver paths, Infrastructure.INavigationService nav)
-        : base(item, paths)
+    public ItemViewModel(
+        ItemInventorySummary inventory,
+        IImagePathResolver paths,
+        Infrastructure.INavigationService nav)
+        : base(inventory, paths)
     {
         this.nav = nav;
     }

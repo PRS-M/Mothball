@@ -15,4 +15,5 @@ public sealed record ItemListSpecification(
     ItemQueryFilter Filter,
     string? SearchTerm = null,
     int? PageNumber = null,
-    int? PageSize = null);
+    int? PageSize = null,
+    Guid? ExcludedContainerId = null);

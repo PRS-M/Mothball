@@ -100,6 +100,12 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             "Are you sure you want to delete this item? This cannot be undone.",
             "Delete");
 
+    public ConfirmationPopupDefinition DeleteItemBySettingTotalToZero(string itemName)
+        => new(
+            "Remove item",
+            $"Setting '{itemName}' to zero will permanently remove the item, all container assignments, and its photos. Continue?",
+            "Remove");
+
     public ConfirmationPopupDefinition DeleteContainer()
         => new(
             "Delete container",
@@ -118,6 +124,60 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             Min: 0,
             Max: 1000,
             InitialValue: initialValue);
+
+    public NumberPickerPopupDefinition SetTotalQuantity(int initialValue, int assignedQuantity)
+        => new(
+            "Set total quantity",
+            Min: 0,
+            Max: int.MaxValue,
+            InitialValue: initialValue);
+
+    public AlertPopupDefinition InventoryQuantityUpdateFailed(string message)
+        => new(
+            "Quantity not updated",
+            message);
+
+    public OptionPickerPopupDefinition<ItemContainerAllocation> WithdrawalContainerPicker(
+        IReadOnlyList<ItemContainerAllocation> allocations)
+        => new(
+            "Choose a container",
+            "Cancel",
+            allocations
+                .Where(allocation => allocation.Quantity > 0)
+                .Select(allocation => new PopupOption<ItemContainerAllocation>(
+                    $"{allocation.ContainerName} ({allocation.Quantity})",
+                    allocation))
+                .ToArray());
+
+    public NumberPickerPopupDefinition WithdrawFromContainer(
+        ItemContainerAllocation allocation,
+        int carriedQuantity,
+        int requiredQuantity)
+        => new(
+            $"Withdraw from {allocation.ContainerName}",
+            Min: 0,
+            Max: int.MaxValue,
+            InitialValue: Math.Max(1, Math.Max(carriedQuantity, requiredQuantity)),
+            Placeholder: "Enter 0 to stop");
+
+    public AlertPopupDefinition WithdrawalCarryTooSmall(int carriedQuantity)
+        => new(
+            "More items must be withdrawn",
+            $"Enter 0 to cancel, or withdraw at least the remaining {carriedQuantity} items.");
+
+    public ConfirmationPopupDefinition ConfirmUnassignedWithdrawal(int unassignedQuantity)
+        => new(
+            "Withdraw unassigned items?",
+            $"Assigned withdrawals are complete. Continuing will withdraw from {unassignedQuantity} unassigned items and reduce the total quantity further.",
+            "Continue");
+
+    public NumberPickerPopupDefinition WithdrawUnassignedQuantity(int availableQuantity)
+        => new(
+            "Withdraw unassigned items",
+            Min: 0,
+            Max: availableQuantity,
+            InitialValue: 0,
+            Placeholder: "Enter 0 to finish");
 
     public ConfirmationPopupDefinition RemoveItemFromContainer(string itemName)
         => new(

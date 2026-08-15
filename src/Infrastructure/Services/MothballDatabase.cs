@@ -71,20 +71,22 @@ public class MothballDatabase : IAsyncDisposable
             await db.CreateTableAsync<T>();
     }
 
-    private static async Task EnsureColumnAsync(
+    private static async Task<bool> EnsureColumnAsync(
         SQLiteAsyncConnection db, string table, string column, string sqlType, string defaultValue)
     {
         var columns = await db.QueryAsync<ColumnInfo>($"PRAGMA table_info({table});");
-        if (columns.Count == 0) return;
+        if (columns.Count == 0) return false;
 
         var hasColumn = columns.Exists(c =>
             string.Equals(c.name, column, StringComparison.OrdinalIgnoreCase));
 
-        if (!hasColumn)
+        bool addedColumn = !hasColumn;
+        if (addedColumn)
             await db.ExecuteAsync($"ALTER TABLE {table} ADD COLUMN {column} {sqlType};");
 
         // Always backfill nulls
         await db.ExecuteAsync($"UPDATE {table} SET {column} = {defaultValue} WHERE {column} IS NULL;");
+        return addedColumn;
     }
 
     private sealed class ColumnInfo

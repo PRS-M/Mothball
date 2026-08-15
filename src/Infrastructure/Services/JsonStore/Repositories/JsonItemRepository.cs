@@ -55,23 +55,38 @@ public sealed class JsonItemRepository : IItemRepository
     public Task<List<Item>> QueryWithPhotosAsync(ItemListSpecification specification)
     {
         var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+        var hasPaging = RepositoryQueryHelpers.TryGetPaging(
+            specification.PageNumber,
+            specification.PageSize,
+            out var pageNumberValue,
+            out var pageSizeValue);
 
         if (hasSearch)
         {
             return specification.Filter == ItemQueryFilter.Unassigned
-                ? SearchUnassignedWithPhotosAsync(term!)
-                : SearchWithPhotosAsync(term!);
+                ? SearchUnassignedWithPhotosAsync(
+                    term!,
+                    specification.ExcludedContainerId,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null)
+                : SearchWithPhotosAsync(
+                    term!,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null);
         }
 
-        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        if (hasPaging)
         {
             return specification.Filter == ItemQueryFilter.Unassigned
-                ? GetUnassignedWithPhotosAsync(pageNumberValue, pageSizeValue)
+                ? GetUnassignedWithPhotosAsync(
+                    pageNumberValue,
+                    pageSizeValue,
+                    specification.ExcludedContainerId)
                 : GetAllWithPhotosAsync(pageNumberValue, pageSizeValue);
         }
 
         return specification.Filter == ItemQueryFilter.Unassigned
-            ? SearchUnassignedWithPhotosAsync(string.Empty)
+            ? SearchUnassignedWithPhotosAsync(string.Empty, specification.ExcludedContainerId)
             : GetAllWithPhotosAsync();
     }
 
@@ -124,16 +139,18 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
-    private async Task<List<Item>> GetUnassignedWithPhotosAsync(int pageNumber, int pageSize)
+    private async Task<List<Item>> GetUnassignedWithPhotosAsync(
+        int pageNumber,
+        int pageSize,
+        Guid? excludedContainerId = null)
     {
         RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
         int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var state = await store.LoadAsync().ConfigureAwait(false);
-        var assigned = state.Relations.Select(r => r.ItemId).ToHashSet();
-
         return state.Items
-            .Where(i => !assigned.Contains(i.ItemId))
+            .Where(i => i.TotalQuantity > GetAssignedQuantity(state, i.ItemId)
+                && !HasPositiveAllocationInContainer(state, i.ItemId, excludedContainerId))
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.RowId)
             .Skip(offset)
@@ -142,27 +159,53 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
-    private async Task<List<Item>> SearchWithPhotosAsync(string searchTerm)
+    private async Task<List<Item>> SearchWithPhotosAsync(
+        string searchTerm,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
-
-        return state.Items
+        var query = state.Items
             .Where(i => i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(i => i.RowId)
+            .OrderBy(i => i.RowId);
+
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            query = query
+                .Skip(RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue))
+                .Take(pageSizeValue)
+                .OrderBy(i => i.RowId);
+        }
+
+        return query
             .Select(i => MapItem(state, i))
             .ToList();
     }
 
-    private async Task<List<Item>> SearchUnassignedWithPhotosAsync(string searchTerm)
+    private async Task<List<Item>> SearchUnassignedWithPhotosAsync(
+        string searchTerm,
+        Guid? excludedContainerId = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
-        var assigned = state.Relations.Select(r => r.ItemId).ToHashSet();
-
-        return state.Items
-            .Where(i => !assigned.Contains(i.ItemId)
+        var query = state.Items
+            .Where(i => i.TotalQuantity > GetAssignedQuantity(state, i.ItemId)
+                && !HasPositiveAllocationInContainer(state, i.ItemId, excludedContainerId)
                 && i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(i => i.RowId)
+            .ThenBy(i => i.RowId);
+
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            query = query
+                .Skip(RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue))
+                .Take(pageSizeValue)
+                .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(i => i.RowId);
+        }
+
+        return query
             .Select(i => MapItem(state, i))
             .ToList();
     }
@@ -203,6 +246,7 @@ public sealed class JsonItemRepository : IItemRepository
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
+                existing.TotalQuantity = item.TotalQuantity;
                 return Task.CompletedTask;
             }
 
@@ -212,6 +256,7 @@ public sealed class JsonItemRepository : IItemRepository
                 ItemId = item.ItemId,
                 Name = item.Name,
                 Description = item.Description,
+                TotalQuantity = item.TotalQuantity,
             });
 
             return Task.CompletedTask;
@@ -233,12 +278,14 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    TotalQuantity = item.TotalQuantity,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
+                existing.TotalQuantity = item.TotalQuantity;
             }
 
             return Task.CompletedTask;
@@ -262,12 +309,14 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    TotalQuantity = item.TotalQuantity,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
+                existing.TotalQuantity = item.TotalQuantity;
             }
 
             return Task.CompletedTask;
@@ -294,6 +343,7 @@ public sealed class JsonItemRepository : IItemRepository
             ItemId = row.ItemId,
             Name = row.Name,
             Description = row.Description,
+            TotalQuantity = row.TotalQuantity,
         };
 
         var photos = state.Images
@@ -304,6 +354,21 @@ public sealed class JsonItemRepository : IItemRepository
 
         return dbItem.ToDomain(photos);
     }
+
+    private static int GetAssignedQuantity(JsonInventoryStore.StoreState state, Guid itemId)
+        => state.Relations
+            .Where(relation => relation.ItemId == itemId && relation.Quantity > 0)
+            .Sum(relation => relation.Quantity);
+
+    private static bool HasPositiveAllocationInContainer(
+        JsonInventoryStore.StoreState state,
+        Guid itemId,
+        Guid? containerId)
+        => containerId is Guid cid
+            && state.Relations.Any(relation =>
+                relation.ItemId == itemId
+                && relation.ContainerId == cid
+                && relation.Quantity > 0);
 
     private static (string? term, bool hasSearch) NormalizeSearch(string? searchTerm)
     {

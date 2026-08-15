@@ -99,6 +99,10 @@
                       x:DataType="vm:ItemWithPhotosViewModel">
             <controls:ItemTile Name="{Binding Name}"
                                Quantity="{Binding Quantity}"
+                               TotalQuantity="{Binding TotalQuantity}"
+                               AssignedQuantity="{Binding AssignedQuantity}"
+                               UnassignedQuantity="{Binding UnassignedQuantity}"
+                               ShowInventorySummary="True"
                                ShowQuantity="True"
                                ShowEditQuantity="True"
                                EditQuantityCommand="{Binding EditQuantityCommand}"

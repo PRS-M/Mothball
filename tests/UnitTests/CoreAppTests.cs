@@ -57,6 +57,34 @@ public class CoreAppTests
     }
 
     [Test]
+    public void Item_TotalQuantity_RequiresPositiveValue()
+    {
+        var item = new Item("Hat", "Blue", totalQuantity: 2);
+
+        item.SetTotalQuantity(5);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.TotalQuantity, Is.EqualTo(5));
+            Assert.That(() => item.SetTotalQuantity(0), Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => item.SetTotalQuantity(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
+        });
+    }
+
+    [Test]
+    public void Item_InventorySummary_CalculatesUnassignedQuantity()
+    {
+        var item = new Item("Hat", "Blue", totalQuantity: 12);
+
+        var summary = new CoreApp.Contracts.ItemInventorySummary(
+            item,
+            7,
+            [new CoreApp.Contracts.ItemContainerAllocation(Guid.NewGuid(), "Box", 7)]);
+
+        Assert.That(summary.UnassignedQuantity, Is.EqualTo(5));
+    }
+
+    [Test]
     public void Container_AddItem_AddsQuantity()
     {
         var container = new Container();
