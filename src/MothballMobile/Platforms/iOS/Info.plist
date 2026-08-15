@@ -27,7 +27,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>XSAppIconAssets</key>
-	<string>Assets.xcassets/appicon.appiconset</string>
+	<string>Assets.xcassets/mothball_icon.appiconset</string>
 	<key>MinimumOSVersion</key>
 	<string>15.0</string>
 

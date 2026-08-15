@@ -24,10 +24,10 @@
 		<MauiDevFlowEnabled>true</MauiDevFlowEnabled>
 
 		<!-- Display name -->
-		<ApplicationTitle>MothballMobile</ApplicationTitle>
+		<ApplicationTitle>Mothball</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.mothballmobile</ApplicationId>
+		<ApplicationId>com.prsmcodeit.mothball</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -51,7 +51,7 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\mothball_icon.png" />
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
