@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
 using MothballMobile.Infrastructure;
@@ -19,8 +20,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly ILogger<ItemDetailsViewModel> logger;
     private Item? currentItem;
-    private CoreApp.Contracts.ItemInventorySummary? currentInventory;
-    private IReadOnlyList<CoreApp.Contracts.ItemContainerAllocation> currentAllocations = [];
+    private ItemInventorySummary? currentInventory;
+    private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
 
     [ObservableProperty]
@@ -174,62 +175,72 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             return;
         }
 
-        var inventorySnapshot = currentInventory!;
-        var itemSnapshot = currentItem!;
-        int totalSnapshot = inventorySnapshot.TotalQuantity;
-        int assignedSnapshot = inventorySnapshot.AssignedQuantity;
+        var snapshot = new QuantityEditSnapshot(currentItem!, currentInventory!);
 
         var selectedQuantity = await popup.PickNumberAsync(
-            popupDefinitions.SetTotalQuantity(totalSnapshot, assignedSnapshot));
+            popupDefinitions.SetTotalQuantity(snapshot.TotalQuantity, snapshot.AssignedQuantity));
 
-        if (selectedQuantity is null || selectedQuantity.Value == totalSnapshot)
+        if (selectedQuantity is null || selectedQuantity.Value == snapshot.TotalQuantity)
         {
             return;
         }
 
         try
         {
-            logger.LogInformation(
-                "Set item total requested: itemId={ItemId}, selected={Selected}, currentTotal={CurrentTotal}, assigned={Assigned}, sourceContainer={SourceContainer}",
-                itemSnapshot.ItemId,
-                selectedQuantity.Value,
-                totalSnapshot,
-                assignedSnapshot,
-                sourceContainerId);
-
-            if (selectedQuantity.Value == 0)
-            {
-                if (!await popup.ConfirmAsync(
-                    popupDefinitions.DeleteItemBySettingTotalToZero(Name)))
-                {
-                    return;
-                }
-
-                var deletionPlan = new CoreApp.Contracts.ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
-                var deletionResult = await inventoryCommands.ApplyWithdrawalAsync(itemSnapshot.ItemId, deletionPlan);
-                if (deletionResult.ItemDeleted)
-                {
-                    await nav.GoBackAsync();
-                }
-
-                return;
-            }
-
-            if (selectedQuantity.Value > totalSnapshot)
-            {
-                logger.LogDebug("Routing item total request to increase command.");
-                var result = await inventoryCommands.IncreaseTotalQuantityAsync(itemSnapshot.ItemId, selectedQuantity.Value);
-                ApplyInventoryResult(result);
-                return;
-            }
-
-            logger.LogDebug("Routing item total request to withdrawal workflow.");
-            await RunWithdrawalWorkflowAsync(selectedQuantity.Value, inventorySnapshot, itemSnapshot);
+            await ApplyTotalQuantitySelectionAsync(snapshot, selectedQuantity.Value);
         }
         catch (Exception ex)
         {
             await popup.ShowAlertAsync(popupDefinitions.InventoryQuantityUpdateFailed(ex.Message));
         }
+    }
+
+    private async Task ApplyTotalQuantitySelectionAsync(QuantityEditSnapshot snapshot, int selectedQuantity)
+    {
+        logger.LogInformation(
+            "Set item total requested: itemId={ItemId}, selected={Selected}, currentTotal={CurrentTotal}, assigned={Assigned}, sourceContainer={SourceContainer}",
+            snapshot.Item.ItemId,
+            selectedQuantity,
+            snapshot.TotalQuantity,
+            snapshot.AssignedQuantity,
+            sourceContainerId);
+
+        if (selectedQuantity == 0)
+        {
+            await DeleteBySettingTotalToZeroAsync(snapshot.Item);
+            return;
+        }
+
+        if (selectedQuantity > snapshot.TotalQuantity)
+        {
+            await IncreaseTotalQuantityAsync(snapshot.Item, selectedQuantity);
+            return;
+        }
+
+        logger.LogDebug("Routing item total request to withdrawal workflow.");
+        await RunWithdrawalWorkflowAsync(selectedQuantity, snapshot.Inventory, snapshot.Item);
+    }
+
+    private async Task DeleteBySettingTotalToZeroAsync(Item item)
+    {
+        if (!await popup.ConfirmAsync(popupDefinitions.DeleteItemBySettingTotalToZero(Name)))
+        {
+            return;
+        }
+
+        var deletionPlan = new ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
+        var deletionResult = await inventoryCommands.ApplyWithdrawalAsync(item.ItemId, deletionPlan);
+        if (deletionResult.ItemDeleted)
+        {
+            await nav.GoBackAsync();
+        }
+    }
+
+    private async Task IncreaseTotalQuantityAsync(Item item, int selectedQuantity)
+    {
+        logger.LogDebug("Routing item total request to increase command.");
+        var result = await inventoryCommands.IncreaseTotalQuantityAsync(item.ItemId, selectedQuantity);
+        ApplyInventoryResult(result);
     }
 
     private async Task<bool> RefreshInventoryForQuantityEditAsync()
@@ -256,7 +267,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private async Task RunWithdrawalWorkflowAsync(
         int requestedTotal,
-        CoreApp.Contracts.ItemInventorySummary inventorySnapshot,
+        ItemInventorySummary inventorySnapshot,
         Item itemSnapshot)
     {
         Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
@@ -343,16 +354,22 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         }
     }
 
-    private void ApplyInventoryResult(CoreApp.Contracts.ItemInventoryUpdateResult result)
+    private void ApplyInventoryResult(ItemInventoryUpdateResult result)
     {
         currentItem!.SetTotalQuantity(result.TotalQuantity);
-        currentInventory = new CoreApp.Contracts.ItemInventorySummary(
+        currentInventory = new ItemInventorySummary(
             currentItem,
             result.AssignedQuantity,
             currentAllocations);
         TotalQuantity = result.TotalQuantity;
         AssignedQuantity = result.AssignedQuantity;
         UnassignedQuantity = result.UnassignedQuantity;
+    }
+
+    private sealed record QuantityEditSnapshot(Item Item, ItemInventorySummary Inventory)
+    {
+        public int TotalQuantity => Inventory.TotalQuantity;
+        public int AssignedQuantity => Inventory.AssignedQuantity;
     }
 
     [RelayCommand]
