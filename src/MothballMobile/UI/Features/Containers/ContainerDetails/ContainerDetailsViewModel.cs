@@ -183,7 +183,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     private async Task SaveItemQuantityAsync(Guid itemId, int quantity)
     {
-        if (!ShowQuantityManagement)
+        if (!ShowQuantityManagement && quantity != 0)
         {
             return;
         }
@@ -194,7 +194,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
 
         var result = await quantityService.SaveQuantityAsync(currentContainer, itemId, quantity);
-        TotalItemCount = result.TotalItemCount;
+        TotalItemCount = ShowQuantityManagement
+            ? result.TotalItemCount
+            : await containerDetailsQueries.GetDistinctItemCountAsync(ContainerId);
         var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
         await ReloadItemsAsync(searchTerm);
     }
