@@ -14,11 +14,15 @@ public partial class ItemViewModel : ItemWithImagesViewModelBase
     public ItemViewModel(
         InventorySnapshot inventory,
         IImagePathResolver paths,
-        Infrastructure.INavigationService nav)
+        Infrastructure.INavigationService nav,
+        bool showQuantityManagement)
         : base(inventory, paths)
     {
         this.nav = nav;
+        ShowQuantityManagement = showQuantityManagement;
     }
+
+    public bool ShowQuantityManagement { get; }
 
     public Task LoadImageAsync()
     {

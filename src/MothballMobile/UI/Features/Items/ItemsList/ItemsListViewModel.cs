@@ -21,6 +21,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
     private readonly IImagePathResolver paths;
     private readonly IItemsListQueryHandler itemListQueries;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IDebouncer debouncer;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly DemoDataSeeder? demoSeeder;
@@ -51,6 +52,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
         IImagePathResolver paths,
         IItemsListQueryHandler itemListQueries,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
@@ -58,6 +60,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
         this.paths = paths;
         this.itemListQueries = itemListQueries;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
@@ -90,7 +93,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
 
     protected override ItemViewModel MapToViewModel(InventorySnapshot source)
     {
-        return new ItemViewModel(source, paths, nav);
+        return new ItemViewModel(source, paths, nav, applicationSettings.IsAdvancedMode);
     }
 
     [RelayCommand]

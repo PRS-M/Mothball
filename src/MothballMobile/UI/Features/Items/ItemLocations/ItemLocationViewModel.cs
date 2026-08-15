@@ -15,14 +15,17 @@ public partial class ItemLocationViewModel : ContainerWithImagesViewModelBase
         Container container,
         ItemContainerAllocation allocation,
         IImagePathResolver paths,
-        INavigationService nav)
+        INavigationService nav,
+        bool showQuantityManagement)
         : base(container, paths)
     {
         Allocation = allocation ?? throw new ArgumentNullException(nameof(allocation));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
+        ShowQuantityManagement = showQuantityManagement;
     }
 
     public ItemContainerAllocation Allocation { get; }
+    public bool ShowQuantityManagement { get; }
 
     public new string ItemCount => $"Quantity here: {Allocation.Quantity}";
 

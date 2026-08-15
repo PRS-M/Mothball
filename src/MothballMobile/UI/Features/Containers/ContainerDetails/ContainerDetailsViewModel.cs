@@ -20,6 +20,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IUpdateContainerNotesCommandHandler updateContainerNotesHandler;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly ContainerItemPagingController itemPaging;
     private readonly ContainerDetailsItemRowsViewModel itemRows;
     private readonly IContainerItemQuantityService quantityService;
@@ -56,6 +57,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     private const int PageSize = 5;
     public bool IsViewingNotes => !IsEditingNotes;
+    public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
 
     public ContainerDetailsViewModel(
         IContainerDetailsQueryHandler containerDetailsQueries,
@@ -66,6 +68,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IPopupDefinitionService popupDefinitions,
         ImageService imageService,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IContainerItemQuantityService quantityService,
         IBackgroundTaskObserver backgroundTasks,
@@ -76,6 +79,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.deleteContainerHandler = deleteContainerHandler;
         this.updateContainerNotesHandler = updateContainerNotesHandler;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.quantityService = quantityService;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
@@ -161,6 +165,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                     popup,
                     popupDefinitions,
                     ContainerId,
+                    ShowQuantityManagement,
                     SaveItemQuantityAsync);
                 itemVm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load container item images");
                 return itemVm;
@@ -172,6 +177,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     private async Task SaveItemQuantityAsync(Guid itemId, int quantity)
     {
+        if (!ShowQuantityManagement)
+        {
+            return;
+        }
+
         if (currentContainer is null)
         {
             return;

@@ -13,11 +13,15 @@ public partial class UnassignedItemViewModel : ItemWithImagesViewModelBase
     public UnassignedItemViewModel(
         InventorySnapshot inventory,
         IImagePathResolver paths,
-        Func<Guid, Task> assign)
+        Func<Guid, Task> assign,
+        bool showQuantityManagement)
         : base(inventory, paths)
     {
         this.assign = assign;
+        ShowQuantityManagement = showQuantityManagement;
     }
+
+    public bool ShowQuantityManagement { get; }
 
     public Task LoadImagesAsync()
     {

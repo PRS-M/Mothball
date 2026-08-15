@@ -26,6 +26,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         string? sourceContainerId,
+        bool showQuantityManagement,
         Func<Guid, int, Task> saveQuantity)
         : base(entry.Inventory, paths)
     {
@@ -36,10 +37,13 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         this.popupDefinitions = popupDefinitions;
         this.sourceContainerId = sourceContainerId;
         this.saveQuantity = saveQuantity;
+        ShowQuantityManagement = showQuantityManagement;
     }
 
     [ObservableProperty]
     private int quantity;
+
+    public bool ShowQuantityManagement { get; }
 
     public Task LoadImagesAsync()
     {
@@ -67,6 +71,11 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     [RelayCommand]
     private async Task EditQuantityAsync()
     {
+        if (!ShowQuantityManagement)
+        {
+            return;
+        }
+
         if (ownerContainerId == Guid.Empty)
         {
             return;

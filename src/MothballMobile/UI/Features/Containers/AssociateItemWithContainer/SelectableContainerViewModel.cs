@@ -8,11 +8,18 @@ public partial class SelectableContainerViewModel : ContainerWithImagesViewModel
 {
     private readonly Func<Guid, Task> select;
 
-    public SelectableContainerViewModel(Container container, IImagePathResolver paths, Func<Guid, Task> select)
+    public SelectableContainerViewModel(
+        Container container,
+        IImagePathResolver paths,
+        Func<Guid, Task> select,
+        bool showQuantityManagement)
         : base(container, paths)
     {
         this.select = select;
+        ShowQuantityManagement = showQuantityManagement;
     }
+
+    public bool ShowQuantityManagement { get; }
 
     public Task LoadImagesAsync()
     {

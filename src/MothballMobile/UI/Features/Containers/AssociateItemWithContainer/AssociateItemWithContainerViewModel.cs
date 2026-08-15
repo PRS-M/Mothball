@@ -15,6 +15,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
     private readonly IAssignItemToContainerCommandHandler assignItemToContainer;
     private readonly Infrastructure.INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly IBackgroundTaskObserver backgroundTasks;
@@ -29,6 +30,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         IItemDetailsQueryHandler itemDetailsQueries,
         IAssignItemToContainerCommandHandler assignItemToContainer,
         Infrastructure.INavigationService nav,
+        IApplicationSettings applicationSettings,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         IBackgroundTaskObserver backgroundTasks,
@@ -40,6 +42,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         this.itemDetailsQueries = itemDetailsQueries;
         this.assignItemToContainer = assignItemToContainer;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
         this.backgroundTasks = backgroundTasks;
@@ -78,7 +81,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         => associationQueries.QueryContainersAsync(pageNumber, pageSize);
 
     protected override SelectableContainerViewModel MapToViewModel(Container source)
-        => new(source, imagePaths, AssociateWithContainerAsync);
+        => new(source, imagePaths, AssociateWithContainerAsync, applicationSettings.IsAdvancedMode);
 
     protected override void OnViewModelAdded(SelectableContainerViewModel vm)
         => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load selectable container images");
@@ -93,6 +96,13 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
             var availableQuantity = await GetAvailableQuantityAsync(parsedItemId, containerId);
             if (availableQuantity <= 0)
             {
+                await nav.GoBackAsync();
+                return;
+            }
+
+            if (!applicationSettings.IsAdvancedMode)
+            {
+                await assignItemToContainer.AssignAsync(parsedItemId, containerId);
                 await nav.GoBackAsync();
                 return;
             }

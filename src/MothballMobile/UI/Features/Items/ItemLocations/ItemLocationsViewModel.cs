@@ -11,6 +11,7 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
 
     [ObservableProperty]
     private string itemId = string.Empty;
@@ -24,12 +25,14 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
         IItemDetailsQueryHandler itemDetailsQueries,
         IInventoryQueryRepository inventoryQueries,
         IImagePathResolver imagePaths,
-        INavigationService nav)
+        INavigationService nav,
+        IApplicationSettings applicationSettings)
     {
         this.itemDetailsQueries = itemDetailsQueries ?? throw new ArgumentNullException(nameof(itemDetailsQueries));
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
         this.imagePaths = imagePaths ?? throw new ArgumentNullException(nameof(imagePaths));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
+        this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -68,7 +71,12 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
                     continue;
                 }
 
-                var location = new ItemLocationViewModel(container, allocation, imagePaths, nav);
+                var location = new ItemLocationViewModel(
+                    container,
+                    allocation,
+                    imagePaths,
+                    nav,
+                    applicationSettings.IsAdvancedMode);
                 await location.LoadImagesAsync();
                 Locations.Add(location);
             }

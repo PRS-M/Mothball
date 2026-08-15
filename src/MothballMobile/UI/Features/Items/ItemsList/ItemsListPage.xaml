@@ -97,7 +97,7 @@
                                            TotalQuantity="{Binding TotalQuantity}"
                                            AssignedQuantity="{Binding AssignedQuantity}"
                                            UnassignedQuantity="{Binding UnassignedQuantity}"
-                                           ShowInventorySummary="True"
+                                           ShowInventorySummary="{Binding ShowQuantityManagement}"
                                            ImagePaths="{Binding ImagePaths}"
                                            ImageSize="125" />
                     </DataTemplate>

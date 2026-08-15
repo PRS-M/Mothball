@@ -108,7 +108,8 @@
                 </VerticalStackLayout>
             </Border>
 
-                 <Border Style="{StaticResource Card}">
+                 <Border Style="{StaticResource Card}"
+                         IsVisible="{Binding ShowQuantityManagement}">
                   <VerticalStackLayout Spacing="8">
                       <Label Text="Inventory"
                           FontAttributes="Bold"

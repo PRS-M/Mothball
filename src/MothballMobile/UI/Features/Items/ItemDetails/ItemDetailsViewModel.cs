@@ -19,6 +19,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IDeleteItemCommandHandler deleteItemHandler;
     private readonly IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly ILogger<ItemDetailsViewModel> logger;
     private Item? currentItem;
@@ -56,6 +57,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public bool HasNoContainerRelation => string.IsNullOrWhiteSpace(this.ContainerId);
     public bool HasContainerRelation => !HasNoContainerRelation;
     public bool HasUnassignedQuantity => UnassignedQuantity > 0;
+    public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
     public bool IsViewingDescription => !IsEditingDescription;
     public bool ShowGoToContainerButton => HasContainerRelation
@@ -71,6 +73,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IDeleteItemCommandHandler deleteItemHandler,
         IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IImagePathResolver paths,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
@@ -85,6 +88,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         this.deleteItemHandler = deleteItemHandler;
         this.updateItemDescriptionHandler = updateItemDescriptionHandler;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
         this.logger = logger;
     }
@@ -173,6 +177,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         OnPropertyChanged(nameof(HasContainerRelation));
         OnPropertyChanged(nameof(HasNoContainerRelation));
         OnPropertyChanged(nameof(HasUnassignedQuantity));
+        OnPropertyChanged(nameof(ShowQuantityManagement));
         OnPropertyChanged(nameof(ShowGoToContainerButton));
     }
 
@@ -213,6 +218,11 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     [RelayCommand]
     private async Task SetTotalQuantityAsync()
     {
+        if (!ShowQuantityManagement)
+        {
+            return;
+        }
+
         if (!await RefreshInventoryForQuantityEditAsync())
         {
             return;

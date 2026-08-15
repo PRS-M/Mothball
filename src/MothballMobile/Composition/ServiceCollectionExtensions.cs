@@ -47,6 +47,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBackgroundTaskObserver, LoggingBackgroundTaskObserver>();
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
+        services.AddSingleton<IApplicationSettings, ApplicationSettings>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
         services.AddSingleton<IInventoryBackupZipRestoreService, InventoryBackupZipRestoreService>();
@@ -125,6 +126,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(MediaPicker.Default);
         services.AddSingleton<IShare>(Share.Default);
         services.AddSingleton<IFilePicker>(FilePicker.Default);
+        services.AddSingleton(Preferences.Default);
 
         return services;
     }

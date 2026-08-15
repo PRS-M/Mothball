@@ -96,6 +96,7 @@
                             Name="{Binding Name}"
                             Notes="{Binding Notes}"
                             ItemCount="{Binding ItemCount}"
+                            ShowItemCount="{Binding ShowQuantityManagement}"
                             ImagePaths="{Binding ImagePaths}"
                             ImageSize="125" />
                     </DataTemplate>

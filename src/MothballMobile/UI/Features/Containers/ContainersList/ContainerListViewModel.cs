@@ -20,6 +20,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService nav;
     private readonly IContainerListQueryHandler containerListQueries;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IDebouncer debouncer;
     private readonly IBackgroundTaskObserver backgroundTasks;
 
@@ -51,6 +52,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         IImagePathResolver imagePaths,
         IContainerListQueryHandler containerListQueries,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
@@ -59,6 +61,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         this.imagePaths = imagePaths;
         this.containerListQueries = containerListQueries;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
@@ -102,7 +105,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         => await containerListQueries.QueryAsync(IsEmptyFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);
 
     protected override ContainerViewModel MapToViewModel(Container source)
-        => new ContainerViewModel(source, imagePaths, nav);
+        => new ContainerViewModel(source, imagePaths, nav, applicationSettings.IsAdvancedMode);
 
     protected override void OnViewModelAdded(ContainerViewModel vm)
         => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load container thumbnail");

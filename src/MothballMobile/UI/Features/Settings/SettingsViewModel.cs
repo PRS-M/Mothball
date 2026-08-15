@@ -22,6 +22,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IShare share;
     private readonly IFilePicker filePicker;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly ILogger<SettingsViewModel> logger;
@@ -35,6 +36,7 @@ public partial class SettingsViewModel : BaseViewModel
         IShare share,
         IFilePicker filePicker,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         ILogger<SettingsViewModel> logger)
@@ -46,6 +48,7 @@ public partial class SettingsViewModel : BaseViewModel
         this.share = share;
         this.filePicker = filePicker;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -64,6 +67,21 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     public bool IsJsonBackupMode => !IsZipBackupMode;
+
+    public bool IsAdvancedAppMode
+    {
+        get => applicationSettings.IsAdvancedMode;
+        set
+        {
+            if (applicationSettings.IsAdvancedMode == value)
+            {
+                return;
+            }
+
+            applicationSettings.IsAdvancedMode = value;
+            OnPropertyChanged();
+        }
+    }
 
     [RelayCommand]
     private Task NavigateToBackgroundOperationsAsync()

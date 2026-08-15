@@ -14,6 +14,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly ImageService imageService;
     private readonly ICreateItemCommandHandler createItem;
     private readonly Infrastructure.INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly ILogger<AddItemViewModel> logger;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
@@ -23,6 +24,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private string containerId = string.Empty;
 
     public bool IsAddingToContainer => Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty;
+    public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
+    public bool ShowQuantityField => IsAddingToContainer && ShowQuantityManagement;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -47,6 +50,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         ImageService imageService,
         ICreateItemCommandHandler createItem,
         Infrastructure.INavigationService nav,
+        IApplicationSettings applicationSettings,
         ILogger<AddItemViewModel> logger,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions)
@@ -54,6 +58,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.createItem = createItem ?? throw new ArgumentNullException(nameof(createItem));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
+        this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
@@ -71,6 +76,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     partial void OnContainerIdChanged(string value)
     {
         OnPropertyChanged(nameof(IsAddingToContainer));
+        OnPropertyChanged(nameof(ShowQuantityField));
     }
 
     public bool HasTemporaryPhoto => !string.IsNullOrWhiteSpace(PhotoThumbnailPath);
@@ -160,7 +166,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         var isAddingToContainer = IsAddingToContainer;
         var parsedQuantity = 1;
-        if (isAddingToContainer &&
+        if (isAddingToContainer && ShowQuantityManagement &&
             (!int.TryParse(Quantity?.Trim(), out parsedQuantity) || parsedQuantity <= 0))
         {
             ValidationMessage = "Quantity must be a positive number.";

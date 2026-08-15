@@ -14,6 +14,7 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
     private readonly IAssignItemToContainerCommandHandler assignItemToContainer;
     private readonly IImagePathResolver paths;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
 
     [ObservableProperty]
@@ -24,12 +25,14 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         IAssignItemToContainerCommandHandler assignItemToContainer,
         IImagePathResolver paths,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IBackgroundTaskObserver backgroundTasks)
     {
         this.associationQueries = associationQueries;
         this.assignItemToContainer = assignItemToContainer;
         this.paths = paths;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
     }
 
@@ -48,7 +51,7 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
     protected override Task EnsureDummyData() => Task.CompletedTask;
 
     protected override UnassignedItemViewModel MapToViewModel(InventorySnapshot source)
-        => new(source, paths, AssignAsync);
+        => new(source, paths, AssignAsync, applicationSettings.IsAdvancedMode);
 
     protected override void OnViewModelAdded(UnassignedItemViewModel vm)
         => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load unassigned item images");

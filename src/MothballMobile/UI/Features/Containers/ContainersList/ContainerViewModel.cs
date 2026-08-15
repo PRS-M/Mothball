@@ -8,11 +8,18 @@ public partial class ContainerViewModel : ContainerWithImagesViewModelBase
 {
     private readonly Infrastructure.INavigationService nav;
 
-    public ContainerViewModel(Container container, IImagePathResolver paths, Infrastructure.INavigationService nav)
+    public ContainerViewModel(
+        Container container,
+        IImagePathResolver paths,
+        Infrastructure.INavigationService nav,
+        bool showQuantityManagement)
         : base(container, paths)
     {
         this.nav = nav;
+        ShowQuantityManagement = showQuantityManagement;
     }
+
+    public bool ShowQuantityManagement { get; }
 
     public Task LoadImageAsync()
     {

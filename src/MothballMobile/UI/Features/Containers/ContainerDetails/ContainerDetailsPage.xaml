@@ -43,6 +43,7 @@
                                    MaxLines="2"
                                    Style="{StaticResource TitleLarge}"/>
                             <Label Text="{Binding TotalItemCount, StringFormat='Items stored: {0}'}"
+                                   IsVisible="{Binding ShowQuantityManagement}"
                                    Style="{StaticResource BodyMedium}"/>
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="Description"
@@ -134,9 +135,9 @@
                                TotalQuantity="{Binding TotalQuantity}"
                                AssignedQuantity="{Binding AssignedQuantity}"
                                UnassignedQuantity="{Binding UnassignedQuantity}"
-                               ShowInventorySummary="True"
-                               ShowQuantity="True"
-                               ShowEditQuantity="True"
+                               ShowInventorySummary="{Binding ShowQuantityManagement}"
+                               ShowQuantity="{Binding ShowQuantityManagement}"
+                               ShowEditQuantity="{Binding ShowQuantityManagement}"
                                EditQuantityCommand="{Binding EditQuantityCommand}"
                                ShowRemove="True"
                                RemoveCommand="{Binding RemoveFromContainerCommand}"
