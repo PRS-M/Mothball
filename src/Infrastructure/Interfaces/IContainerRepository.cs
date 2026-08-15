@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Specifications;
 using CoreApp.Contracts;

@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
@@ -22,11 +23,11 @@ public sealed class ContainerAssociationQueryHandler : IContainerAssociationQuer
                 PageNumber: pageNumber,
                 PageSize: pageSize));
 
-    public Task<List<ItemInventorySummary>> QueryUnassignedItemsAsync(
+    public Task<List<InventorySnapshot>> QueryUnassignedItemsAsync(
         int pageNumber,
         int pageSize,
         Guid? excludedContainerId = null)
-        => inventoryQueries.QueryItemInventorySummariesAsync(
+        => inventoryQueries.QueryInventorySnapshotsAsync(
             new ItemListSpecification(
                 Filter: ItemQueryFilter.Unassigned,
                 PageNumber: pageNumber,

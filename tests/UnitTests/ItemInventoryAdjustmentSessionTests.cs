@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 using CoreApp.Services;
 
@@ -175,7 +176,7 @@ public sealed class ItemInventoryAdjustmentSessionTests
         var allocationModels = allocations
             .Select(value => new ItemContainerAllocation(value.id, value.name, value.quantity))
             .ToList();
-        var summary = new ItemInventorySummary(
+        var summary = new InventorySnapshot(
             item,
             allocationModels.Sum(allocation => allocation.Quantity),
             allocationModels);

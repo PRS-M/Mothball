@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
@@ -42,7 +43,7 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     public Task<Item?> GetItemWithPhotosAsync(string itemId)
         => itemRepo.GetWithPhotosAsync(itemId);
 
-    public async Task<ItemInventorySummary?> GetItemInventorySummaryAsync(Guid itemId)
+    public async Task<InventorySnapshot?> GetInventorySnapshotAsync(Guid itemId)
     {
         var item = await itemRepo.GetWithPhotosAsync(itemId.ToString());
         if (item is null)
@@ -60,13 +61,13 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     public Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification)
         => itemRepo.QueryWithPhotosAsync(specification);
 
-    public async Task<List<ItemInventorySummary>> QueryItemInventorySummariesAsync(
+    public async Task<List<InventorySnapshot>> QueryInventorySnapshotsAsync(
         ItemListSpecification specification)
     {
         var items = await itemRepo.QueryWithPhotosAsync(specification);
         var allocationsByItem = await containerRepo.GetItemContainerAllocationsAsync(
             items.Select(item => item.ItemId).ToArray());
-        var summaries = new List<ItemInventorySummary>(items.Count);
+        var summaries = new List<InventorySnapshot>(items.Count);
         foreach (var item in items)
         {
             var allocations = allocationsByItem.GetValueOrDefault(item.ItemId, []);
@@ -103,7 +104,7 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         return entries;
     }
 
-    private static ItemInventorySummary CreateSummary(
+    private static InventorySnapshot CreateSummary(
         Item item,
         IReadOnlyList<ItemContainerAllocation> allocations)
         => new(item, allocations.Sum(allocation => allocation.Quantity), allocations);

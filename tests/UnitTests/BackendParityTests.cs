@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using System.Text.Json;
 using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;
@@ -147,7 +148,7 @@ public class BackendParityTests
     }
 
     [Test]
-    public async Task QueryItemInventorySummariesAsync_UnassignedSearchWithPaging_ReturnsRequestedPageAcrossBackends()
+    public async Task QueryInventorySnapshotsAsync_UnassignedSearchWithPaging_ReturnsRequestedPageAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
@@ -172,8 +173,8 @@ public class BackendParityTests
             PageNumber: 1,
             PageSize: 1);
 
-        var sqliteItems = await sqlite.Query.QueryItemInventorySummariesAsync(specification);
-        var jsonItems = await json.Query.QueryItemInventorySummariesAsync(specification);
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(specification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(specification);
 
         Assert.Multiple(() =>
         {
@@ -185,7 +186,7 @@ public class BackendParityTests
     }
 
     [Test]
-    public async Task QueryItemInventorySummariesAsync_UnassignedWithExcludedContainer_FiltersBeforePagingAcrossBackends()
+    public async Task QueryInventorySnapshotsAsync_UnassignedWithExcludedContainer_FiltersBeforePagingAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
@@ -212,8 +213,8 @@ public class BackendParityTests
             PageSize: 1,
             ExcludedContainerId: targetContainer.ContainerId);
 
-        var sqliteItems = await sqlite.Query.QueryItemInventorySummariesAsync(specification);
-        var jsonItems = await json.Query.QueryItemInventorySummariesAsync(specification);
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(specification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(specification);
 
         Assert.That(sqliteItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { availableFromOther.ItemId }));
         Assert.That(jsonItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { availableFromOther.ItemId }));
@@ -274,7 +275,7 @@ public class BackendParityTests
     }
 
     [Test]
-    public async Task ItemInventorySummary_AggregatesAllocationsAcrossContainers()
+    public async Task InventorySnapshot_AggregatesAllocationsAcrossContainers()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
@@ -292,17 +293,17 @@ public class BackendParityTests
             await command.InsertItemContainerRelation(item.ItemId, secondContainer.ContainerId, 4);
         }
 
-        var sqliteListItem = (await sqlite.Query.QueryItemInventorySummariesAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
-        var jsonListItem = (await json.Query.QueryItemInventorySummariesAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
-        var sqliteDetailsItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonDetailsItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteListItem = (await sqlite.Query.QueryInventorySnapshotsAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
+        var jsonListItem = (await json.Query.QueryInventorySnapshotsAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
+        var sqliteDetailsItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonDetailsItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
-            AssertInventorySummary(sqliteListItem);
-            AssertInventorySummary(jsonListItem);
-            AssertInventorySummary(sqliteDetailsItem!);
-            AssertInventorySummary(jsonDetailsItem!);
+            AssertInventorySnapshot(sqliteListItem);
+            AssertInventorySnapshot(jsonListItem);
+            AssertInventorySnapshot(sqliteDetailsItem!);
+            AssertInventorySnapshot(jsonDetailsItem!);
         });
     }
 
@@ -326,17 +327,17 @@ public class BackendParityTests
 
         var sqliteSummaries = new[]
         {
-            (await sqlite.Query.QueryItemInventorySummariesAsync(
+            (await sqlite.Query.QueryInventorySnapshotsAsync(
                 new ItemListSpecification(ItemQueryFilter.All))).Single(),
-            (await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId))!,
+            (await sqlite.Query.GetInventorySnapshotAsync(item.ItemId))!,
             (await sqlite.Query.QueryContainerItemInventoryAsync(
                 new ContainerItemsSpecification(box.ContainerId.ToString()))).Single().Inventory,
         };
         var jsonSummaries = new[]
         {
-            (await json.Query.QueryItemInventorySummariesAsync(
+            (await json.Query.QueryInventorySnapshotsAsync(
                 new ItemListSpecification(ItemQueryFilter.All))).Single(),
-            (await json.Query.GetItemInventorySummaryAsync(item.ItemId))!,
+            (await json.Query.GetInventorySnapshotAsync(item.ItemId))!,
             (await json.Query.QueryContainerItemInventoryAsync(
                 new ContainerItemsSpecification(box.ContainerId.ToString()))).Single().Inventory,
         };
@@ -368,8 +369,8 @@ public class BackendParityTests
         }
 
         var specification = new ItemListSpecification(ItemQueryFilter.Unassigned);
-        var sqliteItems = await sqlite.Query.QueryItemInventorySummariesAsync(specification);
-        var jsonItems = await json.Query.QueryItemInventorySummariesAsync(specification);
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(specification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(specification);
 
         Assert.Multiple(() =>
         {
@@ -400,8 +401,8 @@ public class BackendParityTests
         await sqliteService.SetContainerAllocationAsync(item.ItemId, container.ContainerId, 4);
         await jsonService.SetContainerAllocationAsync(item.ItemId, container.ContainerId, 4);
 
-        var sqliteItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
@@ -470,8 +471,8 @@ public class BackendParityTests
         await new ItemInventoryCommandService(json.Query, json.Command)
             .SetContainerAllocationAsync(item.ItemId, container.ContainerId, 0);
 
-        var sqliteItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
@@ -500,8 +501,8 @@ public class BackendParityTests
             await command.DeleteContainerAsync(container.ContainerId.ToString());
         }
 
-        var sqliteItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
@@ -542,8 +543,8 @@ public class BackendParityTests
         await new ItemInventoryCommandService(sqlite.Query, sqlite.Command).ApplyWithdrawalAsync(item.ItemId, plan);
         await new ItemInventoryCommandService(json.Query, json.Command).ApplyWithdrawalAsync(item.ItemId, plan);
 
-        var sqliteItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
         var sqliteAllocations = await sqlite.Query.GetItemContainerAllocationsAsync(item.ItemId);
         var jsonAllocations = await json.Query.GetItemContainerAllocationsAsync(item.ItemId);
 
@@ -735,7 +736,7 @@ public class BackendParityTests
         return new SqliteHarness(dbPath, db, query, command);
     }
 
-    private static void AssertInventorySummary(ItemInventorySummary item)
+    private static void AssertInventorySnapshot(InventorySnapshot item)
     {
         Assert.That(item.TotalQuantity, Is.EqualTo(12));
         Assert.That(item.AssignedQuantity, Is.EqualTo(7));

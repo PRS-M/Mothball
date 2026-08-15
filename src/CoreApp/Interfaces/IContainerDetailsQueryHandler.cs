@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 
 namespace CoreApp.Interfaces;

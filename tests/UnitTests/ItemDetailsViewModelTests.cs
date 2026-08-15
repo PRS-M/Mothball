@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
@@ -18,7 +19,7 @@ public sealed class ItemDetailsViewModelTests
     public async Task InitializeAsync_WhenItemIsUnassignedOnly_ShowsAssociateAndHidesGoToContainer()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 4);
-        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 0, []));
+        var details = new ItemDetailsResult(new InventorySnapshot(item, assignedQuantity: 0, []));
         var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
 
         var viewModel = CreateViewModel(itemDetails.Object, Mock.Of<IItemInventoryCommandService>(), Mock.Of<IPopupService>());
@@ -38,7 +39,7 @@ public sealed class ItemDetailsViewModelTests
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 4);
         var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 4);
-        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 4, [allocation]));
+        var details = new ItemDetailsResult(new InventorySnapshot(item, assignedQuantity: 4, [allocation]));
         var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
 
         var viewModel = CreateViewModel(itemDetails.Object, Mock.Of<IItemInventoryCommandService>(), Mock.Of<IPopupService>());
@@ -58,7 +59,7 @@ public sealed class ItemDetailsViewModelTests
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 6);
         var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 4);
-        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 4, [allocation]));
+        var details = new ItemDetailsResult(new InventorySnapshot(item, assignedQuantity: 4, [allocation]));
         var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
 
         var viewModel = CreateViewModel(itemDetails.Object, Mock.Of<IItemInventoryCommandService>(), Mock.Of<IPopupService>());
@@ -79,7 +80,7 @@ public sealed class ItemDetailsViewModelTests
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 4);
         var containerId = Guid.NewGuid();
         var allocation = new ItemContainerAllocation(containerId, "Box", 4);
-        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 4, [allocation]));
+        var details = new ItemDetailsResult(new InventorySnapshot(item, assignedQuantity: 4, [allocation]));
         var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
         var nav = new Mock<INavigationService>();
 
@@ -108,7 +109,7 @@ public sealed class ItemDetailsViewModelTests
             new ItemContainerAllocation(Guid.NewGuid(), "Box", 3),
             new ItemContainerAllocation(Guid.NewGuid(), "Drawer", 3),
         };
-        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 6, allocations));
+        var details = new ItemDetailsResult(new InventorySnapshot(item, assignedQuantity: 6, allocations));
         var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
         var nav = new Mock<INavigationService>();
 
@@ -134,7 +135,7 @@ public sealed class ItemDetailsViewModelTests
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 3);
         var container = new CoreApp.Entities.ContainerAggregate.Container(Guid.NewGuid(), "Box", "Shelf");
         var allocation = new ItemContainerAllocation(container.ContainerId, container.Name, 3);
-        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 3, [allocation]));
+        var details = new ItemDetailsResult(new InventorySnapshot(item, assignedQuantity: 3, [allocation]));
         var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
 
         var inventoryQueries = new Mock<IInventoryQueryRepository>();
@@ -171,7 +172,7 @@ public sealed class ItemDetailsViewModelTests
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
         var sourceContainerId = Guid.NewGuid();
         var allocation = new ItemContainerAllocation(sourceContainerId, "Box", 7);
-        var inventory = new ItemInventorySummary(item, assignedQuantity: 7, [allocation]);
+        var inventory = new InventorySnapshot(item, assignedQuantity: 7, [allocation]);
         var details = new ItemDetailsResult(inventory);
 
         var itemDetails = new Mock<IItemDetailsQueryHandler>();

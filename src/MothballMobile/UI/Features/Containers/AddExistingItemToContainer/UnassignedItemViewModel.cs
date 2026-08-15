@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 ﻿using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
@@ -10,7 +11,7 @@ public partial class UnassignedItemViewModel : ItemWithImagesViewModelBase
     private readonly Func<Guid, Task> assign;
 
     public UnassignedItemViewModel(
-        ItemInventorySummary inventory,
+        InventorySnapshot inventory,
         IImagePathResolver paths,
         Func<Guid, Task> assign)
         : base(inventory, paths)

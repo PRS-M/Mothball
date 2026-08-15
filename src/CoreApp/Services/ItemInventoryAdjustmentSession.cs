@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 
 namespace CoreApp.Services;
@@ -13,7 +14,7 @@ public enum ItemInventoryAdjustmentState
 
 public sealed class ItemInventoryAdjustmentSession
 {
-    private readonly ItemInventorySummary inventory;
+    private readonly InventorySnapshot inventory;
     private readonly int requestedTotal;
     private readonly Guid? sourceContainerId;
     private readonly Dictionary<Guid, ItemContainerAllocation> remainingAllocations;
@@ -25,7 +26,7 @@ public sealed class ItemInventoryAdjustmentSession
     private ItemInventoryWithdrawalPlan? plan;
 
     public ItemInventoryAdjustmentSession(
-        ItemInventorySummary inventory,
+        InventorySnapshot inventory,
         int requestedTotal,
         Guid? sourceContainerId = null)
     {

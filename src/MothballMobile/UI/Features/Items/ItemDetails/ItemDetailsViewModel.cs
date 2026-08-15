@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,7 +21,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly ILogger<ItemDetailsViewModel> logger;
     private Item? currentItem;
-    private ItemInventorySummary? currentInventory;
+    private InventorySnapshot? currentInventory;
     private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
 
@@ -291,7 +292,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private async Task RunWithdrawalWorkflowAsync(
         int requestedTotal,
-        ItemInventorySummary inventorySnapshot,
+        InventorySnapshot inventorySnapshot,
         Item itemSnapshot)
     {
         Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
@@ -381,7 +382,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private void ApplyInventoryResult(ItemInventoryUpdateResult result)
     {
         currentItem!.SetTotalQuantity(result.TotalQuantity);
-        currentInventory = new ItemInventorySummary(
+        currentInventory = new InventorySnapshot(
             currentItem,
             result.AssignedQuantity,
             currentAllocations);
@@ -392,7 +393,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         NotifyContainerRelationStateChanged();
     }
 
-    private sealed record QuantityEditSnapshot(Item Item, ItemInventorySummary Inventory)
+    private sealed record QuantityEditSnapshot(Item Item, InventorySnapshot Inventory)
     {
         public int TotalQuantity => Inventory.TotalQuantity;
         public int AssignedQuantity => Inventory.AssignedQuantity;

@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
@@ -95,14 +96,14 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         return CreateResult(item, plan.AssignedQuantity, removedFromContainer: false);
     }
 
-    private async Task<ItemInventorySummary> GetSummaryAsync(Guid itemId)
+    private async Task<InventorySnapshot> GetSummaryAsync(Guid itemId)
     {
         if (itemId == Guid.Empty)
         {
             throw new ArgumentException("Item ID cannot be empty.", nameof(itemId));
         }
 
-        return await inventoryQueries.GetItemInventorySummaryAsync(itemId)
+        return await inventoryQueries.GetInventorySnapshotAsync(itemId)
             ?? throw new KeyNotFoundException($"Item '{itemId}' was not found.");
     }
 

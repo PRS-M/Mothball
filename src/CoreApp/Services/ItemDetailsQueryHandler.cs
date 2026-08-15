@@ -19,7 +19,7 @@ public sealed class ItemDetailsQueryHandler : IItemDetailsQueryHandler
             return null;
         }
 
-        var summary = await inventoryQueries.GetItemInventorySummaryAsync(parsedItemId);
+        var summary = await inventoryQueries.GetInventorySnapshotAsync(parsedItemId);
         return summary is null ? null : new ItemDetailsResult(summary);
     }
 }

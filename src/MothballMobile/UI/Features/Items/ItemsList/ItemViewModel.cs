@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 ﻿using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
@@ -11,7 +12,7 @@ public partial class ItemViewModel : ItemWithImagesViewModelBase
     private readonly Infrastructure.INavigationService nav;
 
     public ItemViewModel(
-        ItemInventorySummary inventory,
+        InventorySnapshot inventory,
         IImagePathResolver paths,
         Infrastructure.INavigationService nav)
         : base(inventory, paths)

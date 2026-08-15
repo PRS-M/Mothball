@@ -1,10 +1,10 @@
 using CoreApp.Entities.ItemAggregate;
 
-namespace CoreApp.Contracts;
+namespace CoreApp.Entities.Inventory;
 
-public sealed record ItemInventorySummary
+public sealed record InventorySnapshot
 {
-    public ItemInventorySummary(
+    public InventorySnapshot(
         Item item,
         int assignedQuantity,
         IReadOnlyList<ItemContainerAllocation> allocations)
@@ -35,5 +35,5 @@ public sealed record ItemInventorySummary
 }
 
 public sealed record ContainerItemInventoryEntry(
-    ItemInventorySummary Inventory,
+    InventorySnapshot Inventory,
     int ContainerQuantity);

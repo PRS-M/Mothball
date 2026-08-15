@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using System.Diagnostics;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Specifications;

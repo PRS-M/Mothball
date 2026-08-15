@@ -1,4 +1,4 @@
-namespace CoreApp.Contracts;
+namespace CoreApp.Entities.Inventory;
 
 public sealed record ItemContainerAllocation(Guid ContainerId, string ContainerName, int Quantity);
 

@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
@@ -15,7 +16,7 @@ public enum ItemsListFilter
     Unassigned,
 }
 
-public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySummary, ItemViewModel>, IDisposable
+public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapshot, ItemViewModel>, IDisposable
 {
     private readonly IImagePathResolver paths;
     private readonly IItemsListQueryHandler itemListQueries;
@@ -87,7 +88,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySu
         }
     }
 
-    protected override ItemViewModel MapToViewModel(ItemInventorySummary source)
+    protected override ItemViewModel MapToViewModel(InventorySnapshot source)
     {
         return new ItemViewModel(source, paths, nav);
     }
@@ -156,7 +157,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySu
     protected override void OnViewModelAdded(ItemViewModel vm)
         => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
 
-    protected override Task<List<ItemInventorySummary>> LoadAsync(int pageNumber, int pageSize)
+    protected override Task<List<InventorySnapshot>> LoadAsync(int pageNumber, int pageSize)
         => itemListQueries.QueryAsync(IsUnassignedFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);
 
     private bool IsUnassignedFilterSelected()

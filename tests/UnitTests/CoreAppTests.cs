@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 ﻿using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
@@ -76,10 +77,10 @@ public class CoreAppTests
     {
         var item = new Item("Hat", "Blue", totalQuantity: 12);
 
-        var summary = new CoreApp.Contracts.ItemInventorySummary(
+        var summary = new CoreApp.Entities.Inventory.InventorySnapshot(
             item,
             7,
-            [new CoreApp.Contracts.ItemContainerAllocation(Guid.NewGuid(), "Box", 7)]);
+            [new CoreApp.Entities.Inventory.ItemContainerAllocation(Guid.NewGuid(), "Box", 7)]);
 
         Assert.That(summary.UnassignedQuantity, Is.EqualTo(5));
     }

@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;

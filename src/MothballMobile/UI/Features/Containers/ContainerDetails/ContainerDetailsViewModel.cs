@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MothballMobile.Infrastructure;

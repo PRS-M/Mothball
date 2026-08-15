@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
@@ -48,7 +49,7 @@ public class InventoryCommandRepository : IInventoryCommandRepository
 
     public Task ApplyItemInventoryWithdrawalAsync(
         Item item,
-        IReadOnlyCollection<CoreApp.Contracts.ItemContainerAllocation> allocations)
+        IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations)
         => relationRepo.ApplyItemInventoryWithdrawalAsync(item, allocations);
 
     public Task DeleteItemContainerRelation(Guid itemId, Guid containerId)

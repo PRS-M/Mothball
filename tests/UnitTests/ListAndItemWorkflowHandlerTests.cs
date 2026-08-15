@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
@@ -38,7 +39,7 @@ public sealed class ListAndItemWorkflowHandlerTests
     {
         var queries = new Mock<IInventoryQueryRepository>();
         ItemListSpecification? captured = null;
-        queries.Setup(q => q.QueryItemInventorySummariesAsync(It.IsAny<ItemListSpecification>()))
+        queries.Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<ItemListSpecification>()))
             .Callback<ItemListSpecification>(s => captured = s)
             .ReturnsAsync([]);
 
@@ -61,12 +62,12 @@ public sealed class ListAndItemWorkflowHandlerTests
     {
         var item = new Item(Guid.NewGuid(), "Hat", "Blue", totalQuantity: 3);
         var containerId = Guid.NewGuid();
-        var summary = new CoreApp.Contracts.ItemInventorySummary(
+        var summary = new CoreApp.Entities.Inventory.InventorySnapshot(
             item,
             2,
-            [new CoreApp.Contracts.ItemContainerAllocation(containerId, "Box", 2)]);
+            [new CoreApp.Entities.Inventory.ItemContainerAllocation(containerId, "Box", 2)]);
         var queries = new Mock<IInventoryQueryRepository>();
-        queries.Setup(q => q.GetItemInventorySummaryAsync(item.ItemId))
+        queries.Setup(q => q.GetInventorySnapshotAsync(item.ItemId))
             .ReturnsAsync(summary);
 
         var handler = new ItemDetailsQueryHandler(queries.Object);
