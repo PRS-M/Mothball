@@ -125,19 +125,19 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 return;
             }
 
-            var item = details.Item;
+            var item = details.Inventory.Item;
             currentItem = item;
-            currentAllocations = details.Allocations ?? [];
+            currentAllocations = details.Inventory.Allocations;
             Name = item.Name;
             Description = item.Description;
-            TotalQuantity = item.TotalQuantity;
-            AssignedQuantity = item.AssignedQuantity;
-            UnassignedQuantity = item.UnassignedQuantity;
+            TotalQuantity = details.Inventory.TotalQuantity;
+            AssignedQuantity = details.Inventory.AssignedQuantity;
+            UnassignedQuantity = details.Inventory.UnassignedQuantity;
             OnPropertyChanged(nameof(HasDescription));
 
             ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(item));
 
-            ContainerId = details.ContainerId?.ToString();
+            ContainerId = details.Inventory.Allocations.FirstOrDefault()?.ContainerId.ToString();
             NotifyContainerRelationStateChanged();
         });
     }
@@ -241,11 +241,11 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             return false;
         }
 
-        currentItem = details.Item;
-        currentAllocations = details.Allocations ?? [];
-        TotalQuantity = details.Item.TotalQuantity;
-        AssignedQuantity = details.Item.AssignedQuantity;
-        UnassignedQuantity = details.Item.UnassignedQuantity;
+        currentItem = details.Inventory.Item;
+        currentAllocations = details.Inventory.Allocations;
+        TotalQuantity = details.Inventory.TotalQuantity;
+        AssignedQuantity = details.Inventory.AssignedQuantity;
+        UnassignedQuantity = details.Inventory.UnassignedQuantity;
         return true;
     }
 
@@ -370,7 +370,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private void ApplyInventoryResult(CoreApp.Contracts.ItemInventoryUpdateResult result)
     {
-        currentItem!.ApplyInventoryQuantities(result.TotalQuantity, result.AssignedQuantity);
+        currentItem!.SetTotalQuantity(result.TotalQuantity);
         TotalQuantity = result.TotalQuantity;
         AssignedQuantity = result.AssignedQuantity;
         UnassignedQuantity = result.UnassignedQuantity;

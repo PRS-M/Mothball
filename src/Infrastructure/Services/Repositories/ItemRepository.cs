@@ -38,8 +38,7 @@ public class ItemRepository : IItemRepository
         if (dbItem is null) return null;
 
         IEnumerable<DbImage> dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbItem.ItemId);
-        IEnumerable<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(r => r.ItemId == dbItem.ItemId);
-        return MapItem(dbItem, dbPhotos, relations);
+        return dbItem.ToDomain(dbPhotos);
     }
 
     private Task<List<Item>> GetAllWithPhotosAsync()
@@ -276,29 +275,11 @@ public class ItemRepository : IItemRepository
                 nameof(DbImage.OwnerUniqueId),
                 itemIds,
                 p => p.OwnerUniqueId);
-        Dictionary<Guid, IEnumerable<DbItemContainerRelation>> relationsByItem =
-            await RepositoryQueryHelpers.LoadLookupByIdsAsync(
-                itemContainerRelations,
-                nameof(DbItemContainerRelation.ItemId),
-                itemIds,
-                relation => relation.ItemId);
-
         return dbItems.Select(dbItem =>
         {
             photosByItem.TryGetValue(dbItem.ItemId, out var itemPhotos);
-            relationsByItem.TryGetValue(dbItem.ItemId, out var itemRelations);
-            return MapItem(dbItem, itemPhotos, itemRelations);
+            return dbItem.ToDomain(itemPhotos);
         }).ToList();
-    }
-
-    private static Item MapItem(
-        DbItem dbItem,
-        IEnumerable<DbImage>? dbPhotos,
-        IEnumerable<DbItemContainerRelation>? relations = null)
-    {
-        var item = dbItem.ToDomain(dbPhotos);
-        item.SetAssignedQuantity(relations?.Where(relation => relation.Quantity > 0).Sum(relation => relation.Quantity) ?? 0);
-        return item;
     }
 
     #endregion

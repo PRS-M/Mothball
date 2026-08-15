@@ -3,10 +3,11 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using MothballMobile.Infrastructure;
+using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 
-public partial class AddExistingItemToContainerViewModel : PagedListViewModelBase<Item, UnassignedItemViewModel>, IQueryAttributable
+public partial class AddExistingItemToContainerViewModel : PagedListViewModelBase<ItemInventorySummary, UnassignedItemViewModel>, IQueryAttributable
 {
     private readonly IContainerAssociationQueryHandler associationQueries;
     private readonly IAssignItemToContainerCommandHandler assignItemToContainer;
@@ -45,13 +46,13 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
 
     protected override Task EnsureDummyData() => Task.CompletedTask;
 
-    protected override UnassignedItemViewModel MapToViewModel(Item source)
+    protected override UnassignedItemViewModel MapToViewModel(ItemInventorySummary source)
         => new(source, paths, AssignAsync);
 
     protected override void OnViewModelAdded(UnassignedItemViewModel vm)
         => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load unassigned item images");
 
-    protected override Task<List<Item>> LoadAsync(int pageNumber, int pageSize)
+    protected override Task<List<ItemInventorySummary>> LoadAsync(int pageNumber, int pageSize)
         => associationQueries.QueryUnassignedItemsAsync(pageNumber, pageSize);
 
     private async Task AssignAsync(Guid itemId)

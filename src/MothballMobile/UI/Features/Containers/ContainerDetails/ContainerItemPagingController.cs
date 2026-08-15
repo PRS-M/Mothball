@@ -1,4 +1,4 @@
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Contracts;
 using CoreApp.Interfaces;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
@@ -69,6 +69,9 @@ internal sealed class ContainerItemPagingController
         return new ContainerItemPageLoad(items, IsStale: false);
     }
 
-    private Task<List<Item>> QueryAsync(string containerId, int pageNumber, string? searchTerm)
+    private Task<List<ContainerItemInventoryEntry>> QueryAsync(
+        string containerId,
+        int pageNumber,
+        string? searchTerm)
         => containerDetailsQueries.QueryItemsAsync(containerId, searchTerm, pageNumber, pageSize);
 }

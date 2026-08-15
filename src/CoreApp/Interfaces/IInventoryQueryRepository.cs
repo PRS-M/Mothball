@@ -13,6 +13,8 @@ public interface IInventoryQueryRepository
 
     Task<Item?> GetItemWithPhotosAsync(string itemId);
 
+    Task<ItemInventorySummary?> GetItemInventorySummaryAsync(Guid itemId);
+
     Task<Container?> GetContainerForItemAsync(string itemId);
 
     Task<List<ItemContainerAllocation>> GetItemContainerAllocationsAsync(Guid itemId);
@@ -21,5 +23,10 @@ public interface IInventoryQueryRepository
 
     Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification);
 
+    Task<List<ItemInventorySummary>> QueryItemInventorySummariesAsync(ItemListSpecification specification);
+
     Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification);
+
+    Task<List<ContainerItemInventoryEntry>> QueryContainerItemInventoryAsync(
+        ContainerItemsSpecification specification);
 }

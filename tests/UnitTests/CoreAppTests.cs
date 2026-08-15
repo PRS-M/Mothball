@@ -57,20 +57,17 @@ public class CoreAppTests
     }
 
     [Test]
-    public void Item_TotalQuantity_RequiresPositiveValueAndCannotDropBelowAssigned()
+    public void Item_TotalQuantity_RequiresPositiveValue()
     {
         var item = new Item("Hat", "Blue", totalQuantity: 2);
 
         item.SetTotalQuantity(5);
-        item.SetAssignedQuantity(3);
 
         Assert.Multiple(() =>
         {
             Assert.That(item.TotalQuantity, Is.EqualTo(5));
             Assert.That(() => item.SetTotalQuantity(0), Throws.TypeOf<ArgumentOutOfRangeException>());
             Assert.That(() => item.SetTotalQuantity(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
-            Assert.That(() => item.SetTotalQuantity(2), Throws.TypeOf<InvalidOperationException>());
-            Assert.That(() => item.SetAssignedQuantity(6), Throws.TypeOf<InvalidOperationException>());
         });
     }
 
@@ -79,9 +76,12 @@ public class CoreAppTests
     {
         var item = new Item("Hat", "Blue", totalQuantity: 12);
 
-        item.SetAssignedQuantity(7);
+        var summary = new CoreApp.Contracts.ItemInventorySummary(
+            item,
+            7,
+            [new CoreApp.Contracts.ItemContainerAllocation(Guid.NewGuid(), "Box", 7)]);
 
-        Assert.That(item.UnassignedQuantity, Is.EqualTo(5));
+        Assert.That(summary.UnassignedQuantity, Is.EqualTo(5));
     }
 
     [Test]

@@ -13,9 +13,9 @@ public sealed class ItemInventoryCommandServiceTests
     public async Task IncreaseTotalQuantityAsync_WhenValid_UpdatesItemAndReturnsSummary()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 5);
-        item.SetAssignedQuantity(2);
         var queries = new Mock<IInventoryQueryRepository>();
-        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString())).ReturnsAsync(item);
+        queries.Setup(q => q.GetItemInventorySummaryAsync(item.ItemId))
+            .ReturnsAsync(Summary(item, 2));
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -34,9 +34,9 @@ public sealed class ItemInventoryCommandServiceTests
     public async Task IncreaseTotalQuantityAsync_WithStaleDecrease_ReturnsCurrentSnapshotWithoutPersisting()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 5);
-        item.SetAssignedQuantity(3);
         var queries = new Mock<IInventoryQueryRepository>();
-        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString())).ReturnsAsync(item);
+        queries.Setup(q => q.GetItemInventorySummaryAsync(item.ItemId))
+            .ReturnsAsync(Summary(item, 3));
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -55,10 +55,9 @@ public sealed class ItemInventoryCommandServiceTests
     public async Task SetContainerAllocationAsync_ReplacesAllocationUsingItsDelta()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
-        item.SetAssignedQuantity(7);
         var container = new Container(Guid.NewGuid(), "Box", "");
         container.AddItem(item.ItemId, 3);
-        var queries = CreateQueries(item, container);
+        var queries = CreateQueries(item, container, assignedQuantity: 7);
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -76,10 +75,9 @@ public sealed class ItemInventoryCommandServiceTests
     public async Task SetContainerAllocationAsync_WhenResultExceedsTotal_IncreasesTotalAndPersistsAllocation()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 7);
-        item.SetAssignedQuantity(7);
         var container = new Container(Guid.NewGuid(), "Box", "");
         container.AddItem(item.ItemId, 3);
-        var queries = CreateQueries(item, container);
+        var queries = CreateQueries(item, container, assignedQuantity: 7);
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -99,10 +97,9 @@ public sealed class ItemInventoryCommandServiceTests
     public async Task SetContainerAllocationAsync_WithZero_ReleasesQuantity()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
-        item.SetAssignedQuantity(7);
         var container = new Container(Guid.NewGuid(), "Box", "");
         container.AddItem(item.ItemId, 3);
-        var queries = CreateQueries(item, container);
+        var queries = CreateQueries(item, container, assignedQuantity: 7);
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -122,7 +119,6 @@ public sealed class ItemInventoryCommandServiceTests
     public async Task ApplyWithdrawalAsync_WithRemainingStock_CommitsPlanAtomically()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
-        item.SetAssignedQuantity(7);
         var allocations = new[]
         {
             new CoreApp.Contracts.ItemContainerAllocation(Guid.NewGuid(), "Box", 2),
@@ -130,7 +126,8 @@ public sealed class ItemInventoryCommandServiceTests
         };
         var plan = new CoreApp.Contracts.ItemInventoryWithdrawalPlan(7, 6, 1, allocations, false);
         var queries = new Mock<IInventoryQueryRepository>();
-        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString())).ReturnsAsync(item);
+        queries.Setup(q => q.GetItemInventorySummaryAsync(item.ItemId))
+            .ReturnsAsync(Summary(item, 7));
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -150,14 +147,14 @@ public sealed class ItemInventoryCommandServiceTests
     {
         var containerId = Guid.NewGuid();
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
-        item.SetAssignedQuantity(10);
         var allocations = new[]
         {
             new CoreApp.Contracts.ItemContainerAllocation(containerId, "Box", 8),
         };
         var plan = new CoreApp.Contracts.ItemInventoryWithdrawalPlan(8, 8, 0, allocations, false);
         var queries = new Mock<IInventoryQueryRepository>();
-        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString())).ReturnsAsync(item);
+        queries.Setup(q => q.GetItemInventorySummaryAsync(item.ItemId))
+            .ReturnsAsync(Summary(item, 10));
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -178,7 +175,8 @@ public sealed class ItemInventoryCommandServiceTests
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 1);
         var plan = new CoreApp.Contracts.ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
         var queries = new Mock<IInventoryQueryRepository>();
-        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString())).ReturnsAsync(item);
+        queries.Setup(q => q.GetItemInventorySummaryAsync(item.ItemId))
+            .ReturnsAsync(Summary(item, 0));
         var commands = new Mock<IInventoryCommandRepository>();
         var photoDeletion = new Mock<IPhotoDeletionService>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object, photoDeletion.Object);
@@ -191,11 +189,36 @@ public sealed class ItemInventoryCommandServiceTests
         commands.Verify(c => c.UpdateItemAsync(It.IsAny<Item>()), Times.Never);
     }
 
-    private static Mock<IInventoryQueryRepository> CreateQueries(Item item, Container container)
+    private static Mock<IInventoryQueryRepository> CreateQueries(
+        Item item,
+        Container container,
+        int assignedQuantity)
     {
         var queries = new Mock<IInventoryQueryRepository>();
-        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString())).ReturnsAsync(item);
-        queries.Setup(q => q.GetContainerAsync(container.ContainerId.ToString())).ReturnsAsync(container);
+        var allocation = new CoreApp.Contracts.ItemContainerAllocation(
+            container.ContainerId,
+            container.Name,
+            container.Items.First(itemInContainer => itemInContainer.ItemId == item.ItemId).Quantity);
+        var allocations = new List<CoreApp.Contracts.ItemContainerAllocation> { allocation };
+        int remainingAssigned = assignedQuantity - allocation.Quantity;
+        if (remainingAssigned > 0)
+        {
+            allocations.Add(new CoreApp.Contracts.ItemContainerAllocation(
+                Guid.NewGuid(),
+                "Other",
+                remainingAssigned));
+        }
+
+        queries.Setup(q => q.GetItemInventorySummaryAsync(item.ItemId))
+            .ReturnsAsync(new CoreApp.Contracts.ItemInventorySummary(item, assignedQuantity, allocations));
         return queries;
     }
+
+    private static CoreApp.Contracts.ItemInventorySummary Summary(Item item, int assignedQuantity)
+        => new(
+            item,
+            assignedQuantity,
+            assignedQuantity == 0
+                ? []
+                : [new CoreApp.Contracts.ItemContainerAllocation(Guid.NewGuid(), "Container", assignedQuantity)]);
 }

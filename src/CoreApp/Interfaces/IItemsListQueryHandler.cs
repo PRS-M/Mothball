@@ -1,8 +1,12 @@
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Contracts;
 
 namespace CoreApp.Interfaces;
 
 public interface IItemsListQueryHandler
 {
-    Task<List<Item>> QueryAsync(bool unassignedOnly, string? searchTerm = null, int? pageNumber = null, int? pageSize = null);
+    Task<List<ItemInventorySummary>> QueryAsync(
+        bool unassignedOnly,
+        string? searchTerm = null,
+        int? pageNumber = null,
+        int? pageSize = null);
 }

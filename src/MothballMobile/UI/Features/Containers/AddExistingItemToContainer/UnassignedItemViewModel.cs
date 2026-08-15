@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 
@@ -8,8 +9,11 @@ public partial class UnassignedItemViewModel : ItemWithImagesViewModelBase
 {
     private readonly Func<Guid, Task> assign;
 
-    public UnassignedItemViewModel(Item item, IImagePathResolver paths, Func<Guid, Task> assign)
-        : base(item, paths)
+    public UnassignedItemViewModel(
+        ItemInventorySummary inventory,
+        IImagePathResolver paths,
+        Func<Guid, Task> assign)
+        : base(inventory, paths)
     {
         this.assign = assign;
     }

@@ -22,15 +22,16 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
 
     public async Task<ItemInventoryUpdateResult> IncreaseTotalQuantityAsync(Guid itemId, int totalQuantity)
     {
-        Item item = await GetItemAsync(itemId);
+        var summary = await GetSummaryAsync(itemId);
+        Item item = summary.Item;
         if (totalQuantity <= item.TotalQuantity)
         {
-            return CreateResult(item, removedFromContainer: false);
+            return CreateResult(item, summary.AssignedQuantity, removedFromContainer: false);
         }
 
         item.SetTotalQuantity(totalQuantity);
         await inventoryCommands.UpdateItemAsync(item);
-        return CreateResult(item, removedFromContainer: false);
+        return CreateResult(item, summary.AssignedQuantity, removedFromContainer: false);
     }
 
     public async Task<ItemInventoryUpdateResult> SetContainerAllocationAsync(
@@ -43,22 +44,20 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
             throw new ArgumentOutOfRangeException(nameof(quantity), "Allocated quantity cannot be negative.");
         }
 
-        Item item = await GetItemAsync(itemId);
-        var container = await inventoryQueries.GetContainerAsync(containerId.ToString())
-            ?? throw new KeyNotFoundException($"Container '{containerId}' was not found.");
-        int previousQuantity = container.Items
-            .FirstOrDefault(storedItem => storedItem.ItemId == itemId)?.Quantity ?? 0;
-        int resultingAssignedQuantity = item.AssignedQuantity - previousQuantity + quantity;
+        var summary = await GetSummaryAsync(itemId);
+        Item item = summary.Item;
+        int previousQuantity = summary.Allocations
+            .FirstOrDefault(allocation => allocation.ContainerId == containerId)?.Quantity ?? 0;
+        int resultingAssignedQuantity = summary.AssignedQuantity - previousQuantity + quantity;
 
         if (resultingAssignedQuantity > item.TotalQuantity)
         {
             item.SetTotalQuantity(resultingAssignedQuantity);
         }
 
-        item.SetAssignedQuantity(resultingAssignedQuantity);
         await inventoryCommands.SetItemContainerAllocationAsync(item, containerId, quantity);
 
-        return CreateResult(item, removedFromContainer: quantity == 0);
+        return CreateResult(item, resultingAssignedQuantity, removedFromContainer: quantity == 0);
     }
 
     public async Task<ItemInventoryUpdateResult> ApplyWithdrawalAsync(
@@ -66,7 +65,7 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         ItemInventoryWithdrawalPlan plan)
     {
         ArgumentNullException.ThrowIfNull(plan);
-        Item item = await GetItemAsync(itemId);
+        Item item = (await GetSummaryAsync(itemId)).Item;
 
         if (plan.DeleteItem)
         {
@@ -91,26 +90,29 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
             throw new ArgumentException("Withdrawal plan quantities are inconsistent.", nameof(plan));
         }
 
-        item.ApplyInventoryQuantities(plan.TotalQuantity, plan.AssignedQuantity);
+        item.SetTotalQuantity(plan.TotalQuantity);
         await inventoryCommands.ApplyItemInventoryWithdrawalAsync(item, plan.Allocations);
-        return CreateResult(item, removedFromContainer: false);
+        return CreateResult(item, plan.AssignedQuantity, removedFromContainer: false);
     }
 
-    private async Task<Item> GetItemAsync(Guid itemId)
+    private async Task<ItemInventorySummary> GetSummaryAsync(Guid itemId)
     {
         if (itemId == Guid.Empty)
         {
             throw new ArgumentException("Item ID cannot be empty.", nameof(itemId));
         }
 
-        return await inventoryQueries.GetItemWithPhotosAsync(itemId.ToString())
+        return await inventoryQueries.GetItemInventorySummaryAsync(itemId)
             ?? throw new KeyNotFoundException($"Item '{itemId}' was not found.");
     }
 
-    private static ItemInventoryUpdateResult CreateResult(Item item, bool removedFromContainer)
+    private static ItemInventoryUpdateResult CreateResult(
+        Item item,
+        int assignedQuantity,
+        bool removedFromContainer)
         => new(
             removedFromContainer,
             item.TotalQuantity,
-            item.AssignedQuantity,
-            item.UnassignedQuantity);
+            assignedQuantity,
+            item.TotalQuantity - assignedQuantity);
 }

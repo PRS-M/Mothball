@@ -38,12 +38,65 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     public Task<Item?> GetItemWithPhotosAsync(string itemId)
         => itemRepo.GetWithPhotosAsync(itemId);
 
+    public async Task<ItemInventorySummary?> GetItemInventorySummaryAsync(Guid itemId)
+    {
+        var item = await itemRepo.GetWithPhotosAsync(itemId.ToString());
+        if (item is null)
+        {
+            return null;
+        }
+
+        var allocations = await containerRepo.GetItemContainerAllocationsAsync(itemId);
+        return CreateSummary(item, allocations);
+    }
+
     public Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification)
         => containerRepo.QueryAsync(specification);
 
     public Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification)
         => itemRepo.QueryWithPhotosAsync(specification);
 
+    public async Task<List<ItemInventorySummary>> QueryItemInventorySummariesAsync(
+        ItemListSpecification specification)
+    {
+        var items = await itemRepo.QueryWithPhotosAsync(specification);
+        var summaries = new List<ItemInventorySummary>(items.Count);
+        foreach (var item in items)
+        {
+            var allocations = await containerRepo.GetItemContainerAllocationsAsync(item.ItemId);
+            summaries.Add(CreateSummary(item, allocations));
+        }
+
+        return summaries;
+    }
+
     public Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
         => itemRepo.QueryContainerItemsWithPhotosAsync(specification);
+
+    public async Task<List<ContainerItemInventoryEntry>> QueryContainerItemInventoryAsync(
+        ContainerItemsSpecification specification)
+    {
+        var items = await itemRepo.QueryContainerItemsWithPhotosAsync(specification);
+        if (!Guid.TryParse(specification.ContainerId, out var containerId))
+        {
+            return [];
+        }
+
+        var entries = new List<ContainerItemInventoryEntry>(items.Count);
+        foreach (var item in items)
+        {
+            var allocations = await containerRepo.GetItemContainerAllocationsAsync(item.ItemId);
+            var summary = CreateSummary(item, allocations);
+            int containerQuantity = allocations
+                .FirstOrDefault(allocation => allocation.ContainerId == containerId)?.Quantity ?? 0;
+            entries.Add(new ContainerItemInventoryEntry(summary, containerQuantity));
+        }
+
+        return entries;
+    }
+
+    private static ItemInventorySummary CreateSummary(
+        Item item,
+        IReadOnlyList<ItemContainerAllocation> allocations)
+        => new(item, allocations.Sum(allocation => allocation.Quantity), allocations);
 }

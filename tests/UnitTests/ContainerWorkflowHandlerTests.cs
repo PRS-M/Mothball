@@ -52,10 +52,14 @@ public sealed class ContainerWorkflowHandlerTests
     public async Task ContainerAssociationQueryHandler_QueryUnassignedItems_UsesUnassignedFilter()
     {
         var queries = new Mock<IInventoryQueryRepository>();
-        var expected = new List<Item> { new("Hammer", string.Empty) };
+        var item = new Item("Hammer", string.Empty, totalQuantity: 3);
+        var expected = new List<CoreApp.Contracts.ItemInventorySummary>
+        {
+            new(item, 1, [new CoreApp.Contracts.ItemContainerAllocation(Guid.NewGuid(), "Box", 1)]),
+        };
         ItemListSpecification? capturedSpecification = null;
 
-        queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
+        queries.Setup(q => q.QueryItemInventorySummariesAsync(It.IsAny<ItemListSpecification>()))
             .Callback<ItemListSpecification>(s => capturedSpecification = s)
             .ReturnsAsync(expected);
 

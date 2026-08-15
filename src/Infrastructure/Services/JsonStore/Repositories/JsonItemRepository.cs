@@ -305,9 +305,7 @@ public sealed class JsonItemRepository : IItemRepository
             .Select(p => new DbImage { ImageId = p.ImageId, OwnerUniqueId = p.OwnerUniqueId })
             .ToList();
 
-        var item = dbItem.ToDomain(photos);
-        item.SetAssignedQuantity(GetAssignedQuantity(state, row.ItemId));
-        return item;
+        return dbItem.ToDomain(photos);
     }
 
     private static int GetAssignedQuantity(JsonInventoryStore.StoreState state, Guid itemId)

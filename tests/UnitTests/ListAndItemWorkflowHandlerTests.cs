@@ -38,7 +38,7 @@ public sealed class ListAndItemWorkflowHandlerTests
     {
         var queries = new Mock<IInventoryQueryRepository>();
         ItemListSpecification? captured = null;
-        queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
+        queries.Setup(q => q.QueryItemInventorySummariesAsync(It.IsAny<ItemListSpecification>()))
             .Callback<ItemListSpecification>(s => captured = s)
             .ReturnsAsync([]);
 
@@ -60,12 +60,14 @@ public sealed class ListAndItemWorkflowHandlerTests
     public async Task ItemDetailsQueryHandler_WhenItemExists_ReturnsItemAndRelatedContainerId()
     {
         var item = new Item(Guid.NewGuid(), "Hat", "Blue", totalQuantity: 3);
-        var container = new Container(Guid.NewGuid(), "Box", string.Empty);
+        var containerId = Guid.NewGuid();
+        var summary = new CoreApp.Contracts.ItemInventorySummary(
+            item,
+            2,
+            [new CoreApp.Contracts.ItemContainerAllocation(containerId, "Box", 2)]);
         var queries = new Mock<IInventoryQueryRepository>();
-        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString()))
-            .ReturnsAsync(item);
-        queries.Setup(q => q.GetContainerForItemAsync(item.ItemId.ToString()))
-            .ReturnsAsync(container);
+        queries.Setup(q => q.GetItemInventorySummaryAsync(item.ItemId))
+            .ReturnsAsync(summary);
 
         var handler = new ItemDetailsQueryHandler(queries.Object);
 
@@ -74,8 +76,9 @@ public sealed class ListAndItemWorkflowHandlerTests
         Assert.That(result, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(result!.Item, Is.SameAs(item));
-            Assert.That(result.ContainerId, Is.EqualTo(container.ContainerId));
+            Assert.That(result!.Inventory.Item, Is.SameAs(item));
+            Assert.That(result.Inventory.AssignedQuantity, Is.EqualTo(2));
+            Assert.That(result.Inventory.Allocations.Single().ContainerId, Is.EqualTo(containerId));
         });
     }
 
