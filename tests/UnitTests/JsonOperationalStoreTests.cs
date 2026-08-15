@@ -1,9 +1,13 @@
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Inventory;
+using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Services;
 using CoreApp.Specifications;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.JsonStore.Repositories;
+using Infrastructure.Services.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json;
 
@@ -281,6 +285,46 @@ public class JsonOperationalStoreTests
         {
             Assert.That(relationRows, Has.Count.EqualTo(1));
             Assert.That(relationRows.Single().Quantity, Is.EqualTo(5));
+        });
+    }
+
+    [Test]
+    public async Task EditUnassignAndReassignSameContainer_StoresSingleRelationRow()
+    {
+        var files = new InMemoryFileHandler();
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
+        var containerRepo = new JsonContainerRepository(store);
+        var itemRepo = new JsonItemRepository(store);
+        var itemInventoryRepo = new JsonItemInventoryRepository(store);
+        var imageRepo = new JsonImageRepository(store);
+        var relationRepo = new JsonRelationRepository(store);
+        var queryRepo = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
+        var commandRepo = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
+        var inventoryCommands = new ItemInventoryCommandService(queryRepo, commandRepo);
+        var quantityService = new ContainerItemQuantityService(inventoryCommands);
+        var assignHandler = new AssignItemToContainerCommandHandler(inventoryCommands);
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        Assert.That(await store.TryRecoverAsync(), Is.True);
+        await commandRepo.InsertContainerAsync(container);
+        await commandRepo.InsertItemAsync(item);
+        await commandRepo.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 5));
+
+        var currentContainer = (await queryRepo.GetContainerAsync(container.ContainerId.ToString()))!;
+        await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 4);
+        await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 0);
+        await assignHandler.AssignAsync(item.ItemId, container.ContainerId, 1);
+
+        var state = await store.LoadAsync();
+        var relationRows = state.Relations
+            .Where(relation => relation.ItemId == item.ItemId && relation.ContainerId == container.ContainerId)
+            .ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(relationRows, Has.Count.EqualTo(1));
+            Assert.That(relationRows.Single().Quantity, Is.EqualTo(1));
         });
     }
 

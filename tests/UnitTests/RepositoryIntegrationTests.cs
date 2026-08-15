@@ -6,6 +6,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
+using CoreApp.Services;
 using CoreApp.Specifications;
 using Infrastructure.Services.Repositories;
 
@@ -132,6 +133,35 @@ public class RepositoryIntegrationTests
         {
             Assert.That(relationRows, Has.Count.EqualTo(1));
             Assert.That(relationRows.Single().Quantity, Is.EqualTo(5));
+        });
+    }
+
+    [Test]
+    public async Task EditUnassignAndReassignSameContainer_StoresSingleRelationRow()
+    {
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        await commandRepo.InsertContainerAsync(container);
+        await commandRepo.InsertItemAsync(item);
+        await commandRepo.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 5));
+
+        var inventoryCommands = new ItemInventoryCommandService(queryRepo, commandRepo);
+        var quantityService = new ContainerItemQuantityService(inventoryCommands);
+        var assignHandler = new AssignItemToContainerCommandHandler(inventoryCommands);
+        var currentContainer = (await queryRepo.GetContainerAsync(container.ContainerId.ToString()))!;
+
+        await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 4);
+        await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 0);
+        await assignHandler.AssignAsync(item.ItemId, container.ContainerId, 1);
+
+        var relationRows = await relations.WhereAsync(relation =>
+            relation.ItemId == item.ItemId && relation.ContainerId == container.ContainerId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(relationRows, Has.Count.EqualTo(1));
+            Assert.That(relationRows.Single().Quantity, Is.EqualTo(1));
         });
     }
 }

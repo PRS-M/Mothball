@@ -472,6 +472,51 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task EditUnassignAndReassignSameContainer_StoresSingleAllocationAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 5));
+        }
+
+        foreach (var (query, command) in new (IInventoryQueryRepository Query, IInventoryCommandRepository Command)[]
+        {
+            (sqlite.Query, sqlite.Command),
+            (json.Query, json.Command),
+        })
+        {
+            var inventoryCommands = new ItemInventoryCommandService(query, command);
+            var quantityService = new ContainerItemQuantityService(inventoryCommands);
+            var assignHandler = new AssignItemToContainerCommandHandler(inventoryCommands);
+            var currentContainer = (await query.GetContainerAsync(container.ContainerId.ToString()))!;
+
+            await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 4);
+            await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 0);
+            await assignHandler.AssignAsync(item.ItemId, container.ContainerId, 1);
+        }
+
+        var specification = new ContainerItemsSpecification(container.ContainerId.ToString());
+        var sqliteContainerItems = await sqlite.Query.QueryContainerItemInventoryAsync(specification);
+        var jsonContainerItems = await json.Query.QueryContainerItemInventoryAsync(specification);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteContainerItems.Select(entry => entry.Inventory.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(jsonContainerItems.Select(entry => entry.Inventory.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(sqliteContainerItems.Single().ContainerQuantity, Is.EqualTo(1));
+            Assert.That(jsonContainerItems.Single().ContainerQuantity, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
     public async Task ContainerRowRefresh_AfterAllocationEdit_ReturnsLocalAndGlobalQuantities()
     {
         await using var sqlite = await BuildSqliteAsync();
