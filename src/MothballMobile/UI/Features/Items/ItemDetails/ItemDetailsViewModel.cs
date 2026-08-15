@@ -111,9 +111,6 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             ItemId = itemId;
             ImagePaths.Clear();
             ContainerId = null;
-            TotalQuantity = 0;
-            AssignedQuantity = 0;
-            UnassignedQuantity = 0;
             NotifyContainerRelationStateChanged();
 
             var details = await itemDetailsQueries.GetDetailsAsync(itemId);
@@ -177,10 +174,15 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             return;
         }
 
-        var selectedQuantity = await popup.PickNumberAsync(
-            popupDefinitions.SetTotalQuantity(TotalQuantity, AssignedQuantity));
+        var inventorySnapshot = currentInventory!;
+        var itemSnapshot = currentItem!;
+        int totalSnapshot = inventorySnapshot.TotalQuantity;
+        int assignedSnapshot = inventorySnapshot.AssignedQuantity;
 
-        if (selectedQuantity is null || selectedQuantity.Value == TotalQuantity)
+        var selectedQuantity = await popup.PickNumberAsync(
+            popupDefinitions.SetTotalQuantity(totalSnapshot, assignedSnapshot));
+
+        if (selectedQuantity is null || selectedQuantity.Value == totalSnapshot)
         {
             return;
         }
@@ -189,10 +191,10 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         {
             logger.LogInformation(
                 "Set item total requested: itemId={ItemId}, selected={Selected}, currentTotal={CurrentTotal}, assigned={Assigned}, sourceContainer={SourceContainer}",
-                currentItem!.ItemId,
+                itemSnapshot.ItemId,
                 selectedQuantity.Value,
-                TotalQuantity,
-                AssignedQuantity,
+                totalSnapshot,
+                assignedSnapshot,
                 sourceContainerId);
 
             if (selectedQuantity.Value == 0)
@@ -204,7 +206,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 }
 
                 var deletionPlan = new CoreApp.Contracts.ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
-                var deletionResult = await inventoryCommands.ApplyWithdrawalAsync(currentItem.ItemId, deletionPlan);
+                var deletionResult = await inventoryCommands.ApplyWithdrawalAsync(itemSnapshot.ItemId, deletionPlan);
                 if (deletionResult.ItemDeleted)
                 {
                     await nav.GoBackAsync();
@@ -213,16 +215,16 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 return;
             }
 
-            if (selectedQuantity.Value > TotalQuantity)
+            if (selectedQuantity.Value > totalSnapshot)
             {
                 logger.LogDebug("Routing item total request to increase command.");
-                var result = await inventoryCommands.IncreaseTotalQuantityAsync(currentItem.ItemId, selectedQuantity.Value);
+                var result = await inventoryCommands.IncreaseTotalQuantityAsync(itemSnapshot.ItemId, selectedQuantity.Value);
                 ApplyInventoryResult(result);
                 return;
             }
 
             logger.LogDebug("Routing item total request to withdrawal workflow.");
-            await RunWithdrawalWorkflowAsync(selectedQuantity.Value);
+            await RunWithdrawalWorkflowAsync(selectedQuantity.Value, inventorySnapshot, itemSnapshot);
         }
         catch (Exception ex)
         {
@@ -252,18 +254,16 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         return true;
     }
 
-    private async Task RunWithdrawalWorkflowAsync(int requestedTotal)
+    private async Task RunWithdrawalWorkflowAsync(
+        int requestedTotal,
+        CoreApp.Contracts.ItemInventorySummary inventorySnapshot,
+        Item itemSnapshot)
     {
-        if (currentInventory is null)
-        {
-            return;
-        }
-
         Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
             ? parsedSourceContainerId
             : null;
         var session = new ItemInventoryAdjustmentSession(
-            currentInventory,
+            inventorySnapshot,
             requestedTotal,
             preferredContainerId);
 
@@ -323,7 +323,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
                 case ItemInventoryAdjustmentState.ReadyToCommit:
                     var plan = session.BuildPlan();
-                    var result = await inventoryCommands.ApplyWithdrawalAsync(currentItem!.ItemId, plan);
+                    var result = await inventoryCommands.ApplyWithdrawalAsync(itemSnapshot.ItemId, plan);
                     if (result.ItemDeleted)
                     {
                         await nav.GoBackAsync();
