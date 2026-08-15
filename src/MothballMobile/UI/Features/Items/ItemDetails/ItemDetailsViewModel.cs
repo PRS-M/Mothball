@@ -19,6 +19,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly ILogger<ItemDetailsViewModel> logger;
     private Item? currentItem;
+    private CoreApp.Contracts.ItemInventorySummary? currentInventory;
     private IReadOnlyList<CoreApp.Contracts.ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
 
@@ -127,6 +128,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
             var item = details.Inventory.Item;
             currentItem = item;
+            currentInventory = details.Inventory;
             currentAllocations = details.Inventory.Allocations;
             Name = item.Name;
             Description = item.Description;
@@ -242,6 +244,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         }
 
         currentItem = details.Inventory.Item;
+        currentInventory = details.Inventory;
         currentAllocations = details.Inventory.Allocations;
         TotalQuantity = details.Inventory.TotalQuantity;
         AssignedQuantity = details.Inventory.AssignedQuantity;
@@ -251,126 +254,102 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private async Task RunWithdrawalWorkflowAsync(int requestedTotal)
     {
-        var originalAllocations = currentAllocations
-            .Where(allocation => allocation.Quantity > 0)
-            .ToList();
-        var remainingAllocations = originalAllocations.ToDictionary(
-            allocation => allocation.ContainerId,
-            allocation => allocation);
-        var withdrawals = new List<CoreApp.Contracts.ItemAllocationWithdrawal>();
-        int assignedRemaining = remainingAllocations.Values.Sum(allocation => allocation.Quantity);
-        int assignedToWithdraw = ItemInventoryWithdrawalPlanner.GetRequiredAssignedWithdrawal(
-            TotalQuantity,
-            requestedTotal,
-            assignedRemaining);
-        int assignedWithdrawn = 0;
-        int carriedQuantity = 0;
-        Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
-            ? parsedSourceContainerId
-            : null;
-        bool usePreferredContainer = true;
-
-        while (assignedWithdrawn < assignedToWithdraw || carriedQuantity > 0)
+        if (currentInventory is null)
         {
-            var choices = remainingAllocations.Values
-                .Where(allocation => allocation.Quantity > 0)
-                .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            if (choices.Count == 0)
-            {
-                return;
-            }
-
-            CoreApp.Contracts.ItemContainerAllocation? selectedContainer = null;
-            if (usePreferredContainer)
-            {
-                selectedContainer = ItemInventoryWithdrawalPlanner.GetPreferredAllocation(
-                    choices,
-                    preferredContainerId);
-                usePreferredContainer = false;
-            }
-
-            selectedContainer ??= await popup.SelectOptionAsync(
-                popupDefinitions.WithdrawalContainerPicker(choices));
-            if (selectedContainer is null)
-            {
-                return;
-            }
-
-            var selectedWithdrawal = await popup.PickNumberAsync(
-                popupDefinitions.WithdrawFromContainer(
-                    selectedContainer,
-                    carriedQuantity,
-                    assignedToWithdraw - assignedWithdrawn));
-            if (selectedWithdrawal is null || selectedWithdrawal.Value == 0)
-            {
-                return;
-            }
-
-            if (selectedWithdrawal.Value < carriedQuantity)
-            {
-                await popup.ShowAlertAsync(popupDefinitions.WithdrawalCarryTooSmall(carriedQuantity));
-                continue;
-            }
-
-            int removed = Math.Min(selectedContainer.Quantity, selectedWithdrawal.Value);
-            assignedRemaining -= removed;
-            assignedWithdrawn += removed;
-            carriedQuantity = selectedWithdrawal.Value - removed;
-            remainingAllocations[selectedContainer.ContainerId] = selectedContainer with
-            {
-                Quantity = selectedContainer.Quantity - removed,
-            };
-            withdrawals.Add(new CoreApp.Contracts.ItemAllocationWithdrawal(
-                selectedContainer.ContainerId,
-                selectedWithdrawal.Value));
-        }
-
-        var unassignedWithdrawals = new List<int>();
-        var plan = ItemInventoryWithdrawalPlanner.Plan(
-            TotalQuantity,
-            originalAllocations,
-            withdrawals,
-            unassignedWithdrawals,
-            requestedTotal);
-
-        if (plan.UnassignedQuantity > 0
-            && await popup.ConfirmAsync(
-                popupDefinitions.ConfirmUnassignedWithdrawal(plan.UnassignedQuantity)))
-        {
-            while (plan.UnassignedQuantity > 0)
-            {
-                var selectedWithdrawal = await popup.PickNumberAsync(
-                    popupDefinitions.WithdrawUnassignedQuantity(plan.UnassignedQuantity));
-                if (selectedWithdrawal is null || selectedWithdrawal.Value == 0)
-                {
-                    break;
-                }
-
-                unassignedWithdrawals.Add(selectedWithdrawal.Value);
-                plan = ItemInventoryWithdrawalPlanner.Plan(
-                    TotalQuantity,
-                    originalAllocations,
-                    withdrawals,
-                    unassignedWithdrawals,
-                    requestedTotal);
-            }
-        }
-
-        var result = await inventoryCommands.ApplyWithdrawalAsync(currentItem!.ItemId, plan);
-        if (result.ItemDeleted)
-        {
-            await nav.GoBackAsync();
             return;
         }
 
-        currentAllocations = plan.Allocations;
-        ApplyInventoryResult(result);
+        Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
+            ? parsedSourceContainerId
+            : null;
+        var session = new ItemInventoryAdjustmentSession(
+            currentInventory,
+            requestedTotal,
+            preferredContainerId);
+
+        while (true)
+        {
+            switch (session.State)
+            {
+                case ItemInventoryAdjustmentState.WithdrawAssigned:
+                    var selectedContainer = session.PreferredAllocation
+                        ?? await popup.SelectOptionAsync(
+                            popupDefinitions.WithdrawalContainerPicker(session.RemainingAllocations));
+                    if (selectedContainer is null)
+                    {
+                        session.Cancel();
+                        continue;
+                    }
+
+                    var assignedWithdrawal = await popup.PickNumberAsync(
+                        popupDefinitions.WithdrawFromContainer(
+                            selectedContainer,
+                            session.CarriedWithdrawal,
+                            session.SuggestedAssignedWithdrawal));
+                    if (assignedWithdrawal is null)
+                    {
+                        session.Cancel();
+                        continue;
+                    }
+
+                    try
+                    {
+                        session.WithdrawAssigned(selectedContainer.ContainerId, assignedWithdrawal.Value);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        await popup.ShowAlertAsync(
+                            popupDefinitions.WithdrawalCarryTooSmall(session.CarriedWithdrawal));
+                    }
+                    break;
+
+                case ItemInventoryAdjustmentState.ConfirmUnassignedWithdrawal:
+                    if (await popup.ConfirmAsync(
+                        popupDefinitions.ConfirmUnassignedWithdrawal(session.UnassignedQuantity)))
+                    {
+                        session.AcceptUnassignedWithdrawal();
+                    }
+                    else
+                    {
+                        session.DeclineUnassignedWithdrawal();
+                    }
+                    break;
+
+                case ItemInventoryAdjustmentState.WithdrawUnassigned:
+                    var unassignedWithdrawal = await popup.PickNumberAsync(
+                        popupDefinitions.WithdrawUnassignedQuantity(session.UnassignedQuantity));
+                    session.WithdrawUnassigned(unassignedWithdrawal ?? 0);
+                    break;
+
+                case ItemInventoryAdjustmentState.ReadyToCommit:
+                    var plan = session.BuildPlan();
+                    var result = await inventoryCommands.ApplyWithdrawalAsync(currentItem!.ItemId, plan);
+                    if (result.ItemDeleted)
+                    {
+                        await nav.GoBackAsync();
+                        return;
+                    }
+
+                    currentAllocations = plan.Allocations;
+                    ApplyInventoryResult(result);
+                    return;
+
+                case ItemInventoryAdjustmentState.Cancelled:
+                    return;
+
+                default:
+                    throw new InvalidOperationException($"Unsupported adjustment state {session.State}.");
+            }
+        }
     }
 
     private void ApplyInventoryResult(CoreApp.Contracts.ItemInventoryUpdateResult result)
     {
         currentItem!.SetTotalQuantity(result.TotalQuantity);
+        currentInventory = new CoreApp.Contracts.ItemInventorySummary(
+            currentItem,
+            result.AssignedQuantity,
+            currentAllocations);
         TotalQuantity = result.TotalQuantity;
         AssignedQuantity = result.AssignedQuantity;
         UnassignedQuantity = result.UnassignedQuantity;
