@@ -37,11 +37,9 @@ public class RelationRepository : IRelationRepository
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
 
-        await itemContainerRelations.InsertAsync(new DbItemContainerRelation
+        await transactionRunner.RunAsync(scope =>
         {
-            ItemId = itemId,
-            ContainerId = containerId,
-            Quantity = quantity,
+            scope.InsertItemContainerRelation(itemId, containerId, quantity);
         });
     }
 

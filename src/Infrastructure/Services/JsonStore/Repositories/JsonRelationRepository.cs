@@ -22,13 +22,7 @@ public sealed class JsonRelationRepository : IRelationRepository
 
         return store.UpdateAsync(state =>
         {
-            state.Relations.Add(new JsonRelationRow
-            {
-                Id = state.Metadata.NextRelationId++,
-                ItemId = itemId,
-                ContainerId = containerId,
-                Quantity = quantity,
-            });
+            InsertOrIncreaseRelation(state, itemId, containerId, quantity);
 
             return Task.CompletedTask;
         });
@@ -123,6 +117,26 @@ public sealed class JsonRelationRepository : IRelationRepository
         {
             state.Relations.RemoveAll(r => r.ItemId == itemId && r.ContainerId == containerId);
             return Task.CompletedTask;
+        });
+    }
+
+    private static void InsertOrIncreaseRelation(
+        JsonInventoryStore.StoreState state,
+        Guid itemId,
+        Guid containerId,
+        int quantity)
+    {
+        var existingQuantity = state.Relations
+            .Where(relation => relation.ItemId == itemId && relation.ContainerId == containerId)
+            .Sum(relation => relation.Quantity);
+
+        state.Relations.RemoveAll(relation => relation.ItemId == itemId && relation.ContainerId == containerId);
+        state.Relations.Add(new JsonRelationRow
+        {
+            Id = state.Metadata.NextRelationId++,
+            ItemId = itemId,
+            ContainerId = containerId,
+            Quantity = existingQuantity + quantity,
         });
     }
 }

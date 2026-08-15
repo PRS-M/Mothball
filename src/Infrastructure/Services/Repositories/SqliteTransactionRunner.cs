@@ -74,12 +74,14 @@ public sealed class SqliteTransactionRunner : ITransactionRunner
         }
 
         public void InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity)
-            => connection.Insert(new DbItemContainerRelation
-            {
-                ItemId = itemId,
-                ContainerId = containerId,
-                Quantity = quantity,
-            });
+        {
+            var existingQuantity = connection.Table<DbItemContainerRelation>()
+                .Where(relation => relation.ItemId == itemId && relation.ContainerId == containerId)
+                .ToList()
+                .Sum(relation => relation.Quantity);
+
+            ReplaceItemContainerRelation(itemId, containerId, existingQuantity + quantity);
+        }
 
         public void DeleteContainer(Guid containerId)
             => connection.DeleteByPrimaryKey<DbContainer>(containerId);

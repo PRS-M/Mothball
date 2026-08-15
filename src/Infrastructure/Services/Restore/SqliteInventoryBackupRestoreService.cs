@@ -138,12 +138,11 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
             foreach (var relation in plan.RelationsToInsert)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                connection.Insert(new DbItemContainerRelation
-                {
-                    ItemId = relation.ItemId,
-                    ContainerId = relation.ContainerId,
-                    Quantity = relation.QuantityToInsert,
-                });
+                InsertOrIncreaseRelation(
+                    connection,
+                    relation.ItemId,
+                    relation.ContainerId,
+                    relation.QuantityToInsert);
             }
 
             foreach (var relation in plan.RelationsToSet)
@@ -214,5 +213,29 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
         }).ConfigureAwait(false);
 
         return result;
+    }
+
+    private static void InsertOrIncreaseRelation(
+        SQLite.SQLiteConnection connection,
+        Guid itemId,
+        Guid containerId,
+        int quantity)
+    {
+        var existingQuantity = connection.Table<DbItemContainerRelation>()
+            .Where(relation => relation.ItemId == itemId && relation.ContainerId == containerId)
+            .ToList()
+            .Sum(relation => relation.Quantity);
+
+        connection.Execute(
+            $"DELETE FROM {nameof(DbItemContainerRelation)} WHERE {nameof(DbItemContainerRelation.ItemId)} = ? AND {nameof(DbItemContainerRelation.ContainerId)} = ?",
+            itemId,
+            containerId);
+
+        connection.Insert(new DbItemContainerRelation
+        {
+            ItemId = itemId,
+            ContainerId = containerId,
+            Quantity = existingQuantity + quantity,
+        });
     }
 }

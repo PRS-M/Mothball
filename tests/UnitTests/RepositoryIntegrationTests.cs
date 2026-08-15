@@ -111,4 +111,27 @@ public class RepositoryIntegrationTests
         Assert.That(itemsForContainer[0].Name, Is.EqualTo("ItemA"));
         Assert.That(itemsForContainer[0].Description, Is.EqualTo("DescA"));
     }
+
+    [Test]
+    public async Task InsertItemContainerRelation_WhenCalledTwice_StoresSingleRelationRow()
+    {
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        await commandRepo.InsertContainerAsync(container);
+        await commandRepo.InsertItemAsync(item);
+        await commandRepo.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 5));
+
+        await commandRepo.InsertItemContainerRelation(item.ItemId, container.ContainerId, 2);
+        await commandRepo.InsertItemContainerRelation(item.ItemId, container.ContainerId, 3);
+
+        var relationRows = await relations.WhereAsync(relation =>
+            relation.ItemId == item.ItemId && relation.ContainerId == container.ContainerId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(relationRows, Has.Count.EqualTo(1));
+            Assert.That(relationRows.Single().Quantity, Is.EqualTo(5));
+        });
+    }
 }

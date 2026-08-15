@@ -259,6 +259,32 @@ public class JsonOperationalStoreTests
     }
 
     [Test]
+    public async Task RelationRepository_InsertSameItemContainerTwice_StoresSingleRelationRow()
+    {
+        var files = new InMemoryFileHandler();
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
+        var relations = new JsonRelationRepository(store);
+        var itemId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+
+        Assert.That(await store.TryRecoverAsync(), Is.True);
+
+        await relations.InsertItemContainerRelationAsync(itemId, containerId, 2);
+        await relations.InsertItemContainerRelationAsync(itemId, containerId, 3);
+
+        var state = await store.LoadAsync();
+        var relationRows = state.Relations
+            .Where(relation => relation.ItemId == itemId && relation.ContainerId == containerId)
+            .ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(relationRows, Has.Count.EqualTo(1));
+            Assert.That(relationRows.Single().Quantity, Is.EqualTo(5));
+        });
+    }
+
+    [Test]
     public async Task StartupInitializer_WhenRecoverFails_ThrowsInvalidOperationException()
     {
         var store = new JsonInventoryStore(new FailingWriteFileHandler(), NullLogger<JsonInventoryStore>.Instance);

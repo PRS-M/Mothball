@@ -58,6 +58,7 @@ public class MothballDatabase : IAsyncDisposable
         // Run migrations (safe to run repeatedly)
         await EnsureColumnAsync(databaseConnection, nameof(DbItem), nameof(DbItem.Description), "TEXT", "''");
         await EnsureColumnAsync(databaseConnection, nameof(DbItemContainerRelation), nameof(DbItemContainerRelation.Quantity), "INTEGER", "1");
+        await EnsureUniqueItemContainerRelationsAsync(databaseConnection);
 
         return databaseConnection;
     }
@@ -88,6 +89,38 @@ public class MothballDatabase : IAsyncDisposable
         // Always backfill nulls
         await db.ExecuteAsync($"UPDATE {table} SET {column} = {defaultValue} WHERE {column} IS NULL;");
         return addedColumn;
+    }
+
+    private static async Task EnsureUniqueItemContainerRelationsAsync(SQLiteAsyncConnection db)
+    {
+        const string table = nameof(DbItemContainerRelation);
+        const string itemId = nameof(DbItemContainerRelation.ItemId);
+        const string containerId = nameof(DbItemContainerRelation.ContainerId);
+        const string quantity = nameof(DbItemContainerRelation.Quantity);
+        const string id = nameof(DbItemContainerRelation.Id);
+
+        await db.ExecuteAsync(
+            $@"UPDATE {table}
+               SET {quantity} = (
+                   SELECT SUM(source.{quantity})
+                   FROM {table} source
+                   WHERE source.{itemId} = {table}.{itemId}
+                     AND source.{containerId} = {table}.{containerId})
+               WHERE {id} IN (
+                   SELECT MIN(grouped.{id})
+                   FROM {table} grouped
+                   GROUP BY grouped.{itemId}, grouped.{containerId});");
+
+        await db.ExecuteAsync(
+            $@"DELETE FROM {table}
+               WHERE {id} NOT IN (
+                   SELECT MIN(grouped.{id})
+                   FROM {table} grouped
+                   GROUP BY grouped.{itemId}, grouped.{containerId});");
+
+        await db.ExecuteAsync(
+            $@"CREATE UNIQUE INDEX IF NOT EXISTS UX_{table}_{itemId}_{containerId}
+               ON {table}({itemId}, {containerId});");
     }
 
     private sealed class ColumnInfo
