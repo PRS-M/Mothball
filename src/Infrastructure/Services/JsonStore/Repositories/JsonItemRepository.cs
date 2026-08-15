@@ -121,6 +121,8 @@ public sealed class JsonItemRepository : IItemRepository
         var state = await store.LoadAsync().ConfigureAwait(false);
         var relationIds = state.Relations
             .Where(r => r.ContainerId == cid && r.Quantity > 0)
+            .GroupBy(r => r.ItemId)
+            .Select(group => group.OrderBy(r => r.Id).First())
             .OrderBy(r => r.Id);
         if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
         {
@@ -130,12 +132,14 @@ public sealed class JsonItemRepository : IItemRepository
                 .OrderBy(r => r.Id);
         }
 
-        var ids = relationIds.Select(r => r.ItemId).Distinct().ToHashSet();
-
-        return state.Items
+        var ids = relationIds.Select(r => r.ItemId).ToList();
+        var itemsById = state.Items
             .Where(i => ids.Contains(i.ItemId))
-            .OrderBy(i => i.RowId)
-            .Select(i => MapItem(state, i))
+            .ToDictionary(i => i.ItemId);
+
+        return ids
+            .Where(itemsById.ContainsKey)
+            .Select(i => MapItem(state, itemsById[i]))
             .ToList();
     }
 
@@ -219,9 +223,11 @@ public sealed class JsonItemRepository : IItemRepository
 
         var state = await store.LoadAsync().ConfigureAwait(false);
 
-        // Container-item search is relation-row based: duplicate relations intentionally produce duplicate item rows.
+        // Container-item search is allocation based: duplicate physical relation rows still produce one item row.
         var matches = state.Relations
-            .Where(r => r.ContainerId == cid)
+            .Where(r => r.ContainerId == cid && r.Quantity > 0)
+            .GroupBy(r => r.ItemId)
+            .Select(group => group.OrderBy(r => r.Id).First())
             .OrderBy(r => r.Id)
             .Select(r => state.Items.FirstOrDefault(i => i.ItemId == r.ItemId))
             .Where(i => i is not null)

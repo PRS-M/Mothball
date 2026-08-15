@@ -124,6 +124,8 @@ public class ItemRepository : IItemRepository
         var sw = Stopwatch.StartNew();
         IEnumerable<DbItemContainerRelation> relations = (await itemContainerRelations.WhereAsync(r => r.ContainerId == cid))
             .Where(r => r.Quantity > 0)
+            .GroupBy(r => r.ItemId)
+            .Select(group => group.OrderBy(r => r.Id).First())
             .OrderBy(r => r.Id);
         if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
         {
@@ -132,7 +134,7 @@ public class ItemRepository : IItemRepository
                 .Take(pageSizeValue);
         }
 
-        List<object> itemIds = relations.Select(r => (object)r.ItemId).ToList();
+        List<Guid> itemIds = relations.Select(r => r.ItemId).ToList();
         var itemsWithPhotos = await LoadItemsWithPhotosByIdsAsync(itemIds);
         sw.Stop();
 
@@ -301,12 +303,13 @@ public class ItemRepository : IItemRepository
 
         var sw = Stopwatch.StartNew();
 
-        // Query items that match search AND belong to the container
+        // Query items that match search AND belong to the container, collapsed to aggregate rows.
         List<DbItem> itemsQuery = await items.QueryAsync(
             $@"SELECT i.* FROM {nameof(DbItem)} i
                INNER JOIN {nameof(DbItemContainerRelation)} r ON i.ItemId = r.ItemId
-               WHERE r.ContainerId = ? AND i.Name LIKE ? COLLATE NOCASE
-               ORDER BY r.Id
+               WHERE r.ContainerId = ? AND r.Quantity > 0 AND i.Name LIKE ? COLLATE NOCASE
+               GROUP BY i.ItemId
+               ORDER BY MIN(r.Id)
                LIMIT ? OFFSET ?",
             cid, pattern, pageSize, offset);
 
@@ -367,12 +370,20 @@ public class ItemRepository : IItemRepository
         return await MapItemsWithPhotosAsync(dbItems);
     }
 
-    private async Task<List<Item>> LoadItemsWithPhotosByIdsAsync(List<object> itemIds)
+    private async Task<List<Item>> LoadItemsWithPhotosByIdsAsync(List<Guid> itemIds)
     {
         if (itemIds.Count == 0) return [];
 
-        List<DbItem> itemsList = await items.WhereInAsync(nameof(DbItem.ItemId), itemIds);
-        return await MapItemsWithPhotosAsync(itemsList);
+        List<DbItem> itemsList = await items.WhereInAsync(
+            nameof(DbItem.ItemId),
+            itemIds.Select(itemId => (object)itemId).ToList());
+        var itemsById = (await MapItemsWithPhotosAsync(itemsList))
+            .ToDictionary(item => item.ItemId);
+
+        return itemIds
+            .Where(itemsById.ContainsKey)
+            .Select(itemId => itemsById[itemId])
+            .ToList();
     }
 
     #endregion

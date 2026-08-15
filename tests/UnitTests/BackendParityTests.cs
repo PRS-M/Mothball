@@ -427,6 +427,51 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task AssigningOnePieceItemToContainer_DoesNotDuplicateItemAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 1));
+        }
+
+        await new AssignItemToContainerCommandHandler(new ItemInventoryCommandService(sqlite.Query, sqlite.Command))
+            .AssignAsync(item.ItemId, container.ContainerId);
+        await new AssignItemToContainerCommandHandler(new ItemInventoryCommandService(json.Query, json.Command))
+            .AssignAsync(item.ItemId, container.ContainerId);
+
+        var allItemsSpecification = new ItemListSpecification(ItemQueryFilter.All);
+        var containerItemsSpecification = new ContainerItemsSpecification(container.ContainerId.ToString());
+        var unassignedSpecification = new ItemListSpecification(ItemQueryFilter.Unassigned);
+
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(allItemsSpecification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(allItemsSpecification);
+        var sqliteContainerItems = await sqlite.Query.QueryContainerItemInventoryAsync(containerItemsSpecification);
+        var jsonContainerItems = await json.Query.QueryContainerItemInventoryAsync(containerItemsSpecification);
+        var sqliteUnassignedItems = await sqlite.Query.QueryInventorySnapshotsAsync(unassignedSpecification);
+        var jsonUnassignedItems = await json.Query.QueryInventorySnapshotsAsync(unassignedSpecification);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItems.Select(snapshot => snapshot.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(jsonItems.Select(snapshot => snapshot.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(sqliteContainerItems.Select(entry => entry.Inventory.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(jsonContainerItems.Select(entry => entry.Inventory.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(sqliteContainerItems.Single().ContainerQuantity, Is.EqualTo(1));
+            Assert.That(jsonContainerItems.Single().ContainerQuantity, Is.EqualTo(1));
+            Assert.That(sqliteUnassignedItems, Is.Empty);
+            Assert.That(jsonUnassignedItems, Is.Empty);
+        });
+    }
+
+    [Test]
     public async Task ContainerRowRefresh_AfterAllocationEdit_ReturnsLocalAndGlobalQuantities()
     {
         await using var sqlite = await BuildSqliteAsync();
