@@ -94,7 +94,7 @@ public class RepositoryIntegrationTests
     {
         var c = new Container(Guid.NewGuid(), "C1", "");
         await commandRepo.InsertContainerAsync(c);
-        var i = new Item("ItemA", "DescA");
+        var i = new Item("ItemA", "DescA", totalQuantity: 2);
         await commandRepo.InsertItemAsync(i);
         await commandRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId, quantity: 2);
 

@@ -15,5 +15,5 @@ public class DbItem
 	public string Description { get; set; } = string.Empty;
 
 	[NotNull]
-	public int TotalQuantity { get; set; }
+	public int TotalQuantity { get; set; } = 1;
 }

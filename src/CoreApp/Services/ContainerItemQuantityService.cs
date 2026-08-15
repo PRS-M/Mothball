@@ -6,9 +6,9 @@ namespace CoreApp.Services;
 
 public sealed class ContainerItemQuantityService : IContainerItemQuantityService
 {
-    private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IItemInventoryCommandService inventoryCommands;
 
-    public ContainerItemQuantityService(IInventoryCommandRepository inventoryCommands)
+    public ContainerItemQuantityService(IItemInventoryCommandService inventoryCommands)
     {
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
@@ -17,17 +17,16 @@ public sealed class ContainerItemQuantityService : IContainerItemQuantityService
     {
         ArgumentNullException.ThrowIfNull(container);
 
-        if (quantity <= 0)
+        var inventoryResult = await inventoryCommands.SetContainerAllocationAsync(
+            itemId,
+            container.ContainerId,
+            Math.Max(quantity, 0));
+        container.RemoveItem(itemId);
+        if (!inventoryResult.RemovedFromContainer)
         {
-            await inventoryCommands.DeleteItemContainerRelation(itemId, container.ContainerId);
-            container.RemoveItem(itemId);
-            return new ContainerItemQuantityUpdateResult(Removed: true, container.ItemCount);
+            container.AddItem(itemId, quantity);
         }
 
-        await inventoryCommands.ReplaceItemContainerRelationQuantity(itemId, container.ContainerId, quantity);
-        container.RemoveItem(itemId);
-        container.AddItem(itemId, quantity);
-
-        return new ContainerItemQuantityUpdateResult(Removed: false, container.ItemCount);
+        return new ContainerItemQuantityUpdateResult(inventoryResult.RemovedFromContainer, container.ItemCount);
     }
 }

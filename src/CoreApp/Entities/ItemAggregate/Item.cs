@@ -8,16 +8,16 @@ public class Item : BaseEntity, IAggregateRoot
     private readonly List<ImageItem> photos = new();
 
     public Item()
-        : this(Guid.NewGuid(), string.Empty, string.Empty, 0)
+        : this(Guid.NewGuid(), string.Empty, string.Empty, 1)
     {
     }
 
-    public Item(string name, string description, int totalQuantity = 0)
+    public Item(string name, string description, int totalQuantity = 1)
         : this(Guid.NewGuid(), name, description, totalQuantity)
     {
     }
 
-    public Item(Guid itemId, string name, string description, int totalQuantity = 0)
+    public Item(Guid itemId, string name, string description, int totalQuantity = 1)
     {
         ItemId = itemId == Guid.Empty ? Guid.NewGuid() : itemId;
         UpdateDetails(name, description);
@@ -40,9 +40,14 @@ public class Item : BaseEntity, IAggregateRoot
 
     public void SetTotalQuantity(int totalQuantity)
     {
-        if (totalQuantity < 0)
+        if (totalQuantity < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(totalQuantity), "Total quantity cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(totalQuantity), "Total quantity must be at least one.");
+        }
+
+        if (totalQuantity < AssignedQuantity)
+        {
+            throw new InvalidOperationException("Total quantity cannot be lower than assigned quantity.");
         }
 
         TotalQuantity = totalQuantity;
@@ -53,6 +58,11 @@ public class Item : BaseEntity, IAggregateRoot
         if (assignedQuantity < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(assignedQuantity), "Assigned quantity cannot be negative.");
+        }
+
+        if (assignedQuantity > TotalQuantity)
+        {
+            throw new InvalidOperationException("Assigned quantity cannot exceed total quantity.");
         }
 
         AssignedQuantity = assignedQuantity;

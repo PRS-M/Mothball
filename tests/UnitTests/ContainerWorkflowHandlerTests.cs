@@ -78,11 +78,11 @@ public sealed class ContainerWorkflowHandlerTests
     {
         var itemId = Guid.NewGuid();
         var containerId = Guid.NewGuid();
-        var commands = new Mock<IInventoryCommandRepository>();
+        var commands = new Mock<IItemInventoryCommandService>();
         var handler = new AssignItemToContainerCommandHandler(commands.Object);
 
         await handler.AssignAsync(itemId, containerId);
 
-        commands.Verify(c => c.InsertItemContainerRelation(itemId, containerId, 1), Times.Once);
+        commands.Verify(c => c.SetContainerAllocationAsync(itemId, containerId, 1), Times.Once);
     }
 }

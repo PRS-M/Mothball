@@ -81,7 +81,13 @@ public class JsonInventoryBackupRestoreServiceTests
                 ],
                 Items =
                 [
-                    new InventoryBackupItem { ItemId = restoredItemId, Name = "Item", Description = "Description" },
+                    new InventoryBackupItem
+                    {
+                        ItemId = restoredItemId,
+                        Name = "Item",
+                        Description = "Description",
+                        TotalQuantity = 2,
+                    },
                 ],
                 Relations =
                 [

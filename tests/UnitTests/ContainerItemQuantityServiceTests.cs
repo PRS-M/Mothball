@@ -15,7 +15,9 @@ public class ContainerItemQuantityServiceTests
         var itemId = Guid.NewGuid();
         var container = new Container(containerId, "Box", "Notes");
         container.AddItem(itemId, 1);
-        var commands = new Mock<IInventoryCommandRepository>();
+        var commands = new Mock<IItemInventoryCommandService>();
+        commands.Setup(c => c.SetContainerAllocationAsync(itemId, containerId, 3))
+            .ReturnsAsync(new CoreApp.Contracts.ItemInventoryUpdateResult(false, 3, 3, 0));
         var service = new ContainerItemQuantityService(commands.Object);
 
         var result = await service.SaveQuantityAsync(container, itemId, 3);
@@ -27,7 +29,7 @@ public class ContainerItemQuantityServiceTests
             Assert.That(container.Items.Single(i => i.ItemId == itemId).Quantity, Is.EqualTo(3));
         });
 
-        commands.Verify(c => c.ReplaceItemContainerRelationQuantity(itemId, containerId, 3), Times.Once);
+        commands.Verify(c => c.SetContainerAllocationAsync(itemId, containerId, 3), Times.Once);
     }
 
     [Test]
@@ -37,7 +39,9 @@ public class ContainerItemQuantityServiceTests
         var itemId = Guid.NewGuid();
         var container = new Container(containerId, "Box", "Notes");
         container.AddItem(itemId, 2);
-        var commands = new Mock<IInventoryCommandRepository>();
+        var commands = new Mock<IItemInventoryCommandService>();
+        commands.Setup(c => c.SetContainerAllocationAsync(itemId, containerId, 0))
+            .ReturnsAsync(new CoreApp.Contracts.ItemInventoryUpdateResult(true, 2, 0, 2));
         var service = new ContainerItemQuantityService(commands.Object);
 
         var result = await service.SaveQuantityAsync(container, itemId, 0);
@@ -49,6 +53,6 @@ public class ContainerItemQuantityServiceTests
             Assert.That(container.Items, Is.Empty);
         });
 
-        commands.Verify(c => c.DeleteItemContainerRelation(itemId, containerId), Times.Once);
+        commands.Verify(c => c.SetContainerAllocationAsync(itemId, containerId, 0), Times.Once);
     }
 }
