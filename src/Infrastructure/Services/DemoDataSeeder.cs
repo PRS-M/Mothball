@@ -117,18 +117,26 @@ public class DemoDataSeeder
 
         foreach (var container in seededContainers)
         {
-            var relationsForContainer = await itemContainerRelations.WhereAsync(r => r.ContainerId == container.ContainerId);
-            int currentCount = relationsForContainer.Count;
-            if (currentCount >= minItemsPerContainer) continue;
+            await RemoveDuplicateSeedItemsAsync(container);
 
-            int toCreate = minItemsPerContainer - currentCount;
-            for (int i = 0; i < toCreate; i++)
+            var existingSeededItemNames = (await items.GetAllAsync())
+                .Where(item => IsSeedItemForContainer(item, container))
+                .Select(item => item.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            for (int ordinal = 1; ordinal <= minItemsPerContainer; ordinal++)
             {
+                var itemName = BuildSeedItemName(container, ordinal);
+                if (existingSeededItemNames.Contains(itemName))
+                {
+                    continue;
+                }
+
                 var itemId = Guid.NewGuid();
                 var item = new DbItem
                 {
                     ItemId = itemId,
-                    Name = $"Item {container.Name}-{(currentCount + i + 1)}",
+                    Name = itemName,
                 };
 
                 await items.InsertAsync(item);
@@ -171,6 +179,52 @@ public class DemoDataSeeder
         }
     }
 
+    private async Task RemoveDuplicateSeedItemsAsync(DbContainer container)
+    {
+        var allItems = await items.GetAllAsync();
+        var allInventories = await inventories.GetAllAsync();
+        var allRelations = await itemContainerRelations.GetAllAsync();
+        var allPhotos = await photos.GetAllAsync();
+
+        var duplicateGroups = allItems
+            .Where(item => IsSeedItemForContainer(item, container))
+            .GroupBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .ToList();
+
+        foreach (var group in duplicateGroups)
+        {
+            var keep = group
+                .OrderByDescending(item => allInventories
+                    .FirstOrDefault(inventory => inventory.ItemId == item.ItemId)?.TotalQuantity ?? 1)
+                .ThenByDescending(item => allRelations
+                    .Where(relation => relation.ItemId == item.ItemId)
+                    .Sum(relation => relation.Quantity))
+                .First();
+
+            foreach (var duplicate in group.Where(item => item.ItemId != keep.ItemId))
+            {
+                foreach (var relation in allRelations.Where(relation => relation.ItemId == duplicate.ItemId).ToList())
+                {
+                    await itemContainerRelations.DeleteAsync(relation);
+                }
+
+                foreach (var photo in allPhotos.Where(photo => photo.OwnerUniqueId == duplicate.ItemId).ToList())
+                {
+                    await photos.DeleteAsync(photo);
+                }
+
+                var inventory = allInventories.FirstOrDefault(inventory => inventory.ItemId == duplicate.ItemId);
+                if (inventory is not null)
+                {
+                    await inventories.DeleteAsync(inventory);
+                }
+
+                await items.DeleteAsync(duplicate);
+            }
+        }
+    }
+
     private static bool IsSeedContainer(DbContainer container)
     {
         if (string.IsNullOrWhiteSpace(container.Notes))
@@ -181,6 +235,12 @@ public class DemoDataSeeder
         var markerToken = GetSeedMarkerToken();
         return container.Notes.Contains(markerToken, StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool IsSeedItemForContainer(DbItem item, DbContainer container)
+        => item.Name.StartsWith($"Item {container.Name}-", StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildSeedItemName(DbContainer container, int ordinal)
+        => $"Item {container.Name}-{ordinal}";
 
     private static string BuildSeedContainerNotes(Guid containerId)
     {
