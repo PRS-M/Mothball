@@ -26,6 +26,9 @@ public partial class ItemTile : ContentView
 	public static readonly BindableProperty ShowQuantityProperty =
 		BindableProperty.Create(nameof(ShowQuantity), typeof(bool), typeof(ItemTile), false);
 
+	public static readonly BindableProperty ShowInventorySummaryProperty =
+		BindableProperty.Create(nameof(ShowInventorySummary), typeof(bool), typeof(ItemTile), false);
+
 	public static readonly BindableProperty TotalQuantityProperty =
 		BindableProperty.Create(nameof(TotalQuantity), typeof(int), typeof(ItemTile), 0);
 
@@ -84,6 +87,12 @@ public partial class ItemTile : ContentView
 	{
 		get => (bool)GetValue(ShowQuantityProperty);
 		set => SetValue(ShowQuantityProperty, value);
+	}
+
+	public bool ShowInventorySummary
+	{
+		get => (bool)GetValue(ShowInventorySummaryProperty);
+		set => SetValue(ShowInventorySummaryProperty, value);
 	}
 
 	public int TotalQuantity

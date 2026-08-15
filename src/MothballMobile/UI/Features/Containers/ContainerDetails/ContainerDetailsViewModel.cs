@@ -162,7 +162,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             return;
         }
 
-        var vm = itemRows.Find(itemId);
         var result = await quantityService.SaveQuantityAsync(currentContainer, itemId, quantity);
 
         if (result.Removed)
