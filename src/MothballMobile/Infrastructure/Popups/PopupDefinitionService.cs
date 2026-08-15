@@ -132,6 +132,14 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             Max: int.MaxValue,
             InitialValue: initialValue);
 
+    public NumberPickerPopupDefinition AssociateUnassignedQuantity(int availableQuantity)
+        => new(
+            "Assign to container",
+            Min: 1,
+            Max: availableQuantity,
+            InitialValue: availableQuantity,
+            Message: "Enter how many unassigned items to place in this container.");
+
     public AlertPopupDefinition InventoryQuantityUpdateFailed(string message)
         => new(
             "Quantity not updated",
@@ -158,7 +166,8 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             Min: 0,
             Max: int.MaxValue,
             InitialValue: Math.Max(1, Math.Max(carriedQuantity, requiredQuantity)),
-            Placeholder: "Enter 0 to stop");
+            Placeholder: "Enter 0 to stop",
+            Message: "Enter how many items to withdraw from this container.");
 
     public AlertPopupDefinition WithdrawalCarryTooSmall(int carriedQuantity)
         => new(
@@ -177,7 +186,8 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             Min: 0,
             Max: availableQuantity,
             InitialValue: 0,
-            Placeholder: "Enter 0 to finish");
+            Placeholder: "Enter 0 to finish",
+            Message: "Enter how many unassigned items to withdraw.");
 
     public ConfirmationPopupDefinition RemoveItemFromContainer(string itemName)
         => new(

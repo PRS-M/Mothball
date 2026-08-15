@@ -29,7 +29,8 @@ public sealed record NumberPickerPopupDefinition(
     int InitialValue,
     string Accept = "Set",
     string Cancel = "Cancel",
-    string Placeholder = "Enter quantity")
+    string Placeholder = "Enter quantity",
+    string Message = "")
 {
     public string InvalidNumberMessage => $"Enter a number between {Min} and {Max}.";
 

@@ -14,6 +14,120 @@ namespace UnitTests;
 public sealed class ItemDetailsViewModelTests
 {
     [Test]
+    public async Task InitializeAsync_WhenItemIsUnassignedOnly_ShowsAssociateAndHidesGoToContainer()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 4);
+        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 0, []));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+
+        var viewModel = CreateViewModel(itemDetails.Object, Mock.Of<IItemInventoryCommandService>(), Mock.Of<IPopupService>());
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ItemId] = item.ItemId.ToString() });
+
+        await viewModel.InitializeAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.HasUnassignedQuantity, Is.True);
+            Assert.That(viewModel.ShowGoToContainerButton, Is.False);
+        });
+    }
+
+    [Test]
+    public async Task InitializeAsync_WhenItemIsFullyAssignedToOneContainer_ShowsGoToContainerAndHidesAssociate()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 4);
+        var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 4);
+        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 4, [allocation]));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+
+        var viewModel = CreateViewModel(itemDetails.Object, Mock.Of<IItemInventoryCommandService>(), Mock.Of<IPopupService>());
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ItemId] = item.ItemId.ToString() });
+
+        await viewModel.InitializeAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.HasUnassignedQuantity, Is.False);
+            Assert.That(viewModel.ShowGoToContainerButton, Is.True);
+        });
+    }
+
+    [Test]
+    public async Task InitializeAsync_WhenItemIsAssignedAndUnassigned_ShowsBothContainerActions()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 6);
+        var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 4);
+        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 4, [allocation]));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+
+        var viewModel = CreateViewModel(itemDetails.Object, Mock.Of<IItemInventoryCommandService>(), Mock.Of<IPopupService>());
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ItemId] = item.ItemId.ToString() });
+
+        await viewModel.InitializeAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.HasUnassignedQuantity, Is.True);
+            Assert.That(viewModel.ShowGoToContainerButton, Is.True);
+        });
+    }
+
+    [Test]
+    public async Task NavigateToContainerCommand_WhenOneAllocation_NavigatesDirectlyToContainer()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 4);
+        var containerId = Guid.NewGuid();
+        var allocation = new ItemContainerAllocation(containerId, "Box", 4);
+        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 4, [allocation]));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+        var nav = new Mock<INavigationService>();
+
+        var viewModel = CreateViewModel(
+            itemDetails.Object,
+            Mock.Of<IItemInventoryCommandService>(),
+            Mock.Of<IPopupService>(),
+            nav.Object);
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ItemId] = item.ItemId.ToString() });
+        await viewModel.InitializeAsync();
+
+        await viewModel.NavigateToContainerCommand.ExecuteAsync(null);
+
+        nav.Verify(n => n.GoToAsync(
+            NavigationRoutes.ContainerDetails,
+            It.Is<IDictionary<string, object>>(parameters =>
+                (string)parameters[NavigationParams.ContainerId] == containerId.ToString())), Times.Once);
+    }
+
+    [Test]
+    public async Task NavigateToContainerCommand_WhenMultipleAllocations_NavigatesToItemLocations()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 6);
+        var allocations = new[]
+        {
+            new ItemContainerAllocation(Guid.NewGuid(), "Box", 3),
+            new ItemContainerAllocation(Guid.NewGuid(), "Drawer", 3),
+        };
+        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 6, allocations));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+        var nav = new Mock<INavigationService>();
+
+        var viewModel = CreateViewModel(
+            itemDetails.Object,
+            Mock.Of<IItemInventoryCommandService>(),
+            Mock.Of<IPopupService>(),
+            nav.Object);
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ItemId] = item.ItemId.ToString() });
+        await viewModel.InitializeAsync();
+
+        await viewModel.NavigateToContainerCommand.ExecuteAsync(null);
+
+        nav.Verify(n => n.GoToAsync(
+            NavigationRoutes.ItemLocations,
+            It.Is<IDictionary<string, object>>(parameters =>
+                (string)parameters[NavigationParams.ItemId] == item.ItemId.ToString())), Times.Once);
+    }
+
+    [Test]
     public async Task SetTotalQuantityCommand_WhenPickerReturnReappearsPageAndTotalWasReset_UsesPrePickerSnapshotForDecrease()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
@@ -80,12 +194,13 @@ public sealed class ItemDetailsViewModelTests
     private static ItemDetailsViewModel CreateViewModel(
         IItemDetailsQueryHandler itemDetails,
         IItemInventoryCommandService inventoryCommands,
-        IPopupService popup)
+        IPopupService popup,
+        INavigationService? nav = null)
         => new(
             itemDetails,
             inventoryCommands,
             Mock.Of<IDeleteItemCommandHandler>(),
-            Mock.Of<INavigationService>(),
+            nav ?? Mock.Of<INavigationService>(),
             CreatePaths(),
             popup,
             new PopupDefinitionService(),
@@ -93,6 +208,14 @@ public sealed class ItemDetailsViewModelTests
             Mock.Of<IPhotoBackgroundOperationTracker>(),
             Mock.Of<IBackgroundTaskObserver>(),
             NullLogger<ItemDetailsViewModel>.Instance);
+
+    private static Mock<IItemDetailsQueryHandler> CreateItemDetailsQuery(Guid itemId, ItemDetailsResult details)
+    {
+        var itemDetails = new Mock<IItemDetailsQueryHandler>();
+        itemDetails.Setup(q => q.GetDetailsAsync(itemId.ToString()))
+            .ReturnsAsync(details);
+        return itemDetails;
+    }
 
     private static IImagePathResolver CreatePaths()
     {

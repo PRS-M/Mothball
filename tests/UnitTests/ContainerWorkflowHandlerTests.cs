@@ -4,6 +4,9 @@ using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Specifications;
 using Moq;
+using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.Popups;
+using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 
 namespace UnitTests;
 
@@ -93,5 +96,47 @@ public sealed class ContainerWorkflowHandlerTests
         await handler.AssignAsync(itemId, containerId);
 
         commands.Verify(c => c.SetContainerAllocationAsync(itemId, containerId, 1), Times.Once);
+    }
+
+    [Test]
+    public async Task AssociateItemWithContainerViewModel_SelectContainer_AssignsSelectedUnassignedQuantity()
+    {
+        var itemId = Guid.NewGuid();
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var imagePaths = new Mock<IImagePathResolver>();
+        imagePaths.Setup(p => p.GetContainerPhotoPaths(container))
+            .Returns(Array.Empty<string>());
+
+        var associationQueries = new Mock<IContainerAssociationQueryHandler>();
+        associationQueries.Setup(q => q.QueryContainersAsync(0, 10))
+            .ReturnsAsync([container]);
+
+        var assign = new Mock<IAssignItemToContainerCommandHandler>();
+        var popup = new Mock<IPopupService>();
+        popup.Setup(p => p.PickNumberAsync(It.Is<NumberPickerPopupDefinition>(
+                definition => definition.Max == 5)))
+            .ReturnsAsync(3);
+
+        var nav = new Mock<INavigationService>();
+        var viewModel = new AssociateItemWithContainerViewModel(
+            imagePaths.Object,
+            associationQueries.Object,
+            Mock.Of<IItemDetailsQueryHandler>(),
+            assign.Object,
+            nav.Object,
+            popup.Object,
+            new PopupDefinitionService(),
+            Mock.Of<IBackgroundTaskObserver>());
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object>
+        {
+            [NavigationParams.ItemId] = itemId.ToString(),
+            [NavigationParams.UnassignedQuantity] = 5,
+        });
+        await viewModel.InitializeAsync();
+
+        await viewModel.Containers.Single().SelectCommand.ExecuteAsync(null);
+
+        assign.Verify(a => a.AssignAsync(itemId, container.ContainerId, 3), Times.Once);
+        nav.Verify(n => n.GoBackAsync(), Times.Once);
     }
 }

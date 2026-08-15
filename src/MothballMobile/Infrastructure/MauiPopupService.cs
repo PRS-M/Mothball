@@ -138,6 +138,7 @@ public sealed class MauiPopupService : IPopupService
             definition.Accept,
             definition.Cancel,
             definition.Placeholder,
+            definition.Message,
             definition.InvalidNumberMessage,
             definition.OutOfRangeMessage);
     }
@@ -152,6 +153,7 @@ public sealed class MauiPopupService : IPopupService
             accept,
             cancel,
             "Enter quantity",
+            string.Empty,
             $"Enter a number between {min} and {max}.",
             $"Value must be between {min} and {max}.");
 
@@ -163,6 +165,7 @@ public sealed class MauiPopupService : IPopupService
         string accept,
         string cancel,
         string placeholder,
+        string message,
         string invalidNumberMessage,
         string outOfRangeMessage)
     {
@@ -182,6 +185,7 @@ public sealed class MauiPopupService : IPopupService
             accept,
             cancel,
             placeholder,
+            message,
             invalidNumberMessage,
             outOfRangeMessage);
 

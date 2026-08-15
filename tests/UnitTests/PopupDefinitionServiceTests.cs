@@ -92,6 +92,21 @@ public class PopupDefinitionServiceTests
     }
 
     [Test]
+    public void AssociateUnassignedQuantity_UsesRemainingQuantityAsMaximum()
+    {
+        var definition = service.AssociateUnassignedQuantity(6);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(definition.Title, Is.EqualTo("Assign to container"));
+            Assert.That(definition.Min, Is.EqualTo(1));
+            Assert.That(definition.Max, Is.EqualTo(6));
+            Assert.That(definition.InitialValue, Is.EqualTo(6));
+            Assert.That(definition.Message, Does.Contain("unassigned items"));
+        });
+    }
+
+    [Test]
     public void WithdrawalContainerPicker_ListsOnlyProvidedRemainingAllocations()
     {
         var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 3);
@@ -117,6 +132,7 @@ public class PopupDefinitionServiceTests
             requiredQuantity: 4);
 
         Assert.That(definition.InitialValue, Is.EqualTo(4));
+        Assert.That(definition.Message, Does.Contain("withdraw from this container"));
     }
 
     [Test]
@@ -130,6 +146,7 @@ public class PopupDefinitionServiceTests
             requiredQuantity: 2);
 
         Assert.That(definition.InitialValue, Is.EqualTo(5));
+        Assert.That(definition.Message, Does.Contain("withdraw from this container"));
     }
 
     [Test]

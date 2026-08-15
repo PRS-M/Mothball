@@ -22,6 +22,7 @@ public partial class NumberPickerModalPage : ContentPage
         string accept,
         string cancel,
         string placeholder,
+        string message,
         string invalidNumberMessage,
         string outOfRangeMessage)
     {
@@ -41,6 +42,8 @@ public partial class NumberPickerModalPage : ContentPage
         AcceptButton.Text = accept;
         CancelButton.Text = cancel;
         QuantityEntry.Placeholder = placeholder;
+        MessageLabel.Text = message;
+        MessageLabel.IsVisible = !string.IsNullOrWhiteSpace(message);
 
         QuantityEntry.Text = Math.Clamp(initialValue, min, max).ToString();
         QuantityEntry.CursorPosition = QuantityEntry.Text.Length;

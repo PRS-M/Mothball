@@ -38,6 +38,7 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddContainer, typeof(UI.Features.Containers.AddContainer.AddContainerPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.ContainerDetails, typeof(UI.Features.Containers.ContainerDetails.ContainerDetailsPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.ItemDetails, typeof(UI.Features.Items.ItemDetails.ItemDetailsPage));
+		Routing.RegisterRoute(Infrastructure.NavigationRoutes.ItemLocations, typeof(UI.Features.Items.ItemLocations.ItemLocationsPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddItem, typeof(UI.Features.Items.AddItem.AddItemPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddExistingItemToContainer, typeof(UI.Features.Containers.AddExistingItemToContainer.AddExistingItemToContainerPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AssociateItemWithContainer, typeof(UI.Features.Containers.AssociateItemWithContainer.AssociateItemWithContainerPage));

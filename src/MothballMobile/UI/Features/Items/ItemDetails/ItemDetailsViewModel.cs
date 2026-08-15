@@ -47,9 +47,11 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public bool HasNoContainerRelation => string.IsNullOrWhiteSpace(this.ContainerId);
     public bool HasContainerRelation => !HasNoContainerRelation;
+    public bool HasUnassignedQuantity => UnassignedQuantity > 0;
     public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
     public bool ShowGoToContainerButton => HasContainerRelation
         && (string.IsNullOrWhiteSpace(sourceContainerId)
+            || currentAllocations.Count > 1
             || !string.Equals(ContainerId, sourceContainerId, StringComparison.OrdinalIgnoreCase));
 
     public ObservableCollection<string> ImagePaths { get; } = new();
@@ -94,6 +96,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
         NotifyContainerRelationStateChanged();
     }
+
+    partial void OnUnassignedQuantityChanged(int value)
+        => OnPropertyChanged(nameof(HasUnassignedQuantity));
 
     public Task InitializeAsync()
     {
@@ -146,15 +151,28 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     {
         OnPropertyChanged(nameof(HasContainerRelation));
         OnPropertyChanged(nameof(HasNoContainerRelation));
+        OnPropertyChanged(nameof(HasUnassignedQuantity));
         OnPropertyChanged(nameof(ShowGoToContainerButton));
     }
 
     [RelayCommand]
     private Task NavigateToContainerAsync()
     {
-        if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
-        return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails,
-            new Dictionary<string, object> { [Infrastructure.NavigationParams.ContainerId] = ContainerId! });
+        if (currentAllocations.Count == 0) return Task.CompletedTask;
+
+        if (currentAllocations.Count == 1)
+        {
+            return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails,
+                new Dictionary<string, object>
+                {
+                    [Infrastructure.NavigationParams.ContainerId] = currentAllocations[0].ContainerId.ToString()
+                });
+        }
+
+        if (string.IsNullOrWhiteSpace(ItemId)) return Task.CompletedTask;
+
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemLocations,
+            new Dictionary<string, object> { [NavigationParams.ItemId] = ItemId });
     }
 
     [RelayCommand]
@@ -164,7 +182,11 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
         return nav.GoToAsync(
             Infrastructure.NavigationRoutes.AssociateItemWithContainer,
-            new Dictionary<string, object> { [NavigationParams.ItemId] = ItemId });
+            new Dictionary<string, object>
+            {
+                [NavigationParams.ItemId] = ItemId,
+                [NavigationParams.UnassignedQuantity] = UnassignedQuantity,
+            });
     }
 
     [RelayCommand]
@@ -262,6 +284,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         TotalQuantity = details.Inventory.TotalQuantity;
         AssignedQuantity = details.Inventory.AssignedQuantity;
         UnassignedQuantity = details.Inventory.UnassignedQuantity;
+        ContainerId = details.Inventory.Allocations.FirstOrDefault()?.ContainerId.ToString();
+        NotifyContainerRelationStateChanged();
         return true;
     }
 
@@ -364,6 +388,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         TotalQuantity = result.TotalQuantity;
         AssignedQuantity = result.AssignedQuantity;
         UnassignedQuantity = result.UnassignedQuantity;
+        ContainerId = currentAllocations.FirstOrDefault()?.ContainerId.ToString();
+        NotifyContainerRelationStateChanged();
     }
 
     private sealed record QuantityEditSnapshot(Item Item, ItemInventorySummary Inventory)

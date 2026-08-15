@@ -50,6 +50,8 @@ public interface IPopupDefinitionService
 
     NumberPickerPopupDefinition SetTotalQuantity(int initialValue, int assignedQuantity);
 
+    NumberPickerPopupDefinition AssociateUnassignedQuantity(int availableQuantity);
+
     AlertPopupDefinition InventoryQuantityUpdateFailed(string message);
 
     OptionPickerPopupDefinition<ItemContainerAllocation> WithdrawalContainerPicker(

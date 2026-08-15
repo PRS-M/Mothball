@@ -1,0 +1,63 @@
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CoreApp.Interfaces;
+using MothballMobile.Infrastructure;
+
+namespace MothballMobile.UI.Features.Items.ItemLocations;
+
+public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable, IInitializable
+{
+    private readonly IItemDetailsQueryHandler itemDetailsQueries;
+    private readonly INavigationService nav;
+
+    [ObservableProperty]
+    private string itemId = string.Empty;
+
+    [ObservableProperty]
+    private string itemName = string.Empty;
+
+    public ObservableCollection<ItemLocationViewModel> Locations { get; } = new();
+
+    public ItemLocationsViewModel(
+        IItemDetailsQueryHandler itemDetailsQueries,
+        INavigationService nav)
+    {
+        this.itemDetailsQueries = itemDetailsQueries ?? throw new ArgumentNullException(nameof(itemDetailsQueries));
+        this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.TryGetValue(NavigationParams.ItemId, out var value)
+            && value is string id
+            && !string.IsNullOrWhiteSpace(id))
+        {
+            ItemId = id;
+        }
+    }
+
+    public Task InitializeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ItemId))
+        {
+            return Task.CompletedTask;
+        }
+
+        return RunCommandAsync(async () =>
+        {
+            Locations.Clear();
+            var details = await itemDetailsQueries.GetDetailsAsync(ItemId);
+            if (details is null)
+            {
+                ItemName = "Item not found";
+                return;
+            }
+
+            ItemName = details.Inventory.Item.Name;
+            foreach (var allocation in details.Inventory.Allocations.Where(allocation => allocation.Quantity > 0))
+            {
+                Locations.Add(new ItemLocationViewModel(allocation, nav));
+            }
+        });
+    }
+}

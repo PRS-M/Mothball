@@ -36,7 +36,7 @@
                     Command="{Binding NavigateToContainerCommand}"/>
                 <Button Text="Associate with a container"
                     Style="{StaticResource OutlinedButton}"
-                    IsVisible="{Binding HasNoContainerRelation}"
+                    IsVisible="{Binding HasUnassignedQuantity}"
                     Command="{Binding NavigateToAssociateWithContainerCommand}"/>
                 </VerticalStackLayout>
             </controls:TitleActionRow.Actions>

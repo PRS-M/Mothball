@@ -52,9 +52,13 @@
 
   <ItemGroup>
     <Compile Include="../../src/MothballMobile/UI/Shared/BaseViewModel.cs" Link="UI/Shared/BaseViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Shared/PagedListViewModelBase.cs" Link="UI/Shared/PagedListViewModelBase.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Shared/ContainerWithImagesViewModelBase.cs" Link="UI/Shared/ContainerWithImagesViewModelBase.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/PhotoDetailsViewModelBase.cs" Link="UI/Shared/PhotoDetailsViewModelBase.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/PhotoSourceSelector.cs" Link="UI/Shared/PhotoSourceSelector.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemDetails/ItemDetailsViewModel.cs" Link="UI/Features/Items/ItemDetails/ItemDetailsViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs" Link="UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/SelectableContainerViewModel.cs" Link="UI/Features/Containers/AssociateItemWithContainer/SelectableContainerViewModel.cs" />
   </ItemGroup>
 
   <!-- Compile non-MAUI Infrastructure sources directly to avoid referencing the MAUI-only Infrastructure project. -->

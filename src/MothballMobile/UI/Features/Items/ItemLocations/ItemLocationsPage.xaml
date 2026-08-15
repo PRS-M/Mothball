@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Items.ItemLocations"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Items.ItemLocations.ItemLocationsPage"
+                x:DataType="vm:ItemLocationsViewModel"
+                Title="Item locations"
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <Grid Padding="16"
+          RowDefinitions="Auto,*"
+          ColumnDefinitions="*">
+
+        <controls:PageHeader Grid.Row="0"
+                             Title="{Binding ItemName}"
+                             Subtitle="Choose a container"
+                             TitleFontSize="28"
+                             SubtitleFontSize="14"
+                             Spacing="4"
+                             HeaderMargin="0,0,0,10" />
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Locations}"
+                        Margin="0,8,0,0"
+                        SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical"
+                                 Span="1"
+                                 VerticalItemSpacing="12"/>
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.EmptyView>
+                <controls:EmptyStateView Title="No containers found" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ItemLocationViewModel">
+                    <Border Style="{StaticResource Card}"
+                            Padding="14"
+                            MaximumWidthRequest="600">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding NavigateCommand}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="*,Auto"
+                              RowDefinitions="Auto,Auto"
+                              RowSpacing="4">
+                            <Label Text="{Binding ContainerName}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                            <Label Grid.Row="1"
+                                   Text="{Binding QuantityText}"
+                                   FontSize="13"
+                                   TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                            <Label Grid.Column="1"
+                                   Grid.RowSpan="2"
+                                   Text="&#xF054;"
+                                   FontFamily="FontAwesomeSolid"
+                                   FontSize="14"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</views:BasePage>
