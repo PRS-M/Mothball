@@ -63,6 +63,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IItemDetailsQueryHandler, ItemDetailsQueryHandler>();
         services.AddSingleton<ICreateItemCommandHandler, CreateItemCommandHandler>();
         services.AddSingleton<IDeleteItemCommandHandler, DeleteItemCommandHandler>();
+        services.AddSingleton<IUpdateItemDescriptionCommandHandler, UpdateItemDescriptionCommandHandler>();
+        services.AddSingleton<IUpdateContainerNotesCommandHandler, UpdateContainerNotesCommandHandler>();
 
         return services;
     }

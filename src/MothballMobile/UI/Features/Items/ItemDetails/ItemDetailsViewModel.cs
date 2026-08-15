@@ -17,6 +17,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
     private readonly IItemInventoryCommandService inventoryCommands;
     private readonly IDeleteItemCommandHandler deleteItemHandler;
+    private readonly IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler;
     private readonly INavigationService nav;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly ILogger<ItemDetailsViewModel> logger;
@@ -35,6 +36,12 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private string description = string.Empty;
 
     [ObservableProperty]
+    private string descriptionDraft = string.Empty;
+
+    [ObservableProperty]
+    private bool isEditingDescription;
+
+    [ObservableProperty]
     private int totalQuantity;
 
     [ObservableProperty]
@@ -50,6 +57,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public bool HasContainerRelation => !HasNoContainerRelation;
     public bool HasUnassignedQuantity => UnassignedQuantity > 0;
     public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+    public bool IsViewingDescription => !IsEditingDescription;
     public bool ShowGoToContainerButton => HasContainerRelation
         && (string.IsNullOrWhiteSpace(sourceContainerId)
             || currentAllocations.Count > 1
@@ -61,6 +69,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IItemDetailsQueryHandler itemDetailsQueries,
         IItemInventoryCommandService inventoryCommands,
         IDeleteItemCommandHandler deleteItemHandler,
+        IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler,
         INavigationService nav,
         IImagePathResolver paths,
         IPopupService popup,
@@ -74,6 +83,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         this.itemDetailsQueries = itemDetailsQueries;
         this.inventoryCommands = inventoryCommands;
         this.deleteItemHandler = deleteItemHandler;
+        this.updateItemDescriptionHandler = updateItemDescriptionHandler;
         this.nav = nav;
         this.backgroundTasks = backgroundTasks;
         this.logger = logger;
@@ -101,6 +111,12 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     partial void OnUnassignedQuantityChanged(int value)
         => OnPropertyChanged(nameof(HasUnassignedQuantity));
 
+    partial void OnDescriptionChanged(string value)
+        => OnPropertyChanged(nameof(HasDescription));
+
+    partial void OnIsEditingDescriptionChanged(bool value)
+        => OnPropertyChanged(nameof(IsViewingDescription));
+
     public Task InitializeAsync()
     {
         if (string.IsNullOrWhiteSpace(ItemId))
@@ -125,6 +141,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             {
                 Name = "Item not found";
                 Description = string.Empty;
+                DescriptionDraft = string.Empty;
+                IsEditingDescription = false;
                 OnPropertyChanged(nameof(HasDescription));
                 ImagePaths.Add(paths.GetFallbackImagePath());
                 return;
@@ -136,6 +154,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             currentAllocations = details.Inventory.Allocations;
             Name = item.Name;
             Description = item.Description;
+            DescriptionDraft = item.Description;
+            IsEditingDescription = false;
             TotalQuantity = details.Inventory.TotalQuantity;
             AssignedQuantity = details.Inventory.AssignedQuantity;
             UnassignedQuantity = details.Inventory.UnassignedQuantity;
@@ -397,6 +417,31 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     {
         public int TotalQuantity => Inventory.TotalQuantity;
         public int AssignedQuantity => Inventory.AssignedQuantity;
+    }
+
+    [RelayCommand]
+    private void EditDescription()
+    {
+        DescriptionDraft = Description;
+        IsEditingDescription = true;
+    }
+
+    [RelayCommand]
+    private async Task SaveDescriptionAsync()
+    {
+        if (currentItem is null)
+        {
+            return;
+        }
+
+        var updatedDescription = DescriptionDraft?.Trim() ?? string.Empty;
+        await RunCommandAsync(async () =>
+        {
+            await updateItemDescriptionHandler.UpdateAsync(currentItem, updatedDescription);
+            Description = currentItem.Description;
+            DescriptionDraft = currentItem.Description;
+            IsEditingDescription = false;
+        });
     }
 
     [RelayCommand]

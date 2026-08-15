@@ -17,6 +17,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 {
     private readonly IContainerDetailsQueryHandler containerDetailsQueries;
     private readonly IDeleteContainerCommandHandler deleteContainerHandler;
+    private readonly IUpdateContainerNotesCommandHandler updateContainerNotesHandler;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
     private readonly ContainerItemPagingController itemPaging;
@@ -35,6 +36,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private string notes = string.Empty;
 
     [ObservableProperty]
+    private string notesDraft = string.Empty;
+
+    [ObservableProperty]
+    private bool isEditingNotes;
+
+    [ObservableProperty]
     private int totalItemCount = 0;
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
@@ -48,10 +55,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private bool isItemListEmpty = true;
 
     private const int PageSize = 5;
+    public bool IsViewingNotes => !IsEditingNotes;
 
     public ContainerDetailsViewModel(
         IContainerDetailsQueryHandler containerDetailsQueries,
         IDeleteContainerCommandHandler deleteContainerHandler,
+        IUpdateContainerNotesCommandHandler updateContainerNotesHandler,
         IImagePathResolver paths,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
@@ -65,6 +74,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         this.containerDetailsQueries = containerDetailsQueries;
         this.deleteContainerHandler = deleteContainerHandler;
+        this.updateContainerNotesHandler = updateContainerNotesHandler;
         this.nav = nav;
         this.quantityService = quantityService;
         this.backgroundTasks = backgroundTasks;
@@ -114,6 +124,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             currentContainer = null;
             Name = "Container not found";
             Notes = string.Empty;
+            NotesDraft = string.Empty;
+            IsEditingNotes = false;
             TotalItemCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
             itemPaging.MarkComplete();
@@ -125,6 +137,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         currentContainer = container;
         Name = container.Name;
         Notes = container.Notes;
+        NotesDraft = container.Notes;
+        IsEditingNotes = false;
         TotalItemCount = details.TotalItemCount;
 
         // Load container photos (all, as a small carousel)
@@ -215,6 +229,34 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         await PerformSearchAsync();
     }
+
+    [RelayCommand]
+    private void EditNotes()
+    {
+        NotesDraft = Notes;
+        IsEditingNotes = true;
+    }
+
+    [RelayCommand]
+    private async Task SaveNotesAsync()
+    {
+        if (currentContainer is null)
+        {
+            return;
+        }
+
+        var updatedNotes = NotesDraft?.Trim() ?? string.Empty;
+        await RunCommandAsync(async () =>
+        {
+            await updateContainerNotesHandler.UpdateAsync(currentContainer, updatedNotes);
+            Notes = currentContainer.Notes;
+            NotesDraft = currentContainer.Notes;
+            IsEditingNotes = false;
+        });
+    }
+
+    partial void OnIsEditingNotesChanged(bool value)
+        => OnPropertyChanged(nameof(IsViewingNotes));
 
     [RelayCommand]
     private async Task DeleteContainerAsync()

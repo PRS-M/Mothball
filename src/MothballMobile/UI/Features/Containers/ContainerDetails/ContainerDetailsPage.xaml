@@ -44,8 +44,40 @@
                                    Style="{StaticResource TitleLarge}"/>
                             <Label Text="{Binding TotalItemCount, StringFormat='Items stored: {0}'}"
                                    Style="{StaticResource BodyMedium}"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Description"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                                <Button Grid.Column="1"
+                                        Text="Edit Description"
+                                        Style="{StaticResource OutlinedButton}"
+                                        HeightRequest="34"
+                                        FontSize="12"
+                                        Padding="10,0"
+                                        IsVisible="{Binding IsViewingNotes}"
+                                        Command="{Binding EditNotesCommand}" />
+                                <Button Grid.Column="1"
+                                        Text="Save"
+                                        Style="{StaticResource TonalButton}"
+                                        HeightRequest="34"
+                                        FontSize="12"
+                                        Padding="10,0"
+                                        IsVisible="{Binding IsEditingNotes}"
+                                        Command="{Binding SaveNotesCommand}" />
+                            </Grid>
                             <Label Text="{Binding Notes}"
+                                   IsVisible="{Binding IsViewingNotes}"
                                    Style="{StaticResource BodySmall}"/>
+                            <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                                    StrokeShape="RoundRectangle 8"
+                                    Padding="8"
+                                    IsVisible="{Binding IsEditingNotes}">
+                                <Editor Text="{Binding NotesDraft}"
+                                        AutoSize="TextChanges"
+                                        MinimumHeightRequest="96"
+                                        Placeholder="Description" />
+                            </Border>
                         </VerticalStackLayout>
                     </VerticalStackLayout>
                 </Border>

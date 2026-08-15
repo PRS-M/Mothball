@@ -239,6 +239,7 @@ public sealed class ItemDetailsViewModelTests
             itemDetails,
             inventoryCommands,
             Mock.Of<IDeleteItemCommandHandler>(),
+            Mock.Of<IUpdateItemDescriptionCommandHandler>(),
             nav ?? Mock.Of<INavigationService>(),
             CreatePaths(),
             popup,
