@@ -90,7 +90,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
 
         await RunCommandAsync(async () =>
         {
-            var availableQuantity = await GetAvailableQuantityAsync(parsedItemId);
+            var availableQuantity = await GetAvailableQuantityAsync(parsedItemId, containerId);
             if (availableQuantity <= 0)
             {
                 await nav.GoBackAsync();
@@ -109,10 +109,17 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         });
     }
 
-    private async Task<int> GetAvailableQuantityAsync(Guid parsedItemId)
+    private async Task<int> GetAvailableQuantityAsync(Guid parsedItemId, Guid selectedContainerId)
     {
         var details = await itemDetailsQueries.GetDetailsAsync(parsedItemId.ToString());
-        unassignedQuantity = details?.Inventory.UnassignedQuantity ?? unassignedQuantity;
-        return unassignedQuantity;
+        if (details is null)
+        {
+            return unassignedQuantity;
+        }
+
+        unassignedQuantity = details.Inventory.UnassignedQuantity;
+        var currentContainerQuantity = details.Inventory.Allocations
+            .FirstOrDefault(allocation => allocation.ContainerId == selectedContainerId)?.Quantity ?? 0;
+        return unassignedQuantity + currentContainerQuantity;
     }
 }

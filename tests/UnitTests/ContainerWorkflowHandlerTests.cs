@@ -1,5 +1,6 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using CoreApp.Services;
 using CoreApp.Specifications;
@@ -111,6 +112,11 @@ public sealed class ContainerWorkflowHandlerTests
         associationQueries.Setup(q => q.QueryContainersAsync(0, 10))
             .ReturnsAsync([container]);
 
+        var item = new Item(itemId, "Widget", "", totalQuantity: 5);
+        var itemDetails = new Mock<IItemDetailsQueryHandler>();
+        itemDetails.Setup(q => q.GetDetailsAsync(itemId.ToString()))
+            .ReturnsAsync(new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 0, [])));
+
         var assign = new Mock<IAssignItemToContainerCommandHandler>();
         var popup = new Mock<IPopupService>();
         popup.Setup(p => p.PickNumberAsync(It.Is<NumberPickerPopupDefinition>(
@@ -121,7 +127,7 @@ public sealed class ContainerWorkflowHandlerTests
         var viewModel = new AssociateItemWithContainerViewModel(
             imagePaths.Object,
             associationQueries.Object,
-            Mock.Of<IItemDetailsQueryHandler>(),
+            itemDetails.Object,
             assign.Object,
             nav.Object,
             popup.Object,
@@ -138,5 +144,52 @@ public sealed class ContainerWorkflowHandlerTests
 
         assign.Verify(a => a.AssignAsync(itemId, container.ContainerId, 3), Times.Once);
         nav.Verify(n => n.GoBackAsync(), Times.Once);
+    }
+
+    [Test]
+    public async Task AssociateItemWithContainerViewModel_SelectAlreadyAssignedContainer_AllowsExistingPlusUnassignedQuantity()
+    {
+        var itemId = Guid.NewGuid();
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var imagePaths = new Mock<IImagePathResolver>();
+        imagePaths.Setup(p => p.GetContainerPhotoPaths(container))
+            .Returns(Array.Empty<string>());
+
+        var associationQueries = new Mock<IContainerAssociationQueryHandler>();
+        associationQueries.Setup(q => q.QueryContainersAsync(0, 10))
+            .ReturnsAsync([container]);
+
+        var item = new Item(itemId, "Widget", "", totalQuantity: 4);
+        var allocation = new ItemContainerAllocation(container.ContainerId, container.Name, 1);
+        var itemDetails = new Mock<IItemDetailsQueryHandler>();
+        itemDetails.Setup(q => q.GetDetailsAsync(itemId.ToString()))
+            .ReturnsAsync(new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 1, [allocation])));
+
+        var assign = new Mock<IAssignItemToContainerCommandHandler>();
+        var popup = new Mock<IPopupService>();
+        popup.Setup(p => p.PickNumberAsync(It.Is<NumberPickerPopupDefinition>(
+                definition => definition.Max == 4 && definition.InitialValue == 4)))
+            .ReturnsAsync(4);
+
+        var nav = new Mock<INavigationService>();
+        var viewModel = new AssociateItemWithContainerViewModel(
+            imagePaths.Object,
+            associationQueries.Object,
+            itemDetails.Object,
+            assign.Object,
+            nav.Object,
+            popup.Object,
+            new PopupDefinitionService(),
+            Mock.Of<IBackgroundTaskObserver>());
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object>
+        {
+            [NavigationParams.ItemId] = itemId.ToString(),
+            [NavigationParams.UnassignedQuantity] = 3,
+        });
+        await viewModel.InitializeAsync();
+
+        await viewModel.Containers.Single().SelectCommand.ExecuteAsync(null);
+
+        assign.Verify(a => a.AssignAsync(itemId, container.ContainerId, 4), Times.Once);
     }
 }
