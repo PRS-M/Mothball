@@ -45,19 +45,10 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         if (resultingAssignedQuantity > item.TotalQuantity)
         {
             item.SetTotalQuantity(resultingAssignedQuantity);
-            await inventoryCommands.UpdateItemAsync(item);
         }
 
         item.SetAssignedQuantity(resultingAssignedQuantity);
-
-        if (quantity == 0)
-        {
-            await inventoryCommands.DeleteItemContainerRelation(itemId, containerId);
-        }
-        else
-        {
-            await inventoryCommands.ReplaceItemContainerRelationQuantity(itemId, containerId, quantity);
-        }
+        await inventoryCommands.SetItemContainerAllocationAsync(item, containerId, quantity);
 
         return CreateResult(item, removedFromContainer: quantity == 0);
     }

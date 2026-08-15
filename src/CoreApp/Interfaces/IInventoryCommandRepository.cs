@@ -16,6 +16,8 @@ public interface IInventoryCommandRepository
 
     Task ReplaceItemContainerRelationQuantity(Guid itemId, Guid containerId, int quantity);
 
+    Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity);
+
     Task DeleteItemContainerRelation(Guid itemId, Guid containerId);
 
     Task UpdateContainerAsync(Container container);

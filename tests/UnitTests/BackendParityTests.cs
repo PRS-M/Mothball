@@ -235,6 +235,70 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task RemovingAllocation_ReleasesAssignedQuantityAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 6);
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(item);
+            await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 4);
+        }
+
+        await new ItemInventoryCommandService(sqlite.Query, sqlite.Command)
+            .SetContainerAllocationAsync(item.ItemId, container.ContainerId, 0);
+        await new ItemInventoryCommandService(json.Query, json.Command)
+            .SetContainerAllocationAsync(item.ItemId, container.ContainerId, 0);
+
+        var sqliteItem = await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var jsonItem = await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItem!.TotalQuantity, Is.EqualTo(6));
+            Assert.That(sqliteItem.AssignedQuantity, Is.Zero);
+            Assert.That(sqliteItem.UnassignedQuantity, Is.EqualTo(6));
+            Assert.That(jsonItem!.TotalQuantity, Is.EqualTo(6));
+            Assert.That(jsonItem.AssignedQuantity, Is.Zero);
+            Assert.That(jsonItem.UnassignedQuantity, Is.EqualTo(6));
+        });
+    }
+
+    [Test]
+    public async Task DeletingContainer_ReleasesAllocationsWithoutChangingItemTotalAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 6);
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(item);
+            await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 4);
+            await command.DeleteContainerAsync(container.ContainerId.ToString());
+        }
+
+        var sqliteItem = await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var jsonItem = await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItem!.TotalQuantity, Is.EqualTo(6));
+            Assert.That(sqliteItem.AssignedQuantity, Is.Zero);
+            Assert.That(sqliteItem.UnassignedQuantity, Is.EqualTo(6));
+            Assert.That(jsonItem!.TotalQuantity, Is.EqualTo(6));
+            Assert.That(jsonItem.AssignedQuantity, Is.Zero);
+            Assert.That(jsonItem.UnassignedQuantity, Is.EqualTo(6));
+        });
+    }
+
+    [Test]
     public async Task QueryContainerItemsWithPhotosAsync_PagesByRelationInsertionOrder()
     {
         await using var sqlite = await BuildSqliteAsync();
@@ -344,7 +408,7 @@ public class BackendParityTests
         var containerRepo = new ContainerRepository(transactionRunner, containers, photos, relations, containerLogger);
         var itemRepo = new ItemRepository(transactionRunner, items, photos, relations, itemLogger);
         var imageRepo = new ImageRepository(photos);
-        var relationRepo = new RelationRepository(relations);
+        var relationRepo = new RelationRepository(relations, transactionRunner);
 
         var query = new InventoryQueryRepository(containerRepo, itemRepo);
         var command = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);

@@ -63,7 +63,7 @@ public sealed class ItemInventoryCommandServiceTests
             Assert.That(result.AssignedQuantity, Is.EqualTo(8));
             Assert.That(result.UnassignedQuantity, Is.EqualTo(2));
         });
-        commands.Verify(c => c.ReplaceItemContainerRelationQuantity(item.ItemId, container.ContainerId, 4), Times.Once);
+        commands.Verify(c => c.SetItemContainerAllocationAsync(item, container.ContainerId, 4), Times.Once);
     }
 
     [Test]
@@ -85,8 +85,8 @@ public sealed class ItemInventoryCommandServiceTests
             Assert.That(result.AssignedQuantity, Is.EqualTo(8));
             Assert.That(result.UnassignedQuantity, Is.Zero);
         });
-        commands.Verify(c => c.UpdateItemAsync(item), Times.Once);
-        commands.Verify(c => c.ReplaceItemContainerRelationQuantity(item.ItemId, container.ContainerId, 4), Times.Once);
+        commands.Verify(c => c.SetItemContainerAllocationAsync(item, container.ContainerId, 4), Times.Once);
+        commands.Verify(c => c.UpdateItemAsync(It.IsAny<Item>()), Times.Never);
     }
 
     [Test]
@@ -108,7 +108,8 @@ public sealed class ItemInventoryCommandServiceTests
             Assert.That(result.AssignedQuantity, Is.EqualTo(4));
             Assert.That(result.UnassignedQuantity, Is.EqualTo(6));
         });
-        commands.Verify(c => c.DeleteItemContainerRelation(item.ItemId, container.ContainerId), Times.Once);
+        commands.Verify(c => c.SetItemContainerAllocationAsync(item, container.ContainerId, 0), Times.Once);
+        commands.Verify(c => c.DeleteItemContainerRelation(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
     }
 
     private static Mock<IInventoryQueryRepository> CreateQueries(Item item, Container container)

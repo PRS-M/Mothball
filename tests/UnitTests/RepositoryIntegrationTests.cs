@@ -40,7 +40,7 @@ public class RepositoryIntegrationTests
         var containerRepo = new ContainerRepository(transactionRunner, containers, photos, relations, containerLogger);
         var itemRepo = new ItemRepository(transactionRunner, items, photos, relations, itemLogger);
         var imageRepo = new ImageRepository(photos);
-        var relationRepo = new RelationRepository(relations);
+        var relationRepo = new RelationRepository(relations, transactionRunner);
 
         queryRepo = new InventoryQueryRepository(containerRepo, itemRepo);
         commandRepo = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);

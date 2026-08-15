@@ -43,6 +43,9 @@ public class InventoryCommandRepository : IInventoryCommandRepository
     public Task ReplaceItemContainerRelationQuantity(Guid itemId, Guid containerId, int quantity)
         => relationRepo.ReplaceItemContainerRelationQuantityAsync(itemId, containerId, quantity);
 
+    public Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity)
+        => relationRepo.SetItemContainerAllocationAsync(item, containerId, quantity);
+
     public Task DeleteItemContainerRelation(Guid itemId, Guid containerId)
         => relationRepo.DeleteItemContainerRelationAsync(itemId, containerId);
 
