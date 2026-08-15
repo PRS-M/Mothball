@@ -67,6 +67,14 @@ public sealed class SqliteTransactionRunner : ITransactionRunner
             }
         }
 
+        public void InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity)
+            => connection.Insert(new DbItemContainerRelation
+            {
+                ItemId = itemId,
+                ContainerId = containerId,
+                Quantity = quantity,
+            });
+
         public void DeleteContainer(Guid containerId)
             => connection.DeleteByPrimaryKey<DbContainer>(containerId);
 

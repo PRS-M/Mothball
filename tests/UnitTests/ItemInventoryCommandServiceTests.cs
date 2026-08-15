@@ -112,6 +112,52 @@ public sealed class ItemInventoryCommandServiceTests
         commands.Verify(c => c.DeleteItemContainerRelation(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
     }
 
+    [Test]
+    public async Task ApplyWithdrawalAsync_WithRemainingStock_CommitsPlanAtomically()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
+        item.SetAssignedQuantity(7);
+        var allocations = new[]
+        {
+            new CoreApp.Contracts.ItemContainerAllocation(Guid.NewGuid(), "Box", 2),
+            new CoreApp.Contracts.ItemContainerAllocation(Guid.NewGuid(), "Drawer", 4),
+        };
+        var plan = new CoreApp.Contracts.ItemInventoryWithdrawalPlan(7, 6, 1, allocations, false);
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString())).ReturnsAsync(item);
+        var commands = new Mock<IInventoryCommandRepository>();
+        var service = new ItemInventoryCommandService(queries.Object, commands.Object);
+
+        var result = await service.ApplyWithdrawalAsync(item.ItemId, plan);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.TotalQuantity, Is.EqualTo(7));
+            Assert.That(result.AssignedQuantity, Is.EqualTo(6));
+            Assert.That(result.UnassignedQuantity, Is.EqualTo(1));
+        });
+        commands.Verify(c => c.ApplyItemInventoryWithdrawalAsync(item, allocations), Times.Once);
+    }
+
+    [Test]
+    public async Task ApplyWithdrawalAsync_WhenPlanExhaustsStock_DeletesItemInsteadOfPersistingZero()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 1);
+        var plan = new CoreApp.Contracts.ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString())).ReturnsAsync(item);
+        var commands = new Mock<IInventoryCommandRepository>();
+        var photoDeletion = new Mock<IPhotoDeletionService>();
+        var service = new ItemInventoryCommandService(queries.Object, commands.Object, photoDeletion.Object);
+
+        var result = await service.ApplyWithdrawalAsync(item.ItemId, plan);
+
+        Assert.That(result.ItemDeleted, Is.True);
+        commands.Verify(c => c.DeleteItemAsync(item.ItemId.ToString()), Times.Once);
+        photoDeletion.Verify(service => service.DeleteItemPhotoFilesBestEffortAsync(item), Times.Once);
+        commands.Verify(c => c.UpdateItemAsync(It.IsAny<Item>()), Times.Never);
+    }
+
     private static Mock<IInventoryQueryRepository> CreateQueries(Item item, Container container)
     {
         var queries = new Mock<IInventoryQueryRepository>();

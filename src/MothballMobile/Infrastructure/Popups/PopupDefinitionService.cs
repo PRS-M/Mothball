@@ -122,7 +122,7 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
     public NumberPickerPopupDefinition SetTotalQuantity(int initialValue, int assignedQuantity)
         => new(
             "Set total quantity",
-            Min: Math.Max(1, assignedQuantity),
+            Min: 0,
             Max: int.MaxValue,
             InitialValue: initialValue);
 
@@ -130,6 +130,47 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
         => new(
             "Quantity not updated",
             message);
+
+    public OptionPickerPopupDefinition<ItemContainerAllocation> WithdrawalContainerPicker(
+        IReadOnlyList<ItemContainerAllocation> allocations)
+        => new(
+            "Choose a container",
+            "Cancel",
+            allocations
+                .Where(allocation => allocation.Quantity > 0)
+                .Select(allocation => new PopupOption<ItemContainerAllocation>(
+                    $"{allocation.ContainerName} ({allocation.Quantity})",
+                    allocation))
+                .ToArray());
+
+    public NumberPickerPopupDefinition WithdrawFromContainer(
+        ItemContainerAllocation allocation,
+        int carriedQuantity)
+        => new(
+            $"Withdraw from {allocation.ContainerName}",
+            Min: 0,
+            Max: int.MaxValue,
+            InitialValue: carriedQuantity > 0 ? carriedQuantity : 1,
+            Placeholder: "Enter 0 to stop");
+
+    public AlertPopupDefinition WithdrawalCarryTooSmall(int carriedQuantity)
+        => new(
+            "More items must be withdrawn",
+            $"Enter 0 to cancel, or withdraw at least the remaining {carriedQuantity} items.");
+
+    public ConfirmationPopupDefinition ConfirmUnassignedWithdrawal(int unassignedQuantity)
+        => new(
+            "Withdraw unassigned items?",
+            $"Assigned withdrawals are complete. Continuing will withdraw from {unassignedQuantity} unassigned items and reduce the total quantity further.",
+            "Continue");
+
+    public NumberPickerPopupDefinition WithdrawUnassignedQuantity(int availableQuantity)
+        => new(
+            "Withdraw unassigned items",
+            Min: 0,
+            Max: availableQuantity,
+            InitialValue: 0,
+            Placeholder: "Enter 0 to finish");
 
     public ConfirmationPopupDefinition RemoveItemFromContainer(string itemName)
         => new(

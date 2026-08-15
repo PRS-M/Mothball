@@ -1,5 +1,6 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Specifications;
+using CoreApp.Contracts;
 
 namespace Infrastructure.Interfaces;
 
@@ -12,6 +13,7 @@ public interface IContainerRepository
     Task<List<Container>> QueryAsync(ContainerListSpecification specification);
     Task<int> GetItemCountInContainerAsync(string containerId);
     Task<Container?> GetContainerForItemAsync(string itemId);
+    Task<List<ItemContainerAllocation>> GetItemContainerAllocationsAsync(Guid itemId);
     Task InsertAsync(Container container);
     Task UpdateAsync(Container container);
     Task DeletePhotoAsync(Container container, Guid imageId);

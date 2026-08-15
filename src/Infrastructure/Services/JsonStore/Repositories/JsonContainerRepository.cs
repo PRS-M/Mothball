@@ -9,6 +9,7 @@ using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;
 using Infrastructure.Services.Repositories;
 using CoreApp.Specifications;
+using CoreApp.Contracts;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 
@@ -146,6 +147,25 @@ public sealed class JsonContainerRepository : IContainerRepository
         if (row is null) return null;
 
         return MapContainer(state, row, includeRelations: true);
+    }
+
+    public async Task<List<ItemContainerAllocation>> GetItemContainerAllocationsAsync(Guid itemId)
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        return state.Relations
+            .Where(relation => relation.ItemId == itemId && relation.Quantity > 0)
+            .GroupBy(relation => relation.ContainerId)
+            .Select(group =>
+            {
+                var container = state.Containers.FirstOrDefault(row => row.ContainerId == group.Key);
+                return container is null
+                    ? null
+                    : new ItemContainerAllocation(group.Key, container.Name, group.Sum(row => row.Quantity));
+            })
+            .Where(allocation => allocation is not null)
+            .Select(allocation => allocation!)
+            .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     public Task InsertAsync(Container container)

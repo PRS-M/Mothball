@@ -21,6 +21,7 @@ public sealed class ItemDetailsQueryHandler : IItemDetailsQueryHandler
         }
 
         var container = await inventoryQueries.GetContainerForItemAsync(item.ItemId.ToString());
-        return new ItemDetailsResult(item, container?.ContainerId);
+        var allocations = await inventoryQueries.GetItemContainerAllocationsAsync(item.ItemId);
+        return new ItemDetailsResult(item, container?.ContainerId, allocations);
     }
 }

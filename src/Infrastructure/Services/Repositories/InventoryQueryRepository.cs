@@ -3,6 +3,7 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Specifications;
 using Infrastructure.Interfaces;
+using CoreApp.Contracts;
 
 namespace Infrastructure.Services.Repositories;
 
@@ -30,6 +31,9 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     public Task<Container?> GetContainerForItemAsync(string itemId)
         => containerRepo.GetContainerForItemAsync(itemId);
+
+    public Task<List<ItemContainerAllocation>> GetItemContainerAllocationsAsync(Guid itemId)
+        => containerRepo.GetItemContainerAllocationsAsync(itemId);
 
     public Task<Item?> GetItemWithPhotosAsync(string itemId)
         => itemRepo.GetWithPhotosAsync(itemId);

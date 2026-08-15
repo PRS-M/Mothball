@@ -1,6 +1,7 @@
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
+using CoreApp.Contracts;
 
 namespace CoreApp.Interfaces;
 
@@ -17,6 +18,10 @@ public interface IInventoryCommandRepository
     Task ReplaceItemContainerRelationQuantity(Guid itemId, Guid containerId, int quantity);
 
     Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity);
+
+    Task ApplyItemInventoryWithdrawalAsync(
+        Item item,
+        IReadOnlyCollection<ItemContainerAllocation> allocations);
 
     Task DeleteItemContainerRelation(Guid itemId, Guid containerId);
 

@@ -50,5 +50,16 @@ public interface IPopupDefinitionService
 
     AlertPopupDefinition InventoryQuantityUpdateFailed(string message);
 
+    OptionPickerPopupDefinition<ItemContainerAllocation> WithdrawalContainerPicker(
+        IReadOnlyList<ItemContainerAllocation> allocations);
+
+    NumberPickerPopupDefinition WithdrawFromContainer(ItemContainerAllocation allocation, int carriedQuantity);
+
+    AlertPopupDefinition WithdrawalCarryTooSmall(int carriedQuantity);
+
+    ConfirmationPopupDefinition ConfirmUnassignedWithdrawal(int unassignedQuantity);
+
+    NumberPickerPopupDefinition WithdrawUnassignedQuantity(int availableQuantity);
+
     ConfirmationPopupDefinition RemoveItemFromContainer(string itemName);
 }

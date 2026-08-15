@@ -16,6 +16,7 @@ public interface ITransactionalDeleteScope
     void UpdateContainer(DbContainer container);
     void UpdateItem(DbItem item);
     void ReplaceItemContainerRelation(Guid itemId, Guid containerId, int quantity);
+    void InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity);
     void DeleteContainer(Guid containerId);
     void DeleteItem(Guid itemId);
 }

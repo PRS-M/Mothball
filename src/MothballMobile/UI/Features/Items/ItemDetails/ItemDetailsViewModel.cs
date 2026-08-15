@@ -17,6 +17,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly INavigationService nav;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private Item? currentItem;
+    private IReadOnlyList<CoreApp.Contracts.ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
 
     [ObservableProperty]
@@ -122,6 +123,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
             var item = details.Item;
             currentItem = item;
+            currentAllocations = details.Allocations ?? [];
             Name = item.Name;
             Description = item.Description;
             TotalQuantity = item.TotalQuantity;
@@ -179,16 +181,141 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
         try
         {
-            var result = await inventoryCommands.SetTotalQuantityAsync(currentItem.ItemId, selectedQuantity.Value);
-            currentItem.SetTotalQuantity(result.TotalQuantity);
-            TotalQuantity = result.TotalQuantity;
-            AssignedQuantity = result.AssignedQuantity;
-            UnassignedQuantity = result.UnassignedQuantity;
+            if (selectedQuantity.Value > 0 && selectedQuantity.Value >= AssignedQuantity)
+            {
+                if (selectedQuantity.Value < TotalQuantity
+                    && !await popup.ConfirmAsync(
+                        popupDefinitions.ConfirmUnassignedWithdrawal(
+                            TotalQuantity - selectedQuantity.Value)))
+                {
+                    return;
+                }
+
+                var result = await inventoryCommands.SetTotalQuantityAsync(currentItem.ItemId, selectedQuantity.Value);
+                ApplyInventoryResult(result);
+                return;
+            }
+
+            await RunWithdrawalWorkflowAsync(selectedQuantity.Value);
         }
         catch (Exception ex) when (ex is ArgumentOutOfRangeException or InvalidOperationException)
         {
             await popup.ShowAlertAsync(popupDefinitions.InventoryQuantityUpdateFailed(ex.Message));
         }
+    }
+
+    private async Task RunWithdrawalWorkflowAsync(int requestedTotal)
+    {
+        var originalAllocations = currentAllocations
+            .Where(allocation => allocation.Quantity > 0)
+            .ToList();
+        var remainingAllocations = originalAllocations.ToDictionary(
+            allocation => allocation.ContainerId,
+            allocation => allocation);
+        var withdrawals = new List<CoreApp.Contracts.ItemAllocationWithdrawal>();
+        int assignedRemaining = remainingAllocations.Values.Sum(allocation => allocation.Quantity);
+        int carriedQuantity = 0;
+
+        while (assignedRemaining > requestedTotal || carriedQuantity > 0)
+        {
+            var choices = remainingAllocations.Values
+                .Where(allocation => allocation.Quantity > 0)
+                .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            if (choices.Count == 0)
+            {
+                return;
+            }
+
+            var selectedContainer = await popup.SelectOptionAsync(
+                popupDefinitions.WithdrawalContainerPicker(choices));
+            if (selectedContainer is null)
+            {
+                return;
+            }
+
+            var selectedWithdrawal = await popup.PickNumberAsync(
+                popupDefinitions.WithdrawFromContainer(selectedContainer, carriedQuantity));
+            if (selectedWithdrawal is null || selectedWithdrawal.Value == 0)
+            {
+                return;
+            }
+
+            if (selectedWithdrawal.Value < carriedQuantity)
+            {
+                await popup.ShowAlertAsync(popupDefinitions.WithdrawalCarryTooSmall(carriedQuantity));
+                continue;
+            }
+
+            int removed = Math.Min(selectedContainer.Quantity, selectedWithdrawal.Value);
+            assignedRemaining -= removed;
+            carriedQuantity = selectedWithdrawal.Value - removed;
+            remainingAllocations[selectedContainer.ContainerId] = selectedContainer with
+            {
+                Quantity = selectedContainer.Quantity - removed,
+            };
+            withdrawals.Add(new CoreApp.Contracts.ItemAllocationWithdrawal(
+                selectedContainer.ContainerId,
+                selectedWithdrawal.Value));
+        }
+
+        var unassignedWithdrawals = new List<int>();
+        var plan = ItemInventoryWithdrawalPlanner.Plan(
+            TotalQuantity,
+            originalAllocations,
+            withdrawals,
+            unassignedWithdrawals,
+            requestedTotal);
+
+        if (plan.UnassignedQuantity > 0
+            && await popup.ConfirmAsync(
+                popupDefinitions.ConfirmUnassignedWithdrawal(plan.UnassignedQuantity)))
+        {
+            while (plan.UnassignedQuantity > 0)
+            {
+                var selectedWithdrawal = await popup.PickNumberAsync(
+                    popupDefinitions.WithdrawUnassignedQuantity(plan.UnassignedQuantity));
+                if (selectedWithdrawal is null || selectedWithdrawal.Value == 0)
+                {
+                    break;
+                }
+
+                unassignedWithdrawals.Add(selectedWithdrawal.Value);
+                plan = ItemInventoryWithdrawalPlanner.Plan(
+                    TotalQuantity,
+                    originalAllocations,
+                    withdrawals,
+                    unassignedWithdrawals,
+                    requestedTotal);
+            }
+        }
+
+        var result = await inventoryCommands.ApplyWithdrawalAsync(currentItem!.ItemId, plan);
+        if (result.ItemDeleted)
+        {
+            await nav.GoBackAsync();
+            return;
+        }
+
+        currentAllocations = plan.Allocations;
+        ApplyInventoryResult(result);
+    }
+
+    private void ApplyInventoryResult(CoreApp.Contracts.ItemInventoryUpdateResult result)
+    {
+        if (result.TotalQuantity > currentItem!.TotalQuantity)
+        {
+            currentItem.SetTotalQuantity(result.TotalQuantity);
+            currentItem.SetAssignedQuantity(result.AssignedQuantity);
+        }
+        else
+        {
+            currentItem.SetAssignedQuantity(result.AssignedQuantity);
+            currentItem.SetTotalQuantity(result.TotalQuantity);
+        }
+        TotalQuantity = result.TotalQuantity;
+        AssignedQuantity = result.AssignedQuantity;
+        UnassignedQuantity = result.UnassignedQuantity;
     }
 
     [RelayCommand]

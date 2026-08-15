@@ -13,6 +13,9 @@ public interface IRelationRepository
     Task InsertItemContainerRelationAsync(Guid itemId, Guid containerId, int quantity);
     Task ReplaceItemContainerRelationQuantityAsync(Guid itemId, Guid containerId, int quantity);
     Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity);
+    Task ApplyItemInventoryWithdrawalAsync(
+        Item item,
+        IReadOnlyCollection<CoreApp.Contracts.ItemContainerAllocation> allocations);
     Task DeleteItemContainerRelationAsync(Guid itemId, Guid containerId);
 }
 
@@ -73,6 +76,27 @@ public class RelationRepository : IRelationRepository
         {
             scope.UpdateItem(item.ToDb());
             scope.ReplaceItemContainerRelation(item.ItemId, containerId, quantity);
+        });
+    }
+
+    public Task ApplyItemInventoryWithdrawalAsync(
+        Item item,
+        IReadOnlyCollection<CoreApp.Contracts.ItemContainerAllocation> allocations)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(allocations);
+
+        return transactionRunner.RunAsync(scope =>
+        {
+            scope.UpdateItem(item.ToDb());
+            scope.DeleteRelationsByItem(item.ItemId);
+            foreach (var allocation in allocations.Where(allocation => allocation.Quantity > 0))
+            {
+                scope.InsertItemContainerRelation(
+                    item.ItemId,
+                    allocation.ContainerId,
+                    allocation.Quantity);
+            }
         });
     }
 

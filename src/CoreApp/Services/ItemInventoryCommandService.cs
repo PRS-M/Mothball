@@ -8,13 +8,16 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
 {
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IInventoryCommandRepository inventoryCommands;
+    private readonly IPhotoDeletionService? photoDeletion;
 
     public ItemInventoryCommandService(
         IInventoryQueryRepository inventoryQueries,
-        IInventoryCommandRepository inventoryCommands)
+        IInventoryCommandRepository inventoryCommands,
+        IPhotoDeletionService? photoDeletion = null)
     {
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
+        this.photoDeletion = photoDeletion;
     }
 
     public async Task<ItemInventoryUpdateResult> SetTotalQuantityAsync(Guid itemId, int totalQuantity)
@@ -51,6 +54,42 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         await inventoryCommands.SetItemContainerAllocationAsync(item, containerId, quantity);
 
         return CreateResult(item, removedFromContainer: quantity == 0);
+    }
+
+    public async Task<ItemInventoryUpdateResult> ApplyWithdrawalAsync(
+        Guid itemId,
+        ItemInventoryWithdrawalPlan plan)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        Item item = await GetItemAsync(itemId);
+
+        if (plan.DeleteItem)
+        {
+            if (plan.TotalQuantity != 0 || plan.AssignedQuantity != 0 || plan.UnassignedQuantity != 0)
+            {
+                throw new ArgumentException("A deletion plan must exhaust all inventory.", nameof(plan));
+            }
+
+            await inventoryCommands.DeleteItemAsync(item.ItemId.ToString());
+            if (photoDeletion is not null)
+            {
+                await photoDeletion.DeleteItemPhotoFilesBestEffortAsync(item);
+            }
+            return new ItemInventoryUpdateResult(true, 0, 0, 0, ItemDeleted: true);
+        }
+
+        if (plan.TotalQuantity < 1
+            || plan.AssignedQuantity < 0
+            || plan.UnassignedQuantity != plan.TotalQuantity - plan.AssignedQuantity
+            || plan.Allocations.Sum(allocation => allocation.Quantity) != plan.AssignedQuantity)
+        {
+            throw new ArgumentException("Withdrawal plan quantities are inconsistent.", nameof(plan));
+        }
+
+        item.SetAssignedQuantity(plan.AssignedQuantity);
+        item.SetTotalQuantity(plan.TotalQuantity);
+        await inventoryCommands.ApplyItemInventoryWithdrawalAsync(item, plan.Allocations);
+        return CreateResult(item, removedFromContainer: false);
     }
 
     private async Task<Item> GetItemAsync(Guid itemId)

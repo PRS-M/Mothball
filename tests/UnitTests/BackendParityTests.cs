@@ -1,4 +1,5 @@
 using System.Text.Json;
+using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
@@ -296,6 +297,68 @@ public class BackendParityTests
             Assert.That(jsonItem.AssignedQuantity, Is.Zero);
             Assert.That(jsonItem.UnassignedQuantity, Is.EqualTo(6));
         });
+    }
+
+    [Test]
+    public async Task ApplyWithdrawalAsync_CommitsAllAllocationsAndTotalAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var box = new Container(Guid.NewGuid(), "Box", "");
+        var drawer = new Container(Guid.NewGuid(), "Drawer", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(box);
+            await command.InsertContainerAsync(drawer);
+            await command.InsertItemAsync(item);
+            await command.InsertItemContainerRelation(item.ItemId, box.ContainerId, 5);
+            await command.InsertItemContainerRelation(item.ItemId, drawer.ContainerId, 5);
+        }
+
+        var allocations = new[]
+        {
+            new ItemContainerAllocation(box.ContainerId, box.Name, 1),
+            new ItemContainerAllocation(drawer.ContainerId, drawer.Name, 5),
+        };
+        var plan = new ItemInventoryWithdrawalPlan(7, 6, 1, allocations, false);
+
+        await new ItemInventoryCommandService(sqlite.Query, sqlite.Command).ApplyWithdrawalAsync(item.ItemId, plan);
+        await new ItemInventoryCommandService(json.Query, json.Command).ApplyWithdrawalAsync(item.ItemId, plan);
+
+        var sqliteItem = await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var jsonItem = await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var sqliteAllocations = await sqlite.Query.GetItemContainerAllocationsAsync(item.ItemId);
+        var jsonAllocations = await json.Query.GetItemContainerAllocationsAsync(item.ItemId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItem!.TotalQuantity, Is.EqualTo(7));
+            Assert.That(sqliteItem.AssignedQuantity, Is.EqualTo(6));
+            Assert.That(jsonItem!.TotalQuantity, Is.EqualTo(7));
+            Assert.That(jsonItem.AssignedQuantity, Is.EqualTo(6));
+            Assert.That(sqliteAllocations.Select(a => a.Quantity), Is.EquivalentTo(new[] { 1, 5 }));
+            Assert.That(jsonAllocations.Select(a => a.Quantity), Is.EquivalentTo(new[] { 1, 5 }));
+        });
+    }
+
+    [Test]
+    public async Task ApplyWithdrawalAsync_WhenStockIsExhausted_DeletesItemAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 1);
+
+        await sqlite.Command.InsertItemAsync(item);
+        await json.Command.InsertItemAsync(item);
+
+        var plan = new ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
+        await new ItemInventoryCommandService(sqlite.Query, sqlite.Command).ApplyWithdrawalAsync(item.ItemId, plan);
+        await new ItemInventoryCommandService(json.Query, json.Command).ApplyWithdrawalAsync(item.ItemId, plan);
+
+        Assert.That(await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString()), Is.Null);
+        Assert.That(await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString()), Is.Null);
     }
 
     [Test]

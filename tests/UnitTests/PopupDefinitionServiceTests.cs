@@ -71,23 +71,47 @@ public class PopupDefinitionServiceTests
     }
 
     [Test]
-    public void SetTotalQuantity_UsesAssignedQuantityAsMinimum()
+    public void SetTotalQuantity_AllowsZeroToEnterDeletionWorkflow()
     {
         var definition = service.SetTotalQuantity(initialValue: 7, assignedQuantity: 5);
 
         Assert.Multiple(() =>
         {
             Assert.That(definition.Title, Is.EqualTo("Set total quantity"));
-            Assert.That(definition.Min, Is.EqualTo(5));
+            Assert.That(definition.Min, Is.Zero);
             Assert.That(definition.InitialValue, Is.EqualTo(7));
         });
     }
 
     [Test]
-    public void SetTotalQuantity_WhenNothingAssigned_RequiresAtLeastOne()
+    public void SetTotalQuantity_WhenNothingAssigned_StillAllowsDeletionWorkflow()
     {
         var definition = service.SetTotalQuantity(initialValue: 1, assignedQuantity: 0);
 
-        Assert.That(definition.Min, Is.EqualTo(1));
+        Assert.That(definition.Min, Is.Zero);
+    }
+
+    [Test]
+    public void WithdrawalContainerPicker_ListsOnlyProvidedRemainingAllocations()
+    {
+        var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 3);
+
+        var definition = service.WithdrawalContainerPicker([allocation]);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(definition.Options, Has.Count.EqualTo(1));
+            Assert.That(definition.Options[0].Label, Is.EqualTo("Box (3)"));
+            Assert.That(definition.Options[0].Value, Is.EqualTo(allocation));
+        });
+    }
+
+    [Test]
+    public void ConfirmUnassignedWithdrawal_ExplainsThatTotalWillDecrease()
+    {
+        var definition = service.ConfirmUnassignedWithdrawal(4);
+
+        Assert.That(definition.Message, Does.Contain("unassigned"));
+        Assert.That(definition.Message, Does.Contain("reduce the total quantity"));
     }
 }

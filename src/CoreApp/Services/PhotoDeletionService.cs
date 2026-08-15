@@ -72,6 +72,16 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
         return true;
     }
 
+    public async Task DeleteItemPhotoFilesBestEffortAsync(Item item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        foreach (var photo in item.Photos)
+        {
+            await DeletePhotoFileBestEffortAsync(photo.ImageId, Constants.PathToItemPhotos).ConfigureAwait(false);
+        }
+    }
+
     private async Task DeletePhotoFileBestEffortAsync(Guid imageId, string folderPath)
     {
         try
@@ -81,6 +91,10 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
         catch (FileNotFoundException ex)
         {
             logger.LogDebug(ex, "Photo file for image {ImageId} was not found in {FolderPath} during cleanup.", imageId, folderPath);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to delete photo file for image {ImageId} from {FolderPath}.", imageId, folderPath);
         }
     }
 }
