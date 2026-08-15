@@ -24,15 +24,15 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
     public async Task<ItemInventoryUpdateResult> IncreaseTotalQuantityAsync(Guid itemId, int totalQuantity)
     {
         var summary = await GetSummaryAsync(itemId);
-        Item item = summary.Item;
-        if (totalQuantity <= item.TotalQuantity)
+        var inventory = ToInventory(summary);
+        if (totalQuantity <= inventory.TotalQuantity)
         {
-            return CreateResult(item, summary.AssignedQuantity, removedFromContainer: false);
+            return CreateResult(inventory, removedFromContainer: false);
         }
 
-        item.SetTotalQuantity(totalQuantity);
-        await inventoryCommands.UpdateItemAsync(item);
-        return CreateResult(item, summary.AssignedQuantity, removedFromContainer: false);
+        inventory.IncreaseTotalQuantity(totalQuantity);
+        await inventoryCommands.SaveItemInventoryAsync(inventory);
+        return CreateResult(inventory, removedFromContainer: false);
     }
 
     public async Task<ItemInventoryUpdateResult> SetContainerAllocationAsync(
@@ -46,19 +46,14 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         }
 
         var summary = await GetSummaryAsync(itemId);
-        Item item = summary.Item;
-        int previousQuantity = summary.Allocations
-            .FirstOrDefault(allocation => allocation.ContainerId == containerId)?.Quantity ?? 0;
-        int resultingAssignedQuantity = summary.AssignedQuantity - previousQuantity + quantity;
+        var inventory = ToInventory(summary);
+        string containerName = summary.Allocations
+            .FirstOrDefault(allocation => allocation.ContainerId == containerId)?.ContainerName ?? string.Empty;
+        inventory.SetContainerAllocation(containerId, containerName, quantity);
 
-        if (resultingAssignedQuantity > item.TotalQuantity)
-        {
-            item.SetTotalQuantity(resultingAssignedQuantity);
-        }
+        await inventoryCommands.SaveItemInventoryAsync(inventory);
 
-        await inventoryCommands.SetItemContainerAllocationAsync(item, containerId, quantity);
-
-        return CreateResult(item, resultingAssignedQuantity, removedFromContainer: quantity == 0);
+        return CreateResult(inventory, removedFromContainer: quantity == 0);
     }
 
     public async Task<ItemInventoryUpdateResult> ApplyWithdrawalAsync(
@@ -66,34 +61,23 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         ItemInventoryWithdrawalPlan plan)
     {
         ArgumentNullException.ThrowIfNull(plan);
-        Item item = (await GetSummaryAsync(itemId)).Item;
+        var summary = await GetSummaryAsync(itemId);
+        var inventory = ToInventory(summary);
 
         if (plan.DeleteItem)
         {
-            if (plan.TotalQuantity != 0 || plan.AssignedQuantity != 0 || plan.UnassignedQuantity != 0)
-            {
-                throw new ArgumentException("A deletion plan must exhaust all inventory.", nameof(plan));
-            }
-
-            await inventoryCommands.DeleteItemAsync(item.ItemId.ToString());
+            inventory.ApplyWithdrawal(plan);
+            await inventoryCommands.DeleteItemAsync(summary.Item.ItemId.ToString());
             if (photoDeletion is not null)
             {
-                await photoDeletion.DeleteItemPhotoFilesBestEffortAsync(item);
+                await photoDeletion.DeleteItemPhotoFilesBestEffortAsync(summary.Item);
             }
             return new ItemInventoryUpdateResult(true, 0, 0, 0, ItemDeleted: true);
         }
 
-        if (plan.TotalQuantity < 1
-            || plan.AssignedQuantity < 0
-            || plan.UnassignedQuantity != plan.TotalQuantity - plan.AssignedQuantity
-            || plan.Allocations.Sum(allocation => allocation.Quantity) != plan.AssignedQuantity)
-        {
-            throw new ArgumentException("Withdrawal plan quantities are inconsistent.", nameof(plan));
-        }
-
-        item.SetTotalQuantity(plan.TotalQuantity);
-        await inventoryCommands.ApplyItemInventoryWithdrawalAsync(item, plan.Allocations);
-        return CreateResult(item, plan.AssignedQuantity, removedFromContainer: false);
+        inventory.ApplyWithdrawal(plan);
+        await inventoryCommands.SaveItemInventoryAsync(inventory);
+        return CreateResult(inventory, removedFromContainer: false);
     }
 
     private async Task<InventorySnapshot> GetSummaryAsync(Guid itemId)
@@ -107,13 +91,15 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
             ?? throw new KeyNotFoundException($"Item '{itemId}' was not found.");
     }
 
+    private static ItemInventory ToInventory(InventorySnapshot snapshot)
+        => new(snapshot.Item.ItemId, snapshot.TotalQuantity, snapshot.Allocations);
+
     private static ItemInventoryUpdateResult CreateResult(
-        Item item,
-        int assignedQuantity,
+        ItemInventory inventory,
         bool removedFromContainer)
         => new(
             removedFromContainer,
-            item.TotalQuantity,
-            assignedQuantity,
-            item.TotalQuantity - assignedQuantity);
+            inventory.TotalQuantity,
+            inventory.AssignedQuantity,
+            inventory.UnassignedQuantity);
 }

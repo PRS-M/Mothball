@@ -79,6 +79,7 @@ public static class ServiceCollectionExtensions
 
             services.AddSingleton<IContainerRepository, JsonContainerRepository>();
             services.AddSingleton<IItemRepository, JsonItemRepository>();
+            services.AddSingleton<IItemInventoryRepository, JsonItemInventoryRepository>();
             services.AddSingleton<IImageRepository, JsonImageRepository>();
             services.AddSingleton<IRelationRepository, JsonRelationRepository>();
 
@@ -96,6 +97,7 @@ public static class ServiceCollectionExtensions
 
             services.AddSingleton<IContainerRepository, ContainerRepository>();
             services.AddSingleton<IItemRepository, ItemRepository>();
+            services.AddSingleton<IItemInventoryRepository, ItemInventoryRepository>();
             services.AddSingleton<IImageRepository, ImageRepository>();
             services.AddSingleton<IRelationRepository, RelationRepository>();
 

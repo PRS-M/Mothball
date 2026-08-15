@@ -6,13 +6,19 @@ public sealed record InventorySnapshot
 {
     public InventorySnapshot(
         Item item,
+        int totalQuantity,
         int assignedQuantity,
         IReadOnlyList<ItemContainerAllocation> allocations)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(allocations);
 
-        if (assignedQuantity < 0 || assignedQuantity > item.TotalQuantity)
+        if (totalQuantity < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(totalQuantity));
+        }
+
+        if (assignedQuantity < 0 || assignedQuantity > totalQuantity)
         {
             throw new ArgumentOutOfRangeException(nameof(assignedQuantity));
         }
@@ -23,14 +29,15 @@ public sealed record InventorySnapshot
         }
 
         Item = item;
+        TotalQuantity = totalQuantity;
         AssignedQuantity = assignedQuantity;
         Allocations = allocations;
     }
 
     public Item Item { get; }
+    public int TotalQuantity { get; }
     public int AssignedQuantity { get; }
     public IReadOnlyList<ItemContainerAllocation> Allocations { get; }
-    public int TotalQuantity => Item.TotalQuantity;
     public int UnassignedQuantity => TotalQuantity - AssignedQuantity;
 }
 

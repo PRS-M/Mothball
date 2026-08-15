@@ -51,6 +51,12 @@ public sealed class SqliteTransactionRunner : ITransactionRunner
         public void UpdateItem(DbItem item)
             => connection.Update(item);
 
+        public void InsertOrReplaceItemInventory(DbItemInventory inventory)
+            => connection.InsertOrReplace(inventory);
+
+        public void DeleteItemInventory(Guid itemId)
+            => connection.DeleteByPrimaryKey<DbItemInventory>(itemId);
+
         public void ReplaceItemContainerRelation(Guid itemId, Guid containerId, int quantity)
         {
             connection.DeleteWhere<DbItemContainerRelation>(
@@ -79,6 +85,9 @@ public sealed class SqliteTransactionRunner : ITransactionRunner
             => connection.DeleteByPrimaryKey<DbContainer>(containerId);
 
         public void DeleteItem(Guid itemId)
-            => connection.DeleteByPrimaryKey<DbItem>(itemId);
+        {
+            DeleteItemInventory(itemId);
+            connection.DeleteByPrimaryKey<DbItem>(itemId);
+        }
     }
 }

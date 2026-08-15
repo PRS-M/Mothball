@@ -1,5 +1,6 @@
 using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
@@ -51,6 +52,9 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
         var existingItems = await inventoryQueries
             .QueryItemsWithPhotosAsync(new ItemListSpecification(ItemQueryFilter.All))
             .ConfigureAwait(false);
+        var existingInventory = await inventoryQueries
+            .QueryInventorySnapshotsAsync(new ItemListSpecification(ItemQueryFilter.All))
+            .ConfigureAwait(false) ?? [];
 
         var existingState = new InventoryBackupExistingState(
             existingContainers
@@ -65,8 +69,9 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
             existingItems
                 .SelectMany(i => i.Photos.Select(p => new InventoryBackupImageOwnership(i.ItemId, p.ImageId)))
                 .ToList(),
-            existingContainers
-                .SelectMany(c => c.Items.Select(stored => new InventoryBackupExistingRelation(c.ContainerId, stored.ItemId, stored.Quantity)))
+            existingInventory
+                .SelectMany(snapshot => snapshot.Allocations.Select(allocation =>
+                    new InventoryBackupExistingRelation(allocation.ContainerId, snapshot.Item.ItemId, allocation.Quantity)))
                 .ToList());
 
         var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState, options.ConflictPolicy);
@@ -88,14 +93,18 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
         foreach (var item in plan.ItemsToInsert)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await inventoryCommands.InsertItemAsync(new Item(item.ItemId, item.Name, item.Description, item.TotalQuantity))
+            await inventoryCommands.InsertItemAsync(new Item(item.ItemId, item.Name, item.Description))
+                .ConfigureAwait(false);
+            await inventoryCommands.InsertItemInventoryAsync(new ItemInventory(item.ItemId, item.TotalQuantity))
                 .ConfigureAwait(false);
         }
 
         foreach (var item in plan.ItemsToUpdate)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await inventoryCommands.UpdateItemAsync(new Item(item.ItemId, item.Name, item.Description, item.TotalQuantity))
+            await inventoryCommands.UpdateItemAsync(new Item(item.ItemId, item.Name, item.Description))
+                .ConfigureAwait(false);
+            await inventoryCommands.SaveItemInventoryAsync(new ItemInventory(item.ItemId, item.TotalQuantity))
                 .ConfigureAwait(false);
         }
 

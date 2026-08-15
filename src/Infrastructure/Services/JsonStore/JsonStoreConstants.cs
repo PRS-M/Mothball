@@ -19,6 +19,7 @@ internal static class JsonStoreConstants
 
     public static readonly string ContainersFileName = "containers.json";
     public static readonly string ItemsFileName = "items.json";
+    public static readonly string InventoriesFileName = "inventories.json";
     public static readonly string ImagesFileName = "images.json";
     public static readonly string RelationsFileName = "relations.json";
 
@@ -28,6 +29,7 @@ internal static class JsonStoreConstants
         CommitInfoFileName,
         ContainersFileName,
         ItemsFileName,
+        InventoriesFileName,
         ImagesFileName,
         RelationsFileName,
     ];

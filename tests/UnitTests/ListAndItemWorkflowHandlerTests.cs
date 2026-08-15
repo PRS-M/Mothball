@@ -60,10 +60,11 @@ public sealed class ListAndItemWorkflowHandlerTests
     [Test]
     public async Task ItemDetailsQueryHandler_WhenItemExists_ReturnsItemAndRelatedContainerId()
     {
-        var item = new Item(Guid.NewGuid(), "Hat", "Blue", totalQuantity: 3);
+        var item = new Item(Guid.NewGuid(), "Hat", "Blue");
         var containerId = Guid.NewGuid();
         var summary = new CoreApp.Entities.Inventory.InventorySnapshot(
             item,
+            3,
             2,
             [new CoreApp.Entities.Inventory.ItemContainerAllocation(containerId, "Box", 2)]);
         var queries = new Mock<IInventoryQueryRepository>();
@@ -99,7 +100,10 @@ public sealed class ListAndItemWorkflowHandlerTests
         var item = await handler.CreateAsync("Hat", "Blue", containerId, quantity: 3);
 
         commands.Verify(c => c.InsertItemAsync(item), Times.Once);
-        commands.Verify(c => c.InsertItemContainerRelation(item.ItemId, containerId, 3), Times.Once);
-        Assert.That(item.TotalQuantity, Is.EqualTo(3));
+        commands.Verify(c => c.InsertItemInventoryAsync(It.Is<ItemInventory>(inventory =>
+            inventory.ItemId == item.ItemId
+            && inventory.TotalQuantity == 3
+            && inventory.Allocations.Single().ContainerId == containerId
+            && inventory.Allocations.Single().Quantity == 3)), Times.Once);
     }
 }

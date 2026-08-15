@@ -51,6 +51,7 @@ public class MothballDatabase : IAsyncDisposable
         // Create tables only if they don't exist (avoids MacCatalyst ALTER TABLE NOT NULL crash)
         await CreateTableIfNotExistsAsync<DbContainer>(databaseConnection);
         await CreateTableIfNotExistsAsync<DbItem>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbItemInventory>(databaseConnection);
         await CreateTableIfNotExistsAsync<DbImage>(databaseConnection);
         await CreateTableIfNotExistsAsync<DbItemContainerRelation>(databaseConnection);
 

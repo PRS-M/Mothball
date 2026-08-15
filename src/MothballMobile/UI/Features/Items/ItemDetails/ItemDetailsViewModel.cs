@@ -381,9 +381,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private void ApplyInventoryResult(ItemInventoryUpdateResult result)
     {
-        currentItem!.SetTotalQuantity(result.TotalQuantity);
         currentInventory = new InventorySnapshot(
-            currentItem,
+            currentItem!,
+            result.TotalQuantity,
             result.AssignedQuantity,
             currentAllocations);
         TotalQuantity = result.TotalQuantity;

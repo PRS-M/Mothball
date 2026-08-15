@@ -15,13 +15,16 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 {
     private readonly IContainerRepository containerRepo;
     private readonly IItemRepository itemRepo;
+    private readonly IItemInventoryRepository itemInventoryRepo;
 
     public InventoryQueryRepository(
         IContainerRepository containerRepo,
-        IItemRepository itemRepo)
+        IItemRepository itemRepo,
+        IItemInventoryRepository itemInventoryRepo)
     {
         this.containerRepo = containerRepo;
         this.itemRepo = itemRepo;
+        this.itemInventoryRepo = itemInventoryRepo;
     }
 
     public Task<Container?> GetContainerAsync(string containerId)
@@ -51,8 +54,8 @@ public class InventoryQueryRepository : IInventoryQueryRepository
             return null;
         }
 
-        var allocations = await containerRepo.GetItemContainerAllocationsAsync(itemId);
-        return CreateSummary(item, allocations);
+        var inventory = await itemInventoryRepo.GetAsync(itemId);
+        return inventory is null ? null : CreateSnapshot(item, inventory);
     }
 
     public Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification)
@@ -65,13 +68,14 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         ItemListSpecification specification)
     {
         var items = await itemRepo.QueryWithPhotosAsync(specification);
-        var allocationsByItem = await containerRepo.GetItemContainerAllocationsAsync(
-            items.Select(item => item.ItemId).ToArray());
         var summaries = new List<InventorySnapshot>(items.Count);
         foreach (var item in items)
         {
-            var allocations = allocationsByItem.GetValueOrDefault(item.ItemId, []);
-            summaries.Add(CreateSummary(item, allocations));
+            var inventory = await itemInventoryRepo.GetAsync(item.ItemId);
+            if (inventory is not null)
+            {
+                summaries.Add(CreateSnapshot(item, inventory));
+            }
         }
 
         return summaries;
@@ -89,14 +93,17 @@ public class InventoryQueryRepository : IInventoryQueryRepository
             return [];
         }
 
-        var allocationsByItem = await containerRepo.GetItemContainerAllocationsAsync(
-            items.Select(item => item.ItemId).ToArray());
         var entries = new List<ContainerItemInventoryEntry>(items.Count);
         foreach (var item in items)
         {
-            var allocations = allocationsByItem.GetValueOrDefault(item.ItemId, []);
-            var summary = CreateSummary(item, allocations);
-            int containerQuantity = allocations
+            var inventory = await itemInventoryRepo.GetAsync(item.ItemId);
+            if (inventory is null)
+            {
+                continue;
+            }
+
+            var summary = CreateSnapshot(item, inventory);
+            int containerQuantity = inventory.Allocations
                 .FirstOrDefault(allocation => allocation.ContainerId == containerId)?.Quantity ?? 0;
             entries.Add(new ContainerItemInventoryEntry(summary, containerQuantity));
         }
@@ -104,8 +111,6 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         return entries;
     }
 
-    private static InventorySnapshot CreateSummary(
-        Item item,
-        IReadOnlyList<ItemContainerAllocation> allocations)
-        => new(item, allocations.Sum(allocation => allocation.Quantity), allocations);
+    private static InventorySnapshot CreateSnapshot(Item item, ItemInventory inventory)
+        => new(item, inventory.TotalQuantity, inventory.AssignedQuantity, inventory.Allocations);
 }

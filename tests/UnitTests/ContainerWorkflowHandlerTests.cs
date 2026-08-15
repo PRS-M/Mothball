@@ -57,10 +57,10 @@ public sealed class ContainerWorkflowHandlerTests
     public async Task ContainerAssociationQueryHandler_QueryUnassignedItems_UsesUnassignedFilter()
     {
         var queries = new Mock<IInventoryQueryRepository>();
-        var item = new Item("Hammer", string.Empty, totalQuantity: 3);
+        var item = new Item("Hammer", string.Empty);
         var expected = new List<CoreApp.Entities.Inventory.InventorySnapshot>
         {
-            new(item, 1, [new CoreApp.Entities.Inventory.ItemContainerAllocation(Guid.NewGuid(), "Box", 1)]),
+            new(item, 3, 1, [new CoreApp.Entities.Inventory.ItemContainerAllocation(Guid.NewGuid(), "Box", 1)]),
         };
         ItemListSpecification? capturedSpecification = null;
 
@@ -113,10 +113,10 @@ public sealed class ContainerWorkflowHandlerTests
         associationQueries.Setup(q => q.QueryContainersAsync(0, 10))
             .ReturnsAsync([container]);
 
-        var item = new Item(itemId, "Widget", "", totalQuantity: 5);
+        var item = new Item(itemId, "Widget", "");
         var itemDetails = new Mock<IItemDetailsQueryHandler>();
         itemDetails.Setup(q => q.GetDetailsAsync(itemId.ToString()))
-            .ReturnsAsync(new ItemDetailsResult(new InventorySnapshot(item, assignedQuantity: 0, [])));
+            .ReturnsAsync(new ItemDetailsResult(new InventorySnapshot(item, 5, 0, [])));
 
         var assign = new Mock<IAssignItemToContainerCommandHandler>();
         var popup = new Mock<IPopupService>();
@@ -160,11 +160,11 @@ public sealed class ContainerWorkflowHandlerTests
         associationQueries.Setup(q => q.QueryContainersAsync(0, 10))
             .ReturnsAsync([container]);
 
-        var item = new Item(itemId, "Widget", "", totalQuantity: 4);
+        var item = new Item(itemId, "Widget", "");
         var allocation = new ItemContainerAllocation(container.ContainerId, container.Name, 1);
         var itemDetails = new Mock<IItemDetailsQueryHandler>();
         itemDetails.Setup(q => q.GetDetailsAsync(itemId.ToString()))
-            .ReturnsAsync(new ItemDetailsResult(new InventorySnapshot(item, assignedQuantity: 1, [allocation])));
+            .ReturnsAsync(new ItemDetailsResult(new InventorySnapshot(item, 4, 1, [allocation])));
 
         var assign = new Mock<IAssignItemToContainerCommandHandler>();
         var popup = new Mock<IPopupService>();

@@ -153,9 +153,9 @@ public class BackendParityTests
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var assignedOnly = new Item(Guid.NewGuid(), "Cable Assigned", "", totalQuantity: 1);
-        var firstUnassigned = new Item(Guid.NewGuid(), "Cable Alpha", "", totalQuantity: 3);
-        var secondUnassigned = new Item(Guid.NewGuid(), "Cable Beta", "", totalQuantity: 3);
+        var assignedOnly = new Item(Guid.NewGuid(), "Cable Assigned", "");
+        var firstUnassigned = new Item(Guid.NewGuid(), "Cable Alpha", "");
+        var secondUnassigned = new Item(Guid.NewGuid(), "Cable Beta", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
@@ -163,6 +163,9 @@ public class BackendParityTests
             await command.InsertItemAsync(assignedOnly);
             await command.InsertItemAsync(firstUnassigned);
             await command.InsertItemAsync(secondUnassigned);
+            await command.InsertItemInventoryAsync(new ItemInventory(assignedOnly.ItemId, 1));
+            await command.InsertItemInventoryAsync(new ItemInventory(firstUnassigned.ItemId, 3));
+            await command.InsertItemInventoryAsync(new ItemInventory(secondUnassigned.ItemId, 3));
             await command.InsertItemContainerRelation(assignedOnly.ItemId, container.ContainerId, 1);
             await command.InsertItemContainerRelation(firstUnassigned.ItemId, container.ContainerId, 2);
         }
@@ -192,9 +195,9 @@ public class BackendParityTests
         var json = await BuildJsonAsync();
         var targetContainer = new Container(Guid.NewGuid(), "Target", "");
         var otherContainer = new Container(Guid.NewGuid(), "Other", "");
-        var alreadyInTarget = new Item(Guid.NewGuid(), "Cable Alpha", "", totalQuantity: 3);
-        var availableFromOther = new Item(Guid.NewGuid(), "Cable Beta", "", totalQuantity: 3);
-        var fullyUnassigned = new Item(Guid.NewGuid(), "Cable Gamma", "", totalQuantity: 3);
+        var alreadyInTarget = new Item(Guid.NewGuid(), "Cable Alpha", "");
+        var availableFromOther = new Item(Guid.NewGuid(), "Cable Beta", "");
+        var fullyUnassigned = new Item(Guid.NewGuid(), "Cable Gamma", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
@@ -203,6 +206,9 @@ public class BackendParityTests
             await command.InsertItemAsync(alreadyInTarget);
             await command.InsertItemAsync(availableFromOther);
             await command.InsertItemAsync(fullyUnassigned);
+            await command.InsertItemInventoryAsync(new ItemInventory(alreadyInTarget.ItemId, 3));
+            await command.InsertItemInventoryAsync(new ItemInventory(availableFromOther.ItemId, 3));
+            await command.InsertItemInventoryAsync(new ItemInventory(fullyUnassigned.ItemId, 3));
             await command.InsertItemContainerRelation(alreadyInTarget.ItemId, targetContainer.ContainerId, 1);
             await command.InsertItemContainerRelation(availableFromOther.ItemId, otherContainer.ContainerId, 1);
         }
@@ -254,18 +260,20 @@ public class BackendParityTests
     }
 
     [Test]
-    public async Task ItemTotalQuantity_PersistsAcrossBackends()
+    public async Task ItemInventoryTotalQuantity_PersistsAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
 
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 12);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         await sqlite.Command.InsertItemAsync(item);
         await json.Command.InsertItemAsync(item);
+        await sqlite.Command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 12));
+        await json.Command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 12));
 
-        var sqliteItem = await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
-        var jsonItem = await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
@@ -282,13 +290,14 @@ public class BackendParityTests
 
         var firstContainer = new Container(Guid.NewGuid(), "Box", "");
         var secondContainer = new Container(Guid.NewGuid(), "Drawer", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 12);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(firstContainer);
             await command.InsertContainerAsync(secondContainer);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 12));
             await command.InsertItemContainerRelation(item.ItemId, firstContainer.ContainerId, 3);
             await command.InsertItemContainerRelation(item.ItemId, secondContainer.ContainerId, 4);
         }
@@ -314,13 +323,14 @@ public class BackendParityTests
         var json = await BuildJsonAsync();
         var box = new Container(Guid.NewGuid(), "Box", "");
         var drawer = new Container(Guid.NewGuid(), "Drawer", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(box);
             await command.InsertContainerAsync(drawer);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 10));
             await command.InsertItemContainerRelation(item.ItemId, box.ContainerId, 4);
             await command.InsertItemContainerRelation(item.ItemId, drawer.ContainerId, 3);
         }
@@ -359,12 +369,13 @@ public class BackendParityTests
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(container);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 10));
             await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 7);
         }
 
@@ -386,7 +397,7 @@ public class BackendParityTests
         var json = await BuildJsonAsync();
 
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 2);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
@@ -421,7 +432,7 @@ public class BackendParityTests
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 2);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
@@ -457,12 +468,13 @@ public class BackendParityTests
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 6);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(container);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 6));
             await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 4);
         }
 
@@ -491,12 +503,13 @@ public class BackendParityTests
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 6);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(container);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 6));
             await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 4);
             await command.DeleteContainerAsync(container.ContainerId.ToString());
         }
@@ -522,13 +535,14 @@ public class BackendParityTests
         var json = await BuildJsonAsync();
         var box = new Container(Guid.NewGuid(), "Box", "");
         var drawer = new Container(Guid.NewGuid(), "Drawer", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(box);
             await command.InsertContainerAsync(drawer);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 10));
             await command.InsertItemContainerRelation(item.ItemId, box.ContainerId, 5);
             await command.InsertItemContainerRelation(item.ItemId, drawer.ContainerId, 5);
         }
@@ -564,10 +578,12 @@ public class BackendParityTests
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 1);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         await sqlite.Command.InsertItemAsync(item);
         await json.Command.InsertItemAsync(item);
+        await sqlite.Command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 1));
+        await json.Command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 1));
 
         var plan = new ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
         await new ItemInventoryCommandService(sqlite.Query, sqlite.Command).ApplyWithdrawalAsync(item.ItemId, plan);
@@ -584,8 +600,8 @@ public class BackendParityTests
         var json = await BuildJsonAsync();
         var drawer = new Container(Guid.NewGuid(), "A Drawer", "");
         var box = new Container(Guid.NewGuid(), "Z Box", "");
-        var firstItem = new Item(Guid.NewGuid(), "First", "", totalQuantity: 10);
-        var secondItem = new Item(Guid.NewGuid(), "Second", "", totalQuantity: 5);
+        var firstItem = new Item(Guid.NewGuid(), "First", "");
+        var secondItem = new Item(Guid.NewGuid(), "Second", "");
         var unassignedItem = new Item(Guid.NewGuid(), "Unassigned", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
@@ -595,6 +611,9 @@ public class BackendParityTests
             await command.InsertItemAsync(firstItem);
             await command.InsertItemAsync(secondItem);
             await command.InsertItemAsync(unassignedItem);
+            await command.InsertItemInventoryAsync(new ItemInventory(firstItem.ItemId, 10));
+            await command.InsertItemInventoryAsync(new ItemInventory(secondItem.ItemId, 5));
+            await command.InsertItemInventoryAsync(new ItemInventory(unassignedItem.ItemId, 1));
             await command.InsertItemContainerRelation(firstItem.ItemId, box.ContainerId, 3);
             await command.InsertItemContainerRelation(firstItem.ItemId, drawer.ContainerId, 2);
             await command.InsertItemContainerRelation(secondItem.ItemId, box.ContainerId, 5);
@@ -680,8 +699,8 @@ public class BackendParityTests
         await sqlite.Command.InsertContainerAsync(sqliteContainer);
         await json.Command.InsertContainerAsync(jsonContainer);
 
-        var sqliteItem = new Item("Hat", "Desc", totalQuantity: 2);
-        var jsonItem = new Item("Hat", "Desc", totalQuantity: 2);
+        var sqliteItem = new Item("Hat", "Desc");
+        var jsonItem = new Item("Hat", "Desc");
         await sqlite.Command.InsertItemAsync(sqliteItem);
         await json.Command.InsertItemAsync(jsonItem);
 
@@ -704,10 +723,10 @@ public class BackendParityTests
                 PageNumber: 0,
                 PageSize: 10));
 
-        Assert.That(sqliteResults.Count, Is.EqualTo(2));
-        Assert.That(jsonResults.Count, Is.EqualTo(2));
-        Assert.That(sqliteResults.Select(i => i.Name), Is.EqualTo(new[] { "Hat", "Hat" }));
-        Assert.That(jsonResults.Select(i => i.Name), Is.EqualTo(new[] { "Hat", "Hat" }));
+        Assert.That(sqliteResults.Count, Is.EqualTo(1));
+        Assert.That(jsonResults.Count, Is.EqualTo(1));
+        Assert.That(sqliteResults.Select(i => i.Name), Is.EqualTo(new[] { "Hat" }));
+        Assert.That(jsonResults.Select(i => i.Name), Is.EqualTo(new[] { "Hat" }));
     }
 
     private static async Task<SqliteHarness> BuildSqliteAsync()
@@ -717,6 +736,7 @@ public class BackendParityTests
 
         var containers = new Repository<DbContainer>(db);
         var items = new Repository<DbItem>(db);
+        var inventories = new Repository<DbItemInventory>(db);
         var photos = new Repository<DbImage>(db);
         var relations = new Repository<DbItemContainerRelation>(db);
         await db.InitializeAsync();
@@ -727,11 +747,12 @@ public class BackendParityTests
 
         var containerRepo = new ContainerRepository(transactionRunner, containers, photos, relations, containerLogger);
         var itemRepo = new ItemRepository(transactionRunner, items, photos, relations, itemLogger);
+        var itemInventoryRepo = new ItemInventoryRepository(inventories, relations, containers, transactionRunner);
         var imageRepo = new ImageRepository(photos);
         var relationRepo = new RelationRepository(relations, transactionRunner);
 
-        var query = new InventoryQueryRepository(containerRepo, itemRepo);
-        var command = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
+        var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
+        var command = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
 
         return new SqliteHarness(dbPath, db, query, command);
     }
@@ -751,11 +772,12 @@ public class BackendParityTests
 
         var containerRepo = new JsonContainerRepository(store);
         var itemRepo = new JsonItemRepository(store);
+        var itemInventoryRepo = new JsonItemInventoryRepository(store);
         var imageRepo = new JsonImageRepository(store);
         var relationRepo = new JsonRelationRepository(store);
 
-        var query = new InventoryQueryRepository(containerRepo, itemRepo);
-        var command = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
+        var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
+        var command = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
 
         return new JsonHarness(query, command);
     }

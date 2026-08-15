@@ -303,6 +303,11 @@ public class JsonOperationalStoreTests
             new() { RowId = 2, ItemId = Guid.NewGuid(), Name = "I2", Description = "d" },
             new() { RowId = 3, ItemId = Guid.NewGuid(), Name = "I3", Description = "d" },
         };
+        var inventories = new List<JsonInventoryRow>
+        {
+            new() { ItemId = items[0].ItemId, TotalQuantity = 1 },
+            new() { ItemId = items[1].ItemId, TotalQuantity = 1 },
+        };
         var images = new List<JsonImageRow>
         {
             new() { RowId = 5, ImageId = Guid.NewGuid(), OwnerUniqueId = containers[0].ContainerId },
@@ -322,6 +327,7 @@ public class JsonOperationalStoreTests
         await files.WriteRawAsync(JsonStoreConstants.MetadataFileName, JsonStoreConstants.SlotA, Serialize(metadata));
         await files.WriteRawAsync(JsonStoreConstants.ContainersFileName, JsonStoreConstants.SlotA, Serialize(containers));
         await files.WriteRawAsync(JsonStoreConstants.ItemsFileName, JsonStoreConstants.SlotA, Serialize(items));
+        await files.WriteRawAsync(JsonStoreConstants.InventoriesFileName, JsonStoreConstants.SlotA, Serialize(inventories));
         await files.WriteRawAsync(JsonStoreConstants.ImagesFileName, JsonStoreConstants.SlotA, Serialize(images));
         await files.WriteRawAsync(JsonStoreConstants.RelationsFileName, JsonStoreConstants.SlotA, Serialize(relations));
         await files.WriteRawAsync(JsonStoreConstants.CommitInfoFileName, JsonStoreConstants.SlotA, Serialize(commitInfo));

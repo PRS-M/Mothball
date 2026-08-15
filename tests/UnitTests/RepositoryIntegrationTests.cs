@@ -3,6 +3,7 @@ using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using Infrastructure.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
 using CoreApp.Specifications;
@@ -17,6 +18,7 @@ public class RepositoryIntegrationTests
     private MothballDatabase db = null!;
     private IRepository<DbContainer> containers = null!;
     private IRepository<DbItem> items = null!;
+    private IRepository<DbItemInventory> inventories = null!;
     private IRepository<DbImage> photos = null!;
     private IRepository<DbItemContainerRelation> relations = null!;
     private IInventoryQueryRepository queryRepo = null!;
@@ -29,6 +31,7 @@ public class RepositoryIntegrationTests
         db = new MothballDatabase(dbPath);
         containers = new Repository<DbContainer>(db);
         items = new Repository<DbItem>(db);
+        inventories = new Repository<DbItemInventory>(db);
         photos = new Repository<DbImage>(db);
         relations = new Repository<DbItemContainerRelation>(db);
         await db.InitializeAsync();
@@ -39,11 +42,12 @@ public class RepositoryIntegrationTests
 
         var containerRepo = new ContainerRepository(transactionRunner, containers, photos, relations, containerLogger);
         var itemRepo = new ItemRepository(transactionRunner, items, photos, relations, itemLogger);
+        var itemInventoryRepo = new ItemInventoryRepository(inventories, relations, containers, transactionRunner);
         var imageRepo = new ImageRepository(photos);
         var relationRepo = new RelationRepository(relations, transactionRunner);
 
-        queryRepo = new InventoryQueryRepository(containerRepo, itemRepo);
-        commandRepo = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
+        queryRepo = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
+        commandRepo = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
     }
 
     [TearDown]
@@ -94,9 +98,12 @@ public class RepositoryIntegrationTests
     {
         var c = new Container(Guid.NewGuid(), "C1", "");
         await commandRepo.InsertContainerAsync(c);
-        var i = new Item("ItemA", "DescA", totalQuantity: 2);
+        var i = new Item("ItemA", "DescA");
         await commandRepo.InsertItemAsync(i);
-        await commandRepo.InsertItemContainerRelation(i.ItemId, c.ContainerId, quantity: 2);
+        await commandRepo.InsertItemInventoryAsync(new ItemInventory(
+            i.ItemId,
+            2,
+            [new ItemContainerAllocation(c.ContainerId, c.Name, 2)]));
 
         var itemsForContainer = await queryRepo.QueryContainerItemsWithPhotosAsync(
             new ContainerItemsSpecification(c.ContainerId.ToString()));

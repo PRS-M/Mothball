@@ -84,14 +84,13 @@ public static class ItemMapper
             ItemId = item.ItemId,
             Name = item.Name,
             Description = item.Description,
-            TotalQuantity = item.TotalQuantity,
         };
     }
 
     public static Item ToDomain(this DbItem dbItem, IEnumerable<DbImage>? dbPhotos = null)
     {
         ArgumentNullException.ThrowIfNull(dbItem);
-        var item = new Item(dbItem.ItemId, dbItem.Name, dbItem.Description, dbItem.TotalQuantity);
+        var item = new Item(dbItem.ItemId, dbItem.Name, dbItem.Description);
 
         if (dbPhotos is not null)
         {

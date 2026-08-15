@@ -34,7 +34,12 @@ public class ItemRepository : IItemRepository
     {
         logger.LogDebug("GetWithPhotosAsync: itemId={ItemId}", itemId);
 
-        DbItem? dbItem = await items.GetAsync(itemId);
+        if (!RepositoryQueryHelpers.TryParseGuid(itemId, out Guid iid, logger, "GetWithPhotosAsync", itemId))
+        {
+            return null;
+        }
+
+        DbItem? dbItem = (await items.WhereAsync(item => item.ItemId == iid)).FirstOrDefault();
         if (dbItem is null) return null;
 
         IEnumerable<DbImage> dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbItem.ItemId);
@@ -155,7 +160,7 @@ public class ItemRepository : IItemRepository
         {
             unassigned = await items.QueryAsync(
                 $"SELECT * FROM {nameof(DbItem)} " +
-                $"WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} " +
+                $"WHERE COALESCE((SELECT TotalQuantity FROM {nameof(DbItemInventory)} inv WHERE inv.ItemId = {nameof(DbItem)}.ItemId), 1) > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} " +
                 $"WHERE {nameof(DbItemContainerRelation)}.ItemId = {nameof(DbItem)}.ItemId AND Quantity > 0), 0) " +
                 $"AND NOT EXISTS (SELECT 1 FROM {nameof(DbItemContainerRelation)} r " +
                 $"WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.ContainerId = ? AND r.Quantity > 0) " +
@@ -169,7 +174,7 @@ public class ItemRepository : IItemRepository
         {
             unassigned = await items.QueryAsync(
                 $"SELECT * FROM {nameof(DbItem)} " +
-                $"WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} " +
+                $"WHERE COALESCE((SELECT TotalQuantity FROM {nameof(DbItemInventory)} inv WHERE inv.ItemId = {nameof(DbItem)}.ItemId), 1) > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} " +
                 $"WHERE {nameof(DbItemContainerRelation)}.ItemId = {nameof(DbItem)}.ItemId AND Quantity > 0), 0) " +
                 $"ORDER BY Name COLLATE NOCASE " +
                 $"LIMIT ? OFFSET ?",
@@ -222,7 +227,7 @@ public class ItemRepository : IItemRepository
             {
                 itemsQuery = await items.QueryAsync(
                     $@"SELECT * FROM {nameof(DbItem)}
-                                     WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                     WHERE COALESCE((SELECT TotalQuantity FROM {nameof(DbItemInventory)} inv WHERE inv.ItemId = {nameof(DbItem)}.ItemId), 1) > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
                                              WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
                          AND Name LIKE ? COLLATE NOCASE
                          AND NOT EXISTS (SELECT 1 FROM {nameof(DbItemContainerRelation)} xr
@@ -240,7 +245,7 @@ public class ItemRepository : IItemRepository
             {
                 itemsQuery = await items.QueryAsync(
                     $@"SELECT * FROM {nameof(DbItem)}
-                                     WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                     WHERE COALESCE((SELECT TotalQuantity FROM {nameof(DbItemInventory)} inv WHERE inv.ItemId = {nameof(DbItem)}.ItemId), 1) > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
                                              WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
                          AND Name LIKE ? COLLATE NOCASE
                        ORDER BY Name COLLATE NOCASE
@@ -256,7 +261,7 @@ public class ItemRepository : IItemRepository
             {
                 itemsQuery = await items.QueryAsync(
                     $@"SELECT * FROM {nameof(DbItem)}
-                                     WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                     WHERE COALESCE((SELECT TotalQuantity FROM {nameof(DbItemInventory)} inv WHERE inv.ItemId = {nameof(DbItem)}.ItemId), 1) > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
                                              WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
                          AND Name LIKE ? COLLATE NOCASE
                          AND NOT EXISTS (SELECT 1 FROM {nameof(DbItemContainerRelation)} xr
@@ -271,7 +276,7 @@ public class ItemRepository : IItemRepository
             {
                 itemsQuery = await items.QueryAsync(
                     $@"SELECT * FROM {nameof(DbItem)}
-                                     WHERE TotalQuantity > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                     WHERE COALESCE((SELECT TotalQuantity FROM {nameof(DbItemInventory)} inv WHERE inv.ItemId = {nameof(DbItem)}.ItemId), 1) > COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
                                              WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0)
                          AND Name LIKE ? COLLATE NOCASE
                        ORDER BY Name COLLATE NOCASE",

@@ -68,7 +68,6 @@ public sealed class JsonRelationRepository : IRelationRepository
                 ?? throw new KeyNotFoundException($"Item '{item.ItemId}' was not found.");
             itemRow.Name = item.Name;
             itemRow.Description = item.Description;
-            itemRow.TotalQuantity = item.TotalQuantity;
 
             state.Relations.RemoveAll(relation =>
                 relation.ItemId == item.ItemId && relation.ContainerId == containerId);
@@ -101,7 +100,6 @@ public sealed class JsonRelationRepository : IRelationRepository
                 ?? throw new KeyNotFoundException($"Item '{item.ItemId}' was not found.");
             itemRow.Name = item.Name;
             itemRow.Description = item.Description;
-            itemRow.TotalQuantity = item.TotalQuantity;
 
             state.Relations.RemoveAll(relation => relation.ItemId == item.ItemId);
             foreach (var allocation in allocations.Where(allocation => allocation.Quantity > 0))

@@ -1,4 +1,5 @@
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
@@ -29,6 +30,15 @@ public class InventoryBackupExporterTests
         queries
             .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
             .ReturnsAsync([item]);
+        queries
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .ReturnsAsync([
+                new InventorySnapshot(
+                    item,
+                    5,
+                    5,
+                    [new ItemContainerAllocation(container.ContainerId, container.Name, 5)])
+            ]);
 
         var sut = new InventoryBackupExporter(queries.Object, Mock.Of<IFileHandler>());
 
@@ -57,6 +67,9 @@ public class InventoryBackupExporterTests
         queries
             .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
             .ReturnsAsync(new List<Item>());
+        queries
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .ReturnsAsync(new List<InventorySnapshot>());
 
         var sut = new InventoryBackupExporter(queries.Object, Mock.Of<IFileHandler>());
 
@@ -88,6 +101,9 @@ public class InventoryBackupExporterTests
         queries
             .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
             .ReturnsAsync([item]);
+        queries
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .ReturnsAsync([new InventorySnapshot(item, 1, 0, [])]);
 
         var fileHandler = new Mock<IFileHandler>();
         fileHandler
@@ -124,6 +140,9 @@ public class InventoryBackupExporterTests
             .ReturnsAsync([container]);
         queries
             .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .ReturnsAsync([]);
+        queries
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
             .ReturnsAsync([]);
 
         var fileHandler = new Mock<IFileHandler>();

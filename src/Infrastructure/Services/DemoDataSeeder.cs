@@ -19,6 +19,7 @@ public class DemoDataSeeder
 
     private readonly IRepository<DbContainer> containers;
     private readonly IRepository<DbItem> items;
+    private readonly IRepository<DbItemInventory> inventories;
     private readonly IRepository<DbImage> photos;
     private readonly IRepository<DbItemContainerRelation> itemContainerRelations;
     private readonly IFileHandler fileHandler;
@@ -27,6 +28,7 @@ public class DemoDataSeeder
     public DemoDataSeeder(
         IRepository<DbContainer> containers,
         IRepository<DbItem> items,
+        IRepository<DbItemInventory> inventories,
         IRepository<DbImage> photos,
         IRepository<DbItemContainerRelation> itemContainerRelations,
         IFileHandler fileHandler,
@@ -34,6 +36,7 @@ public class DemoDataSeeder
     {
         this.containers = containers;
         this.items = items;
+        this.inventories = inventories;
         this.photos = photos;
         this.itemContainerRelations = itemContainerRelations;
         this.fileHandler = fileHandler;
@@ -89,6 +92,7 @@ public class DemoDataSeeder
         // Ensure tables exist
         await containers.InitializeAsync();
         await items.InitializeAsync();
+        await inventories.InitializeAsync();
         await photos.InitializeAsync();
         await itemContainerRelations.InitializeAsync();
 
@@ -125,10 +129,14 @@ public class DemoDataSeeder
                 {
                     ItemId = itemId,
                     Name = $"Item {container.Name}-{(currentCount + i + 1)}",
-                    TotalQuantity = 1,
                 };
 
                 await items.InsertAsync(item);
+                await inventories.InsertAsync(new DbItemInventory
+                {
+                    ItemId = itemId,
+                    TotalQuantity = 1,
+                });
 
                 // Create relation
                 var relation = new DbItemContainerRelation

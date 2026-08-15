@@ -12,6 +12,10 @@ public interface IInventoryCommandRepository
 
     Task InsertItemAsync(Item item);
 
+    Task InsertItemInventoryAsync(ItemInventory inventory);
+
+    Task SaveItemInventoryAsync(ItemInventory inventory);
+
     Task InsertImageItemAsync(ImageItem imageItem, Guid ownerId);
 
     Task InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity);

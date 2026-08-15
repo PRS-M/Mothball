@@ -13,7 +13,4 @@ public class DbItem
 
 	[NotNull]
 	public string Description { get; set; } = string.Empty;
-
-	[NotNull]
-	public int TotalQuantity { get; set; } = 1;
 }

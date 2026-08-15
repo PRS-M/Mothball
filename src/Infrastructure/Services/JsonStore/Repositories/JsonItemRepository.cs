@@ -149,7 +149,7 @@ public sealed class JsonItemRepository : IItemRepository
 
         var state = await store.LoadAsync().ConfigureAwait(false);
         return state.Items
-            .Where(i => i.TotalQuantity > GetAssignedQuantity(state, i.ItemId)
+            .Where(i => GetTotalQuantity(state, i.ItemId) > GetAssignedQuantity(state, i.ItemId)
                 && !HasPositiveAllocationInContainer(state, i.ItemId, excludedContainerId))
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.RowId)
@@ -190,7 +190,7 @@ public sealed class JsonItemRepository : IItemRepository
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
         var query = state.Items
-            .Where(i => i.TotalQuantity > GetAssignedQuantity(state, i.ItemId)
+            .Where(i => GetTotalQuantity(state, i.ItemId) > GetAssignedQuantity(state, i.ItemId)
                 && !HasPositiveAllocationInContainer(state, i.ItemId, excludedContainerId)
                 && i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
@@ -246,7 +246,6 @@ public sealed class JsonItemRepository : IItemRepository
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
-                existing.TotalQuantity = item.TotalQuantity;
                 return Task.CompletedTask;
             }
 
@@ -256,7 +255,6 @@ public sealed class JsonItemRepository : IItemRepository
                 ItemId = item.ItemId,
                 Name = item.Name,
                 Description = item.Description,
-                TotalQuantity = item.TotalQuantity,
             });
 
             return Task.CompletedTask;
@@ -278,14 +276,12 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
-                    TotalQuantity = item.TotalQuantity,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
-                existing.TotalQuantity = item.TotalQuantity;
             }
 
             return Task.CompletedTask;
@@ -309,14 +305,12 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
-                    TotalQuantity = item.TotalQuantity,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
-                existing.TotalQuantity = item.TotalQuantity;
             }
 
             return Task.CompletedTask;
@@ -331,6 +325,7 @@ public sealed class JsonItemRepository : IItemRepository
         {
             state.Images.RemoveAll(p => p.OwnerUniqueId == iid);
             state.Relations.RemoveAll(r => r.ItemId == iid);
+            state.Inventories.RemoveAll(i => i.ItemId == iid);
             state.Items.RemoveAll(i => i.ItemId == iid);
             return Task.CompletedTask;
         });
@@ -343,7 +338,6 @@ public sealed class JsonItemRepository : IItemRepository
             ItemId = row.ItemId,
             Name = row.Name,
             Description = row.Description,
-            TotalQuantity = row.TotalQuantity,
         };
 
         var photos = state.Images
@@ -359,6 +353,9 @@ public sealed class JsonItemRepository : IItemRepository
         => state.Relations
             .Where(relation => relation.ItemId == itemId && relation.Quantity > 0)
             .Sum(relation => relation.Quantity);
+
+    private static int GetTotalQuantity(JsonInventoryStore.StoreState state, Guid itemId)
+        => state.Inventories.FirstOrDefault(inventory => inventory.ItemId == itemId)?.TotalQuantity ?? 1;
 
     private static bool HasPositiveAllocationInContainer(
         JsonInventoryStore.StoreState state,

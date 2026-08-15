@@ -112,6 +112,11 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     Name = item.Name,
                     Description = item.Description,
                 });
+                connection.InsertOrReplace(new DbItemInventory
+                {
+                    ItemId = item.ItemId,
+                    TotalQuantity = item.TotalQuantity,
+                });
             }
 
             foreach (var item in plan.ItemsToUpdate)
@@ -122,6 +127,11 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                });
+                connection.InsertOrReplace(new DbItemInventory
+                {
+                    ItemId = item.ItemId,
+                    TotalQuantity = item.TotalQuantity,
                 });
             }
 
@@ -188,6 +198,7 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                 cancellationToken.ThrowIfCancellationRequested();
                 connection.Execute($"DELETE FROM {nameof(DbImage)} WHERE {nameof(DbImage.OwnerUniqueId)} = ?", itemId);
                 connection.Execute($"DELETE FROM {nameof(DbItemContainerRelation)} WHERE {nameof(DbItemContainerRelation.ItemId)} = ?", itemId);
+                connection.Execute($"DELETE FROM {nameof(DbItemInventory)} WHERE {nameof(DbItemInventory.ItemId)} = ?", itemId);
                 connection.Execute($"DELETE FROM {nameof(DbItem)} WHERE {nameof(DbItem.ItemId)} = ?", itemId);
             }
 

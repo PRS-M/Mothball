@@ -35,6 +35,7 @@ public class DemoDataSeederTests
         };
 
         var createdItems = new List<DbItem>();
+        var createdInventories = new List<DbItemInventory>();
         var createdRelations = new List<DbItemContainerRelation>();
 
         var containersRepo = new Mock<IRepository<DbContainer>>();
@@ -45,6 +46,12 @@ public class DemoDataSeederTests
         itemsRepo.Setup(r => r.InitializeAsync()).Returns(Task.CompletedTask);
         itemsRepo.Setup(r => r.InsertAsync(It.IsAny<DbItem>()))
             .Callback<DbItem>(createdItems.Add)
+            .ReturnsAsync(1);
+
+        var inventoriesRepo = new Mock<IRepository<DbItemInventory>>();
+        inventoriesRepo.Setup(r => r.InitializeAsync()).Returns(Task.CompletedTask);
+        inventoriesRepo.Setup(r => r.InsertAsync(It.IsAny<DbItemInventory>()))
+            .Callback<DbItemInventory>(createdInventories.Add)
             .ReturnsAsync(1);
 
         var photosRepo = new Mock<IRepository<DbImage>>();
@@ -65,6 +72,7 @@ public class DemoDataSeederTests
         var sut = new DemoDataSeeder(
             containersRepo.Object,
             itemsRepo.Object,
+            inventoriesRepo.Object,
             photosRepo.Object,
             relationRepo.Object,
             fileHandler.Object,
@@ -75,7 +83,7 @@ public class DemoDataSeederTests
         Assert.That(createdRelations.Count, Is.EqualTo(3), "Expected exactly 3 seeded item relations.");
         Assert.That(createdRelations.All(r => r.ContainerId == seededContainerId), Is.True,
             "Containers without the seed GUID marker should not receive auto-seeded items.");
-        Assert.That(createdItems.All(item => item.TotalQuantity == 1), Is.True,
+        Assert.That(createdInventories.All(inventory => inventory.TotalQuantity == 1), Is.True,
             "Each seeded item must include the quantity allocated to its seeded container.");
     }
 }

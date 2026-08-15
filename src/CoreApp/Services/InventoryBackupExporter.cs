@@ -40,6 +40,9 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
         var items = await inventoryQueries
             .QueryItemsWithPhotosAsync(new ItemListSpecification(ItemQueryFilter.All))
             .ConfigureAwait(false);
+        var inventorySnapshots = await inventoryQueries
+            .QueryInventorySnapshotsAsync(new ItemListSpecification(ItemQueryFilter.All))
+            .ConfigureAwait(false) ?? [];
 
         var backupContainers = containers
             .Select(c => new InventoryBackupContainer
@@ -52,24 +55,24 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
             .ThenBy(c => c.ContainerId)
             .ToList();
 
-        var backupItems = items
+        var backupItems = inventorySnapshots
             .Select(i => new InventoryBackupItem
             {
-                ItemId = i.ItemId,
-                Name = i.Name,
-                Description = i.Description,
+                ItemId = i.Item.ItemId,
+                Name = i.Item.Name,
+                Description = i.Item.Description,
                 TotalQuantity = i.TotalQuantity,
             })
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.ItemId)
             .ToList();
 
-        var backupRelations = containers
-            .SelectMany(c => c.Items.Select(stored => new InventoryBackupRelation
+        var backupRelations = inventorySnapshots
+            .SelectMany(snapshot => snapshot.Allocations.Select(allocation => new InventoryBackupRelation
             {
-                ContainerId = c.ContainerId,
-                ItemId = stored.ItemId,
-                Quantity = stored.Quantity,
+                ContainerId = allocation.ContainerId,
+                ItemId = snapshot.Item.ItemId,
+                Quantity = allocation.Quantity,
             }))
             .Where(r => r.Quantity > 0)
             .OrderBy(r => r.ContainerId)
