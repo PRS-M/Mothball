@@ -68,6 +68,27 @@ public class Item : BaseEntity, IAggregateRoot
         AssignedQuantity = assignedQuantity;
     }
 
+    public void ApplyInventoryQuantities(int totalQuantity, int assignedQuantity)
+    {
+        if (totalQuantity < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(totalQuantity), "Total quantity must be at least one.");
+        }
+
+        if (assignedQuantity < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(assignedQuantity), "Assigned quantity cannot be negative.");
+        }
+
+        if (assignedQuantity > totalQuantity)
+        {
+            throw new InvalidOperationException("Assigned quantity cannot exceed total quantity.");
+        }
+
+        TotalQuantity = totalQuantity;
+        AssignedQuantity = assignedQuantity;
+    }
+
     public ImageItem AddImageItem()
     {
         var newImage = new ImageItem();

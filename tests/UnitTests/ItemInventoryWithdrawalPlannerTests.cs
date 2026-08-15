@@ -10,6 +10,52 @@ public sealed class ItemInventoryWithdrawalPlannerTests
     private static readonly Guid DrawerId = Guid.NewGuid();
 
     [Test]
+    public void GetPreferredAllocation_ReturnsSourceContainerWhenItHasStock()
+    {
+        var allocations = new[]
+        {
+            new ItemContainerAllocation(BoxId, "Box", 3),
+            new ItemContainerAllocation(DrawerId, "Drawer", 4),
+        };
+
+        var preferred = ItemInventoryWithdrawalPlanner.GetPreferredAllocation(allocations, DrawerId);
+
+        Assert.That(preferred, Is.EqualTo(allocations[1]));
+    }
+
+    [Test]
+    public void GetPreferredAllocation_WhenSourceIsUnavailable_ReturnsNull()
+    {
+        var preferred = ItemInventoryWithdrawalPlanner.GetPreferredAllocation(
+            [new ItemContainerAllocation(BoxId, "Box", 3)],
+            DrawerId);
+
+        Assert.That(preferred, Is.Null);
+    }
+
+    [Test]
+    public void GetRequiredAssignedWithdrawal_UsesTotalReductionEvenWhenRequestedTotalExceedsAssigned()
+    {
+        var required = ItemInventoryWithdrawalPlanner.GetRequiredAssignedWithdrawal(
+            currentTotal: 10,
+            requestedTotal: 8,
+            assignedQuantity: 5);
+
+        Assert.That(required, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void GetRequiredAssignedWithdrawal_WhenReductionExceedsAssigned_WithdrawsAllAssigned()
+    {
+        var required = ItemInventoryWithdrawalPlanner.GetRequiredAssignedWithdrawal(
+            currentTotal: 10,
+            requestedTotal: 2,
+            assignedQuantity: 3);
+
+        Assert.That(required, Is.EqualTo(3));
+    }
+
+    [Test]
     public void Plan_CarriesSelectedWithdrawalAcrossContainersAndCapsAtAvailableAssignedStock()
     {
         var allocations = new[]

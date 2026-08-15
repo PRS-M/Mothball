@@ -40,6 +40,8 @@ public interface IPopupDefinitionService
 
     ConfirmationPopupDefinition DeleteItem();
 
+    ConfirmationPopupDefinition DeleteItemBySettingTotalToZero(string itemName);
+
     ConfirmationPopupDefinition DeleteContainer();
 
     ConfirmationPopupDefinition DeletePhoto();
@@ -53,7 +55,10 @@ public interface IPopupDefinitionService
     OptionPickerPopupDefinition<ItemContainerAllocation> WithdrawalContainerPicker(
         IReadOnlyList<ItemContainerAllocation> allocations);
 
-    NumberPickerPopupDefinition WithdrawFromContainer(ItemContainerAllocation allocation, int carriedQuantity);
+    NumberPickerPopupDefinition WithdrawFromContainer(
+        ItemContainerAllocation allocation,
+        int carriedQuantity,
+        int requiredQuantity);
 
     AlertPopupDefinition WithdrawalCarryTooSmall(int carriedQuantity);
 

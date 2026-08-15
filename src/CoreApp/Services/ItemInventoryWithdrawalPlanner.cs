@@ -4,6 +4,44 @@ namespace CoreApp.Services;
 
 public static class ItemInventoryWithdrawalPlanner
 {
+    public static ItemContainerAllocation? GetPreferredAllocation(
+        IReadOnlyCollection<ItemContainerAllocation> allocations,
+        Guid? sourceContainerId)
+    {
+        ArgumentNullException.ThrowIfNull(allocations);
+
+        if (sourceContainerId is null || sourceContainerId == Guid.Empty)
+        {
+            return null;
+        }
+
+        return allocations.FirstOrDefault(allocation =>
+            allocation.ContainerId == sourceContainerId && allocation.Quantity > 0);
+    }
+
+    public static int GetRequiredAssignedWithdrawal(
+        int currentTotal,
+        int requestedTotal,
+        int assignedQuantity)
+    {
+        if (currentTotal < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(currentTotal));
+        }
+
+        if (requestedTotal < 0 || requestedTotal >= currentTotal)
+        {
+            throw new ArgumentOutOfRangeException(nameof(requestedTotal));
+        }
+
+        if (assignedQuantity < 0 || assignedQuantity > currentTotal)
+        {
+            throw new ArgumentOutOfRangeException(nameof(assignedQuantity));
+        }
+
+        return Math.Min(currentTotal - requestedTotal, assignedQuantity);
+    }
+
     public static ItemInventoryWithdrawalPlan Plan(
         int currentTotal,
         IReadOnlyCollection<ItemContainerAllocation> allocations,

@@ -20,9 +20,14 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         this.photoDeletion = photoDeletion;
     }
 
-    public async Task<ItemInventoryUpdateResult> SetTotalQuantityAsync(Guid itemId, int totalQuantity)
+    public async Task<ItemInventoryUpdateResult> IncreaseTotalQuantityAsync(Guid itemId, int totalQuantity)
     {
         Item item = await GetItemAsync(itemId);
+        if (totalQuantity <= item.TotalQuantity)
+        {
+            return CreateResult(item, removedFromContainer: false);
+        }
+
         item.SetTotalQuantity(totalQuantity);
         await inventoryCommands.UpdateItemAsync(item);
         return CreateResult(item, removedFromContainer: false);
@@ -86,8 +91,7 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
             throw new ArgumentException("Withdrawal plan quantities are inconsistent.", nameof(plan));
         }
 
-        item.SetAssignedQuantity(plan.AssignedQuantity);
-        item.SetTotalQuantity(plan.TotalQuantity);
+        item.ApplyInventoryQuantities(plan.TotalQuantity, plan.AssignedQuantity);
         await inventoryCommands.ApplyItemInventoryWithdrawalAsync(item, plan.Allocations);
         return CreateResult(item, removedFromContainer: false);
     }

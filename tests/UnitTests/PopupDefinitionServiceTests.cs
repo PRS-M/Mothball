@@ -107,11 +107,50 @@ public class PopupDefinitionServiceTests
     }
 
     [Test]
+    public void WithdrawFromContainer_DefaultsToRemainingRequiredQuantity()
+    {
+        var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 10);
+
+        var definition = service.WithdrawFromContainer(
+            allocation,
+            carriedQuantity: 0,
+            requiredQuantity: 4);
+
+        Assert.That(definition.InitialValue, Is.EqualTo(4));
+    }
+
+    [Test]
+    public void WithdrawFromContainer_WhenCarryIsHigher_DefaultsToCarry()
+    {
+        var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 3);
+
+        var definition = service.WithdrawFromContainer(
+            allocation,
+            carriedQuantity: 5,
+            requiredQuantity: 2);
+
+        Assert.That(definition.InitialValue, Is.EqualTo(5));
+    }
+
+    [Test]
     public void ConfirmUnassignedWithdrawal_ExplainsThatTotalWillDecrease()
     {
         var definition = service.ConfirmUnassignedWithdrawal(4);
 
         Assert.That(definition.Message, Does.Contain("unassigned"));
         Assert.That(definition.Message, Does.Contain("reduce the total quantity"));
+    }
+
+    [Test]
+    public void DeleteItemBySettingTotalToZero_ExplainsPermanentRemoval()
+    {
+        var definition = service.DeleteItemBySettingTotalToZero("Widget");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(definition.Message, Does.Contain("Widget"));
+            Assert.That(definition.Message, Does.Contain("permanently remove"));
+            Assert.That(definition.Message, Does.Contain("photos"));
+        });
     }
 }

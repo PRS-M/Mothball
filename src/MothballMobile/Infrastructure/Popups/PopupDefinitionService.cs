@@ -100,6 +100,12 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             "Are you sure you want to delete this item? This cannot be undone.",
             "Delete");
 
+    public ConfirmationPopupDefinition DeleteItemBySettingTotalToZero(string itemName)
+        => new(
+            "Remove item",
+            $"Setting '{itemName}' to zero will permanently remove the item, all container assignments, and its photos. Continue?",
+            "Remove");
+
     public ConfirmationPopupDefinition DeleteContainer()
         => new(
             "Delete container",
@@ -145,12 +151,13 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
 
     public NumberPickerPopupDefinition WithdrawFromContainer(
         ItemContainerAllocation allocation,
-        int carriedQuantity)
+        int carriedQuantity,
+        int requiredQuantity)
         => new(
             $"Withdraw from {allocation.ContainerName}",
             Min: 0,
             Max: int.MaxValue,
-            InitialValue: carriedQuantity > 0 ? carriedQuantity : 1,
+            InitialValue: Math.Max(1, Math.Max(carriedQuantity, requiredQuantity)),
             Placeholder: "Enter 0 to stop");
 
     public AlertPopupDefinition WithdrawalCarryTooSmall(int carriedQuantity)

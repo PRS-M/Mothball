@@ -16,12 +16,16 @@ public sealed class MauiPopupService : IPopupService
     }
 
     /// <inheritdoc />
-    public Task ShowAlertAsync(string title, string message, string cancel = "OK")
+    public async Task ShowAlertAsync(string title, string message, string cancel = "OK")
     {
-        var page = TryGetCurrentPage();
-        if (page is null)
-            return Task.CompletedTask;
-        return page.DisplayAlertAsync(title, message, cancel);
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            var page = TryGetCurrentPage();
+            if (page is not null)
+            {
+                await page.DisplayAlertAsync(title, message, cancel);
+            }
+        });
     }
 
     /// <inheritdoc />
@@ -32,12 +36,14 @@ public sealed class MauiPopupService : IPopupService
     }
 
     /// <inheritdoc />
-    public Task<bool> ConfirmAsync(string title, string message, string accept, string cancel)
+    public async Task<bool> ConfirmAsync(string title, string message, string accept, string cancel)
     {
-        var page = TryGetCurrentPage();
-        if (page is null)
-            return Task.FromResult(false);
-        return page.DisplayAlertAsync(title, message, accept, cancel);
+        return await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            var page = TryGetCurrentPage();
+            return page is not null
+                && await page.DisplayAlertAsync(title, message, accept, cancel);
+        });
     }
 
     /// <inheritdoc />

@@ -6,6 +6,7 @@ using CoreApp.Entities.ItemAggregate;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
 using CoreApp.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;
 
@@ -16,6 +17,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IDeleteItemCommandHandler deleteItemHandler;
     private readonly INavigationService nav;
     private readonly IBackgroundTaskObserver backgroundTasks;
+    private readonly ILogger<ItemDetailsViewModel> logger;
     private Item? currentItem;
     private IReadOnlyList<CoreApp.Contracts.ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
@@ -60,7 +62,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IPopupDefinitionService popupDefinitions,
         ImageService imageService,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
-        IBackgroundTaskObserver backgroundTasks)
+        IBackgroundTaskObserver backgroundTasks,
+        ILogger<ItemDetailsViewModel> logger)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.itemDetailsQueries = itemDetailsQueries;
@@ -68,6 +71,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         this.deleteItemHandler = deleteItemHandler;
         this.nav = nav;
         this.backgroundTasks = backgroundTasks;
+        this.logger = logger;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -166,7 +170,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     [RelayCommand]
     private async Task SetTotalQuantityAsync()
     {
-        if (currentItem is null)
+        if (!await RefreshInventoryForQuantityEditAsync())
         {
             return;
         }
@@ -181,27 +185,68 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
         try
         {
-            if (selectedQuantity.Value > 0 && selectedQuantity.Value >= AssignedQuantity)
+            logger.LogInformation(
+                "Set item total requested: itemId={ItemId}, selected={Selected}, currentTotal={CurrentTotal}, assigned={Assigned}, sourceContainer={SourceContainer}",
+                currentItem!.ItemId,
+                selectedQuantity.Value,
+                TotalQuantity,
+                AssignedQuantity,
+                sourceContainerId);
+
+            if (selectedQuantity.Value == 0)
             {
-                if (selectedQuantity.Value < TotalQuantity
-                    && !await popup.ConfirmAsync(
-                        popupDefinitions.ConfirmUnassignedWithdrawal(
-                            TotalQuantity - selectedQuantity.Value)))
+                if (!await popup.ConfirmAsync(
+                    popupDefinitions.DeleteItemBySettingTotalToZero(Name)))
                 {
                     return;
                 }
 
-                var result = await inventoryCommands.SetTotalQuantityAsync(currentItem.ItemId, selectedQuantity.Value);
+                var deletionPlan = new CoreApp.Contracts.ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
+                var deletionResult = await inventoryCommands.ApplyWithdrawalAsync(currentItem.ItemId, deletionPlan);
+                if (deletionResult.ItemDeleted)
+                {
+                    await nav.GoBackAsync();
+                }
+
+                return;
+            }
+
+            if (selectedQuantity.Value > TotalQuantity)
+            {
+                logger.LogDebug("Routing item total request to increase command.");
+                var result = await inventoryCommands.IncreaseTotalQuantityAsync(currentItem.ItemId, selectedQuantity.Value);
                 ApplyInventoryResult(result);
                 return;
             }
 
+            logger.LogDebug("Routing item total request to withdrawal workflow.");
             await RunWithdrawalWorkflowAsync(selectedQuantity.Value);
         }
-        catch (Exception ex) when (ex is ArgumentOutOfRangeException or InvalidOperationException)
+        catch (Exception ex)
         {
             await popup.ShowAlertAsync(popupDefinitions.InventoryQuantityUpdateFailed(ex.Message));
         }
+    }
+
+    private async Task<bool> RefreshInventoryForQuantityEditAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ItemId))
+        {
+            return false;
+        }
+
+        var details = await itemDetailsQueries.GetDetailsAsync(ItemId);
+        if (details is null)
+        {
+            return false;
+        }
+
+        currentItem = details.Item;
+        currentAllocations = details.Allocations ?? [];
+        TotalQuantity = details.Item.TotalQuantity;
+        AssignedQuantity = details.Item.AssignedQuantity;
+        UnassignedQuantity = details.Item.UnassignedQuantity;
+        return true;
     }
 
     private async Task RunWithdrawalWorkflowAsync(int requestedTotal)
@@ -214,9 +259,18 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             allocation => allocation);
         var withdrawals = new List<CoreApp.Contracts.ItemAllocationWithdrawal>();
         int assignedRemaining = remainingAllocations.Values.Sum(allocation => allocation.Quantity);
+        int assignedToWithdraw = ItemInventoryWithdrawalPlanner.GetRequiredAssignedWithdrawal(
+            TotalQuantity,
+            requestedTotal,
+            assignedRemaining);
+        int assignedWithdrawn = 0;
         int carriedQuantity = 0;
+        Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
+            ? parsedSourceContainerId
+            : null;
+        bool usePreferredContainer = true;
 
-        while (assignedRemaining > requestedTotal || carriedQuantity > 0)
+        while (assignedWithdrawn < assignedToWithdraw || carriedQuantity > 0)
         {
             var choices = remainingAllocations.Values
                 .Where(allocation => allocation.Quantity > 0)
@@ -227,7 +281,16 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 return;
             }
 
-            var selectedContainer = await popup.SelectOptionAsync(
+            CoreApp.Contracts.ItemContainerAllocation? selectedContainer = null;
+            if (usePreferredContainer)
+            {
+                selectedContainer = ItemInventoryWithdrawalPlanner.GetPreferredAllocation(
+                    choices,
+                    preferredContainerId);
+                usePreferredContainer = false;
+            }
+
+            selectedContainer ??= await popup.SelectOptionAsync(
                 popupDefinitions.WithdrawalContainerPicker(choices));
             if (selectedContainer is null)
             {
@@ -235,7 +298,10 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             }
 
             var selectedWithdrawal = await popup.PickNumberAsync(
-                popupDefinitions.WithdrawFromContainer(selectedContainer, carriedQuantity));
+                popupDefinitions.WithdrawFromContainer(
+                    selectedContainer,
+                    carriedQuantity,
+                    assignedToWithdraw - assignedWithdrawn));
             if (selectedWithdrawal is null || selectedWithdrawal.Value == 0)
             {
                 return;
@@ -249,6 +315,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
             int removed = Math.Min(selectedContainer.Quantity, selectedWithdrawal.Value);
             assignedRemaining -= removed;
+            assignedWithdrawn += removed;
             carriedQuantity = selectedWithdrawal.Value - removed;
             remainingAllocations[selectedContainer.ContainerId] = selectedContainer with
             {
@@ -303,16 +370,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private void ApplyInventoryResult(CoreApp.Contracts.ItemInventoryUpdateResult result)
     {
-        if (result.TotalQuantity > currentItem!.TotalQuantity)
-        {
-            currentItem.SetTotalQuantity(result.TotalQuantity);
-            currentItem.SetAssignedQuantity(result.AssignedQuantity);
-        }
-        else
-        {
-            currentItem.SetAssignedQuantity(result.AssignedQuantity);
-            currentItem.SetTotalQuantity(result.TotalQuantity);
-        }
+        currentItem!.ApplyInventoryQuantities(result.TotalQuantity, result.AssignedQuantity);
         TotalQuantity = result.TotalQuantity;
         AssignedQuantity = result.AssignedQuantity;
         UnassignedQuantity = result.UnassignedQuantity;

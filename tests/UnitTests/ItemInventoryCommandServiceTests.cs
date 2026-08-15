@@ -10,7 +10,7 @@ namespace UnitTests;
 public sealed class ItemInventoryCommandServiceTests
 {
     [Test]
-    public async Task SetTotalQuantityAsync_WhenValid_UpdatesItemAndReturnsSummary()
+    public async Task IncreaseTotalQuantityAsync_WhenValid_UpdatesItemAndReturnsSummary()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 5);
         item.SetAssignedQuantity(2);
@@ -19,7 +19,7 @@ public sealed class ItemInventoryCommandServiceTests
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
-        var result = await service.SetTotalQuantityAsync(item.ItemId, 7);
+        var result = await service.IncreaseTotalQuantityAsync(item.ItemId, 7);
 
         Assert.Multiple(() =>
         {
@@ -31,7 +31,7 @@ public sealed class ItemInventoryCommandServiceTests
     }
 
     [Test]
-    public void SetTotalQuantityAsync_BelowAssigned_RejectsWithoutPersisting()
+    public async Task IncreaseTotalQuantityAsync_WithStaleDecrease_ReturnsCurrentSnapshotWithoutPersisting()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 5);
         item.SetAssignedQuantity(3);
@@ -40,8 +40,14 @@ public sealed class ItemInventoryCommandServiceTests
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
-        Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await service.SetTotalQuantityAsync(item.ItemId, 2));
+        var result = await service.IncreaseTotalQuantityAsync(item.ItemId, 2);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.TotalQuantity, Is.EqualTo(5));
+            Assert.That(result.AssignedQuantity, Is.EqualTo(3));
+            Assert.That(result.UnassignedQuantity, Is.EqualTo(2));
+        });
         commands.Verify(c => c.UpdateItemAsync(It.IsAny<Item>()), Times.Never);
     }
 
@@ -135,6 +141,33 @@ public sealed class ItemInventoryCommandServiceTests
             Assert.That(result.TotalQuantity, Is.EqualTo(7));
             Assert.That(result.AssignedQuantity, Is.EqualTo(6));
             Assert.That(result.UnassignedQuantity, Is.EqualTo(1));
+        });
+        commands.Verify(c => c.ApplyItemInventoryWithdrawalAsync(item, allocations), Times.Once);
+    }
+
+    [Test]
+    public async Task ApplyWithdrawalAsync_SingleContainerCanReduceTotalBelowPreviousAssignedQuantity()
+    {
+        var containerId = Guid.NewGuid();
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
+        item.SetAssignedQuantity(10);
+        var allocations = new[]
+        {
+            new CoreApp.Contracts.ItemContainerAllocation(containerId, "Box", 8),
+        };
+        var plan = new CoreApp.Contracts.ItemInventoryWithdrawalPlan(8, 8, 0, allocations, false);
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(q => q.GetItemWithPhotosAsync(item.ItemId.ToString())).ReturnsAsync(item);
+        var commands = new Mock<IInventoryCommandRepository>();
+        var service = new ItemInventoryCommandService(queries.Object, commands.Object);
+
+        var result = await service.ApplyWithdrawalAsync(item.ItemId, plan);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.TotalQuantity, Is.EqualTo(8));
+            Assert.That(result.AssignedQuantity, Is.EqualTo(8));
+            Assert.That(result.UnassignedQuantity, Is.Zero);
         });
         commands.Verify(c => c.ApplyItemInventoryWithdrawalAsync(item, allocations), Times.Once);
     }
