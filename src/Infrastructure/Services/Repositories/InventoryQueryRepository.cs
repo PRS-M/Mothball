@@ -35,6 +35,10 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     public Task<List<ItemContainerAllocation>> GetItemContainerAllocationsAsync(Guid itemId)
         => containerRepo.GetItemContainerAllocationsAsync(itemId);
 
+    public Task<IReadOnlyDictionary<Guid, IReadOnlyList<ItemContainerAllocation>>> GetItemContainerAllocationsAsync(
+        IReadOnlyCollection<Guid> itemIds)
+        => containerRepo.GetItemContainerAllocationsAsync(itemIds);
+
     public Task<Item?> GetItemWithPhotosAsync(string itemId)
         => itemRepo.GetWithPhotosAsync(itemId);
 
@@ -60,10 +64,12 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         ItemListSpecification specification)
     {
         var items = await itemRepo.QueryWithPhotosAsync(specification);
+        var allocationsByItem = await containerRepo.GetItemContainerAllocationsAsync(
+            items.Select(item => item.ItemId).ToArray());
         var summaries = new List<ItemInventorySummary>(items.Count);
         foreach (var item in items)
         {
-            var allocations = await containerRepo.GetItemContainerAllocationsAsync(item.ItemId);
+            var allocations = allocationsByItem.GetValueOrDefault(item.ItemId, []);
             summaries.Add(CreateSummary(item, allocations));
         }
 
@@ -82,10 +88,12 @@ public class InventoryQueryRepository : IInventoryQueryRepository
             return [];
         }
 
+        var allocationsByItem = await containerRepo.GetItemContainerAllocationsAsync(
+            items.Select(item => item.ItemId).ToArray());
         var entries = new List<ContainerItemInventoryEntry>(items.Count);
         foreach (var item in items)
         {
-            var allocations = await containerRepo.GetItemContainerAllocationsAsync(item.ItemId);
+            var allocations = allocationsByItem.GetValueOrDefault(item.ItemId, []);
             var summary = CreateSummary(item, allocations);
             int containerQuantity = allocations
                 .FirstOrDefault(allocation => allocation.ContainerId == containerId)?.Quantity ?? 0;

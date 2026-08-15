@@ -171,6 +171,51 @@ public class ContainerRepository : IContainerRepository
         return result.OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<ItemContainerAllocation>>> GetItemContainerAllocationsAsync(
+        IReadOnlyCollection<Guid> itemIds)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+
+        var distinctItemIds = itemIds.Where(itemId => itemId != Guid.Empty).Distinct().ToList();
+        if (distinctItemIds.Count == 0)
+        {
+            return new Dictionary<Guid, IReadOnlyList<ItemContainerAllocation>>();
+        }
+
+        var relations = (await itemContainerRelations.WhereInAsync(
+                nameof(DbItemContainerRelation.ItemId),
+                distinctItemIds.Select(itemId => (object)itemId).ToList()))
+            .Where(relation => relation.Quantity > 0)
+            .GroupBy(relation => new { relation.ItemId, relation.ContainerId })
+            .Select(group => new
+            {
+                group.Key.ItemId,
+                group.Key.ContainerId,
+                Quantity = group.Sum(relation => relation.Quantity),
+            })
+            .ToList();
+        var containerIds = relations.Select(relation => relation.ContainerId).Distinct().ToList();
+        var containersById = containerIds.Count == 0
+            ? new Dictionary<Guid, DbContainer>()
+            : (await containers.WhereInAsync(
+                    nameof(DbContainer.ContainerId),
+                    containerIds.Select(containerId => (object)containerId).ToList()))
+                .ToDictionary(container => container.ContainerId);
+
+        return relations
+            .Where(relation => containersById.ContainsKey(relation.ContainerId))
+            .GroupBy(relation => relation.ItemId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<ItemContainerAllocation>)group
+                    .Select(relation => new ItemContainerAllocation(
+                        relation.ContainerId,
+                        containersById[relation.ContainerId].Name,
+                        relation.Quantity))
+                    .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
+                    .ToList());
+    }
+
     public async Task InsertAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);

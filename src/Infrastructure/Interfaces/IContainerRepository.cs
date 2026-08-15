@@ -14,6 +14,8 @@ public interface IContainerRepository
     Task<int> GetItemCountInContainerAsync(string containerId);
     Task<Container?> GetContainerForItemAsync(string itemId);
     Task<List<ItemContainerAllocation>> GetItemContainerAllocationsAsync(Guid itemId);
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<ItemContainerAllocation>>> GetItemContainerAllocationsAsync(
+        IReadOnlyCollection<Guid> itemIds);
     Task InsertAsync(Container container);
     Task UpdateAsync(Container container);
     Task DeletePhotoAsync(Container container, Guid imageId);

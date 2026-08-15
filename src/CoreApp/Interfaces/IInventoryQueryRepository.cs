@@ -19,6 +19,9 @@ public interface IInventoryQueryRepository
 
     Task<List<ItemContainerAllocation>> GetItemContainerAllocationsAsync(Guid itemId);
 
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<ItemContainerAllocation>>> GetItemContainerAllocationsAsync(
+        IReadOnlyCollection<Guid> itemIds);
+
     Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification);
 
     Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification);

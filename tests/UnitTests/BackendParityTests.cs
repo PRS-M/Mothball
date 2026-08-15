@@ -577,6 +577,47 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task GetItemContainerAllocationsAsync_BulkLookupGroupsAndOrdersAllocationsAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var drawer = new Container(Guid.NewGuid(), "A Drawer", "");
+        var box = new Container(Guid.NewGuid(), "Z Box", "");
+        var firstItem = new Item(Guid.NewGuid(), "First", "", totalQuantity: 10);
+        var secondItem = new Item(Guid.NewGuid(), "Second", "", totalQuantity: 5);
+        var unassignedItem = new Item(Guid.NewGuid(), "Unassigned", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(drawer);
+            await command.InsertContainerAsync(box);
+            await command.InsertItemAsync(firstItem);
+            await command.InsertItemAsync(secondItem);
+            await command.InsertItemAsync(unassignedItem);
+            await command.InsertItemContainerRelation(firstItem.ItemId, box.ContainerId, 3);
+            await command.InsertItemContainerRelation(firstItem.ItemId, drawer.ContainerId, 2);
+            await command.InsertItemContainerRelation(secondItem.ItemId, box.ContainerId, 5);
+        }
+
+        var itemIds = new[] { firstItem.ItemId, secondItem.ItemId, unassignedItem.ItemId };
+        var sqliteAllocations = await sqlite.Query.GetItemContainerAllocationsAsync(itemIds);
+        var jsonAllocations = await json.Query.GetItemContainerAllocationsAsync(itemIds);
+
+        foreach (var allocations in new[] { sqliteAllocations, jsonAllocations })
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(allocations.Keys, Is.EquivalentTo(new[] { firstItem.ItemId, secondItem.ItemId }));
+                Assert.That(allocations[firstItem.ItemId].Select(allocation => allocation.ContainerName),
+                    Is.EqualTo(new[] { drawer.Name, box.Name }));
+                Assert.That(allocations[firstItem.ItemId].Select(allocation => allocation.Quantity),
+                    Is.EqualTo(new[] { 2, 3 }));
+                Assert.That(allocations[secondItem.ItemId].Single().Quantity, Is.EqualTo(5));
+            });
+        }
+    }
+
+    [Test]
     public async Task QueryContainerItemsWithPhotosAsync_PagesByRelationInsertionOrder()
     {
         await using var sqlite = await BuildSqliteAsync();
