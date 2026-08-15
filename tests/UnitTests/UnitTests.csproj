@@ -57,6 +57,8 @@
     <Compile Include="../../src/MothballMobile/UI/Shared/PhotoDetailsViewModelBase.cs" Link="UI/Shared/PhotoDetailsViewModelBase.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/PhotoSourceSelector.cs" Link="UI/Shared/PhotoSourceSelector.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemDetails/ItemDetailsViewModel.cs" Link="UI/Features/Items/ItemDetails/ItemDetailsViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemLocations/ItemLocationViewModel.cs" Link="UI/Features/Items/ItemLocations/ItemLocationViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemLocations/ItemLocationsViewModel.cs" Link="UI/Features/Items/ItemLocations/ItemLocationsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs" Link="UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/SelectableContainerViewModel.cs" Link="UI/Features/Containers/AssociateItemWithContainer/SelectableContainerViewModel.cs" />
   </ItemGroup>

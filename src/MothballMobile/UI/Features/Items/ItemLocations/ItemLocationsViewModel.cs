@@ -8,6 +8,8 @@ namespace MothballMobile.UI.Features.Items.ItemLocations;
 public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable, IInitializable
 {
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
+    private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IImagePathResolver imagePaths;
     private readonly INavigationService nav;
 
     [ObservableProperty]
@@ -20,9 +22,13 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
 
     public ItemLocationsViewModel(
         IItemDetailsQueryHandler itemDetailsQueries,
+        IInventoryQueryRepository inventoryQueries,
+        IImagePathResolver imagePaths,
         INavigationService nav)
     {
         this.itemDetailsQueries = itemDetailsQueries ?? throw new ArgumentNullException(nameof(itemDetailsQueries));
+        this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
+        this.imagePaths = imagePaths ?? throw new ArgumentNullException(nameof(imagePaths));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
     }
 
@@ -56,7 +62,15 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
             ItemName = details.Inventory.Item.Name;
             foreach (var allocation in details.Inventory.Allocations.Where(allocation => allocation.Quantity > 0))
             {
-                Locations.Add(new ItemLocationViewModel(allocation, nav));
+                var container = await inventoryQueries.GetContainerAsync(allocation.ContainerId.ToString());
+                if (container is null)
+                {
+                    continue;
+                }
+
+                var location = new ItemLocationViewModel(container, allocation, imagePaths, nav);
+                await location.LoadImagesAsync();
+                Locations.Add(location);
             }
         });
     }

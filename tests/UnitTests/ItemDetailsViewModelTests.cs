@@ -7,6 +7,7 @@ using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Features.Items.ItemDetails;
+using MothballMobile.UI.Features.Items.ItemLocations;
 
 namespace UnitTests;
 
@@ -125,6 +126,43 @@ public sealed class ItemDetailsViewModelTests
             NavigationRoutes.ItemLocations,
             It.Is<IDictionary<string, object>>(parameters =>
                 (string)parameters[NavigationParams.ItemId] == item.ItemId.ToString())), Times.Once);
+    }
+
+    [Test]
+    public async Task ItemLocationsViewModel_UsesContainersForTilesAndLoadsImages()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 3);
+        var container = new CoreApp.Entities.ContainerAggregate.Container(Guid.NewGuid(), "Box", "Shelf");
+        var allocation = new ItemContainerAllocation(container.ContainerId, container.Name, 3);
+        var details = new ItemDetailsResult(new ItemInventorySummary(item, assignedQuantity: 3, [allocation]));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+
+        var inventoryQueries = new Mock<IInventoryQueryRepository>();
+        inventoryQueries.Setup(q => q.GetContainerAsync(container.ContainerId.ToString()))
+            .ReturnsAsync(container);
+
+        var paths = new Mock<IImagePathResolver>();
+        paths.Setup(p => p.GetContainerPhotoPaths(container))
+            .Returns(["box.png"]);
+
+        var viewModel = new ItemLocationsViewModel(
+            itemDetails.Object,
+            inventoryQueries.Object,
+            paths.Object,
+            Mock.Of<INavigationService>());
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ItemId] = item.ItemId.ToString() });
+
+        await viewModel.InitializeAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.ItemName, Is.EqualTo("Widget"));
+            Assert.That(viewModel.Locations, Has.Count.EqualTo(1));
+            Assert.That(viewModel.Locations[0].Name, Is.EqualTo("Box"));
+            Assert.That(viewModel.Locations[0].Notes, Is.EqualTo("Shelf"));
+            Assert.That(viewModel.Locations[0].ItemCount, Is.EqualTo("Quantity here: 3"));
+            Assert.That(viewModel.Locations[0].ImagePaths.Single(), Is.EqualTo("box.png"));
+        });
     }
 
     [Test]

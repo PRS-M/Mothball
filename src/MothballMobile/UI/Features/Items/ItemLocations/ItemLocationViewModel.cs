@@ -1,14 +1,21 @@
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
+using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Interfaces;
 using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.Features.Items.ItemLocations;
 
-public partial class ItemLocationViewModel
+public partial class ItemLocationViewModel : ContainerWithImagesViewModelBase
 {
     private readonly INavigationService nav;
 
-    public ItemLocationViewModel(ItemContainerAllocation allocation, INavigationService nav)
+    public ItemLocationViewModel(
+        Container container,
+        ItemContainerAllocation allocation,
+        IImagePathResolver paths,
+        INavigationService nav)
+        : base(container, paths)
     {
         Allocation = allocation ?? throw new ArgumentNullException(nameof(allocation));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
@@ -16,9 +23,10 @@ public partial class ItemLocationViewModel
 
     public ItemContainerAllocation Allocation { get; }
 
-    public string ContainerName => Allocation.ContainerName;
+    public new string ItemCount => $"Quantity here: {Allocation.Quantity}";
 
-    public string QuantityText => $"Quantity: {Allocation.Quantity}";
+    public Task LoadImagesAsync()
+        => LoadContainerImagesAsync(clearFirst: true);
 
     [RelayCommand]
     private Task NavigateAsync()
