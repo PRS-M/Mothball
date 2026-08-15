@@ -46,5 +46,9 @@ public interface IPopupDefinitionService
 
     NumberPickerPopupDefinition SetQuantity(int initialValue);
 
+    NumberPickerPopupDefinition SetTotalQuantity(int initialValue, int assignedQuantity);
+
+    AlertPopupDefinition InventoryQuantityUpdateFailed(string message);
+
     ConfirmationPopupDefinition RemoveItemFromContainer(string itemName);
 }

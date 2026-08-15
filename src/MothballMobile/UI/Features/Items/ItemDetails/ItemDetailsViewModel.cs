@@ -12,6 +12,7 @@ namespace MothballMobile.UI.Features.Items.ItemDetails;
 public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable
 {
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
+    private readonly IItemInventoryCommandService inventoryCommands;
     private readonly IDeleteItemCommandHandler deleteItemHandler;
     private readonly INavigationService nav;
     private readonly IBackgroundTaskObserver backgroundTasks;
@@ -50,6 +51,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public ItemDetailsViewModel(
         IItemDetailsQueryHandler itemDetailsQueries,
+        IItemInventoryCommandService inventoryCommands,
         IDeleteItemCommandHandler deleteItemHandler,
         INavigationService nav,
         IImagePathResolver paths,
@@ -61,6 +63,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.itemDetailsQueries = itemDetailsQueries;
+        this.inventoryCommands = inventoryCommands;
         this.deleteItemHandler = deleteItemHandler;
         this.nav = nav;
         this.backgroundTasks = backgroundTasks;
@@ -156,6 +159,36 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         return nav.GoToAsync(
             Infrastructure.NavigationRoutes.AssociateItemWithContainer,
             new Dictionary<string, object> { [NavigationParams.ItemId] = ItemId });
+    }
+
+    [RelayCommand]
+    private async Task SetTotalQuantityAsync()
+    {
+        if (currentItem is null)
+        {
+            return;
+        }
+
+        var selectedQuantity = await popup.PickNumberAsync(
+            popupDefinitions.SetTotalQuantity(TotalQuantity, AssignedQuantity));
+
+        if (selectedQuantity is null || selectedQuantity.Value == TotalQuantity)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await inventoryCommands.SetTotalQuantityAsync(currentItem.ItemId, selectedQuantity.Value);
+            currentItem.SetTotalQuantity(result.TotalQuantity);
+            TotalQuantity = result.TotalQuantity;
+            AssignedQuantity = result.AssignedQuantity;
+            UnassignedQuantity = result.UnassignedQuantity;
+        }
+        catch (Exception ex) when (ex is ArgumentOutOfRangeException or InvalidOperationException)
+        {
+            await popup.ShowAlertAsync(popupDefinitions.InventoryQuantityUpdateFailed(ex.Message));
+        }
     }
 
     [RelayCommand]

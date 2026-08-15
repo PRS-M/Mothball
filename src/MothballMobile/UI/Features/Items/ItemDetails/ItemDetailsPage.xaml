@@ -108,6 +108,10 @@
                            Text="{Binding UnassignedQuantity}"
                            FontAttributes="Bold" />
                       </Grid>
+                      <Button Text="Set total quantity"
+                              Style="{StaticResource OutlinedButton}"
+                              HorizontalOptions="Start"
+                              Command="{Binding SetTotalQuantityCommand}" />
                   </VerticalStackLayout>
                  </Border>
 

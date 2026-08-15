@@ -69,4 +69,25 @@ public class PopupDefinitionServiceTests
         Assert.That(definition.InvalidNumberMessage, Is.EqualTo("Enter a number between 0 and 1000."));
         Assert.That(definition.OutOfRangeMessage, Is.EqualTo("Value must be between 0 and 1000."));
     }
+
+    [Test]
+    public void SetTotalQuantity_UsesAssignedQuantityAsMinimum()
+    {
+        var definition = service.SetTotalQuantity(initialValue: 7, assignedQuantity: 5);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(definition.Title, Is.EqualTo("Set total quantity"));
+            Assert.That(definition.Min, Is.EqualTo(5));
+            Assert.That(definition.InitialValue, Is.EqualTo(7));
+        });
+    }
+
+    [Test]
+    public void SetTotalQuantity_WhenNothingAssigned_RequiresAtLeastOne()
+    {
+        var definition = service.SetTotalQuantity(initialValue: 1, assignedQuantity: 0);
+
+        Assert.That(definition.Min, Is.EqualTo(1));
+    }
 }

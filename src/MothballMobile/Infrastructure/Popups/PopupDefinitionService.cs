@@ -119,6 +119,18 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             Max: 1000,
             InitialValue: initialValue);
 
+    public NumberPickerPopupDefinition SetTotalQuantity(int initialValue, int assignedQuantity)
+        => new(
+            "Set total quantity",
+            Min: Math.Max(1, assignedQuantity),
+            Max: int.MaxValue,
+            InitialValue: initialValue);
+
+    public AlertPopupDefinition InventoryQuantityUpdateFailed(string message)
+        => new(
+            "Quantity not updated",
+            message);
+
     public ConfirmationPopupDefinition RemoveItemFromContainer(string itemName)
         => new(
             "Remove item",
