@@ -42,6 +42,12 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
             .FirstOrDefault(storedItem => storedItem.ItemId == itemId)?.Quantity ?? 0;
         int resultingAssignedQuantity = item.AssignedQuantity - previousQuantity + quantity;
 
+        if (resultingAssignedQuantity > item.TotalQuantity)
+        {
+            item.SetTotalQuantity(resultingAssignedQuantity);
+            await inventoryCommands.UpdateItemAsync(item);
+        }
+
         item.SetAssignedQuantity(resultingAssignedQuantity);
 
         if (quantity == 0)

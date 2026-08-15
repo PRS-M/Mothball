@@ -67,7 +67,7 @@ public sealed class ItemInventoryCommandServiceTests
     }
 
     [Test]
-    public void SetContainerAllocationAsync_WhenResultExceedsTotal_RejectsWithoutPersisting()
+    public async Task SetContainerAllocationAsync_WhenResultExceedsTotal_IncreasesTotalAndPersistsAllocation()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 7);
         item.SetAssignedQuantity(7);
@@ -77,10 +77,16 @@ public sealed class ItemInventoryCommandServiceTests
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
-        Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await service.SetContainerAllocationAsync(item.ItemId, container.ContainerId, 4));
-        commands.Verify(c => c.ReplaceItemContainerRelationQuantity(
-            It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>()), Times.Never);
+        var result = await service.SetContainerAllocationAsync(item.ItemId, container.ContainerId, 4);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.TotalQuantity, Is.EqualTo(8));
+            Assert.That(result.AssignedQuantity, Is.EqualTo(8));
+            Assert.That(result.UnassignedQuantity, Is.Zero);
+        });
+        commands.Verify(c => c.UpdateItemAsync(item), Times.Once);
+        commands.Verify(c => c.ReplaceItemContainerRelationQuantity(item.ItemId, container.ContainerId, 4), Times.Once);
     }
 
     [Test]

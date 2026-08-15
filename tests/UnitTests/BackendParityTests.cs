@@ -3,6 +3,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
+using CoreApp.Services;
 using CoreApp.Specifications;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
@@ -194,6 +195,42 @@ public class BackendParityTests
             AssertInventorySummary(jsonListItem);
             AssertInventorySummary(sqliteDetailsItem!);
             AssertInventorySummary(jsonDetailsItem!);
+        });
+    }
+
+    [Test]
+    public async Task SetContainerAllocationAsync_AboveTotal_PersistsRaisedTotalAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 2);
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(item);
+            await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 1);
+        }
+
+        var sqliteService = new ItemInventoryCommandService(sqlite.Query, sqlite.Command);
+        var jsonService = new ItemInventoryCommandService(json.Query, json.Command);
+
+        await sqliteService.SetContainerAllocationAsync(item.ItemId, container.ContainerId, 4);
+        await jsonService.SetContainerAllocationAsync(item.ItemId, container.ContainerId, 4);
+
+        var sqliteItem = await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var jsonItem = await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItem!.TotalQuantity, Is.EqualTo(4));
+            Assert.That(sqliteItem.AssignedQuantity, Is.EqualTo(4));
+            Assert.That(sqliteItem.UnassignedQuantity, Is.Zero);
+            Assert.That(jsonItem!.TotalQuantity, Is.EqualTo(4));
+            Assert.That(jsonItem.AssignedQuantity, Is.EqualTo(4));
+            Assert.That(jsonItem.UnassignedQuantity, Is.Zero);
         });
     }
 
