@@ -51,10 +51,6 @@
 		<AdMobApplicationId>ca-app-pub-3940256099942544~1458002511</AdMobApplicationId>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)' == 'Release' and '$(AdMobApplicationId)' == ''">
-		<AdMobApplicationId>YOUR_IOS_ADMOB_APPLICATION_ID</AdMobApplicationId>
-	</PropertyGroup>
-
 	<PropertyGroup>
 		<CollectAppManifestsDependsOn>$(CollectAppManifestsDependsOn);GenerateAdMobAppManifest</CollectAppManifestsDependsOn>
 	</PropertyGroup>
@@ -125,6 +121,9 @@
 
 	<Target Name="GenerateAdMobAppManifest"
 			Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+		<Error
+			Condition="'$(Configuration)' == 'Release' and '$(AdMobApplicationId)' == ''"
+			Text="Release iOS builds require AdMobApplicationId. Set it in Properties/AdMob.Release.props or pass -p:AdMobApplicationId=... from CI." />
 		<WriteLinesToFile
 			File="$(IntermediateOutputPath)AdMob.Info.plist"
 			Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#xA;&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;&#xA;&lt;plist version=&quot;1.0&quot;&gt;&#xA;&lt;dict&gt;&#xA;&lt;key&gt;GADApplicationIdentifier&lt;/key&gt;&#xA;&lt;string&gt;$(AdMobApplicationId)&lt;/string&gt;&#xA;&lt;/dict&gt;&#xA;&lt;/plist&gt;"
