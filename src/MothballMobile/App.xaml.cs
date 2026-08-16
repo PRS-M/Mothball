@@ -1,5 +1,4 @@
-﻿using MothballMobile.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 #if IOS || ANDROID
 using Plugin.AdMob.Services;

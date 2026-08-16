@@ -4,6 +4,13 @@ global using MothballMobile.UI.Shared;
 
 namespace Microsoft.Maui.ApplicationModel
 {
+    public enum AppTheme
+    {
+        Unspecified,
+        Light,
+        Dark
+    }
+
     public static class MainThread
     {
         public static Task InvokeOnMainThreadAsync(Action action)

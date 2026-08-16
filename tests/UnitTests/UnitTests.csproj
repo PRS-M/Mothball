@@ -31,25 +31,27 @@
 
   <!-- Bring in UI-only Debouncer source directly for testability without MAUI target dependencies. -->
   <ItemGroup>
-    <Compile Include="../../src/MothballMobile/Infrastructure/IDebouncer.cs" Link="Infrastructure/IDebouncer.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/Debouncer.cs" Link="Infrastructure/Debouncer.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IBackgroundTaskObserver.cs" Link="Infrastructure/IBackgroundTaskObserver.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/LoggingBackgroundTaskObserver.cs" Link="Infrastructure/LoggingBackgroundTaskObserver.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/TaskExtensions.cs" Link="Infrastructure/TaskExtensions.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IPopupService.cs" Link="Infrastructure/IPopupService.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/INavigationService.cs" Link="Infrastructure/INavigationService.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/NavigationParams.cs" Link="Infrastructure/NavigationParams.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/NavigationRoutes.cs" Link="Infrastructure/NavigationRoutes.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IPhotoBackgroundOperationTracker.cs" Link="Infrastructure/IPhotoBackgroundOperationTracker.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/PhotoBackgroundOperationEntry.cs" Link="Infrastructure/PhotoBackgroundOperationEntry.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/Popups/**/*.cs" Link="Infrastructure/Popups/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IRetryService.cs" Link="Infrastructure/IRetryService.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/RetryService.cs" Link="Infrastructure/RetryService.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IAppStartupOrchestrator.cs" Link="Infrastructure/IAppStartupOrchestrator.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/AppStartupOrchestrator.cs" Link="Infrastructure/AppStartupOrchestrator.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IInitializable.cs" Link="Infrastructure/IInitializable.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/AppMode.cs" Link="Infrastructure/AppMode.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IApplicationSettings.cs" Link="Infrastructure/IApplicationSettings.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/IDebouncer.cs" Link="Infrastructure/Resilience/IDebouncer.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/Debouncer.cs" Link="Infrastructure/Resilience/Debouncer.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Observability/IBackgroundTaskObserver.cs" Link="Infrastructure/BackgroundOperations/Observability/IBackgroundTaskObserver.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Observability/LoggingBackgroundTaskObserver.cs" Link="Infrastructure/BackgroundOperations/Observability/LoggingBackgroundTaskObserver.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Utilities/TaskExtensions.cs" Link="Infrastructure/Utilities/TaskExtensions.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/INavigationService.cs" Link="Infrastructure/Navigation/INavigationService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationParams.cs" Link="Infrastructure/Navigation/NavigationParams.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationRoutes.cs" Link="Infrastructure/Navigation/NavigationRoutes.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" Link="Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" Link="Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/IPopupService.cs" Link="Infrastructure/Presentation/Popups/IPopupService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/IPopupDefinitionService.cs" Link="Infrastructure/Presentation/Popups/IPopupDefinitionService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/PopupDefinitionService.cs" Link="Infrastructure/Presentation/Popups/PopupDefinitionService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/PopupDefinitions.cs" Link="Infrastructure/Presentation/Popups/PopupDefinitions.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/IRetryService.cs" Link="Infrastructure/Resilience/IRetryService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/RetryService.cs" Link="Infrastructure/Resilience/RetryService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Startup/IAppStartupOrchestrator.cs" Link="Infrastructure/Startup/IAppStartupOrchestrator.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Startup/AppStartupOrchestrator.cs" Link="Infrastructure/Startup/AppStartupOrchestrator.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Utilities/IInitializable.cs" Link="Infrastructure/Utilities/IInitializable.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Settings/AppMode.cs" Link="Infrastructure/Settings/AppMode.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Settings/IApplicationSettings.cs" Link="Infrastructure/Settings/IApplicationSettings.cs" />
   </ItemGroup>
 
   <ItemGroup>

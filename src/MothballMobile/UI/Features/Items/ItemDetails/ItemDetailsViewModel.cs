@@ -5,9 +5,6 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
-using CoreApp.Services;
 using Microsoft.Extensions.Logging;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;

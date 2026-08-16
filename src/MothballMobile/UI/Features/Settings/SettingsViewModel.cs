@@ -5,8 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Settings;

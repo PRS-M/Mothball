@@ -1,0 +1,13 @@
+using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.ItemAggregate;
+
+namespace CoreApp.Features.Photos;
+
+public interface IPhotoDeletionService
+{
+    Task<bool> DeleteContainerPhotoAsync(Container container, Guid imageId);
+
+    Task<bool> DeleteItemPhotoAsync(Item item, Guid imageId);
+
+    Task DeleteItemPhotoFilesBestEffortAsync(Item item);
+}

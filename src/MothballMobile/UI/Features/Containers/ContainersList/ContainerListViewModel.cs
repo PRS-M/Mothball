@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using Microsoft.Extensions.Logging.Abstractions;
-using MothballMobile.Infrastructure;
 using Infrastructure.Services;
 
 namespace MothballMobile.UI.Features.Containers.ContainersList;

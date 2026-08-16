@@ -2,7 +2,7 @@ using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
-using MothballMobile.Infrastructure.Popups;
+using MothballMobile.Infrastructure.Presentation.Popups;
 
 namespace UnitTests;
 

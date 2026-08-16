@@ -1,5 +1,4 @@
 using CoreApp.Interfaces;
-using CoreApp.Services;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Infrastructure.Services.Restore;
@@ -12,8 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Features.Containers.AddContainer;
 using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;

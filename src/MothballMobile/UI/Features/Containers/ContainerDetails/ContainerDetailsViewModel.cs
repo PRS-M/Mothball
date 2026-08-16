@@ -1,15 +1,12 @@
 using CoreApp.Entities.Inventory;
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using MothballMobile.Infrastructure;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
-using CoreApp.Services;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
-using MothballMobile.Infrastructure.Popups;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 

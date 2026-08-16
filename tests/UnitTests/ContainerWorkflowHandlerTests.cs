@@ -3,11 +3,10 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Contracts;
 using CoreApp.Interfaces;
-using CoreApp.Services;
 using CoreApp.Specifications;
 using Moq;
 using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
+using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 
 namespace UnitTests;

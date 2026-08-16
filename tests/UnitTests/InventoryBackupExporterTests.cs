@@ -3,7 +3,6 @@ using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Interfaces;
-using CoreApp.Services;
 using CoreApp.Utilities;
 using Moq;
 using System.IO.Compression;

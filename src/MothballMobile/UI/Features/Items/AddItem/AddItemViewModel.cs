@@ -1,10 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Interfaces;
-using CoreApp.Services;
 using Microsoft.Extensions.Logging;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Items.AddItem;
@@ -13,7 +10,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly ImageService imageService;
     private readonly ICreateItemCommandHandler createItem;
-    private readonly Infrastructure.INavigationService nav;
+    private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly ILogger<AddItemViewModel> logger;
     private readonly IPopupService popup;
@@ -49,7 +46,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     public AddItemViewModel(
         ImageService imageService,
         ICreateItemCommandHandler createItem,
-        Infrastructure.INavigationService nav,
+        INavigationService nav,
         IApplicationSettings applicationSettings,
         ILogger<AddItemViewModel> logger,
         IPopupService popup,

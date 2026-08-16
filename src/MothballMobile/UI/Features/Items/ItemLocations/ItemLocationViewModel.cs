@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
-using MothballMobile.Infrastructure;
 
 namespace MothballMobile.UI.Features.Items.ItemLocations;
 

@@ -6,12 +6,12 @@ namespace MothballMobile.UI.Features.Containers.ContainersList;
 
 public partial class ContainerViewModel : ContainerWithImagesViewModelBase
 {
-    private readonly Infrastructure.INavigationService nav;
+    private readonly INavigationService nav;
 
     public ContainerViewModel(
         Container container,
         IImagePathResolver paths,
-        Infrastructure.INavigationService nav,
+        INavigationService nav,
         bool showQuantityManagement)
         : base(container, paths)
     {

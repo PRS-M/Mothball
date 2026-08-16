@@ -1,6 +1,4 @@
 using CoreApp.Interfaces;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 
 namespace MothballMobile.UI.Shared;
 

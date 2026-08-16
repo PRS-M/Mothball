@@ -1,6 +1,5 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Extensions.Logging;
-using MothballMobile.Infrastructure;
 #if IOS || ANDROID
 using Plugin.AdMob;
 #endif

@@ -9,12 +9,12 @@ namespace MothballMobile.UI.Features.Items.ItemsList;
 
 public partial class ItemViewModel : ItemWithImagesViewModelBase
 {
-    private readonly Infrastructure.INavigationService nav;
+    private readonly INavigationService nav;
 
     public ItemViewModel(
         InventorySnapshot inventory,
         IImagePathResolver paths,
-        Infrastructure.INavigationService nav,
+        INavigationService nav,
         bool showQuantityManagement)
         : base(inventory, paths)
     {

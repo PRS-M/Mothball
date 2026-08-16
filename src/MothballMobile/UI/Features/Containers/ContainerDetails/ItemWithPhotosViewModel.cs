@@ -3,8 +3,6 @@ using CoreApp.Entities.Inventory;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Interfaces;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;

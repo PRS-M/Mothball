@@ -2,7 +2,6 @@ using CoreApp.Entities.Inventory;
 ﻿using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Services;
 using CoreApp.Utilities;
 
 namespace UnitTests;

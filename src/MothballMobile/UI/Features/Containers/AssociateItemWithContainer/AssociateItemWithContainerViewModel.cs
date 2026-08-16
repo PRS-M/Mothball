@@ -4,8 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging.Abstractions;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 using Infrastructure.Services;
 
 namespace MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
@@ -16,7 +14,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     private readonly IContainerAssociationQueryHandler associationQueries;
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
     private readonly IAssignItemToContainerCommandHandler assignItemToContainer;
-    private readonly Infrastructure.INavigationService nav;
+    private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
@@ -35,7 +33,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         IContainerAssociationQueryHandler associationQueries,
         IItemDetailsQueryHandler itemDetailsQueries,
         IAssignItemToContainerCommandHandler assignItemToContainer,
-        Infrastructure.INavigationService nav,
+        INavigationService nav,
         IApplicationSettings applicationSettings,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,

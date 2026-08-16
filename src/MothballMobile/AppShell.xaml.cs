@@ -7,7 +7,7 @@ public partial class AppShell : Shell
 	private readonly ILogger<AppShell> logger;
 
 	public AppShell(
-		Infrastructure.IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
 		ILogger<AppShell> logger)
 	{
 		this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
