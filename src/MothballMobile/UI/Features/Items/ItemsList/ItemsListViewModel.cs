@@ -1,7 +1,9 @@
 using CoreApp.Entities.Inventory;
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
+using CoreApp.Utilities;
 using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using CoreApp.Contracts;
@@ -31,7 +33,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
 
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
 
-    public static IReadOnlyList<ItemsListFilter> AvailableFilters { get; } = Enum.GetValues<ItemsListFilter>();
+    public static ReadOnlyCollection<ItemsListFilter> AvailableFilters { get; } = EnumValues.CreateReadOnly<ItemsListFilter>();
 
     public ItemsListFilter SelectedFilter
     {

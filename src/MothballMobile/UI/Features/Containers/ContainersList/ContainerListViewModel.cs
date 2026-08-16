@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Infrastructure.Services;
 
@@ -29,7 +30,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 
     private ContainerListFilter selectedFilter = ContainerListFilter.All;
 
-    public static IReadOnlyList<ContainerListFilter> AvailableFilters { get; } = Enum.GetValues<ContainerListFilter>();
+    public static ReadOnlyCollection<ContainerListFilter> AvailableFilters { get; } = EnumValues.CreateReadOnly<ContainerListFilter>();
 
     public ContainerListFilter SelectedFilter
     {
