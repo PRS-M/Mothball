@@ -8,11 +8,6 @@ namespace MothballMobile.UI.Shared;
 
 public class BasePage : ContentPage
 {
-#if IOS
-    private const string BannerTestAdUnitId = "ca-app-pub-3940256099942544/2934735716";
-#elif ANDROID
-    private const string BannerTestAdUnitId = "ca-app-pub-3940256099942544/6300978111";
-#endif
     private IDisposable? previousDisposable;
     private readonly SemaphoreSlim initializationGate = new(1, 1);
     private bool contentWrappedWithAdBanner;
@@ -126,6 +121,8 @@ public class BasePage : ContentPage
 #if IOS || ANDROID
     private static View CreateAdBannerContent()
     {
+		var adMobSettings = IPlatformApplication.Current?.Services.GetRequiredService<AdMobSettings>()
+			?? throw new InvalidOperationException("AdMob settings are not available.");
         var bannerHost = new Grid
         {
             HeightRequest = 60,
@@ -138,9 +135,7 @@ public class BasePage : ContentPage
 
         var banner = new BannerAd
         {
-#if IOS || ANDROID
-            AdUnitId = BannerTestAdUnitId,
-#endif
+    			AdUnitId = adMobSettings.BannerAdUnitId,
             HeightRequest = 60,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill

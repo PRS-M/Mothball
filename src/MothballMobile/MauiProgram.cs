@@ -36,6 +36,7 @@ public static class MauiProgram
 #if IOS || ANDROID
 		builder.UseAdMob();
 #endif
+		builder.Services.AddSingleton(AdMobSettings.Load());
 		builder.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -48,8 +49,13 @@ public static class MauiProgram
 		builder.AddMauiDevFlowAgent();
 #endif
 #if IOS || ANDROID
+		#if DEBUG
 		AdConfig.UseTestAdUnitIds = true;
 		AdConfig.DisableConsentCheck = true;
+		#else
+		AdConfig.UseTestAdUnitIds = false;
+		AdConfig.DisableConsentCheck = false;
+		#endif
 #endif
 #if DEBUG
 		builder.Logging.AddDebug();

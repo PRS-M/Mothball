@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <AdMobApplicationId>YOUR_IOS_ADMOB_APPLICATION_ID</AdMobApplicationId>
+  </PropertyGroup>
+</Project>

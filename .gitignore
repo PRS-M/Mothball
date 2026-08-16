@@ -10,6 +10,10 @@
 *.userosscache
 *.sln.docstates
 
+# Local production advertising configuration
+src/MothballMobile/Properties/AdMob.Release.props
+src/MothballMobile/Properties/appsettings.Release.json
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
