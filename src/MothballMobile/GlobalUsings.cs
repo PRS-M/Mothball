@@ -26,3 +26,4 @@ global using MothballMobile.Infrastructure.Startup;
 global using MothballMobile.Infrastructure.Utilities;
 global using Infrastructure.Abstractions.Repositories;
 global using Infrastructure.Abstractions.Transactions;
+global using Infrastructure.Services.Seeding;
