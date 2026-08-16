@@ -1,5 +1,4 @@
 using System;
-using Infrastructure.Interfaces;
 using SQLite;
 
 namespace Infrastructure.Abstractions.Repositories;

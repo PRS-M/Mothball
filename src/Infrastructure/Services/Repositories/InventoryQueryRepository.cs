@@ -2,7 +2,6 @@ using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Specifications;
-using Infrastructure.Interfaces;
 using CoreApp.Contracts;
 
 namespace Infrastructure.Services.Repositories;

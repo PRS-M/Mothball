@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Specifications;
-using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using Microsoft.Extensions.Logging;

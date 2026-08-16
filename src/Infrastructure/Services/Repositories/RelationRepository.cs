@@ -1,5 +1,4 @@
 using CoreApp.Entities.Inventory;
-using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using CoreApp.Entities.ItemAggregate;

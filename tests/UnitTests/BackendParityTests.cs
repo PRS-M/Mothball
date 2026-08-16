@@ -5,7 +5,6 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
 using CoreApp.Specifications;
-using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore;

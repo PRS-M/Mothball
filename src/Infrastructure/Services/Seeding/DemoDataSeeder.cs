@@ -1,6 +1,5 @@
 using System;
 using CoreApp.Utilities;
-using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Microsoft.Extensions.Logging;
 

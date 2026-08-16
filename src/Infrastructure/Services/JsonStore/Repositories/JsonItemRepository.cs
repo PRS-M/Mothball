@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreApp.Entities.ItemAggregate;
-using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;

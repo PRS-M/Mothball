@@ -1,5 +1,4 @@
 using CoreApp.Entities.Inventory;
-using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Infrastructure.Services.Repositories;
