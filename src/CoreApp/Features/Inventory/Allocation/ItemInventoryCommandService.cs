@@ -2,7 +2,6 @@ using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Features.Photos;
-using CoreApp.Interfaces;
 
 namespace CoreApp.Features.Inventory.Allocation;
 

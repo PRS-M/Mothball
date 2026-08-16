@@ -1,7 +1,6 @@
 using CoreApp.Entities.Inventory;
 ﻿using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
 using System.Threading.Tasks;
 using CoreApp.Contracts;
 

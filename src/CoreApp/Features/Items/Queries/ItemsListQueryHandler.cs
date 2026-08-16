@@ -1,6 +1,5 @@
 using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
-using CoreApp.Interfaces;
 using CoreApp.Specifications;
 
 namespace CoreApp.Features.Items.Queries;

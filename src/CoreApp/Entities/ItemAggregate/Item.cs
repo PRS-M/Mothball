@@ -1,5 +1,4 @@
 using CoreApp.Entities.Shared;
-using CoreApp.Interfaces;
 
 namespace CoreApp.Entities.ItemAggregate;
 

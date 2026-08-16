@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
-using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Devices;

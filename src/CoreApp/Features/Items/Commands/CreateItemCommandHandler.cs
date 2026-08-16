@@ -1,7 +1,6 @@
 using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Features.Photos;
-using CoreApp.Interfaces;
 
 namespace CoreApp.Features.Items.Commands;
 

@@ -3,7 +3,6 @@ using CoreApp.Entities.Inventory;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
-using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
 using Microsoft.Extensions.Logging;
 

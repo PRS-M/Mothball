@@ -1,3 +1,7 @@
+global using CoreApp.Abstractions.Domain;
+global using CoreApp.Abstractions.Persistence;
+global using CoreApp.Abstractions.Platform;
+global using CoreApp.Abstractions.Startup;
 global using CoreApp.Features.Backup.Export;
 global using CoreApp.Features.Backup.Restore;
 global using CoreApp.Features.Backup.Serialization;
@@ -20,3 +24,5 @@ global using MothballMobile.Infrastructure.Resilience;
 global using MothballMobile.Infrastructure.Settings;
 global using MothballMobile.Infrastructure.Startup;
 global using MothballMobile.Infrastructure.Utilities;
+global using Infrastructure.Abstractions.Repositories;
+global using Infrastructure.Abstractions.Transactions;

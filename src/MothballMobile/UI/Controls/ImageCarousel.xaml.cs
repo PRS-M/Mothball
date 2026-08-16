@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Specialized;
 using CoreApp.Entities.Shared;
-using CoreApp.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Shapes;
 

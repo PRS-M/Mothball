@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Text.Json;
-using CoreApp.Interfaces;
 
 namespace CoreApp.Shared.Serialization;
 

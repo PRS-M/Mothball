@@ -1,5 +1,4 @@
 using CoreApp.Contracts;
-using CoreApp.Interfaces;
 using Moq;
 
 namespace UnitTests;

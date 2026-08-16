@@ -70,12 +70,14 @@
   <!-- Compile non-MAUI Infrastructure sources directly to avoid referencing the MAUI-only Infrastructure project. -->
   <ItemGroup>
     <Compile Include="../../src/Infrastructure/DatabaseModels/**/*.cs" Link="Infrastructure/DatabaseModels/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Interfaces/**/*.cs" Link="Infrastructure/Interfaces/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Abstractions/Repositories/**/*.cs" Link="Infrastructure/Abstractions/Repositories/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Abstractions/Transactions/**/*.cs" Link="Infrastructure/Abstractions/Transactions/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Compatibility/LegacyInterfacesNamespace.cs" Link="Infrastructure/Compatibility/LegacyInterfacesNamespace.cs" />
     <Compile Include="../../src/Infrastructure/Mappers/**/*.cs" Link="Infrastructure/Mappers/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Services/DemoDataSeeder.cs" Link="Infrastructure/Services/DemoDataSeeder.cs" />
-    <Compile Include="../../src/Infrastructure/Services/ImagePathResolver.cs" Link="Infrastructure/Services/ImagePathResolver.cs" />
-    <Compile Include="../../src/Infrastructure/Services/MothballDatabase.cs" Link="Infrastructure/Services/MothballDatabase.cs" />
-    <Compile Include="../../src/Infrastructure/Services/SqliteStartupInitializer.cs" Link="Infrastructure/Services/SqliteStartupInitializer.cs" />
+    <Compile Include="../../src/Infrastructure/Services/Seeding/DemoDataSeeder.cs" Link="Infrastructure/Services/Seeding/DemoDataSeeder.cs" />
+    <Compile Include="../../src/Infrastructure/Services/Images/ImagePathResolver.cs" Link="Infrastructure/Services/Images/ImagePathResolver.cs" />
+    <Compile Include="../../src/Infrastructure/Services/Database/MothballDatabase.cs" Link="Infrastructure/Services/Database/MothballDatabase.cs" />
+    <Compile Include="../../src/Infrastructure/Services/Startup/SqliteStartupInitializer.cs" Link="Infrastructure/Services/Startup/SqliteStartupInitializer.cs" />
     <Compile Include="../../src/Infrastructure/Services/Restore/**/*.cs" Link="Infrastructure/Services/Restore/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Services/JsonStore/**/*.cs" Link="Infrastructure/Services/JsonStore/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Services/Repositories/**/*.cs" Link="Infrastructure/Services/Repositories/%(RecursiveDir)%(Filename)%(Extension)" />

@@ -2,7 +2,6 @@ using CoreApp.Entities.Inventory;
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
 using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Shared;

@@ -1,7 +1,6 @@
 using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 using CoreApp.Entities.Shared;
-using CoreApp.Interfaces;
 
 namespace MothballMobile.Infrastructure.Presentation.Popups;
 

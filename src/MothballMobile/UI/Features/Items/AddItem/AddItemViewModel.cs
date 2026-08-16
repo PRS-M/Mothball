@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging;
 using MothballMobile.UI.Shared;
 

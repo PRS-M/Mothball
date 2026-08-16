@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CoreApp.Interfaces;
 
 namespace MothballMobile.UI.Features.Items.ItemLocations;
 

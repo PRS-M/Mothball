@@ -1,4 +1,3 @@
-using CoreApp.Interfaces;
 using CoreApp.Utilities;
 
 namespace CoreApp.Features.Photos;

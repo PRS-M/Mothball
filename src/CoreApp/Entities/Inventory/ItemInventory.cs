@@ -1,5 +1,4 @@
 using CoreApp.Entities;
-using CoreApp.Interfaces;
 
 namespace CoreApp.Entities.Inventory;
 

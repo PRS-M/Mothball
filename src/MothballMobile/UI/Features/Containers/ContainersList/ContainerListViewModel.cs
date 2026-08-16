@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using Microsoft.Extensions.Logging.Abstractions;
 using Infrastructure.Services;

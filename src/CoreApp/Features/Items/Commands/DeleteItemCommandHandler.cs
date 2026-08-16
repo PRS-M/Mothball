@@ -1,4 +1,3 @@
-using CoreApp.Interfaces;
 
 namespace CoreApp.Features.Items.Commands;
 

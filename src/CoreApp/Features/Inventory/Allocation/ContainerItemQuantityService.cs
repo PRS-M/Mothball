@@ -1,6 +1,5 @@
 using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Interfaces;
 
 namespace CoreApp.Features.Inventory.Allocation;
 

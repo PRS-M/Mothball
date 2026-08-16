@@ -1,5 +1,4 @@
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
 
 namespace CoreApp.Features.Items.Commands;
 

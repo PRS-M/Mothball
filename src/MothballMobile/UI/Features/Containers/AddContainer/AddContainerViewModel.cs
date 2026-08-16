@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Interfaces;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;

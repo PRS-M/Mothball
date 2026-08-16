@@ -1,5 +1,4 @@
 using System;
-using CoreApp.Interfaces;
 using CoreApp.Utilities;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;

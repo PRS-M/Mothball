@@ -1,7 +1,6 @@
 using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using MothballMobile.Infrastructure;

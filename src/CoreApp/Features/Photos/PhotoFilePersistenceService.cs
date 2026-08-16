@@ -1,5 +1,4 @@
 using CoreApp.Entities.Shared;
-using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace CoreApp.Features.Photos;

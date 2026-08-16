@@ -1,4 +1,3 @@
-using CoreApp.Interfaces;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;

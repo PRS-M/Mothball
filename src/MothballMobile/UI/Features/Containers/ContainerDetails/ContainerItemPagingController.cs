@@ -1,6 +1,5 @@
 using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
-using CoreApp.Interfaces;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 

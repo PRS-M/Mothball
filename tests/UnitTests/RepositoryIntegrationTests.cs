@@ -5,7 +5,6 @@ using Infrastructure.Interfaces;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
 using CoreApp.Specifications;
 using Infrastructure.Services.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;

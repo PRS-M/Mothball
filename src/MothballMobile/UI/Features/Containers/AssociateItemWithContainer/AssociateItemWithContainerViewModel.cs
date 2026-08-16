@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging.Abstractions;
 using Infrastructure.Services;
 
