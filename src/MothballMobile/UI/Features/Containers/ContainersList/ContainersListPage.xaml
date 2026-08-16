@@ -103,6 +103,8 @@
                                 Command="{Binding NavigateCommand}"
                                 Name="{Binding Name}"
                                 Notes="{Binding Notes}"
+                                ItemTypesCount="{Binding ItemTypesStoredText}"
+                                ShowItemTypesCount="{Binding ShowQuantityManagement}"
                                 ItemCount="{Binding ItemsStoredText}"
                                 ImagePaths="{Binding ImagePaths}"
                                 ImageSize="125" />

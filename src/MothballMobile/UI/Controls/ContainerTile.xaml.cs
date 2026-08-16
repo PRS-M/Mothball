@@ -26,8 +26,14 @@ public partial class ContainerTile : ContentView
 	public static readonly BindableProperty ItemCountProperty =
 		BindableProperty.Create(nameof(ItemCount), typeof(string), typeof(ContainerTile), "Items Count: 99");
 
+	public static readonly BindableProperty ItemTypesCountProperty =
+		BindableProperty.Create(nameof(ItemTypesCount), typeof(string), typeof(ContainerTile), "Item Types Count: 99");
+
 	public static readonly BindableProperty ShowItemCountProperty =
 		BindableProperty.Create(nameof(ShowItemCount), typeof(bool), typeof(ContainerTile), true);
+
+	public static readonly BindableProperty ShowItemTypesCountProperty =
+		BindableProperty.Create(nameof(ShowItemTypesCount), typeof(bool), typeof(ContainerTile), false);
 
 	public static readonly BindableProperty ImagePathsProperty =
 		BindableProperty.Create(nameof(ImagePaths), typeof(ObservableCollection<string>), typeof(ContainerTile), default(ObservableCollection<string>));
@@ -62,10 +68,22 @@ public partial class ContainerTile : ContentView
 		set => SetValue(ItemCountProperty, value);
 	}
 
+	public string ItemTypesCount
+	{
+		get => (string)GetValue(ItemTypesCountProperty);
+		set => SetValue(ItemTypesCountProperty, value);
+	}
+
 	public bool ShowItemCount
 	{
 		get => (bool)GetValue(ShowItemCountProperty);
 		set => SetValue(ShowItemCountProperty, value);
+	}
+
+	public bool ShowItemTypesCount
+	{
+		get => (bool)GetValue(ShowItemTypesCountProperty);
+		set => SetValue(ShowItemTypesCountProperty, value);
 	}
 
 	public ObservableCollection<string> ImagePaths

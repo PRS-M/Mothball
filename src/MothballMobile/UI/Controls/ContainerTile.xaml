@@ -61,6 +61,13 @@
                     HorizontalOptions="Start" />
                 <Label
                     FontSize="{StaticResource fontSize}"
+                    Text="{Binding Source={x:Reference this}, Path=ItemTypesCount}"
+                    IsVisible="{Binding Source={x:Reference this}, Path=ShowItemTypesCount}"
+                    TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                    VerticalOptions="Start"
+                    HorizontalOptions="Start" />
+                <Label
+                    FontSize="{StaticResource fontSize}"
                     Text="{Binding Source={x:Reference this}, Path=ItemCount}"
                     IsVisible="{Binding Source={x:Reference this}, Path=ShowItemCount}"
                     TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
