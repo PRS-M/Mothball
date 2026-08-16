@@ -2,7 +2,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Utilities;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Infrastructure.Services.JsonStore;
 
 [TestFixture]
 public class InventoryJsonHandlerTests

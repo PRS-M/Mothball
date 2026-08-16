@@ -8,7 +8,7 @@ using CoreApp.Utilities;
 using Moq;
 using System.Text.Json;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Features.Backup;
 
 [TestFixture]
 public class InventoryBackupRestoreServiceTests

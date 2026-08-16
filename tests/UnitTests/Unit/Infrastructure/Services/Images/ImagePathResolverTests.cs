@@ -4,7 +4,7 @@ using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Infrastructure.Services.Images;
 
 public class ImagePathResolverTests
 {

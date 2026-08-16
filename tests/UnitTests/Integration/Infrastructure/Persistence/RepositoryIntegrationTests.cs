@@ -9,7 +9,7 @@ using Infrastructure.Services.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Integration.Infrastructure.Persistence;
 
 [TestFixture]
 public class RepositoryIntegrationTests

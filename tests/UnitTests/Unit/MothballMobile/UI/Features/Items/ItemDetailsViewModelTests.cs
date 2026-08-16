@@ -8,7 +8,7 @@ using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.UI.Features.Items.ItemDetails;
 using MothballMobile.UI.Features.Items.ItemLocations;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Mobile.UI.Features.Items;
 
 [TestFixture]
 public sealed class ItemDetailsViewModelTests

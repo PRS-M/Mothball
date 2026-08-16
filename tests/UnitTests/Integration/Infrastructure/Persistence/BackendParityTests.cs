@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Infrastructure.Services.Repositories;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Integration.Infrastructure.Persistence;
 
 [TestFixture]
 public class BackendParityTests

@@ -1,7 +1,7 @@
 using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Features.Inventory;
 
 [TestFixture]
 public sealed class ItemInventoryWithdrawalPlannerTests

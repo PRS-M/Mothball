@@ -1,7 +1,7 @@
 using MothballMobile.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Mobile.Infrastructure.Resilience;
 
 public class DebouncerTests
 {

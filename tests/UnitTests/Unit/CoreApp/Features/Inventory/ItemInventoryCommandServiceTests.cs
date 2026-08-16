@@ -3,7 +3,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Features.Inventory;
 
 [TestFixture]
 public sealed class ItemInventoryCommandServiceTests

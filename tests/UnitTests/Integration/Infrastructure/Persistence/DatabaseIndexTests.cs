@@ -6,7 +6,7 @@ using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Repositories;
 
-namespace UnitTests;
+namespace Mothball.Tests.Integration.Infrastructure.Persistence;
 
 [TestFixture]
 public class DatabaseIndexTests

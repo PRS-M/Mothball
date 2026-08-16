@@ -7,7 +7,7 @@ using Infrastructure.Services.JsonStore.Repositories;
 using Infrastructure.Services.Restore;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace UnitTests;
+namespace Mothball.Tests.Integration.Infrastructure.Restore;
 
 [TestFixture]
 public class JsonInventoryBackupRestoreServiceTests

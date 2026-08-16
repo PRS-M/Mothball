@@ -3,7 +3,7 @@ using CoreApp.Contracts;
 using CoreApp.Entities.Shared;
 using MothballMobile.Infrastructure.Presentation.Popups;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Mobile.Infrastructure.Presentation.Popups;
 
 public class PopupDefinitionServiceTests
 {

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Infrastructure.Services.JsonStore;
 
 [TestFixture]
 public class JsonHandlerBehaviorTests

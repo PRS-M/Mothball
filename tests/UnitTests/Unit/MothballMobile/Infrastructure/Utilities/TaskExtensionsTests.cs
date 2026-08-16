@@ -1,6 +1,6 @@
 using MothballMobile.Infrastructure;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Mobile.Infrastructure.Utilities;
 
 public sealed class TaskExtensionsTests
 {

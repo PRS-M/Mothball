@@ -4,7 +4,7 @@ using CoreApp.Entities.ItemAggregate;
 using CoreApp.Specifications;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Features.Items;
 
 [TestFixture]
 public sealed class ListAndItemWorkflowHandlerTests

@@ -4,7 +4,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Utilities;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Entities;
 
 [TestFixture]
 public class CoreAppTests

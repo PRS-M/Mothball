@@ -7,7 +7,7 @@ using CoreApp.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Features.Photos;
 
 [TestFixture]
 public class ImageServiceBehaviorTests

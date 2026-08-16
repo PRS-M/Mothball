@@ -1,7 +1,7 @@
 using CoreApp.Entities.ContainerAggregate;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Features.Containers;
 
 [TestFixture]
 public class ContainerItemQuantityServiceTests

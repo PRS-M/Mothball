@@ -3,7 +3,7 @@ using Infrastructure.Services.DatabaseModels;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Infrastructure.Services.Seeding;
 
 [TestFixture]
 public class DemoDataSeederTests

@@ -8,7 +8,7 @@ using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Features.Containers;
 
 [TestFixture]
 public sealed class ContainerWorkflowHandlerTests

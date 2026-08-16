@@ -5,7 +5,7 @@ using CoreApp.Contracts;
 using CoreApp.Utilities;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Features.Backup;
 
 [TestFixture]
 public class InventoryBackupZipRestoreServiceTests

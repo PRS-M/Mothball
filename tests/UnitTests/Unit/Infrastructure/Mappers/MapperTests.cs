@@ -4,7 +4,7 @@ using CoreApp.Entities.Shared;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Infrastructure.Mappers;
 
 [TestFixture]
 public class MapperTests

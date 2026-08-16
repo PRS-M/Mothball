@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Infrastructure.Services;
 
 [TestFixture]
 public class ServiceTests

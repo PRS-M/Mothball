@@ -6,7 +6,7 @@ using CoreApp.Utilities;
 using Moq;
 using System.IO.Compression;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Core.Features.Backup;
 
 [TestFixture]
 public class InventoryBackupExporterTests

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Moq;
 using MothballMobile.Infrastructure;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Mobile.Infrastructure.Resilience;
 
 public class RetryServiceTests
 {

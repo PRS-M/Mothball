@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using MothballMobile.Infrastructure;
 
-namespace UnitTests;
+namespace Mothball.Tests.Unit.Mobile.Infrastructure.Startup;
 
 [TestFixture]
 public class AppStartupOrchestratorTests

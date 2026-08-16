@@ -5,7 +5,7 @@ using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Repositories;
 using CoreApp.Utilities;
 
-namespace UnitTests;
+namespace Mothball.Tests.Integration.Infrastructure.Restore;
 
 [TestFixture]
 public class SqliteInventoryBackupRestoreServiceTests
