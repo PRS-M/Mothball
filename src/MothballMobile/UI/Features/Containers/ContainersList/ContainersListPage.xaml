@@ -111,24 +111,18 @@
                 </CollectionView>
             </RefreshView>
 
-            <VerticalStackLayout IsVisible="False"
-                                 Spacing="12"
-                                 HorizontalOptions="Center"
-                                 VerticalOptions="Center">
-                <VerticalStackLayout.Triggers>
-                    <DataTrigger TargetType="VerticalStackLayout"
+            <controls:ListLoadingView IsVisible="False"
+                                      IsLoading="{Binding IsRefreshing}"
+                                      LoadingText="Loading containers...">
+                <controls:ListLoadingView.Triggers>
+                    <DataTrigger TargetType="controls:ListLoadingView"
                                  Binding="{Binding IsRefreshing}"
                                  Value="True">
                         <Setter Property="IsVisible"
                                 Value="True" />
                     </DataTrigger>
-                </VerticalStackLayout.Triggers>
-                <ActivityIndicator IsRunning="{Binding IsRefreshing}"
-                                   WidthRequest="44"
-                                   HeightRequest="44" />
-                <Label Text="Loading containers..."
-                       HorizontalTextAlignment="Center" />
-            </VerticalStackLayout>
+                </controls:ListLoadingView.Triggers>
+            </controls:ListLoadingView>
         </Grid>
     </Grid>
 </views:BasePage>

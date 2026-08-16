@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:self="clr-namespace:MothballMobile.UI.Controls"
+             x:Class="MothballMobile.UI.Controls.ListLoadingView"
+             x:Name="this"
+             x:DataType="self:ListLoadingView">
+    <VerticalStackLayout Spacing="12"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center">
+        <ActivityIndicator IsRunning="{Binding Source={x:Reference this}, Path=IsLoading}"
+                           WidthRequest="44"
+                           HeightRequest="44" />
+        <Label Text="{Binding Source={x:Reference this}, Path=LoadingText}"
+               HorizontalTextAlignment="Center" />
+    </VerticalStackLayout>
+</ContentView>
