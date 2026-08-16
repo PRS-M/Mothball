@@ -14,6 +14,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
         this.store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
+    /// <inheritdoc />
     public async Task<InventoryBackupRestoreResult> RestoreFromJsonAsync(
         string backupJson,
         InventoryBackupRestoreOptions? options = null,
@@ -23,6 +24,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
         return await RestoreAsync(backup, options, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<InventoryBackupRestoreResult> RestoreAsync(
         InventoryBackupEnvelope backup,
         InventoryBackupRestoreOptions? options = null,

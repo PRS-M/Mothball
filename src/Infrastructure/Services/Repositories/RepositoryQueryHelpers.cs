@@ -1,4 +1,3 @@
-using Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services.Repositories;

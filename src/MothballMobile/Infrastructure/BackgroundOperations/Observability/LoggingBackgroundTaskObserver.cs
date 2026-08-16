@@ -11,6 +11,7 @@ public sealed class LoggingBackgroundTaskObserver : IBackgroundTaskObserver
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <inheritdoc />
     public void OnFailure(string operationName, Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);

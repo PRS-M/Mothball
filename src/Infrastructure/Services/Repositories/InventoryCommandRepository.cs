@@ -2,7 +2,6 @@ using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
-using Infrastructure.Interfaces;
 
 namespace Infrastructure.Services.Repositories;
 
@@ -31,21 +30,27 @@ public class InventoryCommandRepository : IInventoryCommandRepository
         this.relationRepo = relationRepo;
     }
 
+    /// <inheritdoc />
     public Task InsertContainerAsync(Container container)
         => containerRepo.InsertAsync(container);
 
+    /// <inheritdoc />
     public Task InsertItemAsync(Item item)
         => itemRepo.InsertAsync(item);
 
+    /// <inheritdoc />
     public Task InsertItemInventoryAsync(ItemInventory inventory)
         => itemInventoryRepo.InsertAsync(inventory);
 
+    /// <inheritdoc />
     public Task SaveItemInventoryAsync(ItemInventory inventory)
         => itemInventoryRepo.SaveAsync(inventory);
 
+    /// <inheritdoc />
     public Task InsertImageItemAsync(ImageItem imageItem, Guid ownerId)
         => imageRepo.InsertAsync(imageItem, ownerId);
 
+    /// <inheritdoc />
     public async Task InsertItemContainerRelation(Guid itemId, Guid containerId, int quantity)
     {
         var inventory = await itemInventoryRepo.GetAsync(itemId)
@@ -56,6 +61,7 @@ public class InventoryCommandRepository : IInventoryCommandRepository
         await itemInventoryRepo.SaveAsync(inventory);
     }
 
+    /// <inheritdoc />
     public async Task ReplaceItemContainerRelationQuantity(Guid itemId, Guid containerId, int quantity)
     {
         var inventory = await itemInventoryRepo.GetAsync(itemId)
@@ -64,14 +70,17 @@ public class InventoryCommandRepository : IInventoryCommandRepository
         await itemInventoryRepo.SaveAsync(inventory);
     }
 
+    /// <inheritdoc />
     public Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity)
         => relationRepo.SetItemContainerAllocationAsync(item, containerId, quantity);
 
+    /// <inheritdoc />
     public Task ApplyItemInventoryWithdrawalAsync(
         Item item,
         IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations)
         => relationRepo.ApplyItemInventoryWithdrawalAsync(item, allocations);
 
+    /// <inheritdoc />
     public async Task DeleteItemContainerRelation(Guid itemId, Guid containerId)
     {
         var inventory = await itemInventoryRepo.GetAsync(itemId);
@@ -85,27 +94,35 @@ public class InventoryCommandRepository : IInventoryCommandRepository
         await itemInventoryRepo.SaveAsync(inventory);
     }
 
+    /// <inheritdoc />
     public Task UpdateContainerAsync(Container container)
         => containerRepo.UpdateAsync(container);
 
+    /// <inheritdoc />
     public Task UpdateItemAsync(Item item)
         => itemRepo.UpdateAsync(item);
 
+    /// <inheritdoc />
     public Task UpdateImageItemAsync(ImageItem image, Guid ownerId)
         => imageRepo.UpdateAsync(image, ownerId);
 
+    /// <inheritdoc />
     public Task DeleteImageItemAsync(Guid imageId, Guid ownerId)
         => imageRepo.DeleteAsync(imageId, ownerId);
 
+    /// <inheritdoc />
     public Task DeleteContainerPhotoAsync(Container container, Guid imageId)
         => containerRepo.DeletePhotoAsync(container, imageId);
 
+    /// <inheritdoc />
     public Task DeleteItemPhotoAsync(Item item, Guid imageId)
         => itemRepo.DeletePhotoAsync(item, imageId);
 
+    /// <inheritdoc />
     public Task DeleteItemAsync(string itemId)
         => itemRepo.DeleteAsync(itemId);
 
+    /// <inheritdoc />
     public Task DeleteContainerAsync(string containerId)
         => containerRepo.DeleteAsync(containerId);
 }

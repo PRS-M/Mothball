@@ -36,6 +36,8 @@ public class ImageService
     /// Captures a new photo for the specified container and persists both the file and metadata.
     /// </summary>
     /// <param name="container">The container to associate the photo with.</param>
+    /// <param name="resizeProgress">Optionally receives progress while the photo is resized.</param>
+    /// <param name="source">The source from which to capture the photo.</param>
     /// <returns>
     /// A task returning the number of bytes captured and saved; returns 0 if the capture was canceled.
     /// </returns>
@@ -62,6 +64,8 @@ public class ImageService
     /// Captures a new photo for the specified item and persists both the file and metadata.
     /// </summary>
     /// <param name="item">The item to associate the photo with.</param>
+    /// <param name="resizeProgress">Optionally receives progress while the photo is resized.</param>
+    /// <param name="source">The source from which to capture the photo.</param>
     /// <returns>
     /// A task returning the number of bytes captured and saved; returns 0 if the capture was canceled.
     /// </returns>
@@ -87,6 +91,8 @@ public class ImageService
     /// <summary>
     /// Captures a photo and stores it in temporary app storage until the owning entity is saved.
     /// </summary>
+    /// <param name="resizeProgress">Optionally receives progress while the photo is resized.</param>
+    /// <param name="source">The source from which to capture the photo.</param>
     /// <returns>
     /// A temporary capture descriptor containing bytes and file path, or <see langword="null"/> when capture is canceled.
     /// </returns>
@@ -98,12 +104,15 @@ public class ImageService
     /// <summary>
     /// Deletes a temporary photo if it exists.
     /// </summary>
+    /// <param name="fileName">The temporary photo file name to delete.</param>
     public Task DeleteTemporaryPhotoAsync(string fileName)
         => temporaryPhotos.DeleteTemporaryPhotoAsync(fileName);
 
     /// <summary>
     /// Persists previously captured photo bytes for a container.
     /// </summary>
+    /// <param name="container">The container to associate with the photo.</param>
+    /// <param name="bytes">The encoded photo bytes to persist.</param>
     public async Task<int> SaveContainerPhotoAsync(Container container, byte[] bytes)
     {
         ArgumentNullException.ThrowIfNull(container);
@@ -124,6 +133,8 @@ public class ImageService
     /// <summary>
     /// Persists previously captured photo bytes for an item.
     /// </summary>
+    /// <param name="item">The item to associate with the photo.</param>
+    /// <param name="bytes">The encoded photo bytes to persist.</param>
     public async Task<int> SaveItemPhotoAsync(Item item, byte[] bytes)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -144,6 +155,8 @@ public class ImageService
     /// <summary>
     /// Deletes a photo for the specified container and removes persisted metadata.
     /// </summary>
+    /// <param name="container">The container that owns the photo.</param>
+    /// <param name="imageId">The identifier of the photo to delete.</param>
     /// <returns><c>true</c> when the photo was found and deleted; otherwise <c>false</c>.</returns>
     public Task<bool> DeleteContainerPhotoAsync(Container container, Guid imageId)
         => photoDeletion.DeleteContainerPhotoAsync(container, imageId);
@@ -151,6 +164,8 @@ public class ImageService
     /// <summary>
     /// Deletes a photo for the specified item and removes persisted metadata.
     /// </summary>
+    /// <param name="item">The item that owns the photo.</param>
+    /// <param name="imageId">The identifier of the photo to delete.</param>
     /// <returns><c>true</c> when the photo was found and deleted; otherwise <c>false</c>.</returns>
     public Task<bool> DeleteItemPhotoAsync(Item item, Guid imageId)
         => photoDeletion.DeleteItemPhotoAsync(item, imageId);

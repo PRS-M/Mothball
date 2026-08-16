@@ -15,6 +15,7 @@ public sealed class InventoryBackupService : IInventoryBackupService
         this.backupClient = backupClient;
     }
 
+    /// <inheritdoc />
     public async Task<InventoryBackupEnvelope> ExportAndUploadAsync(CancellationToken cancellationToken = default)
     {
         var backup = await backupExporter.ExportAsync(cancellationToken).ConfigureAwait(false);

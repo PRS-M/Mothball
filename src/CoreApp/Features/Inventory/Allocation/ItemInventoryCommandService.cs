@@ -21,6 +21,7 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         this.photoDeletion = photoDeletion;
     }
 
+    /// <inheritdoc />
     public async Task<ItemInventoryUpdateResult> IncreaseTotalQuantityAsync(Guid itemId, int totalQuantity)
     {
         var summary = await GetSummaryAsync(itemId);
@@ -35,6 +36,7 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         return CreateResult(inventory, removedFromContainer: false);
     }
 
+    /// <inheritdoc />
     public async Task<ItemInventoryUpdateResult> SetContainerAllocationAsync(
         Guid itemId,
         Guid containerId,
@@ -56,6 +58,7 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         return CreateResult(inventory, removedFromContainer: quantity == 0);
     }
 
+    /// <inheritdoc />
     public async Task<ItemInventoryUpdateResult> ApplyWithdrawalAsync(
         Guid itemId,
         ItemInventoryWithdrawalPlan plan)

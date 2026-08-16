@@ -76,7 +76,7 @@ You can manage containers and items, track quantities, attach photos, and keep y
 
 - `net10.0-ios`
 - `net10.0-maccatalyst`
-- `net9.0-windows10.0.19041.0` (conditionally included on Windows)
+- `net10.0-windows10.0.19041.0` (conditionally included on Windows)
 
 Notes:
 

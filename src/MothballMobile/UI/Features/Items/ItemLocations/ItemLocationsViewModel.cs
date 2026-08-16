@@ -33,6 +33,7 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
         this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
     }
 
+    /// <inheritdoc />
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query.TryGetValue(NavigationParams.ItemId, out var value)
@@ -43,6 +44,7 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
         }
     }
 
+    /// <inheritdoc />
     public Task InitializeAsync()
     {
         if (string.IsNullOrWhiteSpace(ItemId))

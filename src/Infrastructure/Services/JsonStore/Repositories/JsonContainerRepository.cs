@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreApp.Entities.ContainerAggregate;
-using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;
@@ -23,6 +22,7 @@ public sealed class JsonContainerRepository : IContainerRepository
         this.store = store;
     }
 
+    /// <inheritdoc />
     public async Task<Container?> GetAsync(string containerId)
     {
         if (!Guid.TryParse(containerId, out var cid)) return null;
@@ -128,6 +128,7 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ToList();
     }
 
+    /// <inheritdoc />
     public async Task<int> GetItemCountInContainerAsync(string containerId)
     {
         if (!Guid.TryParse(containerId, out var cid)) return 0;
@@ -136,6 +137,7 @@ public sealed class JsonContainerRepository : IContainerRepository
         return state.Relations.Where(r => r.ContainerId == cid).Sum(r => r.Quantity);
     }
 
+    /// <inheritdoc />
     public async Task<int> GetDistinctItemCountInContainerAsync(string containerId)
     {
         if (!Guid.TryParse(containerId, out var cid)) return 0;
@@ -148,6 +150,7 @@ public sealed class JsonContainerRepository : IContainerRepository
             .Count();
     }
 
+    /// <inheritdoc />
     public async Task<Container?> GetContainerForItemAsync(string itemId)
     {
         if (!Guid.TryParse(itemId, out var iid)) return null;
@@ -217,6 +220,7 @@ public sealed class JsonContainerRepository : IContainerRepository
                     .ToList());
     }
 
+    /// <inheritdoc />
     public Task InsertAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
@@ -244,6 +248,7 @@ public sealed class JsonContainerRepository : IContainerRepository
         });
     }
 
+    /// <inheritdoc />
     public Task UpdateAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
@@ -271,6 +276,7 @@ public sealed class JsonContainerRepository : IContainerRepository
         });
     }
 
+    /// <inheritdoc />
     public Task DeletePhotoAsync(Container container, Guid imageId)
     {
         ArgumentNullException.ThrowIfNull(container);
@@ -300,6 +306,7 @@ public sealed class JsonContainerRepository : IContainerRepository
         });
     }
 
+    /// <inheritdoc />
     public Task DeleteAsync(string containerId)
     {
         if (!Guid.TryParse(containerId, out var cid)) return Task.CompletedTask;

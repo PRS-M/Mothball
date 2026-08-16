@@ -2,7 +2,6 @@ using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Specifications;
-using Infrastructure.Interfaces;
 using CoreApp.Contracts;
 
 namespace Infrastructure.Services.Repositories;
@@ -26,15 +25,19 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         this.itemInventoryRepo = itemInventoryRepo;
     }
 
+    /// <inheritdoc />
     public Task<Container?> GetContainerAsync(string containerId)
         => containerRepo.GetAsync(containerId);
 
+    /// <inheritdoc />
     public Task<int> GetItemCountInContainerAsync(string containerId)
         => containerRepo.GetItemCountInContainerAsync(containerId);
 
+    /// <inheritdoc />
     public Task<int> GetDistinctItemCountInContainerAsync(string containerId)
         => containerRepo.GetDistinctItemCountInContainerAsync(containerId);
 
+    /// <inheritdoc />
     public Task<Container?> GetContainerForItemAsync(string itemId)
         => containerRepo.GetContainerForItemAsync(itemId);
 
@@ -45,9 +48,11 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         IReadOnlyCollection<Guid> itemIds)
         => containerRepo.GetItemContainerAllocationsAsync(itemIds);
 
+    /// <inheritdoc />
     public Task<Item?> GetItemWithPhotosAsync(string itemId)
         => itemRepo.GetWithPhotosAsync(itemId);
 
+    /// <inheritdoc />
     public async Task<InventorySnapshot?> GetInventorySnapshotAsync(Guid itemId)
     {
         var item = await itemRepo.GetWithPhotosAsync(itemId.ToString());

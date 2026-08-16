@@ -5,6 +5,7 @@ namespace Infrastructure.Services;
 
 public sealed class SkiaImageMetadataReader : IImageMetadataReader
 {
+    /// <inheritdoc />
     public Task<ImageDimensions?> ReadDimensionsAsync(string imagePath, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(imagePath))

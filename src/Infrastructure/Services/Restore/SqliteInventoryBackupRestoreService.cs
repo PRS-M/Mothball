@@ -13,6 +13,7 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
         this.database = database;
     }
 
+    /// <inheritdoc />
     public async Task<InventoryBackupRestoreResult> RestoreFromJsonAsync(
         string backupJson,
         InventoryBackupRestoreOptions? options = null,
@@ -22,6 +23,7 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
         return await RestoreAsync(backup, options, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<InventoryBackupRestoreResult> RestoreAsync(
         InventoryBackupEnvelope backup,
         InventoryBackupRestoreOptions? options = null,

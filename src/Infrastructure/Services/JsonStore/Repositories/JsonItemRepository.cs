@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreApp.Entities.ItemAggregate;
-using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;
@@ -21,6 +20,7 @@ public sealed class JsonItemRepository : IItemRepository
         this.store = store;
     }
 
+    /// <inheritdoc />
     public async Task<Item?> GetWithPhotosAsync(string itemId)
     {
         if (!Guid.TryParse(itemId, out var iid)) return null;
@@ -295,6 +295,7 @@ public sealed class JsonItemRepository : IItemRepository
         return matches;
     }
 
+    /// <inheritdoc />
     public Task InsertAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -321,6 +322,7 @@ public sealed class JsonItemRepository : IItemRepository
         });
     }
 
+    /// <inheritdoc />
     public Task UpdateAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -348,6 +350,7 @@ public sealed class JsonItemRepository : IItemRepository
         });
     }
 
+    /// <inheritdoc />
     public Task DeletePhotoAsync(Item item, Guid imageId)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -377,6 +380,7 @@ public sealed class JsonItemRepository : IItemRepository
         });
     }
 
+    /// <inheritdoc />
     public Task DeleteAsync(string itemId)
     {
         if (!Guid.TryParse(itemId, out var iid)) return Task.CompletedTask;

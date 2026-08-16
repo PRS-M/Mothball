@@ -4,6 +4,7 @@ namespace MothballMobile.Infrastructure.Backup;
 
 public sealed class NoopInventoryBackupClient : IInventoryBackupClient
 {
+    /// <inheritdoc />
     public Task UploadAsync(InventoryBackupEnvelope backup, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(backup);

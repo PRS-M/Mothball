@@ -27,6 +27,10 @@ public abstract class ItemWithImagesViewModelBase : ObservableObject
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
+    /// <summary>
+    /// Loads this item's photo paths into <see cref="ImagePaths"/>.
+    /// </summary>
+    /// <param name="clearFirst">Whether to clear existing paths before loading.</param>
     protected Task LoadItemImagesAsync(bool clearFirst = true)
     {
         if (clearFirst)

@@ -22,6 +22,10 @@ public abstract class ContainerWithImagesViewModelBase : ObservableObject
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
+    /// <summary>
+    /// Loads this container's photo paths into <see cref="ImagePaths"/>.
+    /// </summary>
+    /// <param name="clearFirst">Whether to clear existing paths before loading.</param>
     protected Task LoadContainerImagesAsync(bool clearFirst = true)
     {
         if (clearFirst)

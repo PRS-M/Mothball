@@ -16,6 +16,7 @@ public sealed class PhotoFilePersistenceService : IPhotoFilePersistenceService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <inheritdoc />
     public async Task<int> PersistPhotoBytesAsync(
         byte[] bytes,
         Func<ImageItem> addImageItem,

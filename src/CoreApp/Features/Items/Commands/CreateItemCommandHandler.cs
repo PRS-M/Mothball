@@ -17,6 +17,7 @@ public sealed class CreateItemCommandHandler : ICreateItemCommandHandler
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
     }
 
+    /// <inheritdoc />
     public async Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null)
     {
         var item = new Item(name, description);

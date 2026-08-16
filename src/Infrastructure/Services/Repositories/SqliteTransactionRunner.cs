@@ -1,4 +1,3 @@
-using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using SQLite;
 
@@ -13,6 +12,7 @@ public sealed class SqliteTransactionRunner : ITransactionRunner
         this.database = database;
     }
 
+    /// <inheritdoc />
     public async Task RunAsync(Action<ITransactionalDeleteScope> action)
     {
         ArgumentNullException.ThrowIfNull(action);

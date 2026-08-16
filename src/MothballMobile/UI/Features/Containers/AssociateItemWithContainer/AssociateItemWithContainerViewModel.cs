@@ -56,6 +56,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
 
     public ObservableCollection<SelectableContainerViewModel> Containers => Items;
 
+    /// <inheritdoc />
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query.TryGetValue(NavigationParams.ItemId, out var value) && value is string id && !string.IsNullOrWhiteSpace(id))
@@ -74,6 +75,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         }
     }
 
+    /// <inheritdoc />
     protected override async Task EnsureDummyData()
     {
         if (demoSeeder is not null)
@@ -82,12 +84,15 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         }
     }
 
+    /// <inheritdoc />
     protected override Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
         => associationQueries.QueryContainersAsync(pageNumber, pageSize);
 
+    /// <inheritdoc />
     protected override SelectableContainerViewModel MapToViewModel(Container source)
         => new(source, imagePaths, AssociateWithContainerAsync, applicationSettings.IsAdvancedMode);
 
+    /// <inheritdoc />
     protected override void OnViewModelAdded(SelectableContainerViewModel vm)
         => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load selectable container images");
 
@@ -160,6 +165,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         return unassignedQuantity + currentContainerQuantity;
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (debouncer is IDisposable disposable)

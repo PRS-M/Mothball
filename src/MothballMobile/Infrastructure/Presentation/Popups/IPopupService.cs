@@ -11,21 +11,30 @@ public interface IPopupService
     /// <summary>
     /// Shows a simple alert from a reusable popup definition.
     /// </summary>
+    /// <param name="definition">The value used by the operation.</param>
     Task ShowAlertAsync(AlertPopupDefinition definition);
 
     /// <summary>
     /// Shows a simple alert with a single cancel/close button.
     /// </summary>
+    /// <param name="title">The value used by the operation.</param>
+    /// <param name="message">The value used by the operation.</param>
+    /// <param name="cancel">The value used by the operation.</param>
     Task ShowAlertAsync(string title, string message, string cancel = "OK");
 
     /// <summary>
     /// Shows a confirmation dialog from a reusable popup definition.
     /// </summary>
+    /// <param name="definition">The value used by the operation.</param>
     Task<bool> ConfirmAsync(ConfirmationPopupDefinition definition);
 
     /// <summary>
     /// Shows a confirmation dialog. Returns true when the accept button is pressed, false otherwise.
     /// </summary>
+    /// <param name="title">The value used by the operation.</param>
+    /// <param name="message">The value used by the operation.</param>
+    /// <param name="accept">The value used by the operation.</param>
+    /// <param name="cancel">The value used by the operation.</param>
     Task<bool> ConfirmAsync(string title, string message, string accept, string cancel);
 
     /// <summary>
@@ -45,17 +54,27 @@ public interface IPopupService
     /// Shows a list picker using an action sheet and returns the selected option.
     /// Returns <c>null</c> when the user cancels.
     /// </summary>
+    /// <param name="title">The value used by the operation.</param>
+    /// <param name="cancel">The value used by the operation.</param>
+    /// <param name="options">The value used by the operation.</param>
     Task<string?> SelectOptionAsync(string title, string cancel, params string[] options);
 
     /// <summary>
     /// Shows a modal number picker from a reusable popup definition.
     /// Returns <c>null</c> when the user cancels.
     /// </summary>
+    /// <param name="definition">The value used by the operation.</param>
     Task<int?> PickNumberAsync(NumberPickerPopupDefinition definition);
 
     /// <summary>
     /// Shows a modal number picker and returns the selected value.
     /// Returns <c>null</c> when the user cancels.
     /// </summary>
+    /// <param name="title">The value used by the operation.</param>
+    /// <param name="min">The value used by the operation.</param>
+    /// <param name="max">The value used by the operation.</param>
+    /// <param name="initialValue">The value used by the operation.</param>
+    /// <param name="accept">The value used by the operation.</param>
+    /// <param name="cancel">The value used by the operation.</param>
     Task<int?> PickNumberAsync(string title, int min, int max, int initialValue, string accept = "Set", string cancel = "Cancel");
 }

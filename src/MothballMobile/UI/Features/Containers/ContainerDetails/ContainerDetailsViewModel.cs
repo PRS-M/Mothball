@@ -98,6 +98,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     }
 
     // Let Shell pass query params directly to the ViewModel.
+    /// <inheritdoc />
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query is null) return;
@@ -107,9 +108,14 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
     }
 
+    /// <inheritdoc />
     public Task InitializeAsync()
         => InitializeAsync(ContainerId);
 
+    /// <summary>
+    /// Loads container details, photos, and initial item-list state for the specified container.
+    /// </summary>
+    /// <param name="containerId">The identifier of the container to load.</param>
     public async Task InitializeAsync(string containerId)
     {
         if (string.IsNullOrWhiteSpace(containerId)) return;
@@ -359,6 +365,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     private bool disposed;
 
+    /// <inheritdoc />
     public void Dispose()
     {
         Dispose(true);

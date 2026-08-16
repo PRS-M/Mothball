@@ -16,6 +16,7 @@ public sealed class JsonRelationRepository : IRelationRepository
         this.store = store;
     }
 
+    /// <inheritdoc />
     public Task InsertItemContainerRelationAsync(Guid itemId, Guid containerId, int quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
@@ -28,6 +29,7 @@ public sealed class JsonRelationRepository : IRelationRepository
         });
     }
 
+    /// <inheritdoc />
     public Task ReplaceItemContainerRelationQuantityAsync(Guid itemId, Guid containerId, int quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(quantity);
@@ -51,6 +53,7 @@ public sealed class JsonRelationRepository : IRelationRepository
         });
     }
 
+    /// <inheritdoc />
     public Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -81,6 +84,7 @@ public sealed class JsonRelationRepository : IRelationRepository
         });
     }
 
+    /// <inheritdoc />
     public Task ApplyItemInventoryWithdrawalAsync(
         Item item,
         IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations)
@@ -111,6 +115,7 @@ public sealed class JsonRelationRepository : IRelationRepository
         });
     }
 
+    /// <inheritdoc />
     public Task DeleteItemContainerRelationAsync(Guid itemId, Guid containerId)
     {
         return store.UpdateAsync(state =>

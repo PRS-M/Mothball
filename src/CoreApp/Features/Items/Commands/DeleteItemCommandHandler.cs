@@ -10,6 +10,7 @@ public sealed class DeleteItemCommandHandler : IDeleteItemCommandHandler
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
 
+    /// <inheritdoc />
     public Task DeleteAsync(string itemId)
         => inventoryCommands.DeleteItemAsync(itemId);
 }

@@ -69,6 +69,11 @@ public sealed class ItemInventoryAdjustmentSession
 
     public int UnassignedQuantity => plan?.UnassignedQuantity ?? 0;
 
+    /// <summary>
+    /// Stages a withdrawal from an assigned container allocation.
+    /// </summary>
+    /// <param name="containerId">The identifier of the container from which to withdraw.</param>
+    /// <param name="quantity">The quantity to withdraw, including any carried quantity.</param>
     public void WithdrawAssigned(Guid containerId, int quantity)
     {
         EnsureState(ItemInventoryAdjustmentState.WithdrawAssigned);
@@ -105,18 +110,28 @@ public sealed class ItemInventoryAdjustmentSession
         AdvanceAssignedState();
     }
 
+    /// <summary>
+    /// Accepts the option to withdraw remaining unassigned quantity.
+    /// </summary>
     public void AcceptUnassignedWithdrawal()
     {
         EnsureState(ItemInventoryAdjustmentState.ConfirmUnassignedWithdrawal);
         State = ItemInventoryAdjustmentState.WithdrawUnassigned;
     }
 
+    /// <summary>
+    /// Declines the option to withdraw remaining unassigned quantity.
+    /// </summary>
     public void DeclineUnassignedWithdrawal()
     {
         EnsureState(ItemInventoryAdjustmentState.ConfirmUnassignedWithdrawal);
         State = ItemInventoryAdjustmentState.ReadyToCommit;
     }
 
+    /// <summary>
+    /// Stages a withdrawal from the item's unassigned quantity.
+    /// </summary>
+    /// <param name="quantity">The unassigned quantity to withdraw.</param>
     public void WithdrawUnassigned(int quantity)
     {
         EnsureState(ItemInventoryAdjustmentState.WithdrawUnassigned);
@@ -138,8 +153,15 @@ public sealed class ItemInventoryAdjustmentSession
             : ItemInventoryAdjustmentState.WithdrawUnassigned;
     }
 
+    /// <summary>
+    /// Cancels the adjustment session.
+    /// </summary>
     public void Cancel() => State = ItemInventoryAdjustmentState.Cancelled;
 
+    /// <summary>
+    /// Builds the final withdrawal plan when the session is ready to commit.
+    /// </summary>
+    /// <returns>The validated withdrawal plan.</returns>
     public ItemInventoryWithdrawalPlan BuildPlan()
     {
         if (State != ItemInventoryAdjustmentState.ReadyToCommit || plan is null)

@@ -50,6 +50,7 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
 
     public IReadOnlyList<PhotoBackgroundOperationEntry> RecentOperations => recentOperations;
 
+    /// <inheritdoc />
     public Guid Start(string operationDescription)
     {
         var operationId = Guid.NewGuid();
@@ -64,6 +65,7 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
         return operationId;
     }
 
+    /// <inheritdoc />
     public void Report(Guid operationId, double progress)
     {
         lock (gate)
@@ -78,6 +80,7 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
         }
     }
 
+    /// <inheritdoc />
     public void Complete(Guid operationId, bool success)
     {
         lock (gate)

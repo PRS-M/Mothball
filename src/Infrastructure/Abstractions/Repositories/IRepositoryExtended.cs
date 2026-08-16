@@ -1,9 +1,11 @@
 using System;
-using Infrastructure.Interfaces;
 using SQLite;
 
 namespace Infrastructure.Abstractions.Repositories;
 
+/// <summary>
+/// Extends the generic repository with low-level query access.
+/// </summary>
 public interface IRepositoryExtended<T> : IRepository<T> where T : new()
 {
     /// <summary>

@@ -28,6 +28,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
+    /// <inheritdoc />
     public async Task<InventoryBackupEnvelope> ExportAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -115,12 +116,14 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
         return InventoryBackupRestorePlanner.AttachIntegrity(backup);
     }
 
+    /// <inheritdoc />
     public async Task<string> ExportAsJsonAsync(CancellationToken cancellationToken = default)
     {
         var backup = await ExportAsync(cancellationToken).ConfigureAwait(false);
         return SerializeBackup(backup);
     }
 
+    /// <inheritdoc />
     public async Task<byte[]> ExportAsZipAsync(CancellationToken cancellationToken = default)
     {
         var backup = await ExportAsync(cancellationToken).ConfigureAwait(false);

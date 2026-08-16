@@ -72,7 +72,6 @@
     <Compile Include="../../src/Infrastructure/DatabaseModels/**/*.cs" Link="Infrastructure/DatabaseModels/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Abstractions/Repositories/**/*.cs" Link="Infrastructure/Abstractions/Repositories/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Abstractions/Transactions/**/*.cs" Link="Infrastructure/Abstractions/Transactions/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Compatibility/LegacyInterfacesNamespace.cs" Link="Infrastructure/Compatibility/LegacyInterfacesNamespace.cs" />
     <Compile Include="../../src/Infrastructure/Mappers/**/*.cs" Link="Infrastructure/Mappers/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Services/Seeding/DemoDataSeeder.cs" Link="Infrastructure/Services/Seeding/DemoDataSeeder.cs" />
     <Compile Include="../../src/Infrastructure/Services/Images/ImagePathResolver.cs" Link="Infrastructure/Services/Images/ImagePathResolver.cs" />

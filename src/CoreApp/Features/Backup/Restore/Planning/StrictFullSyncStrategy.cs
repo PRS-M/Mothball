@@ -6,6 +6,7 @@ internal sealed class StrictFullSyncStrategy : IConflictPolicyStrategy
 {
     public static readonly StrictFullSyncStrategy Instance = new();
 
+    /// <inheritdoc />
     public void PlanRelations(PlannerContext context, IReadOnlyList<InventoryBackupRelation> validRelations)
     {
         var desiredRelationQuantityByPair = new Dictionary<(Guid ContainerId, Guid ItemId), int>();
@@ -42,6 +43,7 @@ internal sealed class StrictFullSyncStrategy : IConflictPolicyStrategy
         }
     }
 
+    /// <inheritdoc />
     public void PlanImages(
         PlannerContext context,
         IReadOnlyList<InventoryBackupImageRef> validContainerImages,

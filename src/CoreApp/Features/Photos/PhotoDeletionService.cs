@@ -21,6 +21,7 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <inheritdoc />
     public async Task<bool> DeleteContainerPhotoAsync(Container container, Guid imageId)
     {
         ArgumentNullException.ThrowIfNull(container);
@@ -46,6 +47,7 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
         return true;
     }
 
+    /// <inheritdoc />
     public async Task<bool> DeleteItemPhotoAsync(Item item, Guid imageId)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -71,6 +73,7 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
         return true;
     }
 
+    /// <inheritdoc />
     public async Task DeleteItemPhotoFilesBestEffortAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);

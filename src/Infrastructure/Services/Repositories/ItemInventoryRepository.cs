@@ -1,5 +1,4 @@
 using CoreApp.Entities.Inventory;
-using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Infrastructure.Services.Repositories;
@@ -23,6 +22,7 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
         this.transactionRunner = transactionRunner;
     }
 
+    /// <inheritdoc />
     public async Task<ItemInventory?> GetAsync(Guid itemId)
     {
         var inventoryRow = (await inventories.WhereAsync(inventory => inventory.ItemId == itemId).ConfigureAwait(false))
@@ -36,12 +36,14 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
         return new ItemInventory(itemId, inventoryRow.TotalQuantity, allocations);
     }
 
+    /// <inheritdoc />
     public Task InsertAsync(ItemInventory inventory)
     {
         ArgumentNullException.ThrowIfNull(inventory);
         return SaveAsync(inventory);
     }
 
+    /// <inheritdoc />
     public Task SaveAsync(ItemInventory inventory)
     {
         ArgumentNullException.ThrowIfNull(inventory);
@@ -64,6 +66,7 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
         });
     }
 
+    /// <inheritdoc />
     public Task DeleteAsync(Guid itemId)
         => transactionRunner.RunAsync(scope =>
         {

@@ -67,6 +67,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
     }
 
     private bool disposed;
+    /// <inheritdoc />
     public void Dispose()
     {
         Dispose(true);
@@ -83,6 +84,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
         disposed = true;
     }
 
+    /// <inheritdoc />
     protected override async Task EnsureDummyData()
     {
         if (demoSeeder is not null)
@@ -157,6 +159,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
             .FireAndForget(backgroundTasks, "Search items");
     }
 
+    /// <inheritdoc />
     protected override void OnViewModelAdded(ItemViewModel vm)
         => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
 

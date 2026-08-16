@@ -17,10 +17,12 @@ public interface ICameraHandler
     /// <summary>
     /// Selects a photo from the device photo library and returns its bytes, or an empty array if the operation is canceled.
     /// </summary>
+    /// <param name="resizeProgress">The value used by the operation.</param>
     Task<byte[]> SelectPhotoAsync(IProgress<double>? resizeProgress = null);
 
     /// <summary>
     /// Captures a new photo from the device camera and returns its bytes, or an empty array if the operation is canceled.
     /// </summary>
+    /// <param name="resizeProgress">The value used by the operation.</param>
     Task<byte[]> CapturePhotoAsync(IProgress<double>? resizeProgress = null);
 }

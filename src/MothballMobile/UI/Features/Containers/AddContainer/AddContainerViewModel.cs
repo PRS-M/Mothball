@@ -72,6 +72,9 @@ public partial class AddContainerViewModel : BaseViewModel
         OnPropertyChanged(nameof(PhotoSelectionStatus));
     }
 
+    /// <summary>
+    /// Prompts for a photo source and stages the selected photo for the new container.
+    /// </summary>
     [RelayCommand]
     public async Task ChoosePhoto()
     {
@@ -118,6 +121,9 @@ public partial class AddContainerViewModel : BaseViewModel
     private async Task<PhotoSource?> SelectPhotoSourceAsync()
         => await PhotoSourceSelector.SelectPhotoSourceAsync(popup, popupDefinitions);
 
+    /// <summary>
+    /// Creates the container and persists its staged photo, if one was selected.
+    /// </summary>
     [RelayCommand(CanExecute = nameof(CanAddContainer))]
     public async Task SaveContainer()
     {

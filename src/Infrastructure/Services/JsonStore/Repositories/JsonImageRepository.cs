@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreApp.Entities.Shared;
-using Infrastructure.Interfaces;
 using Infrastructure.Services.JsonStore.Models;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
@@ -16,6 +15,7 @@ public sealed class JsonImageRepository : IImageRepository
         this.store = store;
     }
 
+    /// <inheritdoc />
     public Task InsertAsync(ImageItem imageItem, Guid ownerId)
     {
         ArgumentNullException.ThrowIfNull(imageItem);
@@ -43,6 +43,7 @@ public sealed class JsonImageRepository : IImageRepository
         });
     }
 
+    /// <inheritdoc />
     public Task UpdateAsync(ImageItem image, Guid ownerId)
     {
         ArgumentNullException.ThrowIfNull(image);
@@ -71,6 +72,7 @@ public sealed class JsonImageRepository : IImageRepository
         });
     }
 
+    /// <inheritdoc />
     public Task DeleteAsync(Guid imageId, Guid ownerId)
     {
         if (ownerId == Guid.Empty) throw new ArgumentException("Owner ID cannot be empty.", nameof(ownerId));

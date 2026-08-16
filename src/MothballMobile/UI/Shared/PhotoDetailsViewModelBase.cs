@@ -33,6 +33,14 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
         private set => SetProperty(ref isPhotoCaptureInProgress, value);
     }
 
+    /// <summary>
+    /// Captures a photo, tracks its background progress, and refreshes the target paths on success.
+    /// </summary>
+    /// <param name="operationName">The name shown for the tracked operation.</param>
+    /// <param name="captureAsync">The photo capture operation that reports progress.</param>
+    /// <param name="targetPaths">The collection to update after a successful capture.</param>
+    /// <param name="refreshedPaths">Provides the refreshed collection of photo paths.</param>
+    /// <param name="shouldRefresh">Optionally determines whether the paths should be refreshed.</param>
     protected async Task CaptureTrackedPhotoAsync(
         string operationName,
         Func<IProgress<double>, Task<int>> captureAsync,
@@ -96,6 +104,12 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
         });
     }
 
+    /// <summary>
+    /// Replaces the contents of a collection with a new sequence.
+    /// </summary>
+    /// <typeparam name="T">The type contained in the collection.</typeparam>
+    /// <param name="target">The collection to replace.</param>
+    /// <param name="items">The items to add to the collection.</param>
     protected static void ReplaceWith<T>(ObservableCollection<T> target, IEnumerable<T> items)
     {
         target.Clear();
@@ -105,6 +119,11 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
         }
     }
 
+    /// <summary>
+    /// Displays a picker for selecting a photo.
+    /// </summary>
+    /// <param name="definition">The picker definition to display.</param>
+    /// <returns>The selected photo, or <see langword="null"/> when cancelled.</returns>
     protected async Task<ImageItem?> SelectPhotoAsync(OptionPickerPopupDefinition<ImageItem> definition)
     {
         ArgumentNullException.ThrowIfNull(definition);

@@ -19,6 +19,7 @@ public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestor
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
+    /// <inheritdoc />
     public async Task<InventoryBackupZipRestoreResult> RestoreFromZipAsync(
         byte[] backupZip,
         InventoryBackupRestoreOptions? options = null,

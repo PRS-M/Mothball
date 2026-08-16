@@ -20,6 +20,9 @@ public partial class SelectableContainerViewModel : ContainerWithImagesViewModel
 
     public bool ShowQuantityManagement { get; }
 
+    /// <summary>
+    /// Loads the container's photo paths for display.
+    /// </summary>
     public Task LoadImagesAsync()
     {
         return LoadContainerImagesAsync(clearFirst: true);

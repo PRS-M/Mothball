@@ -12,6 +12,7 @@ public class RetryService : IRetryService
         this.popupService = popupService ?? throw new ArgumentNullException(nameof(popupService));
     }
 
+    /// <inheritdoc />
     public async Task<bool> RetryAsync(
         Func<Task<bool>> attempt,
         string canceledTitle,
