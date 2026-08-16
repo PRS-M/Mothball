@@ -78,6 +78,8 @@ Use shelves, bins, cabinets, or zones as containers and treat products, spare pa
 
 ## Documentation index
 
+- [Developer Documentation](docs/DeveloperDocumentation.md)
+  - Explains the solution structure, project boundaries, extension points, dependency injection, and testing for new contributors.
 - [Overview video](<docs/MothballOverview_iPhone 16 Pro - 2026-08-14.mp4>)
   - Shows the app running on an iPhone 16 Pro simulator.
 - [Backup and Restore](docs/BackupRestore.md)
