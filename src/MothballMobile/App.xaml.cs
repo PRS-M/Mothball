@@ -45,10 +45,18 @@ public partial class App : Application
 		try
 		{
 			await startupOrchestrator.StartAsync();
-			window.Page = new AppShell(photoBackgroundOperationTracker, appShellLogger);
-
-			await Task.Yield();
+			var shell = new AppShell(photoBackgroundOperationTracker, appShellLogger);
+			var shellLoaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			shell.Loaded += OnShellLoaded;
+			window.Page = shell;
+			await shellLoaded.Task;
 			await ShowStartupAdAsync();
+
+			void OnShellLoaded(object? sender, EventArgs args)
+			{
+				shell.Loaded -= OnShellLoaded;
+				shellLoaded.TrySetResult();
+			}
 		}
 		catch (Exception ex)
 		{
