@@ -7,8 +7,9 @@
 In this codebase it is used for UI search input so typing does not trigger a repository query on every keystroke.
 
 Primary location:
-- `src/MothballMobile/Infrastructure/Debouncer.cs`
-- Contract: `src/MothballMobile/Infrastructure/IDebouncer.cs`
+- `src/MothballMobile/Infrastructure/Resilience/Debouncer.cs`
+- Contract: `src/MothballMobile/Infrastructure/Resilience/IDebouncer.cs`
+- Namespace: `MothballMobile.Infrastructure.Resilience`
 
 ## API Contract
 
@@ -196,7 +197,7 @@ using CommunityToolkit.Mvvm.Input;
 
 public partial class ProductsViewModel : ObservableObject, IDisposable
 {
-    private readonly IDebouncer debouncer = new Debouncer(300);
+    private readonly IDebouncer debouncer;
     private readonly IProductQueryService productQueryService;
 
     [ObservableProperty]
@@ -210,9 +211,12 @@ public partial class ProductsViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<ProductViewModel> Items { get; } = new();
 
-    public ProductsViewModel(IProductQueryService productQueryService)
+    public ProductsViewModel(
+        IProductQueryService productQueryService,
+        ILogger<Debouncer> debouncerLogger)
     {
         this.productQueryService = productQueryService;
+        debouncer = new Debouncer(300, debouncerLogger);
     }
 
     partial void OnQueryChanged(string value)
@@ -298,7 +302,7 @@ public sealed class SearchIndexInvalidationService : IDisposable
     {
         this.builder = builder;
         this.logger = logger;
-        rebuildDebouncer = new Debouncer(500);
+        rebuildDebouncer = new Debouncer(500, logger);
     }
 
     public Task NotifyDataChangedAsync(CancellationToken shutdownToken)
@@ -333,10 +337,12 @@ public sealed class PerKeyDebounceRouter<TKey> : IDisposable where TKey : notnul
 {
     private readonly ConcurrentDictionary<TKey, Debouncer> debouncers = new();
     private readonly int delayMs;
+    private readonly ILogger<Debouncer> logger;
 
-    public PerKeyDebounceRouter(int delayMs)
+    public PerKeyDebounceRouter(int delayMs, ILogger<Debouncer> logger)
     {
         this.delayMs = delayMs;
+        this.logger = logger;
     }
 
     public Task DebounceAsync(
@@ -344,7 +350,7 @@ public sealed class PerKeyDebounceRouter<TKey> : IDisposable where TKey : notnul
         Func<CancellationToken, Task> action,
         CancellationToken cancellationToken = default)
     {
-        var debouncer = debouncers.GetOrAdd(key, _ => new Debouncer(delayMs));
+        var debouncer = debouncers.GetOrAdd(key, _ => new Debouncer(delayMs, logger));
         return debouncer.DebounceAsync(action, cancellationToken);
     }
 

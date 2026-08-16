@@ -1,7 +1,8 @@
 # Mothball
 
-Mothball is a .NET MAUI inventory app focused on organizing household or workshop storage.
-You can manage containers and items, track quantities, attach photos, and keep your data portable with backup/restore.
+Mothball helps you remember what you have, where you put it, and how much is left. Use it for a garage, workshop, pantry, wardrobe, storage unit, or small stockroom: create bins, shelves, drawers, or cabinets, then add the items inside.
+
+Add notes, photos, and quantities to make things easy to find later. Your inventory stays on your device and can be backed up and restored when needed.
 
 <p align="center">
   <video src="docs/MothballOverview_iPhone%2016%20Pro%20-%202026-08-14.mp4" controls width="360">
@@ -16,6 +17,24 @@ You can manage containers and items, track quantities, attach photos, and keep y
 - Add and manage image references for containers and items.
 - Search and browse data with paged list workflows optimized for mobile UI responsiveness.
 - Start reliably with backend initialization and recovery hooks.
+
+## Practical uses
+
+### Home and garage catalog
+
+Catalog storage bins, shelving units, cupboards, and drawers so you can find seasonal decorations, tools, cables, camping gear, spare hardware, and household supplies without opening every box. A container can represent a physical bin, a shelf section, a wardrobe, or an entire cupboard.
+
+### Workshop, hobby, and craft supplies
+
+Track consumables such as screws, sandpaper, paint, filament, fabric, electronics components, or model-making supplies. Record the same item in more than one container when stock is split across a workbench, a parts cabinet, and overflow storage, then keep an accurate quantity for each location.
+
+### Wardrobes and seasonal storage
+
+Create containers for wardrobes, drawers, vacuum bags, or under-bed storage. Add descriptions and photos for clothing, shoes, accessories, and seasonal items so they are easy to identify when packed away.
+
+### Small stockroom inventory
+
+Use shelves, bins, cabinets, or zones as containers and treat products, spare parts, rental equipment, or office supplies as items. Mothball gives a small team or sole operator a clear view of where stock is kept and how much is available, without the overhead of a full warehouse system.
 
 ## Core capabilities
 

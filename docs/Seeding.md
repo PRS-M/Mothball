@@ -21,14 +21,14 @@ This document explains where demo seeding is triggered, when it runs, and why ne
 
 ### Relevant files
 
-- `BasePage` lifecycle trigger: [src/MothballMobile/UI/Views/BasePage.cs](../src/MothballMobile/UI/Views/BasePage.cs)
-- `EnsureDummyData` call site: [src/MothballMobile/UI/ViewModels/PagedListViewModelBase.cs](../src/MothballMobile/UI/ViewModels/PagedListViewModelBase.cs)
+- `BasePage` lifecycle trigger: [src/MothballMobile/UI/Shared/BasePage.cs](../src/MothballMobile/UI/Shared/BasePage.cs)
+- `EnsureDummyData` call site: [src/MothballMobile/UI/Shared/PagedListViewModelBase.cs](../src/MothballMobile/UI/Shared/PagedListViewModelBase.cs)
 
 ## Where `EnsureDummyData()` is overridden
 
 ### 1) Containers list
 
-File: [src/MothballMobile/UI/ViewModels/ContainerListViewModel.cs](../src/MothballMobile/UI/ViewModels/ContainerListViewModel.cs)
+File: [src/MothballMobile/UI/Features/Containers/ContainersList/ContainerListViewModel.cs](../src/MothballMobile/UI/Features/Containers/ContainersList/ContainerListViewModel.cs)
 
 Behavior:
 - Calls `EnsureContainersAsync(minContainers: 5, withPhotos: true)`
@@ -39,7 +39,7 @@ When:
 
 ### 2) Items list
 
-File: [src/MothballMobile/UI/ViewModels/ItemsListViewModel.cs](../src/MothballMobile/UI/ViewModels/ItemsListViewModel.cs)
+File: [src/MothballMobile/UI/Features/Items/ItemsList/ItemsListViewModel.cs](../src/MothballMobile/UI/Features/Items/ItemsList/ItemsListViewModel.cs)
 
 Behavior:
 - Calls `EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true)`
@@ -50,7 +50,7 @@ When:
 
 ### 3) Associate item with container
 
-File: [src/MothballMobile/UI/ViewModels/AssociateItemWithContainerViewModel.cs](../src/MothballMobile/UI/ViewModels/AssociateItemWithContainerViewModel.cs)
+File: [src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs](../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs)
 
 Behavior:
 - Calls `EnsureContainersAsync(minContainers: 5, withPhotos: true)` only.
@@ -60,7 +60,7 @@ When:
 
 ### 4) Add existing item to container
 
-File: [src/MothballMobile/UI/ViewModels/AddExistingItemToContainerViewModel.cs](../src/MothballMobile/UI/ViewModels/AddExistingItemToContainerViewModel.cs)
+File: [src/MothballMobile/UI/Features/Containers/AddExistingItemToContainer/AddExistingItemToContainerViewModel.cs](../src/MothballMobile/UI/Features/Containers/AddExistingItemToContainer/AddExistingItemToContainerViewModel.cs)
 
 Behavior:
 - `EnsureDummyData()` returns completed task.
@@ -78,7 +78,7 @@ Meaning:
 
 ## What `DemoDataSeeder` actually does
 
-File: [src/Infrastructure/Services/DemoDataSeeder.cs](../src/Infrastructure/Services/DemoDataSeeder.cs)
+File: [src/Infrastructure/Services/Seeding/DemoDataSeeder.cs](../src/Infrastructure/Services/Seeding/DemoDataSeeder.cs)
 
 ### `EnsureContainersAsync(minContainers, withPhotos)`
 

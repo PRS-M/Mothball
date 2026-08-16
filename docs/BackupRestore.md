@@ -17,13 +17,13 @@ This document describes the backup/export and restore features added for invento
 - `CoreApp.Contracts.InventoryBackupIntegrity`
 - `CoreApp.Contracts.InventoryBackupRestoreOptions`
 - `CoreApp.Contracts.InventoryBackupRestoreResult`
-- `CoreApp.Interfaces.IInventoryBackupExporter`
-- `CoreApp.Interfaces.IInventoryBackupService`
-- `CoreApp.Interfaces.IInventoryBackupRestoreService`
-- `CoreApp.Services.InventoryBackupExporter`
-- `CoreApp.Services.InventoryBackupService`
-- `CoreApp.Services.InventoryBackupRestoreService`
-- `CoreApp.Utilities.InventoryBackupRestorePlanner`
+- `CoreApp.Features.Backup.Export.IInventoryBackupExporter`
+- `CoreApp.Features.Backup.Export.IInventoryBackupService`
+- `CoreApp.Features.Backup.Restore.IInventoryBackupRestoreService`
+- `CoreApp.Features.Backup.Export.InventoryBackupExporter`
+- `CoreApp.Features.Backup.Export.InventoryBackupService`
+- `CoreApp.Features.Backup.Restore.InventoryBackupRestoreService`
+- `CoreApp.Features.Backup.Restore.Planning.InventoryBackupRestorePlanner`
 - `Infrastructure.Services.Restore.SqliteInventoryBackupRestoreService`
 
 ## Backup Export
@@ -63,7 +63,7 @@ ZIP import behavior:
 
 ### Backend-agnostic restore
 
-`CoreApp.Services.InventoryBackupRestoreService`:
+`CoreApp.Features.Backup.Restore.InventoryBackupRestoreService`:
 
 - Uses repository abstractions only.
 - Works for all backends.
@@ -79,7 +79,7 @@ ZIP import behavior:
 
 ## Shared Planner
 
-`CoreApp.Utilities.InventoryBackupRestorePlanner` centralizes common logic:
+`CoreApp.Features.Backup.Restore.Planning.InventoryBackupRestorePlanner` centralizes common logic:
 
 - JSON parsing.
 - Payload version validation.
