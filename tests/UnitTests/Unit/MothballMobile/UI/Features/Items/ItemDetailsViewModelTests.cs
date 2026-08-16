@@ -14,6 +14,21 @@ namespace Mothball.Tests.Unit.Mobile.UI.Features.Items;
 public sealed class ItemDetailsViewModelTests
 {
     [Test]
+    public void DisplayDescription_UsesPlaceholderForEmptyDescription()
+    {
+        var viewModel = CreateViewModel(
+            Mock.Of<IItemDetailsQueryHandler>(),
+            Mock.Of<IItemInventoryCommandService>(),
+            Mock.Of<IPopupService>());
+
+        Assert.That(viewModel.DisplayDescription, Is.EqualTo("No description."));
+
+        viewModel.Description = "Stored in the workshop.";
+
+        Assert.That(viewModel.DisplayDescription, Is.EqualTo("Stored in the workshop."));
+    }
+
+    [Test]
     public async Task InitializeAsync_WhenItemIsUnassignedOnly_ShowsAssociateAndHidesGoToContainer()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");

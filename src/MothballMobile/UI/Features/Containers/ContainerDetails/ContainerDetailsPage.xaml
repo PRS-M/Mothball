@@ -72,7 +72,7 @@
                                     IsVisible="{Binding IsEditingNotes}"
                                     Command="{Binding SaveNotesCommand}" />
                         </Grid>
-                        <Label Text="{Binding Notes}"
+                           <Label Text="{Binding DisplayNotes}"
                                IsVisible="{Binding IsViewingNotes}"
                                TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                         <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"

@@ -54,10 +54,14 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private const int PageSize = 5;
     public bool IsViewingNotes => !IsEditingNotes;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
+    public string DisplayNotes => string.IsNullOrWhiteSpace(Notes) ? "No description." : Notes;
     public string ItemsStoredText => $"Items stored: {TotalItemCount}";
 
     partial void OnTotalItemCountChanged(int value)
         => OnPropertyChanged(nameof(ItemsStoredText));
+
+    partial void OnNotesChanged(string value)
+        => OnPropertyChanged(nameof(DisplayNotes));
 
     public ContainerDetailsViewModel(
         IContainerDetailsQueryHandler containerDetailsQueries,
