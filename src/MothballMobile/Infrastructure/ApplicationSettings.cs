@@ -5,8 +5,29 @@ namespace MothballMobile.Infrastructure;
 public sealed class ApplicationSettings(IPreferences preferences) : IApplicationSettings
 {
     private const string AppModeKey = "AppMode";
+    private const string ThemeOverrideKey = "ThemeOverride";
 
     public event EventHandler? AppModeChanged;
+
+    public AppTheme ThemeOverride
+    {
+        get
+        {
+            var raw = preferences.Get(ThemeOverrideKey, nameof(AppTheme.Unspecified));
+            return Enum.TryParse<AppTheme>(raw, out var theme)
+                ? theme
+                : AppTheme.Unspecified;
+        }
+        set
+        {
+            if (ThemeOverride == value)
+            {
+                return;
+            }
+
+            preferences.Set(ThemeOverrideKey, value.ToString());
+        }
+    }
 
     public AppMode AppMode
     {

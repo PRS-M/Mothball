@@ -28,6 +28,13 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly ILogger<SettingsViewModel> logger;
     private bool isZipBackupMode;
 
+    public IReadOnlyList<string> ThemeOptions { get; } =
+    [
+        "Auto (System)",
+        "Light",
+        "Dark",
+    ];
+
     public SettingsViewModel(
         IInventoryBackupExporter backupExporter,
         IInventoryBackupRestoreService backupRestoreService,
@@ -67,6 +74,34 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     public bool IsJsonBackupMode => !IsZipBackupMode;
+
+    public string SelectedThemeOption
+    {
+        get => applicationSettings.ThemeOverride switch
+        {
+            AppTheme.Light => "Light",
+            AppTheme.Dark => "Dark",
+            _ => "Auto (System)",
+        };
+        set
+        {
+            var theme = value switch
+            {
+                "Light" => AppTheme.Light,
+                "Dark" => AppTheme.Dark,
+                _ => AppTheme.Unspecified,
+            };
+
+            if (applicationSettings.ThemeOverride == theme)
+            {
+                return;
+            }
+
+            applicationSettings.ThemeOverride = theme;
+            Application.Current!.UserAppTheme = theme;
+            OnPropertyChanged();
+        }
+    }
 
     public bool IsAdvancedAppMode
     {

@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
+    <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
     <PackageReference Update="Microsoft.Maui.Controls" Version="10.0.90" />
     <PackageReference Update="SkiaSharp" Version="3.119.2" />
   </ItemGroup>

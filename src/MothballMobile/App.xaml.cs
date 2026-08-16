@@ -16,18 +16,22 @@ public partial class App : Application
 #endif
 	private readonly IAppStartupOrchestrator startupOrchestrator;
 	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
+	private readonly IApplicationSettings applicationSettings;
 	private readonly ILogger<App> logger;
 	private readonly ILogger<AppShell> appShellLogger;
 
 	public App(
 		IAppStartupOrchestrator startupOrchestrator,
 		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+		IApplicationSettings applicationSettings,
 		ILogger<App> logger,
 		ILogger<AppShell> appShellLogger)
 	{
 		InitializeComponent();
 		this.startupOrchestrator = startupOrchestrator;
 		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
+		this.applicationSettings = applicationSettings;
+		UserAppTheme = applicationSettings.ThemeOverride;
 		this.logger = logger;
 		this.appShellLogger = appShellLogger;
 	}
