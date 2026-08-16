@@ -15,6 +15,7 @@ public sealed class AppStartupOrchestrator : IAppStartupOrchestrator
         this.logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task StartAsync()
     {
         try

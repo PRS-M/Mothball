@@ -10,11 +10,15 @@ namespace CoreApp.Abstractions.Persistence;
 public interface IImagePathResolver
 {
     // Container helpers
+    /// <param name="container">The value used by the operation.</param>
     string GetPrimaryContainerPhotoPath(Container container);
+    /// <param name="container">The value used by the operation.</param>
     IEnumerable<string> GetContainerPhotoPaths(Container container);
 
     // Item helpers
+    /// <param name="item">The value used by the operation.</param>
     string GetPrimaryItemPhotoPath(Item item);
+    /// <param name="item">The value used by the operation.</param>
     IEnumerable<string> GetItemPhotoPaths(Item item);
 
     // Fallback

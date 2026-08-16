@@ -12,6 +12,7 @@ public sealed class JsonItemInventoryRepository : IItemInventoryRepository
         this.store = store;
     }
 
+    /// <inheritdoc />
     public async Task<ItemInventory?> GetAsync(Guid itemId)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
@@ -24,9 +25,11 @@ public sealed class JsonItemInventoryRepository : IItemInventoryRepository
         return new ItemInventory(itemId, inventoryRow.TotalQuantity, LoadAllocations(state, itemId));
     }
 
+    /// <inheritdoc />
     public Task InsertAsync(ItemInventory inventory)
         => SaveAsync(inventory);
 
+    /// <inheritdoc />
     public Task SaveAsync(ItemInventory inventory)
     {
         ArgumentNullException.ThrowIfNull(inventory);
@@ -63,6 +66,7 @@ public sealed class JsonItemInventoryRepository : IItemInventoryRepository
         });
     }
 
+    /// <inheritdoc />
     public Task DeleteAsync(Guid itemId)
         => store.UpdateAsync(state =>
         {

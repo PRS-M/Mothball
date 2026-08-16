@@ -20,6 +20,9 @@ public class MothballDatabase : IAsyncDisposable
     public SQLiteAsyncConnection Connection =>
         connection ?? throw new InvalidOperationException("Database not initialized. Call InitializeAsync() first.");
 
+    /// <summary>
+    /// Initializes the SQLite connection, creates required tables, and applies database migrations.
+    /// </summary>
     public async Task InitializeAsync()
     {
         if (connection != null) return;
@@ -36,6 +39,10 @@ public class MothballDatabase : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Executes database operations in a SQLite transaction.
+    /// </summary>
+    /// <param name="transactionBody">The operations to execute within the transaction.</param>
     public async Task RunInTransactionAsync(Action<SQLiteConnection> transactionBody)
     {
         ArgumentNullException.ThrowIfNull(transactionBody);
@@ -128,6 +135,7 @@ public class MothballDatabase : IAsyncDisposable
         public string name { get; set; } = string.Empty;
     }
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         if (disposed) return;

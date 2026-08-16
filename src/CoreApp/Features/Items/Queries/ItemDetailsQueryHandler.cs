@@ -11,6 +11,7 @@ public sealed class ItemDetailsQueryHandler : IItemDetailsQueryHandler
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
     }
 
+    /// <inheritdoc />
     public async Task<ItemDetailsResult?> GetDetailsAsync(string itemId)
     {
         if (!Guid.TryParse(itemId, out var parsedItemId))

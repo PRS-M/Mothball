@@ -11,6 +11,7 @@ public sealed class AssignItemToContainerCommandHandler : IAssignItemToContainer
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
 
+    /// <inheritdoc />
     public async Task AssignAsync(Guid itemId, Guid containerId, int quantity = 1)
         => await inventoryCommands.SetContainerAllocationAsync(itemId, containerId, quantity);
 }

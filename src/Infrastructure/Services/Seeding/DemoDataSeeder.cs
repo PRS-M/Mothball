@@ -44,6 +44,8 @@ public class DemoDataSeeder
     /// <summary>
     /// Ensures at least <paramref name="minContainers"/> containers exist, optionally with one photo each.
     /// </summary>
+    /// <param name="minContainers">The minimum number of demo containers to ensure.</param>
+    /// <param name="withPhotos">Whether each newly created container receives a demo photo.</param>
     public async Task EnsureContainersAsync(int minContainers = 5, bool withPhotos = true)
     {
         await containers.InitializeAsync();
@@ -85,6 +87,8 @@ public class DemoDataSeeder
     /// Ensures each existing container has at least <paramref name="minItemsPerContainer"/> items.
     /// Also seeds one photo per item when <paramref name="withPhotos"/> is true.
     /// </summary>
+    /// <param name="minItemsPerContainer">The minimum number of demo items for each seeded container.</param>
+    /// <param name="withPhotos">Whether each newly created item receives a demo photo.</param>
     public async Task EnsureItemsAsync(int minItemsPerContainer = 3, bool withPhotos = true)
     {
         // Ensure tables exist

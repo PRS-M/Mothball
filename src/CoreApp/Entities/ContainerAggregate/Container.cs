@@ -30,12 +30,22 @@ public class Container : BaseEntity, IAggregateRoot
     public IReadOnlyList<StoredItem> Items => items.AsReadOnly();
     public int ItemCount => items.Sum(i => i.Quantity);
 
+    /// <summary>
+    /// Updates the container's name and notes.
+    /// </summary>
+    /// <param name="name">The new container name.</param>
+    /// <param name="notes">The new container notes.</param>
     public void UpdateDetails(string name, string notes)
     {
         Name = name ?? string.Empty;
         Notes = notes ?? string.Empty;
     }
 
+    /// <summary>
+    /// Adds quantity for an item to the container.
+    /// </summary>
+    /// <param name="itemId">The identifier of the item to add.</param>
+    /// <param name="quantity">The positive quantity to add.</param>
     public void AddItem(Guid itemId, int quantity)
     {
         if (quantity <= 0)
@@ -54,6 +64,10 @@ public class Container : BaseEntity, IAggregateRoot
         }
     }
 
+    /// <summary>
+    /// Creates and adds a new image to the container.
+    /// </summary>
+    /// <returns>The image added to the container.</returns>
     public ImageItem AddImageItem()
     {
         var newImage = new ImageItem();
@@ -61,6 +75,11 @@ public class Container : BaseEntity, IAggregateRoot
         return newImage;
     }
 
+    /// <summary>
+    /// Creates and adds an image with the specified identifier to the container.
+    /// </summary>
+    /// <param name="imageId">The identifier for the image.</param>
+    /// <returns>The image added to the container.</returns>
     public ImageItem AddImageItem(Guid imageId)
     {
         var image = new ImageItem(imageId);
@@ -68,17 +87,29 @@ public class Container : BaseEntity, IAggregateRoot
         return image;
     }
 
+    /// <summary>
+    /// Adds images to the container.
+    /// </summary>
+    /// <param name="imageItems">The images to add.</param>
     public void AddImageItems(IEnumerable<ImageItem> imageItems)
     {
         ArgumentNullException.ThrowIfNull(imageItems);
         photos.AddRange(imageItems);
     }
 
+    /// <summary>
+    /// Removes an image from the container.
+    /// </summary>
+    /// <param name="imageId">The identifier of the image to remove.</param>
     public void RemoveImageItem(Guid imageId)
     {
         photos.RemoveAll(p => p.ImageId == imageId);
     }
 
+    /// <summary>
+    /// Removes an item and its stored quantity from the container.
+    /// </summary>
+    /// <param name="itemId">The identifier of the item to remove.</param>
     public void RemoveItem(Guid itemId)
     {
         items.RemoveAll(i => i.ItemId == itemId);

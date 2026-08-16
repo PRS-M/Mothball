@@ -10,12 +10,40 @@ namespace Infrastructure.Services.Repositories;
 /// </summary>
 public interface IRelationRepository
 {
+    /// <summary>
+    /// Creates an item-to-container allocation with the specified quantity.
+    /// </summary>
+    /// <param name="itemId">The identifier of the allocated item.</param>
+    /// <param name="containerId">The identifier of the receiving container.</param>
+    /// <param name="quantity">The quantity to allocate.</param>
     Task InsertItemContainerRelationAsync(Guid itemId, Guid containerId, int quantity);
+    /// <summary>
+    /// Replaces the quantity assigned to an item in a container.
+    /// </summary>
+    /// <param name="itemId">The identifier of the allocated item.</param>
+    /// <param name="containerId">The identifier of the container.</param>
+    /// <param name="quantity">The replacement allocation quantity.</param>
     Task ReplaceItemContainerRelationQuantityAsync(Guid itemId, Guid containerId, int quantity);
+    /// <summary>
+    /// Updates an item and sets its allocation in a container.
+    /// </summary>
+    /// <param name="item">The item with updated allocation state.</param>
+    /// <param name="containerId">The identifier of the container.</param>
+    /// <param name="quantity">The allocation quantity.</param>
     Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity);
+    /// <summary>
+    /// Persists an item's allocations after an inventory withdrawal.
+    /// </summary>
+    /// <param name="item">The item after the withdrawal.</param>
+    /// <param name="allocations">The remaining allocations to persist.</param>
     Task ApplyItemInventoryWithdrawalAsync(
         Item item,
         IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations);
+    /// <summary>
+    /// Removes the allocation between an item and a container.
+    /// </summary>
+    /// <param name="itemId">The identifier of the allocated item.</param>
+    /// <param name="containerId">The identifier of the container.</param>
     Task DeleteItemContainerRelationAsync(Guid itemId, Guid containerId);
 }
 
@@ -32,6 +60,7 @@ public class RelationRepository : IRelationRepository
         this.transactionRunner = transactionRunner;
     }
 
+    /// <inheritdoc />
     public async Task InsertItemContainerRelationAsync(Guid itemId, Guid containerId, int quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
@@ -42,6 +71,7 @@ public class RelationRepository : IRelationRepository
         });
     }
 
+    /// <inheritdoc />
     public async Task ReplaceItemContainerRelationQuantityAsync(Guid itemId, Guid containerId, int quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(quantity);
@@ -65,6 +95,7 @@ public class RelationRepository : IRelationRepository
         }).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -77,6 +108,7 @@ public class RelationRepository : IRelationRepository
         });
     }
 
+    /// <inheritdoc />
     public Task ApplyItemInventoryWithdrawalAsync(
         Item item,
         IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations)
@@ -98,6 +130,7 @@ public class RelationRepository : IRelationRepository
         });
     }
 
+    /// <inheritdoc />
     public async Task DeleteItemContainerRelationAsync(Guid itemId, Guid containerId)
     {
         var existing = await itemContainerRelations

@@ -60,6 +60,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
     }
 
+    /// <inheritdoc />
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query is null) return;

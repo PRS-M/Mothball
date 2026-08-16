@@ -5,5 +5,8 @@ namespace CoreApp.Abstractions.Startup;
 /// </summary>
 public interface IAppStartupInitializer
 {
+    /// <summary>
+    /// Initializes the active persistence layer.
+    /// </summary>
     Task InitializeAsync();
 }

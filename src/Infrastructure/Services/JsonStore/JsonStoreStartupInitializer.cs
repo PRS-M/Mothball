@@ -11,6 +11,7 @@ public sealed class JsonStoreStartupInitializer : IAppStartupInitializer
         this.store = store;
     }
 
+    /// <inheritdoc />
     public async Task InitializeAsync()
     {
         var recovered = await store.TryRecoverAsync().ConfigureAwait(false);

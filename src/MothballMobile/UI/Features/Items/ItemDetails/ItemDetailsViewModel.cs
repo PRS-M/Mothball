@@ -89,6 +89,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         this.logger = logger;
     }
 
+    /// <inheritdoc />
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         sourceContainerId = null;
@@ -117,6 +118,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     partial void OnIsEditingDescriptionChanged(bool value)
         => OnPropertyChanged(nameof(IsViewingDescription));
 
+    /// <inheritdoc />
     public Task InitializeAsync()
     {
         if (string.IsNullOrWhiteSpace(ItemId))
@@ -127,6 +129,10 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         return InitializeAsync(ItemId);
     }
 
+    /// <summary>
+    /// Loads item details, photos, inventory, and allocation state for the specified item.
+    /// </summary>
+    /// <param name="itemId">The identifier of the item to load.</param>
     public async Task InitializeAsync(string itemId)
     {
         await RunCommandAsync(async () =>

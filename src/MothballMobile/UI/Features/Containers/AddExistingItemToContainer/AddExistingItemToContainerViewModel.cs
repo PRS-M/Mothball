@@ -34,6 +34,7 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         this.backgroundTasks = backgroundTasks;
     }
 
+    /// <inheritdoc />
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query is null) return;
@@ -46,14 +47,18 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
     [RelayCommand]
     private Task RefreshAsync() => InitializeAsync();
 
+    /// <inheritdoc />
     protected override Task EnsureDummyData() => Task.CompletedTask;
 
+    /// <inheritdoc />
     protected override UnassignedItemViewModel MapToViewModel(InventorySnapshot source)
         => new(source, paths, AssignAsync, applicationSettings.IsAdvancedMode);
 
+    /// <inheritdoc />
     protected override void OnViewModelAdded(UnassignedItemViewModel vm)
         => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load unassigned item images");
 
+    /// <inheritdoc />
     protected override Task<List<InventorySnapshot>> LoadAsync(int pageNumber, int pageSize)
     {
         Guid? excludedContainerId = Guid.TryParse(ContainerId, out var parsedContainerId)

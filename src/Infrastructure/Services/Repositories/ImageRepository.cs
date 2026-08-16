@@ -13,18 +13,21 @@ public class ImageRepository : IImageRepository
         this.photos = photos;
     }
 
+    /// <inheritdoc />
     public async Task InsertAsync(ImageItem imageItem, Guid ownerId)
     {
         ArgumentNullException.ThrowIfNull(imageItem);
         await photos.InsertAsync(imageItem.ToDb(ownerId));
     }
 
+    /// <inheritdoc />
     public async Task UpdateAsync(ImageItem image, Guid ownerId)
     {
         ArgumentNullException.ThrowIfNull(image);
         await photos.UpdateAsync(image.ToDb(ownerId));
     }
 
+    /// <inheritdoc />
     public async Task DeleteAsync(Guid imageId, Guid ownerId)
     {
         var existing = await photos

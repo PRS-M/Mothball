@@ -12,6 +12,7 @@ public sealed class ContainerItemQuantityService : IContainerItemQuantityService
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
 
+    /// <inheritdoc />
     public async Task<ContainerItemQuantityUpdateResult> SaveQuantityAsync(Container container, Guid itemId, int quantity)
     {
         ArgumentNullException.ThrowIfNull(container);

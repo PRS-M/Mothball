@@ -31,6 +31,7 @@ public class ContainerRepository : IContainerRepository
         this.logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task<Container?> GetAsync(string containerId)
     {
         logger.LogDebug("GetAsync: containerId={ContainerId}", containerId);
@@ -121,6 +122,7 @@ public class ContainerRepository : IContainerRepository
         return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
     }
 
+    /// <inheritdoc />
     public async Task<int> GetItemCountInContainerAsync(string containerId)
     {
         logger.LogDebug("GetItemCountInContainerAsync: containerId={ContainerId}", containerId);
@@ -132,6 +134,7 @@ public class ContainerRepository : IContainerRepository
         return relations.Sum(r => r.Quantity);
     }
 
+    /// <inheritdoc />
     public async Task<int> GetDistinctItemCountInContainerAsync(string containerId)
     {
         logger.LogDebug("GetDistinctItemCountInContainerAsync: containerId={ContainerId}", containerId);
@@ -146,6 +149,7 @@ public class ContainerRepository : IContainerRepository
             .Count();
     }
 
+    /// <inheritdoc />
     public async Task<Container?> GetContainerForItemAsync(string itemId)
     {
         logger.LogDebug("GetContainerForItemAsync: itemId={ItemId}", itemId);
@@ -230,18 +234,21 @@ public class ContainerRepository : IContainerRepository
                     .ToList());
     }
 
+    /// <inheritdoc />
     public async Task InsertAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
         await containers.InsertAsync(container.ToDb());
     }
 
+    /// <inheritdoc />
     public async Task UpdateAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
         await containers.UpdateAsync(container.ToDb());
     }
 
+    /// <inheritdoc />
     public async Task DeletePhotoAsync(Container container, Guid imageId)
     {
         ArgumentNullException.ThrowIfNull(container);
@@ -253,6 +260,7 @@ public class ContainerRepository : IContainerRepository
         });
     }
 
+    /// <inheritdoc />
     public async Task DeleteAsync(string containerId)
     {
         if (!RepositoryQueryHelpers.TryParseGuid(containerId, out Guid cid, logger)) return;

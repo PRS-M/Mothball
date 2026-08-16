@@ -19,6 +19,7 @@ public sealed class TemporaryPhotoService : ITemporaryPhotoService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <inheritdoc />
     public async Task<ImageService.TemporaryPhotoCapture?> CaptureTemporaryPhotoAsync(
         IProgress<double>? resizeProgress = null,
         PhotoSource source = PhotoSource.Library)
@@ -34,6 +35,7 @@ public sealed class TemporaryPhotoService : ITemporaryPhotoService
         return new ImageService.TemporaryPhotoCapture(bytes, tempFileName, Constants.PathToTemporaryPhotos, fullPath);
     }
 
+    /// <inheritdoc />
     public async Task DeleteTemporaryPhotoAsync(string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))

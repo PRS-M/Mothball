@@ -12,6 +12,7 @@ public sealed class SqliteTransactionRunner : ITransactionRunner
         this.database = database;
     }
 
+    /// <inheritdoc />
     public async Task RunAsync(Action<ITransactionalDeleteScope> action)
     {
         ArgumentNullException.ThrowIfNull(action);

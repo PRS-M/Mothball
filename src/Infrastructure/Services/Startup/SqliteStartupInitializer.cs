@@ -11,5 +11,6 @@ public sealed class SqliteStartupInitializer : IAppStartupInitializer
         this.database = database;
     }
 
+    /// <inheritdoc />
     public Task InitializeAsync() => database.InitializeAsync();
 }

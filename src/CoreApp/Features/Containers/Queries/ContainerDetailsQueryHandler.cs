@@ -13,6 +13,7 @@ public sealed class ContainerDetailsQueryHandler : IContainerDetailsQueryHandler
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
     }
 
+    /// <inheritdoc />
     public async Task<ContainerDetailsResult?> GetDetailsAsync(string containerId)
     {
         var container = await inventoryQueries.GetContainerAsync(containerId);
@@ -25,6 +26,7 @@ public sealed class ContainerDetailsQueryHandler : IContainerDetailsQueryHandler
         return new ContainerDetailsResult(container, totalItemCount);
     }
 
+    /// <inheritdoc />
     public Task<int> GetDistinctItemCountAsync(string containerId)
         => inventoryQueries.GetDistinctItemCountInContainerAsync(containerId);
 

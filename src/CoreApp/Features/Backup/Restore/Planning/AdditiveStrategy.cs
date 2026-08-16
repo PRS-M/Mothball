@@ -6,6 +6,7 @@ internal sealed class AdditiveStrategy : IConflictPolicyStrategy
 {
     public static readonly AdditiveStrategy Instance = new();
 
+    /// <inheritdoc />
     public void PlanRelations(PlannerContext context, IReadOnlyList<InventoryBackupRelation> validRelations)
     {
         foreach (var relation in validRelations)
@@ -29,6 +30,7 @@ internal sealed class AdditiveStrategy : IConflictPolicyStrategy
         }
     }
 
+    /// <inheritdoc />
     public void PlanImages(
         PlannerContext context,
         IReadOnlyList<InventoryBackupImageRef> validContainerImages,

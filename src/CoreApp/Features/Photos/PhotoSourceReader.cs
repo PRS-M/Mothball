@@ -11,6 +11,7 @@ public sealed class PhotoSourceReader : IPhotoSourceReader
         this.cameraHandler = cameraHandler ?? throw new ArgumentNullException(nameof(cameraHandler));
     }
 
+    /// <inheritdoc />
     public Task<byte[]> GetPhotoBytesAsync(PhotoSource source, IProgress<double>? resizeProgress)
         => source switch
         {

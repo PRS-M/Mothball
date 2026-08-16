@@ -11,7 +11,9 @@ public sealed class JsonInventoryMaintenanceService : IInventoryMaintenanceServi
         this.store = store;
     }
 
+    /// <inheritdoc />
     public Task<bool> TryRecoverAsync() => store.TryRecoverAsync();
 
+    /// <inheritdoc />
     public Task<bool> TryRollbackLastCommitAsync() => store.TryRollbackLastCommitAsync();
 }

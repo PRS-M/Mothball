@@ -20,6 +20,9 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     public ObservableCollection<TViewModel> Items { get; } = new();
     protected virtual bool CanLoadNextPage => hasMorePages;
 
+    /// <summary>
+    /// Initializes the list by ensuring source data exists and loading its first page.
+    /// </summary>
     public async Task InitializeAsync()
     {
         await RunCommandAsync(async () =>
@@ -30,6 +33,9 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
         }, showRefreshing: true);
     }
 
+    /// <summary>
+    /// Loads the next available page of list items.
+    /// </summary>
     [RelayCommand]
     public async Task LoadNextPage()
     {
@@ -38,6 +44,9 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
         await LoadNextPageCore();
     }
 
+    /// <summary>
+    /// Resets paging state and removes all current items.
+    /// </summary>
     protected void ResetPaging()
     {
         currentPage = 0;
@@ -45,12 +54,36 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
         Items.Clear();
     }
 
+    /// <summary>
+    /// Invoked after a mapped view model is added to <see cref="Items"/>.
+    /// </summary>
+    /// <param name="vm">The view model that was added.</param>
     protected virtual void OnViewModelAdded(TViewModel vm) { }
+
+    /// <summary>
+    /// Ensures any data required to populate the list is available.
+    /// </summary>
     protected abstract Task EnsureDummyData();
+
+    /// <summary>
+    /// Loads a page of source items.
+    /// </summary>
+    /// <param name="pageNumber">The zero-based page number to load.</param>
+    /// <param name="pageSize">The maximum number of source items to load.</param>
+    /// <returns>The source items for the requested page.</returns>
     protected abstract Task<List<TSource>> LoadAsync(int pageNumber, int pageSize);
+
+    /// <summary>
+    /// Maps a source item to its list view model.
+    /// </summary>
+    /// <param name="source">The source item to map.</param>
+    /// <returns>The mapped list view model.</returns>
     protected abstract TViewModel MapToViewModel(TSource source);
 
-    // Utility for full replacements (e.g. search result sets)
+    /// <summary>
+    /// Replaces the current list with a complete, unpaged result set.
+    /// </summary>
+    /// <param name="sources">The source items to display.</param>
     protected void ReplaceWithFullResultSet(IEnumerable<TSource> sources)
     {
         ResetPaging();
@@ -59,7 +92,9 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
         hasMorePages = false; // full set loaded
     }
 
-    // Utility if caller wants to restart normal paging (e.g. clearing search)
+    /// <summary>
+    /// Replaces the current list with the first page from the normal data source.
+    /// </summary>
     protected async Task ReplaceWithFirstPagedAsync()
     {
         ResetPaging();

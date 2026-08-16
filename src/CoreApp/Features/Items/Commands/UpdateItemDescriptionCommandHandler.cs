@@ -11,6 +11,7 @@ public sealed class UpdateItemDescriptionCommandHandler : IUpdateItemDescription
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
 
+    /// <inheritdoc />
     public async Task UpdateAsync(Item item, string description)
     {
         ArgumentNullException.ThrowIfNull(item);

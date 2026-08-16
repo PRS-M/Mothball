@@ -29,6 +29,7 @@ public class ItemRepository : IItemRepository
         this.logger = logger;
     }
 
+    /// <inheritdoc />
     public async Task<Item?> GetWithPhotosAsync(string itemId)
     {
         logger.LogDebug("GetWithPhotosAsync: itemId={ItemId}", itemId);
@@ -388,18 +389,21 @@ public class ItemRepository : IItemRepository
         return result;
     }
 
+    /// <inheritdoc />
     public async Task InsertAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
         await items.InsertAsync(item.ToDb());
     }
 
+    /// <inheritdoc />
     public async Task UpdateAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
         await items.UpdateAsync(item.ToDb());
     }
 
+    /// <inheritdoc />
     public async Task DeletePhotoAsync(Item item, Guid imageId)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -411,6 +415,7 @@ public class ItemRepository : IItemRepository
         });
     }
 
+    /// <inheritdoc />
     public async Task DeleteAsync(string itemId)
     {
         if (!RepositoryQueryHelpers.TryParseGuid(itemId, out Guid iid, logger)) return;

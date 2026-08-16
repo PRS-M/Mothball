@@ -16,6 +16,7 @@ public sealed class CreateContainerCommandHandler : ICreateContainerCommandHandl
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
     }
 
+    /// <inheritdoc />
     public async Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null)
     {
         var container = new Container(

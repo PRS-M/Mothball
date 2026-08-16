@@ -19,6 +19,7 @@ public sealed class Debouncer : IDebouncer, IDisposable
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <inheritdoc />
     public Task DebounceAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(action);
@@ -77,6 +78,7 @@ public sealed class Debouncer : IDebouncer, IDisposable
         }
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (isDisposed)

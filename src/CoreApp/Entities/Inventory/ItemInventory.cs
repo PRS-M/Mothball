@@ -36,6 +36,10 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
     public int AssignedQuantity => allocations.Sum(allocation => allocation.Quantity);
     public int UnassignedQuantity => TotalQuantity - AssignedQuantity;
 
+    /// <summary>
+    /// Increases the total quantity when the supplied value is greater than the current total.
+    /// </summary>
+    /// <param name="totalQuantity">The proposed total quantity.</param>
     public void IncreaseTotalQuantity(int totalQuantity)
     {
         if (totalQuantity > TotalQuantity)
@@ -44,6 +48,10 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
         }
     }
 
+    /// <summary>
+    /// Sets the total quantity while preserving all existing allocations.
+    /// </summary>
+    /// <param name="totalQuantity">The new total quantity, which must be at least one and no less than the assigned quantity.</param>
     public void SetTotalQuantity(int totalQuantity)
     {
         if (totalQuantity < 1)
@@ -59,6 +67,12 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
         TotalQuantity = totalQuantity;
     }
 
+    /// <summary>
+    /// Sets the quantity of this item allocated to a container.
+    /// </summary>
+    /// <param name="containerId">The identifier of the container.</param>
+    /// <param name="containerName">The display name of the container.</param>
+    /// <param name="quantity">The allocation quantity; zero removes the allocation.</param>
     public void SetContainerAllocation(Guid containerId, string containerName, int quantity)
     {
         if (containerId == Guid.Empty)
@@ -93,6 +107,10 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
         }
     }
 
+    /// <summary>
+    /// Applies a validated inventory withdrawal plan.
+    /// </summary>
+    /// <param name="plan">The withdrawal plan that defines the resulting inventory state.</param>
     public void ApplyWithdrawal(ItemInventoryWithdrawalPlan plan)
     {
         ArgumentNullException.ThrowIfNull(plan);

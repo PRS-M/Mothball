@@ -19,6 +19,7 @@ public class CameraHandler : ICameraHandler
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <inheritdoc />
     public async Task<byte[]> CapturePhotoAsync(IProgress<double>? resizeProgress = null)
     {
         if (!mediaPicker.IsCaptureSupported)
@@ -30,6 +31,7 @@ public class CameraHandler : ICameraHandler
         return await GetPhotoBytesAsync(() => mediaPicker.CapturePhotoAsync(), "Photo capture", resizeProgress);
     }
 
+    /// <inheritdoc />
     public async Task<byte[]> SelectPhotoAsync(IProgress<double>? resizeProgress = null)
         => await GetPhotoBytesAsync(async () =>
         {
