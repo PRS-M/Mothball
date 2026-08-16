@@ -42,8 +42,10 @@
                                    LineBreakMode="TailTruncation"
                                    MaxLines="2"
                                    Style="{StaticResource TitleLarge}"/>
+                            <Label Text="{Binding ItemTypesStoredText}"
+                                Style="{StaticResource BodyMedium}"/>
                             <Label Text="{Binding ItemsStoredText}"
-                                   Style="{StaticResource BodyMedium}"/>
+                                Style="{StaticResource BodyMedium}"/>
                         </VerticalStackLayout>
                     </VerticalStackLayout>
                 </Border>

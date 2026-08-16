@@ -41,6 +41,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     [ObservableProperty]
     private int totalItemCount = 0;
 
+    [ObservableProperty]
+    private int itemTypesCount = 0;
+
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
     public ObservableCollection<ItemWithPhotosViewModel> Items { get; } = new();
     public ObservableCollection<object> Rows { get; } = new();
@@ -55,10 +58,14 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     public bool IsViewingNotes => !IsEditingNotes;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public string DisplayNotes => string.IsNullOrWhiteSpace(Notes) ? "No description." : Notes;
-    public string ItemsStoredText => $"Items stored: {TotalItemCount}";
+    public string ItemsStoredText => $"Items stored (Total): {TotalItemCount}";
+    public string ItemTypesStoredText => $"Item types stored: {ItemTypesCount}";
 
     partial void OnTotalItemCountChanged(int value)
         => OnPropertyChanged(nameof(ItemsStoredText));
+
+    partial void OnItemTypesCountChanged(int value)
+        => OnPropertyChanged(nameof(ItemTypesStoredText));
 
     partial void OnNotesChanged(string value)
         => OnPropertyChanged(nameof(DisplayNotes));
@@ -141,6 +148,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             NotesDraft = string.Empty;
             IsEditingNotes = false;
             TotalItemCount = 0;
+            ItemTypesCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
             itemPaging.MarkComplete();
             IsItemListEmpty = true;
@@ -153,9 +161,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         Notes = container.Notes;
         NotesDraft = container.Notes;
         IsEditingNotes = false;
+        ItemTypesCount = await containerDetailsQueries.GetDistinctItemCountAsync(containerId);
         TotalItemCount = ShowQuantityManagement
             ? details.TotalItemCount
-            : await containerDetailsQueries.GetDistinctItemCountAsync(containerId);
+            : ItemTypesCount;
 
         // Load container photos (all, as a small carousel)
         ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
@@ -200,9 +209,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
 
         var result = await quantityService.SaveQuantityAsync(currentContainer, itemId, quantity);
+        ItemTypesCount = await containerDetailsQueries.GetDistinctItemCountAsync(ContainerId);
         TotalItemCount = ShowQuantityManagement
             ? result.TotalItemCount
-            : await containerDetailsQueries.GetDistinctItemCountAsync(ContainerId);
+            : ItemTypesCount;
         var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
         await ReloadItemsAsync(searchTerm);
     }
