@@ -4,12 +4,14 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MothballMobile"
+    xmlns:backgroundOperations="clr-namespace:MothballMobile.Infrastructure.BackgroundOperations.Photos"
     xmlns:containers="clr-namespace:MothballMobile.UI.Features.Containers.ContainersList"
     xmlns:items="clr-namespace:MothballMobile.UI.Features.Items.ItemsList"
     xmlns:settings="clr-namespace:MothballMobile.UI.Features.Settings"
     Title="MothballMobile">
     <Shell.TitleView>
         <Grid HorizontalOptions="Fill"
+              x:DataType="backgroundOperations:IPhotoBackgroundOperationTracker"
               Padding="12,0">
             <Border IsVisible="{Binding IsBannerVisible}"
                     HorizontalOptions="Center"
