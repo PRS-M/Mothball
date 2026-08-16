@@ -7,6 +7,7 @@ using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure;
 using CoreApp.Contracts;
+using CoreApp.Specifications;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
 
@@ -14,6 +15,7 @@ public enum ItemsListFilter
 {
     All,
     Unassigned,
+    Assigned,
 }
 
 public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapshot, ItemViewModel>, IDisposable
@@ -144,7 +146,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
         }
         else
         {
-            var items = await itemListQueries.QueryAsync(IsUnassignedFilterSelected(), query);
+            var items = await itemListQueries.QueryAsync(GetItemQueryFilter(), query);
 
             ReplaceWithFullResultSet(items);
         }
@@ -161,9 +163,14 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
         => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
 
     protected override Task<List<InventorySnapshot>> LoadAsync(int pageNumber, int pageSize)
-        => itemListQueries.QueryAsync(IsUnassignedFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);
+        => itemListQueries.QueryAsync(GetItemQueryFilter(), pageNumber: pageNumber, pageSize: pageSize);
 
-    private bool IsUnassignedFilterSelected()
-        => SelectedFilter == ItemsListFilter.Unassigned;
+    private ItemQueryFilter GetItemQueryFilter()
+        => SelectedFilter switch
+        {
+            ItemsListFilter.Assigned => ItemQueryFilter.Assigned,
+            ItemsListFilter.Unassigned => ItemQueryFilter.Unassigned,
+            _ => ItemQueryFilter.All,
+        };
 
 }

@@ -63,31 +63,43 @@ public sealed class JsonItemRepository : IItemRepository
 
         if (hasSearch)
         {
-            return specification.Filter == ItemQueryFilter.Unassigned
-                ? SearchUnassignedWithPhotosAsync(
+            return specification.Filter switch
+            {
+                ItemQueryFilter.Assigned => SearchAssignedWithPhotosAsync(
+                    term!,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null),
+                ItemQueryFilter.Unassigned => SearchUnassignedWithPhotosAsync(
                     term!,
                     specification.ExcludedContainerId,
                     hasPaging ? pageNumberValue : null,
-                    hasPaging ? pageSizeValue : null)
-                : SearchWithPhotosAsync(
+                    hasPaging ? pageSizeValue : null),
+                _ => SearchWithPhotosAsync(
                     term!,
                     hasPaging ? pageNumberValue : null,
-                    hasPaging ? pageSizeValue : null);
+                    hasPaging ? pageSizeValue : null),
+            };
         }
 
         if (hasPaging)
         {
-            return specification.Filter == ItemQueryFilter.Unassigned
-                ? GetUnassignedWithPhotosAsync(
+            return specification.Filter switch
+            {
+                ItemQueryFilter.Assigned => GetAssignedWithPhotosAsync(pageNumberValue, pageSizeValue),
+                ItemQueryFilter.Unassigned => GetUnassignedWithPhotosAsync(
                     pageNumberValue,
                     pageSizeValue,
-                    specification.ExcludedContainerId)
-                : GetAllWithPhotosAsync(pageNumberValue, pageSizeValue);
+                    specification.ExcludedContainerId),
+                _ => GetAllWithPhotosAsync(pageNumberValue, pageSizeValue),
+            };
         }
 
-        return specification.Filter == ItemQueryFilter.Unassigned
-            ? SearchUnassignedWithPhotosAsync(string.Empty, specification.ExcludedContainerId)
-            : GetAllWithPhotosAsync();
+        return specification.Filter switch
+        {
+            ItemQueryFilter.Assigned => SearchAssignedWithPhotosAsync(string.Empty),
+            ItemQueryFilter.Unassigned => SearchUnassignedWithPhotosAsync(string.Empty, specification.ExcludedContainerId),
+            _ => GetAllWithPhotosAsync(),
+        };
     }
 
     public Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
@@ -163,6 +175,22 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
+    private async Task<List<Item>> GetAssignedWithPhotosAsync(int pageNumber, int pageSize)
+    {
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
+
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        return state.Items
+            .Where(i => GetAssignedQuantity(state, i.ItemId) > 0)
+            .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(i => i.RowId)
+            .Skip(offset)
+            .Take(pageSize)
+            .Select(i => MapItem(state, i))
+            .ToList();
+    }
+
     private async Task<List<Item>> SearchWithPhotosAsync(
         string searchTerm,
         int? pageNumber = null,
@@ -196,6 +224,32 @@ public sealed class JsonItemRepository : IItemRepository
         var query = state.Items
             .Where(i => GetTotalQuantity(state, i.ItemId) > GetAssignedQuantity(state, i.ItemId)
                 && !HasPositiveAllocationInContainer(state, i.ItemId, excludedContainerId)
+                && i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(i => i.RowId);
+
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            query = query
+                .Skip(RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue))
+                .Take(pageSizeValue)
+                .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(i => i.RowId);
+        }
+
+        return query
+            .Select(i => MapItem(state, i))
+            .ToList();
+    }
+
+    private async Task<List<Item>> SearchAssignedWithPhotosAsync(
+        string searchTerm,
+        int? pageNumber = null,
+        int? pageSize = null)
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var query = state.Items
+            .Where(i => GetAssignedQuantity(state, i.ItemId) > 0
                 && i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.RowId);

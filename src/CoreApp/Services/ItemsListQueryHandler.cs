@@ -15,13 +15,13 @@ public sealed class ItemsListQueryHandler : IItemsListQueryHandler
     }
 
     public Task<List<InventorySnapshot>> QueryAsync(
-        bool unassignedOnly,
+        ItemQueryFilter filter,
         string? searchTerm = null,
         int? pageNumber = null,
         int? pageSize = null)
         => inventoryQueries.QueryInventorySnapshotsAsync(
             new ItemListSpecification(
-                Filter: unassignedOnly ? ItemQueryFilter.Unassigned : ItemQueryFilter.All,
+                Filter: filter,
                 SearchTerm: searchTerm,
                 PageNumber: pageNumber,
                 PageSize: pageSize));

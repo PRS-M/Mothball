@@ -63,31 +63,43 @@ public class ItemRepository : IItemRepository
 
         if (hasSearch)
         {
-            return specification.Filter == ItemQueryFilter.Unassigned
-                ? SearchUnassignedWithPhotosAsync(
+            return specification.Filter switch
+            {
+                ItemQueryFilter.Assigned => SearchAssignedWithPhotosAsync(
+                    term!,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null),
+                ItemQueryFilter.Unassigned => SearchUnassignedWithPhotosAsync(
                     term!,
                     specification.ExcludedContainerId,
                     hasPaging ? pageNumberValue : null,
-                    hasPaging ? pageSizeValue : null)
-                : SearchWithPhotosAsync(
+                    hasPaging ? pageSizeValue : null),
+                _ => SearchWithPhotosAsync(
                     term!,
                     hasPaging ? pageNumberValue : null,
-                    hasPaging ? pageSizeValue : null);
+                    hasPaging ? pageSizeValue : null),
+            };
         }
 
         if (hasPaging)
         {
-            return specification.Filter == ItemQueryFilter.Unassigned
-                ? GetUnassignedWithPhotosAsync(
+            return specification.Filter switch
+            {
+                ItemQueryFilter.Assigned => GetAssignedWithPhotosAsync(pageNumberValue, pageSizeValue),
+                ItemQueryFilter.Unassigned => GetUnassignedWithPhotosAsync(
                     pageNumberValue,
                     pageSizeValue,
-                    specification.ExcludedContainerId)
-                : GetAllWithPhotosAsync(pageNumberValue, pageSizeValue);
+                    specification.ExcludedContainerId),
+                _ => GetAllWithPhotosAsync(pageNumberValue, pageSizeValue),
+            };
         }
 
-        return specification.Filter == ItemQueryFilter.Unassigned
-            ? SearchUnassignedWithPhotosAsync(string.Empty, specification.ExcludedContainerId)
-            : GetAllWithPhotosAsync();
+        return specification.Filter switch
+        {
+            ItemQueryFilter.Assigned => SearchAssignedWithPhotosAsync(string.Empty),
+            ItemQueryFilter.Unassigned => SearchUnassignedWithPhotosAsync(string.Empty, specification.ExcludedContainerId),
+            _ => GetAllWithPhotosAsync(),
+        };
     }
 
     public Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
@@ -185,6 +197,24 @@ public class ItemRepository : IItemRepository
         }
 
         return unassigned.Count == 0 ? [] : await MapItemsWithPhotosAsync(unassigned);
+    }
+
+    private async Task<List<Item>> GetAssignedWithPhotosAsync(int pageNumber, int pageSize)
+    {
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
+
+        List<DbItem> assigned = await items.QueryAsync(
+            $"SELECT * FROM {nameof(DbItem)} " +
+            $"WHERE COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} " +
+            $"WHERE {nameof(DbItemContainerRelation)}.ItemId = {nameof(DbItem)}.ItemId AND Quantity > 0), 0) > 0 " +
+            $"ORDER BY Name COLLATE NOCASE " +
+            $"LIMIT ? OFFSET ?",
+            pageSize,
+            offset);
+
+        return assigned.Count == 0 ? [] : await MapItemsWithPhotosAsync(assigned);
     }
 
     private async Task<List<Item>> SearchWithPhotosAsync(
@@ -287,6 +317,42 @@ public class ItemRepository : IItemRepository
         }
 
         logger.LogDebug("SearchUnassignedWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
+        return await MapItemsWithPhotosAsync(itemsQuery);
+    }
+
+    private async Task<List<Item>> SearchAssignedWithPhotosAsync(
+        string searchTerm,
+        int? pageNumber = null,
+        int? pageSize = null)
+    {
+        string pattern = $"%{searchTerm}%";
+        List<DbItem> itemsQuery;
+
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            itemsQuery = await items.QueryAsync(
+                $@"SELECT * FROM {nameof(DbItem)}
+                   WHERE COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                   WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0) > 0
+                     AND Name LIKE ? COLLATE NOCASE
+                   ORDER BY Name COLLATE NOCASE
+                   LIMIT ? OFFSET ?",
+                pattern,
+                pageSizeValue,
+                RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue));
+        }
+        else
+        {
+            itemsQuery = await items.QueryAsync(
+                $@"SELECT * FROM {nameof(DbItem)}
+                   WHERE COALESCE((SELECT SUM(Quantity) FROM {nameof(DbItemContainerRelation)} r
+                                   WHERE r.ItemId = {nameof(DbItem)}.ItemId AND r.Quantity > 0), 0) > 0
+                     AND Name LIKE ? COLLATE NOCASE
+                   ORDER BY Name COLLATE NOCASE",
+                pattern);
+        }
+
+        logger.LogDebug("SearchAssignedWithPhotosAsync: term='{SearchTerm}', matched={Count}", searchTerm, itemsQuery.Count);
         return await MapItemsWithPhotosAsync(itemsQuery);
     }
 

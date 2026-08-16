@@ -189,6 +189,47 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task QueryInventorySnapshotsAsync_AssignedSearchWithPaging_ReturnsRequestedPageAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var firstAssigned = new Item(Guid.NewGuid(), "Cable Alpha", "");
+        var secondAssigned = new Item(Guid.NewGuid(), "Cable Beta", "");
+        var unassignedOnly = new Item(Guid.NewGuid(), "Cable Loose", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(firstAssigned);
+            await command.InsertItemAsync(secondAssigned);
+            await command.InsertItemAsync(unassignedOnly);
+            await command.InsertItemInventoryAsync(new ItemInventory(firstAssigned.ItemId, 1));
+            await command.InsertItemInventoryAsync(new ItemInventory(secondAssigned.ItemId, 3));
+            await command.InsertItemInventoryAsync(new ItemInventory(unassignedOnly.ItemId, 3));
+            await command.InsertItemContainerRelation(firstAssigned.ItemId, container.ContainerId, 1);
+            await command.InsertItemContainerRelation(secondAssigned.ItemId, container.ContainerId, 2);
+        }
+
+        var specification = new ItemListSpecification(
+            ItemQueryFilter.Assigned,
+            SearchTerm: "cable",
+            PageNumber: 1,
+            PageSize: 1);
+
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(specification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(specification);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { secondAssigned.ItemId }));
+            Assert.That(jsonItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { secondAssigned.ItemId }));
+            Assert.That(sqliteItems.Single().AssignedQuantity, Is.EqualTo(2));
+            Assert.That(jsonItems.Single().AssignedQuantity, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
     public async Task QueryInventorySnapshotsAsync_UnassignedWithExcludedContainer_FiltersBeforePagingAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();

@@ -45,12 +45,35 @@ public sealed class ListAndItemWorkflowHandlerTests
 
         var handler = new ItemsListQueryHandler(queries.Object);
 
-        await handler.QueryAsync(unassignedOnly: true, searchTerm: "hat", pageNumber: 1, pageSize: 20);
+        await handler.QueryAsync(ItemQueryFilter.Unassigned, searchTerm: "hat", pageNumber: 1, pageSize: 20);
 
         Assert.That(captured, Is.Not.Null);
         Assert.Multiple(() =>
         {
             Assert.That(captured!.Filter, Is.EqualTo(ItemQueryFilter.Unassigned));
+            Assert.That(captured.SearchTerm, Is.EqualTo("hat"));
+            Assert.That(captured.PageNumber, Is.EqualTo(1));
+            Assert.That(captured.PageSize, Is.EqualTo(20));
+        });
+    }
+
+    [Test]
+    public async Task ItemsListQueryHandler_WhenAssigned_UsesAssignedFilterAndPaging()
+    {
+        var queries = new Mock<IInventoryQueryRepository>();
+        ItemListSpecification? captured = null;
+        queries.Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<ItemListSpecification>()))
+            .Callback<ItemListSpecification>(s => captured = s)
+            .ReturnsAsync([]);
+
+        var handler = new ItemsListQueryHandler(queries.Object);
+
+        await handler.QueryAsync(ItemQueryFilter.Assigned, searchTerm: "hat", pageNumber: 1, pageSize: 20);
+
+        Assert.That(captured, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(captured!.Filter, Is.EqualTo(ItemQueryFilter.Assigned));
             Assert.That(captured.SearchTerm, Is.EqualTo("hat"));
             Assert.That(captured.PageNumber, Is.EqualTo(1));
             Assert.That(captured.PageSize, Is.EqualTo(20));
