@@ -1,14 +1,11 @@
+using CoreApp.Entities.Inventory;
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using MothballMobile.Infrastructure;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Interfaces;
-using CoreApp.Services;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
-using MothballMobile.Infrastructure.Popups;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -16,8 +13,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 {
     private readonly IContainerDetailsQueryHandler containerDetailsQueries;
     private readonly IDeleteContainerCommandHandler deleteContainerHandler;
+    private readonly IUpdateContainerNotesCommandHandler updateContainerNotesHandler;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly ContainerItemPagingController itemPaging;
     private readonly ContainerDetailsItemRowsViewModel itemRows;
     private readonly IContainerItemQuantityService quantityService;
@@ -34,6 +33,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private string notes = string.Empty;
 
     [ObservableProperty]
+    private string notesDraft = string.Empty;
+
+    [ObservableProperty]
+    private bool isEditingNotes;
+
+    [ObservableProperty]
     private int totalItemCount = 0;
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
@@ -47,15 +52,23 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private bool isItemListEmpty = true;
 
     private const int PageSize = 5;
+    public bool IsViewingNotes => !IsEditingNotes;
+    public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
+    public string ItemsStoredText => $"Items stored: {TotalItemCount}";
+
+    partial void OnTotalItemCountChanged(int value)
+        => OnPropertyChanged(nameof(ItemsStoredText));
 
     public ContainerDetailsViewModel(
         IContainerDetailsQueryHandler containerDetailsQueries,
         IDeleteContainerCommandHandler deleteContainerHandler,
+        IUpdateContainerNotesCommandHandler updateContainerNotesHandler,
         IImagePathResolver paths,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         ImageService imageService,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IContainerItemQuantityService quantityService,
         IBackgroundTaskObserver backgroundTasks,
@@ -64,7 +77,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         this.containerDetailsQueries = containerDetailsQueries;
         this.deleteContainerHandler = deleteContainerHandler;
+        this.updateContainerNotesHandler = updateContainerNotesHandler;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.quantityService = quantityService;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
@@ -113,6 +128,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             currentContainer = null;
             Name = "Container not found";
             Notes = string.Empty;
+            NotesDraft = string.Empty;
+            IsEditingNotes = false;
             TotalItemCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
             itemPaging.MarkComplete();
@@ -124,7 +141,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         currentContainer = container;
         Name = container.Name;
         Notes = container.Notes;
-        TotalItemCount = details.TotalItemCount;
+        NotesDraft = container.Notes;
+        IsEditingNotes = false;
+        TotalItemCount = ShowQuantityManagement
+            ? details.TotalItemCount
+            : await containerDetailsQueries.GetDistinctItemCountAsync(containerId);
 
         // Load container photos (all, as a small carousel)
         ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
@@ -146,6 +167,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                     popup,
                     popupDefinitions,
                     ContainerId,
+                    ShowQuantityManagement,
                     SaveItemQuantityAsync);
                 itemVm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load container item images");
                 return itemVm;
@@ -157,13 +179,20 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     private async Task SaveItemQuantityAsync(Guid itemId, int quantity)
     {
+        if (!ShowQuantityManagement && quantity != 0)
+        {
+            return;
+        }
+
         if (currentContainer is null)
         {
             return;
         }
 
         var result = await quantityService.SaveQuantityAsync(currentContainer, itemId, quantity);
-        TotalItemCount = result.TotalItemCount;
+        TotalItemCount = ShowQuantityManagement
+            ? result.TotalItemCount
+            : await containerDetailsQueries.GetDistinctItemCountAsync(ContainerId);
         var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
         await ReloadItemsAsync(searchTerm);
     }
@@ -214,6 +243,34 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         await PerformSearchAsync();
     }
+
+    [RelayCommand]
+    private void EditNotes()
+    {
+        NotesDraft = Notes;
+        IsEditingNotes = true;
+    }
+
+    [RelayCommand]
+    private async Task SaveNotesAsync()
+    {
+        if (currentContainer is null)
+        {
+            return;
+        }
+
+        var updatedNotes = NotesDraft?.Trim() ?? string.Empty;
+        await RunCommandAsync(async () =>
+        {
+            await updateContainerNotesHandler.UpdateAsync(currentContainer, updatedNotes);
+            Notes = currentContainer.Notes;
+            NotesDraft = currentContainer.Notes;
+            IsEditingNotes = false;
+        });
+    }
+
+    partial void OnIsEditingNotesChanged(bool value)
+        => OnPropertyChanged(nameof(IsViewingNotes));
 
     [RelayCommand]
     private async Task DeleteContainerAsync()

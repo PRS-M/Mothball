@@ -1,5 +1,4 @@
 using CoreApp.Contracts;
-using CoreApp.Interfaces;
 using CoreApp.Utilities;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Models;
@@ -129,8 +128,8 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                 ItemId = item.ItemId,
                 Name = item.Name,
                 Description = item.Description,
-                TotalQuantity = item.TotalQuantity,
             });
+            UpsertInventory(state, item.ItemId, item.TotalQuantity);
         }
 
         foreach (var item in plan.ItemsToUpdate)
@@ -145,26 +144,24 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
-                    TotalQuantity = item.TotalQuantity,
                 });
+                UpsertInventory(state, item.ItemId, item.TotalQuantity);
                 continue;
             }
 
             existing.Name = item.Name;
             existing.Description = item.Description;
-            existing.TotalQuantity = item.TotalQuantity;
+            UpsertInventory(state, item.ItemId, item.TotalQuantity);
         }
 
         foreach (var relation in plan.RelationsToInsert)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            state.Relations.Add(new JsonRelationRow
-            {
-                Id = state.Metadata.NextRelationId++,
-                ItemId = relation.ItemId,
-                ContainerId = relation.ContainerId,
-                Quantity = relation.QuantityToInsert,
-            });
+            InsertOrIncreaseRelation(
+                state,
+                relation.ItemId,
+                relation.ContainerId,
+                relation.QuantityToInsert);
         }
 
         foreach (var relation in plan.RelationsToSet)
@@ -213,6 +210,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
             cancellationToken.ThrowIfCancellationRequested();
             state.Images.RemoveAll(image => image.OwnerUniqueId == itemId);
             state.Relations.RemoveAll(relation => relation.ItemId == itemId);
+            state.Inventories.RemoveAll(inventory => inventory.ItemId == itemId);
             state.Items.RemoveAll(item => item.ItemId == itemId);
         }
 
@@ -223,5 +221,41 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
             state.Relations.RemoveAll(relation => relation.ContainerId == containerId);
             state.Containers.RemoveAll(container => container.ContainerId == containerId);
         }
+    }
+
+    private static void UpsertInventory(JsonInventoryStore.StoreState state, Guid itemId, int totalQuantity)
+    {
+        var existing = state.Inventories.FirstOrDefault(inventory => inventory.ItemId == itemId);
+        if (existing is null)
+        {
+            state.Inventories.Add(new JsonInventoryRow
+            {
+                ItemId = itemId,
+                TotalQuantity = totalQuantity,
+            });
+            return;
+        }
+
+        existing.TotalQuantity = totalQuantity;
+    }
+
+    private static void InsertOrIncreaseRelation(
+        JsonInventoryStore.StoreState state,
+        Guid itemId,
+        Guid containerId,
+        int quantity)
+    {
+        var existingQuantity = state.Relations
+            .Where(relation => relation.ItemId == itemId && relation.ContainerId == containerId)
+            .Sum(relation => relation.Quantity);
+
+        state.Relations.RemoveAll(relation => relation.ItemId == itemId && relation.ContainerId == containerId);
+        state.Relations.Add(new JsonRelationRow
+        {
+            Id = state.Metadata.NextRelationId++,
+            ItemId = itemId,
+            ContainerId = containerId,
+            Quantity = existingQuantity + quantity,
+        });
     }
 }

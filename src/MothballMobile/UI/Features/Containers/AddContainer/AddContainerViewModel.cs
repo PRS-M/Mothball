@@ -1,9 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Interfaces;
-using CoreApp.Services;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;

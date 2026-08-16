@@ -1,5 +1,3 @@
-using CoreApp.Interfaces;
-using CoreApp.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 

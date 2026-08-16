@@ -1,9 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using CoreApp.Entities.Shared;
-using CoreApp.Interfaces;
-using CoreApp.Services;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 
 namespace MothballMobile.UI.Shared;
 

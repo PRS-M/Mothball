@@ -1,4 +1,3 @@
-using CoreApp.Interfaces;
 using SQLite;
 using System.Linq.Expressions;
 using System.Reflection;

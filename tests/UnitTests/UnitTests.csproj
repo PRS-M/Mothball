@@ -31,41 +31,53 @@
 
   <!-- Bring in UI-only Debouncer source directly for testability without MAUI target dependencies. -->
   <ItemGroup>
-    <Compile Include="../../src/MothballMobile/Infrastructure/IDebouncer.cs" Link="Infrastructure/IDebouncer.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/Debouncer.cs" Link="Infrastructure/Debouncer.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IBackgroundTaskObserver.cs" Link="Infrastructure/IBackgroundTaskObserver.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/LoggingBackgroundTaskObserver.cs" Link="Infrastructure/LoggingBackgroundTaskObserver.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/TaskExtensions.cs" Link="Infrastructure/TaskExtensions.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IPopupService.cs" Link="Infrastructure/IPopupService.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/INavigationService.cs" Link="Infrastructure/INavigationService.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/NavigationParams.cs" Link="Infrastructure/NavigationParams.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/NavigationRoutes.cs" Link="Infrastructure/NavigationRoutes.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IPhotoBackgroundOperationTracker.cs" Link="Infrastructure/IPhotoBackgroundOperationTracker.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/PhotoBackgroundOperationEntry.cs" Link="Infrastructure/PhotoBackgroundOperationEntry.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/Popups/**/*.cs" Link="Infrastructure/Popups/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IRetryService.cs" Link="Infrastructure/IRetryService.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/RetryService.cs" Link="Infrastructure/RetryService.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IAppStartupOrchestrator.cs" Link="Infrastructure/IAppStartupOrchestrator.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/AppStartupOrchestrator.cs" Link="Infrastructure/AppStartupOrchestrator.cs" />
-    <Compile Include="../../src/MothballMobile/Infrastructure/IInitializable.cs" Link="Infrastructure/IInitializable.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/IDebouncer.cs" Link="Infrastructure/Resilience/IDebouncer.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/Debouncer.cs" Link="Infrastructure/Resilience/Debouncer.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Observability/IBackgroundTaskObserver.cs" Link="Infrastructure/BackgroundOperations/Observability/IBackgroundTaskObserver.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Observability/LoggingBackgroundTaskObserver.cs" Link="Infrastructure/BackgroundOperations/Observability/LoggingBackgroundTaskObserver.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Utilities/TaskExtensions.cs" Link="Infrastructure/Utilities/TaskExtensions.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/INavigationService.cs" Link="Infrastructure/Navigation/INavigationService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationParams.cs" Link="Infrastructure/Navigation/NavigationParams.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationRoutes.cs" Link="Infrastructure/Navigation/NavigationRoutes.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" Link="Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" Link="Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/IPopupService.cs" Link="Infrastructure/Presentation/Popups/IPopupService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/IPopupDefinitionService.cs" Link="Infrastructure/Presentation/Popups/IPopupDefinitionService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/PopupDefinitionService.cs" Link="Infrastructure/Presentation/Popups/PopupDefinitionService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/PopupDefinitions.cs" Link="Infrastructure/Presentation/Popups/PopupDefinitions.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/IRetryService.cs" Link="Infrastructure/Resilience/IRetryService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/RetryService.cs" Link="Infrastructure/Resilience/RetryService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Startup/IAppStartupOrchestrator.cs" Link="Infrastructure/Startup/IAppStartupOrchestrator.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Startup/AppStartupOrchestrator.cs" Link="Infrastructure/Startup/AppStartupOrchestrator.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Utilities/IInitializable.cs" Link="Infrastructure/Utilities/IInitializable.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Settings/AppMode.cs" Link="Infrastructure/Settings/AppMode.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Settings/IApplicationSettings.cs" Link="Infrastructure/Settings/IApplicationSettings.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="../../src/MothballMobile/UI/Shared/BaseViewModel.cs" Link="UI/Shared/BaseViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Shared/PagedListViewModelBase.cs" Link="UI/Shared/PagedListViewModelBase.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Shared/ContainerWithImagesViewModelBase.cs" Link="UI/Shared/ContainerWithImagesViewModelBase.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/PhotoDetailsViewModelBase.cs" Link="UI/Shared/PhotoDetailsViewModelBase.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/PhotoSourceSelector.cs" Link="UI/Shared/PhotoSourceSelector.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemDetails/ItemDetailsViewModel.cs" Link="UI/Features/Items/ItemDetails/ItemDetailsViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemLocations/ItemLocationViewModel.cs" Link="UI/Features/Items/ItemLocations/ItemLocationViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemLocations/ItemLocationsViewModel.cs" Link="UI/Features/Items/ItemLocations/ItemLocationsViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs" Link="UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/SelectableContainerViewModel.cs" Link="UI/Features/Containers/AssociateItemWithContainer/SelectableContainerViewModel.cs" />
   </ItemGroup>
 
   <!-- Compile non-MAUI Infrastructure sources directly to avoid referencing the MAUI-only Infrastructure project. -->
   <ItemGroup>
     <Compile Include="../../src/Infrastructure/DatabaseModels/**/*.cs" Link="Infrastructure/DatabaseModels/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Interfaces/**/*.cs" Link="Infrastructure/Interfaces/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Abstractions/Repositories/**/*.cs" Link="Infrastructure/Abstractions/Repositories/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Abstractions/Transactions/**/*.cs" Link="Infrastructure/Abstractions/Transactions/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Infrastructure/Compatibility/LegacyInterfacesNamespace.cs" Link="Infrastructure/Compatibility/LegacyInterfacesNamespace.cs" />
     <Compile Include="../../src/Infrastructure/Mappers/**/*.cs" Link="Infrastructure/Mappers/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Services/DemoDataSeeder.cs" Link="Infrastructure/Services/DemoDataSeeder.cs" />
-    <Compile Include="../../src/Infrastructure/Services/ImagePathResolver.cs" Link="Infrastructure/Services/ImagePathResolver.cs" />
-    <Compile Include="../../src/Infrastructure/Services/MothballDatabase.cs" Link="Infrastructure/Services/MothballDatabase.cs" />
-    <Compile Include="../../src/Infrastructure/Services/SqliteStartupInitializer.cs" Link="Infrastructure/Services/SqliteStartupInitializer.cs" />
+    <Compile Include="../../src/Infrastructure/Services/Seeding/DemoDataSeeder.cs" Link="Infrastructure/Services/Seeding/DemoDataSeeder.cs" />
+    <Compile Include="../../src/Infrastructure/Services/Images/ImagePathResolver.cs" Link="Infrastructure/Services/Images/ImagePathResolver.cs" />
+    <Compile Include="../../src/Infrastructure/Services/Database/MothballDatabase.cs" Link="Infrastructure/Services/Database/MothballDatabase.cs" />
+    <Compile Include="../../src/Infrastructure/Services/Startup/SqliteStartupInitializer.cs" Link="Infrastructure/Services/Startup/SqliteStartupInitializer.cs" />
     <Compile Include="../../src/Infrastructure/Services/Restore/**/*.cs" Link="Infrastructure/Services/Restore/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Services/JsonStore/**/*.cs" Link="Infrastructure/Services/JsonStore/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../../src/Infrastructure/Services/Repositories/**/*.cs" Link="Infrastructure/Services/Repositories/%(RecursiveDir)%(Filename)%(Extension)" />

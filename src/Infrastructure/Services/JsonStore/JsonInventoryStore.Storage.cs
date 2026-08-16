@@ -20,6 +20,8 @@ public sealed partial class JsonInventoryStore
                         ?? [];
         var items = await TryReadJsonAsync<List<JsonItemRow>>(JsonStoreConstants.ItemsFileName, slotFolder)
                    ?? [];
+        var inventories = await TryReadJsonAsync<List<JsonInventoryRow>>(JsonStoreConstants.InventoriesFileName, slotFolder)
+                          ?? [];
         var images = await TryReadJsonAsync<List<JsonImageRow>>(JsonStoreConstants.ImagesFileName, slotFolder)
                     ?? [];
         var relations = await TryReadJsonAsync<List<JsonRelationRow>>(JsonStoreConstants.RelationsFileName, slotFolder)
@@ -36,6 +38,7 @@ public sealed partial class JsonInventoryStore
             Metadata = metadata,
             Containers = containers,
             Items = items,
+            Inventories = inventories,
             Images = images,
             Relations = relations,
         };
@@ -63,6 +66,7 @@ public sealed partial class JsonInventoryStore
         await WriteJsonAsync(JsonStoreConstants.MetadataFileName, slotFolder, state.Metadata).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.ContainersFileName, slotFolder, state.Containers).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.ItemsFileName, slotFolder, state.Items).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.InventoriesFileName, slotFolder, state.Inventories).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.ImagesFileName, slotFolder, state.Images).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.RelationsFileName, slotFolder, state.Relations).ConfigureAwait(false);
 

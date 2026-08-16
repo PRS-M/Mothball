@@ -1,12 +1,9 @@
+using CoreApp.Entities.Inventory;
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
-using CoreApp.Interfaces;
 using CoreApp.Entities.ItemAggregate;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
-using CoreApp.Services;
 using Microsoft.Extensions.Logging;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;
@@ -16,11 +13,13 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
     private readonly IItemInventoryCommandService inventoryCommands;
     private readonly IDeleteItemCommandHandler deleteItemHandler;
+    private readonly IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly ILogger<ItemDetailsViewModel> logger;
     private Item? currentItem;
-    private ItemInventorySummary? currentInventory;
+    private InventorySnapshot? currentInventory;
     private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
 
@@ -32,6 +31,12 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     [ObservableProperty]
     private string description = string.Empty;
+
+    [ObservableProperty]
+    private string descriptionDraft = string.Empty;
+
+    [ObservableProperty]
+    private bool isEditingDescription;
 
     [ObservableProperty]
     private int totalQuantity;
@@ -47,9 +52,13 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     public bool HasNoContainerRelation => string.IsNullOrWhiteSpace(this.ContainerId);
     public bool HasContainerRelation => !HasNoContainerRelation;
+    public bool HasUnassignedQuantity => UnassignedQuantity > 0;
+    public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+    public bool IsViewingDescription => !IsEditingDescription;
     public bool ShowGoToContainerButton => HasContainerRelation
         && (string.IsNullOrWhiteSpace(sourceContainerId)
+            || currentAllocations.Count > 1
             || !string.Equals(ContainerId, sourceContainerId, StringComparison.OrdinalIgnoreCase));
 
     public ObservableCollection<string> ImagePaths { get; } = new();
@@ -58,7 +67,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IItemDetailsQueryHandler itemDetailsQueries,
         IItemInventoryCommandService inventoryCommands,
         IDeleteItemCommandHandler deleteItemHandler,
+        IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IImagePathResolver paths,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
@@ -71,7 +82,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         this.itemDetailsQueries = itemDetailsQueries;
         this.inventoryCommands = inventoryCommands;
         this.deleteItemHandler = deleteItemHandler;
+        this.updateItemDescriptionHandler = updateItemDescriptionHandler;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
         this.logger = logger;
     }
@@ -94,6 +107,15 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
         NotifyContainerRelationStateChanged();
     }
+
+    partial void OnUnassignedQuantityChanged(int value)
+        => OnPropertyChanged(nameof(HasUnassignedQuantity));
+
+    partial void OnDescriptionChanged(string value)
+        => OnPropertyChanged(nameof(HasDescription));
+
+    partial void OnIsEditingDescriptionChanged(bool value)
+        => OnPropertyChanged(nameof(IsViewingDescription));
 
     public Task InitializeAsync()
     {
@@ -119,6 +141,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             {
                 Name = "Item not found";
                 Description = string.Empty;
+                DescriptionDraft = string.Empty;
+                IsEditingDescription = false;
                 OnPropertyChanged(nameof(HasDescription));
                 ImagePaths.Add(paths.GetFallbackImagePath());
                 return;
@@ -130,6 +154,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             currentAllocations = details.Inventory.Allocations;
             Name = item.Name;
             Description = item.Description;
+            DescriptionDraft = item.Description;
+            IsEditingDescription = false;
             TotalQuantity = details.Inventory.TotalQuantity;
             AssignedQuantity = details.Inventory.AssignedQuantity;
             UnassignedQuantity = details.Inventory.UnassignedQuantity;
@@ -146,15 +172,29 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     {
         OnPropertyChanged(nameof(HasContainerRelation));
         OnPropertyChanged(nameof(HasNoContainerRelation));
+        OnPropertyChanged(nameof(HasUnassignedQuantity));
+        OnPropertyChanged(nameof(ShowQuantityManagement));
         OnPropertyChanged(nameof(ShowGoToContainerButton));
     }
 
     [RelayCommand]
     private Task NavigateToContainerAsync()
     {
-        if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
-        return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails,
-            new Dictionary<string, object> { [Infrastructure.NavigationParams.ContainerId] = ContainerId! });
+        if (currentAllocations.Count == 0) return Task.CompletedTask;
+
+        if (currentAllocations.Count == 1)
+        {
+            return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails,
+                new Dictionary<string, object>
+                {
+                    [Infrastructure.NavigationParams.ContainerId] = currentAllocations[0].ContainerId.ToString()
+                });
+        }
+
+        if (string.IsNullOrWhiteSpace(ItemId)) return Task.CompletedTask;
+
+        return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemLocations,
+            new Dictionary<string, object> { [NavigationParams.ItemId] = ItemId });
     }
 
     [RelayCommand]
@@ -164,12 +204,21 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
         return nav.GoToAsync(
             Infrastructure.NavigationRoutes.AssociateItemWithContainer,
-            new Dictionary<string, object> { [NavigationParams.ItemId] = ItemId });
+            new Dictionary<string, object>
+            {
+                [NavigationParams.ItemId] = ItemId,
+                [NavigationParams.UnassignedQuantity] = UnassignedQuantity,
+            });
     }
 
     [RelayCommand]
     private async Task SetTotalQuantityAsync()
     {
+        if (!ShowQuantityManagement)
+        {
+            return;
+        }
+
         if (!await RefreshInventoryForQuantityEditAsync())
         {
             return;
@@ -262,12 +311,14 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         TotalQuantity = details.Inventory.TotalQuantity;
         AssignedQuantity = details.Inventory.AssignedQuantity;
         UnassignedQuantity = details.Inventory.UnassignedQuantity;
+        ContainerId = details.Inventory.Allocations.FirstOrDefault()?.ContainerId.ToString();
+        NotifyContainerRelationStateChanged();
         return true;
     }
 
     private async Task RunWithdrawalWorkflowAsync(
         int requestedTotal,
-        ItemInventorySummary inventorySnapshot,
+        InventorySnapshot inventorySnapshot,
         Item itemSnapshot)
     {
         Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
@@ -356,20 +407,47 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private void ApplyInventoryResult(ItemInventoryUpdateResult result)
     {
-        currentItem!.SetTotalQuantity(result.TotalQuantity);
-        currentInventory = new ItemInventorySummary(
-            currentItem,
+        currentInventory = new InventorySnapshot(
+            currentItem!,
+            result.TotalQuantity,
             result.AssignedQuantity,
             currentAllocations);
         TotalQuantity = result.TotalQuantity;
         AssignedQuantity = result.AssignedQuantity;
         UnassignedQuantity = result.UnassignedQuantity;
+        ContainerId = currentAllocations.FirstOrDefault()?.ContainerId.ToString();
+        NotifyContainerRelationStateChanged();
     }
 
-    private sealed record QuantityEditSnapshot(Item Item, ItemInventorySummary Inventory)
+    private sealed record QuantityEditSnapshot(Item Item, InventorySnapshot Inventory)
     {
         public int TotalQuantity => Inventory.TotalQuantity;
         public int AssignedQuantity => Inventory.AssignedQuantity;
+    }
+
+    [RelayCommand]
+    private void EditDescription()
+    {
+        DescriptionDraft = Description;
+        IsEditingDescription = true;
+    }
+
+    [RelayCommand]
+    private async Task SaveDescriptionAsync()
+    {
+        if (currentItem is null)
+        {
+            return;
+        }
+
+        var updatedDescription = DescriptionDraft?.Trim() ?? string.Empty;
+        await RunCommandAsync(async () =>
+        {
+            await updateItemDescriptionHandler.UpdateAsync(currentItem, updatedDescription);
+            Description = currentItem.Description;
+            DescriptionDraft = currentItem.Description;
+            IsEditingDescription = false;
+        });
     }
 
     [RelayCommand]

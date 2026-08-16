@@ -1,6 +1,6 @@
+using CoreApp.Entities.Inventory;
 ﻿using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
 using System.Threading.Tasks;
 using CoreApp.Contracts;
 
@@ -8,16 +8,20 @@ namespace MothballMobile.UI.Features.Items.ItemsList;
 
 public partial class ItemViewModel : ItemWithImagesViewModelBase
 {
-    private readonly Infrastructure.INavigationService nav;
+    private readonly INavigationService nav;
 
     public ItemViewModel(
-        ItemInventorySummary inventory,
+        InventorySnapshot inventory,
         IImagePathResolver paths,
-        Infrastructure.INavigationService nav)
+        INavigationService nav,
+        bool showQuantityManagement)
         : base(inventory, paths)
     {
         this.nav = nav;
+        ShowQuantityManagement = showQuantityManagement;
     }
+
+    public bool ShowQuantityManagement { get; }
 
     public Task LoadImageAsync()
     {

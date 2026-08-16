@@ -1,12 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
-using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Settings;
@@ -22,10 +19,18 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IShare share;
     private readonly IFilePicker filePicker;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly ILogger<SettingsViewModel> logger;
     private bool isZipBackupMode;
+
+    public IReadOnlyList<string> ThemeOptions { get; } =
+    [
+        "Auto (System)",
+        "Light",
+        "Dark",
+    ];
 
     public SettingsViewModel(
         IInventoryBackupExporter backupExporter,
@@ -35,6 +40,7 @@ public partial class SettingsViewModel : BaseViewModel
         IShare share,
         IFilePicker filePicker,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         ILogger<SettingsViewModel> logger)
@@ -46,6 +52,7 @@ public partial class SettingsViewModel : BaseViewModel
         this.share = share;
         this.filePicker = filePicker;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -64,6 +71,49 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     public bool IsJsonBackupMode => !IsZipBackupMode;
+
+    public string SelectedThemeOption
+    {
+        get => applicationSettings.ThemeOverride switch
+        {
+            AppTheme.Light => "Light",
+            AppTheme.Dark => "Dark",
+            _ => "Auto (System)",
+        };
+        set
+        {
+            var theme = value switch
+            {
+                "Light" => AppTheme.Light,
+                "Dark" => AppTheme.Dark,
+                _ => AppTheme.Unspecified,
+            };
+
+            if (applicationSettings.ThemeOverride == theme)
+            {
+                return;
+            }
+
+            applicationSettings.ThemeOverride = theme;
+            Application.Current!.UserAppTheme = theme;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsAdvancedAppMode
+    {
+        get => applicationSettings.IsAdvancedMode;
+        set
+        {
+            if (applicationSettings.IsAdvancedMode == value)
+            {
+                return;
+            }
+
+            applicationSettings.IsAdvancedMode = value;
+            OnPropertyChanged();
+        }
+    }
 
     [RelayCommand]
     private Task NavigateToBackgroundOperationsAsync()

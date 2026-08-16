@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using CoreApp.Interfaces;
 using Infrastructure.Services.JsonStore.Models;
 using Microsoft.Extensions.Logging;
 

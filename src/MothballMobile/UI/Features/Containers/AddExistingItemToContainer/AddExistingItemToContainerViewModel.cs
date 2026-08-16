@@ -1,18 +1,18 @@
+using CoreApp.Entities.Inventory;
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
-using MothballMobile.Infrastructure;
 using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 
-public partial class AddExistingItemToContainerViewModel : PagedListViewModelBase<ItemInventorySummary, UnassignedItemViewModel>, IQueryAttributable
+public partial class AddExistingItemToContainerViewModel : PagedListViewModelBase<InventorySnapshot, UnassignedItemViewModel>, IQueryAttributable
 {
     private readonly IContainerAssociationQueryHandler associationQueries;
     private readonly IAssignItemToContainerCommandHandler assignItemToContainer;
     private readonly IImagePathResolver paths;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
 
     [ObservableProperty]
@@ -23,12 +23,14 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         IAssignItemToContainerCommandHandler assignItemToContainer,
         IImagePathResolver paths,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IBackgroundTaskObserver backgroundTasks)
     {
         this.associationQueries = associationQueries;
         this.assignItemToContainer = assignItemToContainer;
         this.paths = paths;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
     }
 
@@ -46,13 +48,13 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
 
     protected override Task EnsureDummyData() => Task.CompletedTask;
 
-    protected override UnassignedItemViewModel MapToViewModel(ItemInventorySummary source)
-        => new(source, paths, AssignAsync);
+    protected override UnassignedItemViewModel MapToViewModel(InventorySnapshot source)
+        => new(source, paths, AssignAsync, applicationSettings.IsAdvancedMode);
 
     protected override void OnViewModelAdded(UnassignedItemViewModel vm)
         => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load unassigned item images");
 
-    protected override Task<List<ItemInventorySummary>> LoadAsync(int pageNumber, int pageSize)
+    protected override Task<List<InventorySnapshot>> LoadAsync(int pageNumber, int pageSize)
     {
         Guid? excludedContainerId = Guid.TryParse(ContainerId, out var parsedContainerId)
             ? parsedContainerId

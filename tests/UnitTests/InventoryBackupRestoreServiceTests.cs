@@ -1,9 +1,8 @@
 using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
-using CoreApp.Interfaces;
-using CoreApp.Services;
 using CoreApp.Specifications;
 using CoreApp.Utilities;
 using Moq;
@@ -92,6 +91,18 @@ public class InventoryBackupRestoreServiceTests
             .ReturnsAsync([existingContainer]);
         queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
             .ReturnsAsync([existingItem]);
+        queries.Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<ItemListSpecification>()))
+            .ReturnsAsync(
+            [
+                new InventorySnapshot(
+                    existingItem,
+                    totalQuantity: 5,
+                    assignedQuantity: 2,
+                    allocations:
+                    [
+                        new ItemContainerAllocation(container1Id, existingContainer.Name, 2),
+                    ]),
+            ]);
 
         var commands = new Mock<IInventoryCommandRepository>();
 
@@ -346,6 +357,26 @@ public class InventoryBackupRestoreServiceTests
             .ReturnsAsync([existingContainer]);
         queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>()))
             .ReturnsAsync([existingItem1, existingItem2]);
+        queries.Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<ItemListSpecification>()))
+            .ReturnsAsync(
+            [
+                new InventorySnapshot(
+                    existingItem1,
+                    totalQuantity: 5,
+                    assignedQuantity: 5,
+                    allocations:
+                    [
+                        new ItemContainerAllocation(containerId, existingContainer.Name, 5),
+                    ]),
+                new InventorySnapshot(
+                    existingItem2,
+                    totalQuantity: 1,
+                    assignedQuantity: 1,
+                    allocations:
+                    [
+                        new ItemContainerAllocation(containerId, existingContainer.Name, 1),
+                    ]),
+            ]);
 
         var commands = new Mock<IInventoryCommandRepository>();
         var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);

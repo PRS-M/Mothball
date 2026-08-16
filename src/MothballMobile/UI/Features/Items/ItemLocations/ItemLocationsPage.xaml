@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Items.ItemLocations"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                x:Class="MothballMobile.UI.Features.Items.ItemLocations.ItemLocationsPage"
+                x:DataType="vm:ItemLocationsViewModel"
+                Title="Item locations"
+                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+    <Grid Padding="16"
+          RowDefinitions="Auto,*"
+          ColumnDefinitions="*">
+
+        <controls:PageHeader Grid.Row="0"
+                             Title="{Binding ItemName}"
+                             Subtitle="Choose a container"
+                             TitleFontSize="28"
+                             SubtitleFontSize="14"
+                             Spacing="4"
+                             HeaderMargin="0,0,0,10" />
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Locations}"
+                        Margin="0,8,0,0"
+                        SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical"
+                                 Span="1"
+                                 VerticalItemSpacing="12"/>
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.EmptyView>
+                <controls:EmptyStateView Title="No containers found" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ItemLocationViewModel">
+                    <controls:ContainerTile
+                        Command="{Binding NavigateCommand}"
+                        Name="{Binding Name}"
+                        Notes="{Binding Notes}"
+                        ItemCount="{Binding ItemCount}"
+                        ShowItemCount="{Binding ShowQuantityManagement}"
+                        ImagePaths="{Binding ImagePaths}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</views:BasePage>

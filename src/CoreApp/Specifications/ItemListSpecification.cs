@@ -4,12 +4,13 @@ public enum ItemQueryFilter
 {
     All,
     Unassigned,
+    Assigned,
 }
 
 /// <summary>
 /// Defines item list query semantics shared by all persistence backends.
 /// All-item queries and item search results are ordered by insertion order.
-/// Unassigned item queries are ordered by name case-insensitively.
+/// Assigned and unassigned item queries are ordered by name case-insensitively.
 /// </summary>
 public sealed record ItemListSpecification(
     ItemQueryFilter Filter,

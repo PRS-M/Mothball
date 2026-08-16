@@ -1,0 +1,18 @@
+using CoreApp.Entities.Inventory;
+using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Entities.ItemAggregate;
+using CoreApp.Contracts;
+
+namespace CoreApp.Features.Containers.Queries;
+
+public interface IContainerAssociationQueryHandler
+{
+    Task<List<Container>> QueryContainersAsync(int pageNumber, int pageSize);
+
+    Task<List<Container>> QueryContainersAsync(string searchTerm);
+
+    Task<List<InventorySnapshot>> QueryUnassignedItemsAsync(
+        int pageNumber,
+        int pageSize,
+        Guid? excludedContainerId = null);
+}

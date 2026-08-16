@@ -1,10 +1,9 @@
+using CoreApp.Entities.Inventory;
 using System.Text.Json;
 using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
-using CoreApp.Interfaces;
-using CoreApp.Services;
 using CoreApp.Specifications;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
@@ -147,14 +146,14 @@ public class BackendParityTests
     }
 
     [Test]
-    public async Task QueryItemInventorySummariesAsync_UnassignedSearchWithPaging_ReturnsRequestedPageAcrossBackends()
+    public async Task QueryInventorySnapshotsAsync_UnassignedSearchWithPaging_ReturnsRequestedPageAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var assignedOnly = new Item(Guid.NewGuid(), "Cable Assigned", "", totalQuantity: 1);
-        var firstUnassigned = new Item(Guid.NewGuid(), "Cable Alpha", "", totalQuantity: 3);
-        var secondUnassigned = new Item(Guid.NewGuid(), "Cable Beta", "", totalQuantity: 3);
+        var assignedOnly = new Item(Guid.NewGuid(), "Cable Assigned", "");
+        var firstUnassigned = new Item(Guid.NewGuid(), "Cable Alpha", "");
+        var secondUnassigned = new Item(Guid.NewGuid(), "Cable Beta", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
@@ -162,6 +161,9 @@ public class BackendParityTests
             await command.InsertItemAsync(assignedOnly);
             await command.InsertItemAsync(firstUnassigned);
             await command.InsertItemAsync(secondUnassigned);
+            await command.InsertItemInventoryAsync(new ItemInventory(assignedOnly.ItemId, 1));
+            await command.InsertItemInventoryAsync(new ItemInventory(firstUnassigned.ItemId, 3));
+            await command.InsertItemInventoryAsync(new ItemInventory(secondUnassigned.ItemId, 3));
             await command.InsertItemContainerRelation(assignedOnly.ItemId, container.ContainerId, 1);
             await command.InsertItemContainerRelation(firstUnassigned.ItemId, container.ContainerId, 2);
         }
@@ -172,8 +174,8 @@ public class BackendParityTests
             PageNumber: 1,
             PageSize: 1);
 
-        var sqliteItems = await sqlite.Query.QueryItemInventorySummariesAsync(specification);
-        var jsonItems = await json.Query.QueryItemInventorySummariesAsync(specification);
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(specification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(specification);
 
         Assert.Multiple(() =>
         {
@@ -185,15 +187,56 @@ public class BackendParityTests
     }
 
     [Test]
-    public async Task QueryItemInventorySummariesAsync_UnassignedWithExcludedContainer_FiltersBeforePagingAcrossBackends()
+    public async Task QueryInventorySnapshotsAsync_AssignedSearchWithPaging_ReturnsRequestedPageAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var firstAssigned = new Item(Guid.NewGuid(), "Cable Alpha", "");
+        var secondAssigned = new Item(Guid.NewGuid(), "Cable Beta", "");
+        var unassignedOnly = new Item(Guid.NewGuid(), "Cable Loose", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(firstAssigned);
+            await command.InsertItemAsync(secondAssigned);
+            await command.InsertItemAsync(unassignedOnly);
+            await command.InsertItemInventoryAsync(new ItemInventory(firstAssigned.ItemId, 1));
+            await command.InsertItemInventoryAsync(new ItemInventory(secondAssigned.ItemId, 3));
+            await command.InsertItemInventoryAsync(new ItemInventory(unassignedOnly.ItemId, 3));
+            await command.InsertItemContainerRelation(firstAssigned.ItemId, container.ContainerId, 1);
+            await command.InsertItemContainerRelation(secondAssigned.ItemId, container.ContainerId, 2);
+        }
+
+        var specification = new ItemListSpecification(
+            ItemQueryFilter.Assigned,
+            SearchTerm: "cable",
+            PageNumber: 1,
+            PageSize: 1);
+
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(specification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(specification);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { secondAssigned.ItemId }));
+            Assert.That(jsonItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { secondAssigned.ItemId }));
+            Assert.That(sqliteItems.Single().AssignedQuantity, Is.EqualTo(2));
+            Assert.That(jsonItems.Single().AssignedQuantity, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public async Task QueryInventorySnapshotsAsync_UnassignedWithExcludedContainer_FiltersBeforePagingAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var targetContainer = new Container(Guid.NewGuid(), "Target", "");
         var otherContainer = new Container(Guid.NewGuid(), "Other", "");
-        var alreadyInTarget = new Item(Guid.NewGuid(), "Cable Alpha", "", totalQuantity: 3);
-        var availableFromOther = new Item(Guid.NewGuid(), "Cable Beta", "", totalQuantity: 3);
-        var fullyUnassigned = new Item(Guid.NewGuid(), "Cable Gamma", "", totalQuantity: 3);
+        var alreadyInTarget = new Item(Guid.NewGuid(), "Cable Alpha", "");
+        var availableFromOther = new Item(Guid.NewGuid(), "Cable Beta", "");
+        var fullyUnassigned = new Item(Guid.NewGuid(), "Cable Gamma", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
@@ -202,6 +245,9 @@ public class BackendParityTests
             await command.InsertItemAsync(alreadyInTarget);
             await command.InsertItemAsync(availableFromOther);
             await command.InsertItemAsync(fullyUnassigned);
+            await command.InsertItemInventoryAsync(new ItemInventory(alreadyInTarget.ItemId, 3));
+            await command.InsertItemInventoryAsync(new ItemInventory(availableFromOther.ItemId, 3));
+            await command.InsertItemInventoryAsync(new ItemInventory(fullyUnassigned.ItemId, 3));
             await command.InsertItemContainerRelation(alreadyInTarget.ItemId, targetContainer.ContainerId, 1);
             await command.InsertItemContainerRelation(availableFromOther.ItemId, otherContainer.ContainerId, 1);
         }
@@ -212,8 +258,8 @@ public class BackendParityTests
             PageSize: 1,
             ExcludedContainerId: targetContainer.ContainerId);
 
-        var sqliteItems = await sqlite.Query.QueryItemInventorySummariesAsync(specification);
-        var jsonItems = await json.Query.QueryItemInventorySummariesAsync(specification);
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(specification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(specification);
 
         Assert.That(sqliteItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { availableFromOther.ItemId }));
         Assert.That(jsonItems.Select(i => i.Item.ItemId), Is.EqualTo(new[] { availableFromOther.ItemId }));
@@ -253,18 +299,20 @@ public class BackendParityTests
     }
 
     [Test]
-    public async Task ItemTotalQuantity_PersistsAcrossBackends()
+    public async Task ItemInventoryTotalQuantity_PersistsAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
 
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 12);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         await sqlite.Command.InsertItemAsync(item);
         await json.Command.InsertItemAsync(item);
+        await sqlite.Command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 12));
+        await json.Command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 12));
 
-        var sqliteItem = await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
-        var jsonItem = await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
@@ -274,35 +322,36 @@ public class BackendParityTests
     }
 
     [Test]
-    public async Task ItemInventorySummary_AggregatesAllocationsAcrossContainers()
+    public async Task InventorySnapshot_AggregatesAllocationsAcrossContainers()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
 
         var firstContainer = new Container(Guid.NewGuid(), "Box", "");
         var secondContainer = new Container(Guid.NewGuid(), "Drawer", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 12);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(firstContainer);
             await command.InsertContainerAsync(secondContainer);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 12));
             await command.InsertItemContainerRelation(item.ItemId, firstContainer.ContainerId, 3);
             await command.InsertItemContainerRelation(item.ItemId, secondContainer.ContainerId, 4);
         }
 
-        var sqliteListItem = (await sqlite.Query.QueryItemInventorySummariesAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
-        var jsonListItem = (await json.Query.QueryItemInventorySummariesAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
-        var sqliteDetailsItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonDetailsItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteListItem = (await sqlite.Query.QueryInventorySnapshotsAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
+        var jsonListItem = (await json.Query.QueryInventorySnapshotsAsync(new ItemListSpecification(ItemQueryFilter.All))).Single();
+        var sqliteDetailsItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonDetailsItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
-            AssertInventorySummary(sqliteListItem);
-            AssertInventorySummary(jsonListItem);
-            AssertInventorySummary(sqliteDetailsItem!);
-            AssertInventorySummary(jsonDetailsItem!);
+            AssertInventorySnapshot(sqliteListItem);
+            AssertInventorySnapshot(jsonListItem);
+            AssertInventorySnapshot(sqliteDetailsItem!);
+            AssertInventorySnapshot(jsonDetailsItem!);
         });
     }
 
@@ -313,30 +362,31 @@ public class BackendParityTests
         var json = await BuildJsonAsync();
         var box = new Container(Guid.NewGuid(), "Box", "");
         var drawer = new Container(Guid.NewGuid(), "Drawer", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(box);
             await command.InsertContainerAsync(drawer);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 10));
             await command.InsertItemContainerRelation(item.ItemId, box.ContainerId, 4);
             await command.InsertItemContainerRelation(item.ItemId, drawer.ContainerId, 3);
         }
 
         var sqliteSummaries = new[]
         {
-            (await sqlite.Query.QueryItemInventorySummariesAsync(
+            (await sqlite.Query.QueryInventorySnapshotsAsync(
                 new ItemListSpecification(ItemQueryFilter.All))).Single(),
-            (await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId))!,
+            (await sqlite.Query.GetInventorySnapshotAsync(item.ItemId))!,
             (await sqlite.Query.QueryContainerItemInventoryAsync(
                 new ContainerItemsSpecification(box.ContainerId.ToString()))).Single().Inventory,
         };
         var jsonSummaries = new[]
         {
-            (await json.Query.QueryItemInventorySummariesAsync(
+            (await json.Query.QueryInventorySnapshotsAsync(
                 new ItemListSpecification(ItemQueryFilter.All))).Single(),
-            (await json.Query.GetItemInventorySummaryAsync(item.ItemId))!,
+            (await json.Query.GetInventorySnapshotAsync(item.ItemId))!,
             (await json.Query.QueryContainerItemInventoryAsync(
                 new ContainerItemsSpecification(box.ContainerId.ToString()))).Single().Inventory,
         };
@@ -358,18 +408,19 @@ public class BackendParityTests
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(container);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 10));
             await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 7);
         }
 
         var specification = new ItemListSpecification(ItemQueryFilter.Unassigned);
-        var sqliteItems = await sqlite.Query.QueryItemInventorySummariesAsync(specification);
-        var jsonItems = await json.Query.QueryItemInventorySummariesAsync(specification);
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(specification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(specification);
 
         Assert.Multiple(() =>
         {
@@ -385,7 +436,7 @@ public class BackendParityTests
         var json = await BuildJsonAsync();
 
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 2);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
@@ -400,8 +451,8 @@ public class BackendParityTests
         await sqliteService.SetContainerAllocationAsync(item.ItemId, container.ContainerId, 4);
         await jsonService.SetContainerAllocationAsync(item.ItemId, container.ContainerId, 4);
 
-        var sqliteItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
@@ -415,12 +466,102 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task AssigningOnePieceItemToContainer_DoesNotDuplicateItemAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 1));
+        }
+
+        await new AssignItemToContainerCommandHandler(new ItemInventoryCommandService(sqlite.Query, sqlite.Command))
+            .AssignAsync(item.ItemId, container.ContainerId);
+        await new AssignItemToContainerCommandHandler(new ItemInventoryCommandService(json.Query, json.Command))
+            .AssignAsync(item.ItemId, container.ContainerId);
+
+        var allItemsSpecification = new ItemListSpecification(ItemQueryFilter.All);
+        var containerItemsSpecification = new ContainerItemsSpecification(container.ContainerId.ToString());
+        var unassignedSpecification = new ItemListSpecification(ItemQueryFilter.Unassigned);
+
+        var sqliteItems = await sqlite.Query.QueryInventorySnapshotsAsync(allItemsSpecification);
+        var jsonItems = await json.Query.QueryInventorySnapshotsAsync(allItemsSpecification);
+        var sqliteContainerItems = await sqlite.Query.QueryContainerItemInventoryAsync(containerItemsSpecification);
+        var jsonContainerItems = await json.Query.QueryContainerItemInventoryAsync(containerItemsSpecification);
+        var sqliteUnassignedItems = await sqlite.Query.QueryInventorySnapshotsAsync(unassignedSpecification);
+        var jsonUnassignedItems = await json.Query.QueryInventorySnapshotsAsync(unassignedSpecification);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItems.Select(snapshot => snapshot.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(jsonItems.Select(snapshot => snapshot.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(sqliteContainerItems.Select(entry => entry.Inventory.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(jsonContainerItems.Select(entry => entry.Inventory.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(sqliteContainerItems.Single().ContainerQuantity, Is.EqualTo(1));
+            Assert.That(jsonContainerItems.Single().ContainerQuantity, Is.EqualTo(1));
+            Assert.That(sqliteUnassignedItems, Is.Empty);
+            Assert.That(jsonUnassignedItems, Is.Empty);
+        });
+    }
+
+    [Test]
+    public async Task EditUnassignAndReassignSameContainer_StoresSingleAllocationAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 5));
+        }
+
+        foreach (var (query, command) in new (IInventoryQueryRepository Query, IInventoryCommandRepository Command)[]
+        {
+            (sqlite.Query, sqlite.Command),
+            (json.Query, json.Command),
+        })
+        {
+            var inventoryCommands = new ItemInventoryCommandService(query, command);
+            var quantityService = new ContainerItemQuantityService(inventoryCommands);
+            var assignHandler = new AssignItemToContainerCommandHandler(inventoryCommands);
+            var currentContainer = (await query.GetContainerAsync(container.ContainerId.ToString()))!;
+
+            await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 4);
+            await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 0);
+            await assignHandler.AssignAsync(item.ItemId, container.ContainerId, 1);
+        }
+
+        var specification = new ContainerItemsSpecification(container.ContainerId.ToString());
+        var sqliteContainerItems = await sqlite.Query.QueryContainerItemInventoryAsync(specification);
+        var jsonContainerItems = await json.Query.QueryContainerItemInventoryAsync(specification);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteContainerItems.Select(entry => entry.Inventory.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(jsonContainerItems.Select(entry => entry.Inventory.Item.ItemId), Is.EqualTo(new[] { item.ItemId }));
+            Assert.That(sqliteContainerItems.Single().ContainerQuantity, Is.EqualTo(1));
+            Assert.That(jsonContainerItems.Single().ContainerQuantity, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
     public async Task ContainerRowRefresh_AfterAllocationEdit_ReturnsLocalAndGlobalQuantities()
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 2);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
@@ -456,12 +597,13 @@ public class BackendParityTests
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 6);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(container);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 6));
             await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 4);
         }
 
@@ -470,8 +612,8 @@ public class BackendParityTests
         await new ItemInventoryCommandService(json.Query, json.Command)
             .SetContainerAllocationAsync(item.ItemId, container.ContainerId, 0);
 
-        var sqliteItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
@@ -490,18 +632,19 @@ public class BackendParityTests
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
         var container = new Container(Guid.NewGuid(), "Box", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 6);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(container);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 6));
             await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 4);
             await command.DeleteContainerAsync(container.ContainerId.ToString());
         }
 
-        var sqliteItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
 
         Assert.Multiple(() =>
         {
@@ -521,13 +664,14 @@ public class BackendParityTests
         var json = await BuildJsonAsync();
         var box = new Container(Guid.NewGuid(), "Box", "");
         var drawer = new Container(Guid.NewGuid(), "Drawer", "");
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 10);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
             await command.InsertContainerAsync(box);
             await command.InsertContainerAsync(drawer);
             await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 10));
             await command.InsertItemContainerRelation(item.ItemId, box.ContainerId, 5);
             await command.InsertItemContainerRelation(item.ItemId, drawer.ContainerId, 5);
         }
@@ -542,8 +686,8 @@ public class BackendParityTests
         await new ItemInventoryCommandService(sqlite.Query, sqlite.Command).ApplyWithdrawalAsync(item.ItemId, plan);
         await new ItemInventoryCommandService(json.Query, json.Command).ApplyWithdrawalAsync(item.ItemId, plan);
 
-        var sqliteItem = await sqlite.Query.GetItemInventorySummaryAsync(item.ItemId);
-        var jsonItem = await json.Query.GetItemInventorySummaryAsync(item.ItemId);
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
         var sqliteAllocations = await sqlite.Query.GetItemContainerAllocationsAsync(item.ItemId);
         var jsonAllocations = await json.Query.GetItemContainerAllocationsAsync(item.ItemId);
 
@@ -563,10 +707,12 @@ public class BackendParityTests
     {
         await using var sqlite = await BuildSqliteAsync();
         var json = await BuildJsonAsync();
-        var item = new Item(Guid.NewGuid(), "Widget", "", totalQuantity: 1);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
 
         await sqlite.Command.InsertItemAsync(item);
         await json.Command.InsertItemAsync(item);
+        await sqlite.Command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 1));
+        await json.Command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 1));
 
         var plan = new ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
         await new ItemInventoryCommandService(sqlite.Query, sqlite.Command).ApplyWithdrawalAsync(item.ItemId, plan);
@@ -574,6 +720,50 @@ public class BackendParityTests
 
         Assert.That(await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString()), Is.Null);
         Assert.That(await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString()), Is.Null);
+    }
+
+    [Test]
+    public async Task GetItemContainerAllocationsAsync_BulkLookupGroupsAndOrdersAllocationsAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var drawer = new Container(Guid.NewGuid(), "A Drawer", "");
+        var box = new Container(Guid.NewGuid(), "Z Box", "");
+        var firstItem = new Item(Guid.NewGuid(), "First", "");
+        var secondItem = new Item(Guid.NewGuid(), "Second", "");
+        var unassignedItem = new Item(Guid.NewGuid(), "Unassigned", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(drawer);
+            await command.InsertContainerAsync(box);
+            await command.InsertItemAsync(firstItem);
+            await command.InsertItemAsync(secondItem);
+            await command.InsertItemAsync(unassignedItem);
+            await command.InsertItemInventoryAsync(new ItemInventory(firstItem.ItemId, 10));
+            await command.InsertItemInventoryAsync(new ItemInventory(secondItem.ItemId, 5));
+            await command.InsertItemInventoryAsync(new ItemInventory(unassignedItem.ItemId, 1));
+            await command.InsertItemContainerRelation(firstItem.ItemId, box.ContainerId, 3);
+            await command.InsertItemContainerRelation(firstItem.ItemId, drawer.ContainerId, 2);
+            await command.InsertItemContainerRelation(secondItem.ItemId, box.ContainerId, 5);
+        }
+
+        var itemIds = new[] { firstItem.ItemId, secondItem.ItemId, unassignedItem.ItemId };
+        var sqliteAllocations = await sqlite.Query.GetItemContainerAllocationsAsync(itemIds);
+        var jsonAllocations = await json.Query.GetItemContainerAllocationsAsync(itemIds);
+
+        foreach (var allocations in new[] { sqliteAllocations, jsonAllocations })
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(allocations.Keys, Is.EquivalentTo(new[] { firstItem.ItemId, secondItem.ItemId }));
+                Assert.That(allocations[firstItem.ItemId].Select(allocation => allocation.ContainerName),
+                    Is.EqualTo(new[] { drawer.Name, box.Name }));
+                Assert.That(allocations[firstItem.ItemId].Select(allocation => allocation.Quantity),
+                    Is.EqualTo(new[] { 2, 3 }));
+                Assert.That(allocations[secondItem.ItemId].Single().Quantity, Is.EqualTo(5));
+            });
+        }
     }
 
     [Test]
@@ -638,8 +828,8 @@ public class BackendParityTests
         await sqlite.Command.InsertContainerAsync(sqliteContainer);
         await json.Command.InsertContainerAsync(jsonContainer);
 
-        var sqliteItem = new Item("Hat", "Desc", totalQuantity: 2);
-        var jsonItem = new Item("Hat", "Desc", totalQuantity: 2);
+        var sqliteItem = new Item("Hat", "Desc");
+        var jsonItem = new Item("Hat", "Desc");
         await sqlite.Command.InsertItemAsync(sqliteItem);
         await json.Command.InsertItemAsync(jsonItem);
 
@@ -662,10 +852,10 @@ public class BackendParityTests
                 PageNumber: 0,
                 PageSize: 10));
 
-        Assert.That(sqliteResults.Count, Is.EqualTo(2));
-        Assert.That(jsonResults.Count, Is.EqualTo(2));
-        Assert.That(sqliteResults.Select(i => i.Name), Is.EqualTo(new[] { "Hat", "Hat" }));
-        Assert.That(jsonResults.Select(i => i.Name), Is.EqualTo(new[] { "Hat", "Hat" }));
+        Assert.That(sqliteResults.Count, Is.EqualTo(1));
+        Assert.That(jsonResults.Count, Is.EqualTo(1));
+        Assert.That(sqliteResults.Select(i => i.Name), Is.EqualTo(new[] { "Hat" }));
+        Assert.That(jsonResults.Select(i => i.Name), Is.EqualTo(new[] { "Hat" }));
     }
 
     private static async Task<SqliteHarness> BuildSqliteAsync()
@@ -675,6 +865,7 @@ public class BackendParityTests
 
         var containers = new Repository<DbContainer>(db);
         var items = new Repository<DbItem>(db);
+        var inventories = new Repository<DbItemInventory>(db);
         var photos = new Repository<DbImage>(db);
         var relations = new Repository<DbItemContainerRelation>(db);
         await db.InitializeAsync();
@@ -685,16 +876,17 @@ public class BackendParityTests
 
         var containerRepo = new ContainerRepository(transactionRunner, containers, photos, relations, containerLogger);
         var itemRepo = new ItemRepository(transactionRunner, items, photos, relations, itemLogger);
+        var itemInventoryRepo = new ItemInventoryRepository(inventories, relations, containers, transactionRunner);
         var imageRepo = new ImageRepository(photos);
         var relationRepo = new RelationRepository(relations, transactionRunner);
 
-        var query = new InventoryQueryRepository(containerRepo, itemRepo);
-        var command = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
+        var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
+        var command = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
 
         return new SqliteHarness(dbPath, db, query, command);
     }
 
-    private static void AssertInventorySummary(ItemInventorySummary item)
+    private static void AssertInventorySnapshot(InventorySnapshot item)
     {
         Assert.That(item.TotalQuantity, Is.EqualTo(12));
         Assert.That(item.AssignedQuantity, Is.EqualTo(7));
@@ -709,11 +901,12 @@ public class BackendParityTests
 
         var containerRepo = new JsonContainerRepository(store);
         var itemRepo = new JsonItemRepository(store);
+        var itemInventoryRepo = new JsonItemInventoryRepository(store);
         var imageRepo = new JsonImageRepository(store);
         var relationRepo = new JsonRelationRepository(store);
 
-        var query = new InventoryQueryRepository(containerRepo, itemRepo);
-        var command = new InventoryCommandRepository(containerRepo, itemRepo, imageRepo, relationRepo);
+        var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
+        var command = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
 
         return new JsonHarness(query, command);
     }

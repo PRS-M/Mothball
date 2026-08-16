@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using Infrastructure.Interfaces;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
@@ -15,7 +16,7 @@ public interface IRelationRepository
     Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity);
     Task ApplyItemInventoryWithdrawalAsync(
         Item item,
-        IReadOnlyCollection<CoreApp.Contracts.ItemContainerAllocation> allocations);
+        IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations);
     Task DeleteItemContainerRelationAsync(Guid itemId, Guid containerId);
 }
 
@@ -36,11 +37,9 @@ public class RelationRepository : IRelationRepository
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
 
-        await itemContainerRelations.InsertAsync(new DbItemContainerRelation
+        await transactionRunner.RunAsync(scope =>
         {
-            ItemId = itemId,
-            ContainerId = containerId,
-            Quantity = quantity,
+            scope.InsertItemContainerRelation(itemId, containerId, quantity);
         });
     }
 
@@ -81,7 +80,7 @@ public class RelationRepository : IRelationRepository
 
     public Task ApplyItemInventoryWithdrawalAsync(
         Item item,
-        IReadOnlyCollection<CoreApp.Contracts.ItemContainerAllocation> allocations)
+        IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(allocations);

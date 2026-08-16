@@ -45,7 +45,7 @@
                                                Keyboard="Numeric"
                                                Placeholder="e.g. 1"
                                                Text="{Binding Quantity}"
-                                               IsVisible="{Binding IsAddingToContainer}" />
+                                               IsVisible="{Binding ShowQuantityField}" />
 
                     <Button Text="Choose Photo"
                             Style="{StaticResource OutlinedButton}"

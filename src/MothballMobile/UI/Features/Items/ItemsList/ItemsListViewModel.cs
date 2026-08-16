@@ -1,11 +1,11 @@
+using CoreApp.Entities.Inventory;
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
 using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
-using MothballMobile.Infrastructure;
 using CoreApp.Contracts;
+using CoreApp.Specifications;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
 
@@ -13,13 +13,15 @@ public enum ItemsListFilter
 {
     All,
     Unassigned,
+    Assigned,
 }
 
-public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySummary, ItemViewModel>, IDisposable
+public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapshot, ItemViewModel>, IDisposable
 {
     private readonly IImagePathResolver paths;
     private readonly IItemsListQueryHandler itemListQueries;
     private readonly INavigationService nav;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IDebouncer debouncer;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly DemoDataSeeder? demoSeeder;
@@ -50,6 +52,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySu
         IImagePathResolver paths,
         IItemsListQueryHandler itemListQueries,
         INavigationService nav,
+        IApplicationSettings applicationSettings,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
@@ -57,6 +60,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySu
         this.paths = paths;
         this.itemListQueries = itemListQueries;
         this.nav = nav;
+        this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
@@ -87,9 +91,9 @@ public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySu
         }
     }
 
-    protected override ItemViewModel MapToViewModel(ItemInventorySummary source)
+    protected override ItemViewModel MapToViewModel(InventorySnapshot source)
     {
-        return new ItemViewModel(source, paths, nav);
+        return new ItemViewModel(source, paths, nav, applicationSettings.IsAdvancedMode);
     }
 
     [RelayCommand]
@@ -140,7 +144,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySu
         }
         else
         {
-            var items = await itemListQueries.QueryAsync(IsUnassignedFilterSelected(), query);
+            var items = await itemListQueries.QueryAsync(GetItemQueryFilter(), query);
 
             ReplaceWithFullResultSet(items);
         }
@@ -156,10 +160,15 @@ public partial class ItemsListViewModel : PagedListViewModelBase<ItemInventorySu
     protected override void OnViewModelAdded(ItemViewModel vm)
         => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
 
-    protected override Task<List<ItemInventorySummary>> LoadAsync(int pageNumber, int pageSize)
-        => itemListQueries.QueryAsync(IsUnassignedFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);
+    protected override Task<List<InventorySnapshot>> LoadAsync(int pageNumber, int pageSize)
+        => itemListQueries.QueryAsync(GetItemQueryFilter(), pageNumber: pageNumber, pageSize: pageSize);
 
-    private bool IsUnassignedFilterSelected()
-        => SelectedFilter == ItemsListFilter.Unassigned;
+    private ItemQueryFilter GetItemQueryFilter()
+        => SelectedFilter switch
+        {
+            ItemsListFilter.Assigned => ItemQueryFilter.Assigned,
+            ItemsListFilter.Unassigned => ItemQueryFilter.Unassigned,
+            _ => ItemQueryFilter.All,
+        };
 
 }

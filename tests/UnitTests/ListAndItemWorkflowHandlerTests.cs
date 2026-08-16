@@ -1,7 +1,6 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
-using CoreApp.Services;
 using CoreApp.Specifications;
 using Moq;
 
@@ -38,13 +37,13 @@ public sealed class ListAndItemWorkflowHandlerTests
     {
         var queries = new Mock<IInventoryQueryRepository>();
         ItemListSpecification? captured = null;
-        queries.Setup(q => q.QueryItemInventorySummariesAsync(It.IsAny<ItemListSpecification>()))
+        queries.Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<ItemListSpecification>()))
             .Callback<ItemListSpecification>(s => captured = s)
             .ReturnsAsync([]);
 
         var handler = new ItemsListQueryHandler(queries.Object);
 
-        await handler.QueryAsync(unassignedOnly: true, searchTerm: "hat", pageNumber: 1, pageSize: 20);
+        await handler.QueryAsync(ItemQueryFilter.Unassigned, searchTerm: "hat", pageNumber: 1, pageSize: 20);
 
         Assert.That(captured, Is.Not.Null);
         Assert.Multiple(() =>
@@ -57,16 +56,40 @@ public sealed class ListAndItemWorkflowHandlerTests
     }
 
     [Test]
+    public async Task ItemsListQueryHandler_WhenAssigned_UsesAssignedFilterAndPaging()
+    {
+        var queries = new Mock<IInventoryQueryRepository>();
+        ItemListSpecification? captured = null;
+        queries.Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<ItemListSpecification>()))
+            .Callback<ItemListSpecification>(s => captured = s)
+            .ReturnsAsync([]);
+
+        var handler = new ItemsListQueryHandler(queries.Object);
+
+        await handler.QueryAsync(ItemQueryFilter.Assigned, searchTerm: "hat", pageNumber: 1, pageSize: 20);
+
+        Assert.That(captured, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(captured!.Filter, Is.EqualTo(ItemQueryFilter.Assigned));
+            Assert.That(captured.SearchTerm, Is.EqualTo("hat"));
+            Assert.That(captured.PageNumber, Is.EqualTo(1));
+            Assert.That(captured.PageSize, Is.EqualTo(20));
+        });
+    }
+
+    [Test]
     public async Task ItemDetailsQueryHandler_WhenItemExists_ReturnsItemAndRelatedContainerId()
     {
-        var item = new Item(Guid.NewGuid(), "Hat", "Blue", totalQuantity: 3);
+        var item = new Item(Guid.NewGuid(), "Hat", "Blue");
         var containerId = Guid.NewGuid();
-        var summary = new CoreApp.Contracts.ItemInventorySummary(
+        var summary = new CoreApp.Entities.Inventory.InventorySnapshot(
             item,
+            3,
             2,
-            [new CoreApp.Contracts.ItemContainerAllocation(containerId, "Box", 2)]);
+            [new CoreApp.Entities.Inventory.ItemContainerAllocation(containerId, "Box", 2)]);
         var queries = new Mock<IInventoryQueryRepository>();
-        queries.Setup(q => q.GetItemInventorySummaryAsync(item.ItemId))
+        queries.Setup(q => q.GetInventorySnapshotAsync(item.ItemId))
             .ReturnsAsync(summary);
 
         var handler = new ItemDetailsQueryHandler(queries.Object);
@@ -98,7 +121,10 @@ public sealed class ListAndItemWorkflowHandlerTests
         var item = await handler.CreateAsync("Hat", "Blue", containerId, quantity: 3);
 
         commands.Verify(c => c.InsertItemAsync(item), Times.Once);
-        commands.Verify(c => c.InsertItemContainerRelation(item.ItemId, containerId, 3), Times.Once);
-        Assert.That(item.TotalQuantity, Is.EqualTo(3));
+        commands.Verify(c => c.InsertItemInventoryAsync(It.Is<ItemInventory>(inventory =>
+            inventory.ItemId == item.ItemId
+            && inventory.TotalQuantity == 3
+            && inventory.Allocations.Single().ContainerId == containerId
+            && inventory.Allocations.Single().Quantity == 3)), Times.Once);
     }
 }

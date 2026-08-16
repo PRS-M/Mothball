@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using System;
 using System.Threading.Tasks;
 using Infrastructure.Services.JsonStore.Models;
@@ -21,13 +22,7 @@ public sealed class JsonRelationRepository : IRelationRepository
 
         return store.UpdateAsync(state =>
         {
-            state.Relations.Add(new JsonRelationRow
-            {
-                Id = state.Metadata.NextRelationId++,
-                ItemId = itemId,
-                ContainerId = containerId,
-                Quantity = quantity,
-            });
+            InsertOrIncreaseRelation(state, itemId, containerId, quantity);
 
             return Task.CompletedTask;
         });
@@ -67,7 +62,6 @@ public sealed class JsonRelationRepository : IRelationRepository
                 ?? throw new KeyNotFoundException($"Item '{item.ItemId}' was not found.");
             itemRow.Name = item.Name;
             itemRow.Description = item.Description;
-            itemRow.TotalQuantity = item.TotalQuantity;
 
             state.Relations.RemoveAll(relation =>
                 relation.ItemId == item.ItemId && relation.ContainerId == containerId);
@@ -89,7 +83,7 @@ public sealed class JsonRelationRepository : IRelationRepository
 
     public Task ApplyItemInventoryWithdrawalAsync(
         Item item,
-        IReadOnlyCollection<CoreApp.Contracts.ItemContainerAllocation> allocations)
+        IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(allocations);
@@ -100,7 +94,6 @@ public sealed class JsonRelationRepository : IRelationRepository
                 ?? throw new KeyNotFoundException($"Item '{item.ItemId}' was not found.");
             itemRow.Name = item.Name;
             itemRow.Description = item.Description;
-            itemRow.TotalQuantity = item.TotalQuantity;
 
             state.Relations.RemoveAll(relation => relation.ItemId == item.ItemId);
             foreach (var allocation in allocations.Where(allocation => allocation.Quantity > 0))
@@ -124,6 +117,26 @@ public sealed class JsonRelationRepository : IRelationRepository
         {
             state.Relations.RemoveAll(r => r.ItemId == itemId && r.ContainerId == containerId);
             return Task.CompletedTask;
+        });
+    }
+
+    private static void InsertOrIncreaseRelation(
+        JsonInventoryStore.StoreState state,
+        Guid itemId,
+        Guid containerId,
+        int quantity)
+    {
+        var existingQuantity = state.Relations
+            .Where(relation => relation.ItemId == itemId && relation.ContainerId == containerId)
+            .Sum(relation => relation.Quantity);
+
+        state.Relations.RemoveAll(relation => relation.ItemId == itemId && relation.ContainerId == containerId);
+        state.Relations.Add(new JsonRelationRow
+        {
+            Id = state.Metadata.NextRelationId++,
+            ItemId = itemId,
+            ContainerId = containerId,
+            Quantity = existingQuantity + quantity,
         });
     }
 }

@@ -1,6 +1,4 @@
 using System.Text.Json;
-using CoreApp.Services;
-using CoreApp.Interfaces;
 using Moq;
 
 namespace UnitTests;

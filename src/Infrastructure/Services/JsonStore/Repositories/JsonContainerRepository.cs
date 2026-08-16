@@ -1,3 +1,4 @@
+using CoreApp.Entities.Inventory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -135,6 +136,18 @@ public sealed class JsonContainerRepository : IContainerRepository
         return state.Relations.Where(r => r.ContainerId == cid).Sum(r => r.Quantity);
     }
 
+    public async Task<int> GetDistinctItemCountInContainerAsync(string containerId)
+    {
+        if (!Guid.TryParse(containerId, out var cid)) return 0;
+
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        return state.Relations
+            .Where(r => r.ContainerId == cid && r.Quantity > 0)
+            .Select(r => r.ItemId)
+            .Distinct()
+            .Count();
+    }
+
     public async Task<Container?> GetContainerForItemAsync(string itemId)
     {
         if (!Guid.TryParse(itemId, out var iid)) return null;
@@ -166,6 +179,42 @@ public sealed class JsonContainerRepository : IContainerRepository
             .Select(allocation => allocation!)
             .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<ItemContainerAllocation>>> GetItemContainerAllocationsAsync(
+        IReadOnlyCollection<Guid> itemIds)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+
+        var distinctItemIds = itemIds.Where(itemId => itemId != Guid.Empty).ToHashSet();
+        if (distinctItemIds.Count == 0)
+        {
+            return new Dictionary<Guid, IReadOnlyList<ItemContainerAllocation>>();
+        }
+
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var containersById = state.Containers.ToDictionary(container => container.ContainerId);
+
+        return state.Relations
+            .Where(relation => distinctItemIds.Contains(relation.ItemId) && relation.Quantity > 0)
+            .GroupBy(relation => new { relation.ItemId, relation.ContainerId })
+            .Select(group => new
+            {
+                group.Key.ItemId,
+                group.Key.ContainerId,
+                Quantity = group.Sum(relation => relation.Quantity),
+            })
+            .Where(relation => containersById.ContainsKey(relation.ContainerId))
+            .GroupBy(relation => relation.ItemId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<ItemContainerAllocation>)group
+                    .Select(relation => new ItemContainerAllocation(
+                        relation.ContainerId,
+                        containersById[relation.ContainerId].Name,
+                        relation.Quantity))
+                    .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
+                    .ToList());
     }
 
     public Task InsertAsync(Container container)

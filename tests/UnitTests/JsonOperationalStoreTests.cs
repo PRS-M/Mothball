@@ -1,9 +1,11 @@
 using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Interfaces;
+using CoreApp.Entities.Inventory;
+using CoreApp.Entities.ItemAggregate;
 using CoreApp.Specifications;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.JsonStore.Repositories;
+using Infrastructure.Services.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json;
 
@@ -259,6 +261,72 @@ public class JsonOperationalStoreTests
     }
 
     [Test]
+    public async Task RelationRepository_InsertSameItemContainerTwice_StoresSingleRelationRow()
+    {
+        var files = new InMemoryFileHandler();
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
+        var relations = new JsonRelationRepository(store);
+        var itemId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+
+        Assert.That(await store.TryRecoverAsync(), Is.True);
+
+        await relations.InsertItemContainerRelationAsync(itemId, containerId, 2);
+        await relations.InsertItemContainerRelationAsync(itemId, containerId, 3);
+
+        var state = await store.LoadAsync();
+        var relationRows = state.Relations
+            .Where(relation => relation.ItemId == itemId && relation.ContainerId == containerId)
+            .ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(relationRows, Has.Count.EqualTo(1));
+            Assert.That(relationRows.Single().Quantity, Is.EqualTo(5));
+        });
+    }
+
+    [Test]
+    public async Task EditUnassignAndReassignSameContainer_StoresSingleRelationRow()
+    {
+        var files = new InMemoryFileHandler();
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
+        var containerRepo = new JsonContainerRepository(store);
+        var itemRepo = new JsonItemRepository(store);
+        var itemInventoryRepo = new JsonItemInventoryRepository(store);
+        var imageRepo = new JsonImageRepository(store);
+        var relationRepo = new JsonRelationRepository(store);
+        var queryRepo = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
+        var commandRepo = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
+        var inventoryCommands = new ItemInventoryCommandService(queryRepo, commandRepo);
+        var quantityService = new ContainerItemQuantityService(inventoryCommands);
+        var assignHandler = new AssignItemToContainerCommandHandler(inventoryCommands);
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        Assert.That(await store.TryRecoverAsync(), Is.True);
+        await commandRepo.InsertContainerAsync(container);
+        await commandRepo.InsertItemAsync(item);
+        await commandRepo.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 5));
+
+        var currentContainer = (await queryRepo.GetContainerAsync(container.ContainerId.ToString()))!;
+        await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 4);
+        await quantityService.SaveQuantityAsync(currentContainer, item.ItemId, 0);
+        await assignHandler.AssignAsync(item.ItemId, container.ContainerId, 1);
+
+        var state = await store.LoadAsync();
+        var relationRows = state.Relations
+            .Where(relation => relation.ItemId == item.ItemId && relation.ContainerId == container.ContainerId)
+            .ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(relationRows, Has.Count.EqualTo(1));
+            Assert.That(relationRows.Single().Quantity, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
     public async Task StartupInitializer_WhenRecoverFails_ThrowsInvalidOperationException()
     {
         var store = new JsonInventoryStore(new FailingWriteFileHandler(), NullLogger<JsonInventoryStore>.Instance);
@@ -303,6 +371,11 @@ public class JsonOperationalStoreTests
             new() { RowId = 2, ItemId = Guid.NewGuid(), Name = "I2", Description = "d" },
             new() { RowId = 3, ItemId = Guid.NewGuid(), Name = "I3", Description = "d" },
         };
+        var inventories = new List<JsonInventoryRow>
+        {
+            new() { ItemId = items[0].ItemId, TotalQuantity = 1 },
+            new() { ItemId = items[1].ItemId, TotalQuantity = 1 },
+        };
         var images = new List<JsonImageRow>
         {
             new() { RowId = 5, ImageId = Guid.NewGuid(), OwnerUniqueId = containers[0].ContainerId },
@@ -322,6 +395,7 @@ public class JsonOperationalStoreTests
         await files.WriteRawAsync(JsonStoreConstants.MetadataFileName, JsonStoreConstants.SlotA, Serialize(metadata));
         await files.WriteRawAsync(JsonStoreConstants.ContainersFileName, JsonStoreConstants.SlotA, Serialize(containers));
         await files.WriteRawAsync(JsonStoreConstants.ItemsFileName, JsonStoreConstants.SlotA, Serialize(items));
+        await files.WriteRawAsync(JsonStoreConstants.InventoriesFileName, JsonStoreConstants.SlotA, Serialize(inventories));
         await files.WriteRawAsync(JsonStoreConstants.ImagesFileName, JsonStoreConstants.SlotA, Serialize(images));
         await files.WriteRawAsync(JsonStoreConstants.RelationsFileName, JsonStoreConstants.SlotA, Serialize(relations));
         await files.WriteRawAsync(JsonStoreConstants.CommitInfoFileName, JsonStoreConstants.SlotA, Serialize(commitInfo));

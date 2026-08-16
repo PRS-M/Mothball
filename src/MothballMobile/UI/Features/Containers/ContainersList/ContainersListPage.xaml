@@ -95,7 +95,7 @@
                             Command="{Binding NavigateCommand}"
                             Name="{Binding Name}"
                             Notes="{Binding Notes}"
-                            ItemCount="{Binding ItemCount}"
+                            ItemCount="{Binding ItemsStoredText}"
                             ImagePaths="{Binding ImagePaths}"
                             ImageSize="125" />
                     </DataTemplate>

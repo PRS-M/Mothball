@@ -1,5 +1,5 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
-using CoreApp.Services;
 
 namespace UnitTests;
 

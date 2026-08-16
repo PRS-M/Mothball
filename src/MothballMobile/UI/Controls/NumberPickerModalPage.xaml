@@ -26,6 +26,12 @@
                        HorizontalTextAlignment="Center"
                        TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
 
+                <Label x:Name="MessageLabel"
+                       IsVisible="False"
+                       FontSize="13"
+                       HorizontalTextAlignment="Center"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
                   <Entry x:Name="QuantityEntry"
                       Text=""
                       Keyboard="Numeric"

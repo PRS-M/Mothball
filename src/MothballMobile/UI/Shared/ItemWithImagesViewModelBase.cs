@@ -1,14 +1,14 @@
+using CoreApp.Entities.Inventory;
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Entities.ItemAggregate;
-using CoreApp.Interfaces;
 using CoreApp.Contracts;
 
 namespace MothballMobile.UI.Shared;
 
 public abstract class ItemWithImagesViewModelBase : ObservableObject
 {
-    protected ItemWithImagesViewModelBase(ItemInventorySummary inventory, IImagePathResolver paths)
+    protected ItemWithImagesViewModelBase(InventorySnapshot inventory, IImagePathResolver paths)
     {
         Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
         this.paths = paths;
@@ -16,7 +16,7 @@ public abstract class ItemWithImagesViewModelBase : ObservableObject
 
     private readonly IImagePathResolver paths;
 
-    public ItemInventorySummary Inventory { get; }
+    public InventorySnapshot Inventory { get; }
     public Item Item => Inventory.Item;
 
     public string Name => Item.Name;

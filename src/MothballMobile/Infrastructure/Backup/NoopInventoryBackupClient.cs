@@ -1,0 +1,13 @@
+using CoreApp.Contracts;
+
+namespace MothballMobile.Infrastructure.Backup;
+
+public sealed class NoopInventoryBackupClient : IInventoryBackupClient
+{
+    public Task UploadAsync(InventoryBackupEnvelope backup, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(backup);
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.CompletedTask;
+    }
+}

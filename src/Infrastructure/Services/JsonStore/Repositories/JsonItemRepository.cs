@@ -63,31 +63,43 @@ public sealed class JsonItemRepository : IItemRepository
 
         if (hasSearch)
         {
-            return specification.Filter == ItemQueryFilter.Unassigned
-                ? SearchUnassignedWithPhotosAsync(
+            return specification.Filter switch
+            {
+                ItemQueryFilter.Assigned => SearchAssignedWithPhotosAsync(
+                    term!,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null),
+                ItemQueryFilter.Unassigned => SearchUnassignedWithPhotosAsync(
                     term!,
                     specification.ExcludedContainerId,
                     hasPaging ? pageNumberValue : null,
-                    hasPaging ? pageSizeValue : null)
-                : SearchWithPhotosAsync(
+                    hasPaging ? pageSizeValue : null),
+                _ => SearchWithPhotosAsync(
                     term!,
                     hasPaging ? pageNumberValue : null,
-                    hasPaging ? pageSizeValue : null);
+                    hasPaging ? pageSizeValue : null),
+            };
         }
 
         if (hasPaging)
         {
-            return specification.Filter == ItemQueryFilter.Unassigned
-                ? GetUnassignedWithPhotosAsync(
+            return specification.Filter switch
+            {
+                ItemQueryFilter.Assigned => GetAssignedWithPhotosAsync(pageNumberValue, pageSizeValue),
+                ItemQueryFilter.Unassigned => GetUnassignedWithPhotosAsync(
                     pageNumberValue,
                     pageSizeValue,
-                    specification.ExcludedContainerId)
-                : GetAllWithPhotosAsync(pageNumberValue, pageSizeValue);
+                    specification.ExcludedContainerId),
+                _ => GetAllWithPhotosAsync(pageNumberValue, pageSizeValue),
+            };
         }
 
-        return specification.Filter == ItemQueryFilter.Unassigned
-            ? SearchUnassignedWithPhotosAsync(string.Empty, specification.ExcludedContainerId)
-            : GetAllWithPhotosAsync();
+        return specification.Filter switch
+        {
+            ItemQueryFilter.Assigned => SearchAssignedWithPhotosAsync(string.Empty),
+            ItemQueryFilter.Unassigned => SearchUnassignedWithPhotosAsync(string.Empty, specification.ExcludedContainerId),
+            _ => GetAllWithPhotosAsync(),
+        };
     }
 
     public Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
@@ -121,6 +133,8 @@ public sealed class JsonItemRepository : IItemRepository
         var state = await store.LoadAsync().ConfigureAwait(false);
         var relationIds = state.Relations
             .Where(r => r.ContainerId == cid && r.Quantity > 0)
+            .GroupBy(r => r.ItemId)
+            .Select(group => group.OrderBy(r => r.Id).First())
             .OrderBy(r => r.Id);
         if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
         {
@@ -130,12 +144,14 @@ public sealed class JsonItemRepository : IItemRepository
                 .OrderBy(r => r.Id);
         }
 
-        var ids = relationIds.Select(r => r.ItemId).Distinct().ToHashSet();
-
-        return state.Items
+        var ids = relationIds.Select(r => r.ItemId).ToList();
+        var itemsById = state.Items
             .Where(i => ids.Contains(i.ItemId))
-            .OrderBy(i => i.RowId)
-            .Select(i => MapItem(state, i))
+            .ToDictionary(i => i.ItemId);
+
+        return ids
+            .Where(itemsById.ContainsKey)
+            .Select(i => MapItem(state, itemsById[i]))
             .ToList();
     }
 
@@ -149,8 +165,24 @@ public sealed class JsonItemRepository : IItemRepository
 
         var state = await store.LoadAsync().ConfigureAwait(false);
         return state.Items
-            .Where(i => i.TotalQuantity > GetAssignedQuantity(state, i.ItemId)
+            .Where(i => GetTotalQuantity(state, i.ItemId) > GetAssignedQuantity(state, i.ItemId)
                 && !HasPositiveAllocationInContainer(state, i.ItemId, excludedContainerId))
+            .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(i => i.RowId)
+            .Skip(offset)
+            .Take(pageSize)
+            .Select(i => MapItem(state, i))
+            .ToList();
+    }
+
+    private async Task<List<Item>> GetAssignedWithPhotosAsync(int pageNumber, int pageSize)
+    {
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
+
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        return state.Items
+            .Where(i => GetAssignedQuantity(state, i.ItemId) > 0)
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.RowId)
             .Skip(offset)
@@ -190,8 +222,34 @@ public sealed class JsonItemRepository : IItemRepository
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
         var query = state.Items
-            .Where(i => i.TotalQuantity > GetAssignedQuantity(state, i.ItemId)
+            .Where(i => GetTotalQuantity(state, i.ItemId) > GetAssignedQuantity(state, i.ItemId)
                 && !HasPositiveAllocationInContainer(state, i.ItemId, excludedContainerId)
+                && i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(i => i.RowId);
+
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            query = query
+                .Skip(RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue))
+                .Take(pageSizeValue)
+                .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(i => i.RowId);
+        }
+
+        return query
+            .Select(i => MapItem(state, i))
+            .ToList();
+    }
+
+    private async Task<List<Item>> SearchAssignedWithPhotosAsync(
+        string searchTerm,
+        int? pageNumber = null,
+        int? pageSize = null)
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var query = state.Items
+            .Where(i => GetAssignedQuantity(state, i.ItemId) > 0
                 && i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.RowId);
@@ -219,9 +277,11 @@ public sealed class JsonItemRepository : IItemRepository
 
         var state = await store.LoadAsync().ConfigureAwait(false);
 
-        // Container-item search is relation-row based: duplicate relations intentionally produce duplicate item rows.
+        // Container-item search is allocation based: duplicate physical relation rows still produce one item row.
         var matches = state.Relations
-            .Where(r => r.ContainerId == cid)
+            .Where(r => r.ContainerId == cid && r.Quantity > 0)
+            .GroupBy(r => r.ItemId)
+            .Select(group => group.OrderBy(r => r.Id).First())
             .OrderBy(r => r.Id)
             .Select(r => state.Items.FirstOrDefault(i => i.ItemId == r.ItemId))
             .Where(i => i is not null)
@@ -246,7 +306,6 @@ public sealed class JsonItemRepository : IItemRepository
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
-                existing.TotalQuantity = item.TotalQuantity;
                 return Task.CompletedTask;
             }
 
@@ -256,7 +315,6 @@ public sealed class JsonItemRepository : IItemRepository
                 ItemId = item.ItemId,
                 Name = item.Name,
                 Description = item.Description,
-                TotalQuantity = item.TotalQuantity,
             });
 
             return Task.CompletedTask;
@@ -278,14 +336,12 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
-                    TotalQuantity = item.TotalQuantity,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
-                existing.TotalQuantity = item.TotalQuantity;
             }
 
             return Task.CompletedTask;
@@ -309,14 +365,12 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
-                    TotalQuantity = item.TotalQuantity,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
-                existing.TotalQuantity = item.TotalQuantity;
             }
 
             return Task.CompletedTask;
@@ -331,6 +385,7 @@ public sealed class JsonItemRepository : IItemRepository
         {
             state.Images.RemoveAll(p => p.OwnerUniqueId == iid);
             state.Relations.RemoveAll(r => r.ItemId == iid);
+            state.Inventories.RemoveAll(i => i.ItemId == iid);
             state.Items.RemoveAll(i => i.ItemId == iid);
             return Task.CompletedTask;
         });
@@ -343,7 +398,6 @@ public sealed class JsonItemRepository : IItemRepository
             ItemId = row.ItemId,
             Name = row.Name,
             Description = row.Description,
-            TotalQuantity = row.TotalQuantity,
         };
 
         var photos = state.Images
@@ -359,6 +413,9 @@ public sealed class JsonItemRepository : IItemRepository
         => state.Relations
             .Where(relation => relation.ItemId == itemId && relation.Quantity > 0)
             .Sum(relation => relation.Quantity);
+
+    private static int GetTotalQuantity(JsonInventoryStore.StoreState state, Guid itemId)
+        => state.Inventories.FirstOrDefault(inventory => inventory.ItemId == itemId)?.TotalQuantity ?? 1;
 
     private static bool HasPositiveAllocationInContainer(
         JsonInventoryStore.StoreState state,

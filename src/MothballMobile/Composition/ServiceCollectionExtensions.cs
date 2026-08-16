@@ -1,19 +1,18 @@
-using CoreApp.Interfaces;
-using CoreApp.Services;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
+using Infrastructure.Services.Database;
+using Infrastructure.Services.Images;
 using Infrastructure.Services.Restore;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
 using Infrastructure.Services.Repositories;
+using Infrastructure.Services.Startup;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Popups;
 using MothballMobile.UI.Features.Containers.AddContainer;
 using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
@@ -21,6 +20,7 @@ using MothballMobile.UI.Features.Containers.ContainerDetails;
 using MothballMobile.UI.Features.Containers.ContainersList;
 using MothballMobile.UI.Features.Items.AddItem;
 using MothballMobile.UI.Features.Items.ItemDetails;
+using MothballMobile.UI.Features.Items.ItemLocations;
 using MothballMobile.UI.Features.Items.ItemsList;
 using MothballMobile.UI.Features.Settings;
 
@@ -46,6 +46,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBackgroundTaskObserver, LoggingBackgroundTaskObserver>();
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
+        services.AddSingleton<IApplicationSettings, ApplicationSettings>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
         services.AddSingleton<IInventoryBackupZipRestoreService, InventoryBackupZipRestoreService>();
@@ -62,6 +63,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IItemDetailsQueryHandler, ItemDetailsQueryHandler>();
         services.AddSingleton<ICreateItemCommandHandler, CreateItemCommandHandler>();
         services.AddSingleton<IDeleteItemCommandHandler, DeleteItemCommandHandler>();
+        services.AddSingleton<IUpdateItemDescriptionCommandHandler, UpdateItemDescriptionCommandHandler>();
+        services.AddSingleton<IUpdateContainerNotesCommandHandler, UpdateContainerNotesCommandHandler>();
 
         return services;
     }
@@ -78,6 +81,7 @@ public static class ServiceCollectionExtensions
 
             services.AddSingleton<IContainerRepository, JsonContainerRepository>();
             services.AddSingleton<IItemRepository, JsonItemRepository>();
+            services.AddSingleton<IItemInventoryRepository, JsonItemInventoryRepository>();
             services.AddSingleton<IImageRepository, JsonImageRepository>();
             services.AddSingleton<IRelationRepository, JsonRelationRepository>();
 
@@ -95,6 +99,7 @@ public static class ServiceCollectionExtensions
 
             services.AddSingleton<IContainerRepository, ContainerRepository>();
             services.AddSingleton<IItemRepository, ItemRepository>();
+            services.AddSingleton<IItemInventoryRepository, ItemInventoryRepository>();
             services.AddSingleton<IImageRepository, ImageRepository>();
             services.AddSingleton<IRelationRepository, RelationRepository>();
 
@@ -120,6 +125,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(MediaPicker.Default);
         services.AddSingleton<IShare>(Share.Default);
         services.AddSingleton<IFilePicker>(FilePicker.Default);
+        services.AddSingleton(Preferences.Default);
 
         return services;
     }
@@ -131,6 +137,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ItemsListViewModel>();
         services.AddTransient<ContainerDetailsViewModel>();
         services.AddTransient<ItemDetailsViewModel>();
+        services.AddTransient<ItemLocationsViewModel>();
         services.AddTransient<AddItemViewModel>();
         services.AddTransient<AddExistingItemToContainerViewModel>();
         services.AddTransient<AssociateItemWithContainerViewModel>();

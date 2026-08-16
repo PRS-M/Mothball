@@ -1,5 +1,4 @@
 using CoreApp.Contracts;
-using CoreApp.Interfaces;
 using CoreApp.Utilities;
 using Infrastructure.Services.DatabaseModels;
 
@@ -112,6 +111,11 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     Name = item.Name,
                     Description = item.Description,
                 });
+                connection.InsertOrReplace(new DbItemInventory
+                {
+                    ItemId = item.ItemId,
+                    TotalQuantity = item.TotalQuantity,
+                });
             }
 
             foreach (var item in plan.ItemsToUpdate)
@@ -123,17 +127,21 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     Name = item.Name,
                     Description = item.Description,
                 });
+                connection.InsertOrReplace(new DbItemInventory
+                {
+                    ItemId = item.ItemId,
+                    TotalQuantity = item.TotalQuantity,
+                });
             }
 
             foreach (var relation in plan.RelationsToInsert)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                connection.Insert(new DbItemContainerRelation
-                {
-                    ItemId = relation.ItemId,
-                    ContainerId = relation.ContainerId,
-                    Quantity = relation.QuantityToInsert,
-                });
+                InsertOrIncreaseRelation(
+                    connection,
+                    relation.ItemId,
+                    relation.ContainerId,
+                    relation.QuantityToInsert);
             }
 
             foreach (var relation in plan.RelationsToSet)
@@ -188,6 +196,7 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                 cancellationToken.ThrowIfCancellationRequested();
                 connection.Execute($"DELETE FROM {nameof(DbImage)} WHERE {nameof(DbImage.OwnerUniqueId)} = ?", itemId);
                 connection.Execute($"DELETE FROM {nameof(DbItemContainerRelation)} WHERE {nameof(DbItemContainerRelation.ItemId)} = ?", itemId);
+                connection.Execute($"DELETE FROM {nameof(DbItemInventory)} WHERE {nameof(DbItemInventory.ItemId)} = ?", itemId);
                 connection.Execute($"DELETE FROM {nameof(DbItem)} WHERE {nameof(DbItem.ItemId)} = ?", itemId);
             }
 
@@ -203,5 +212,29 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
         }).ConfigureAwait(false);
 
         return result;
+    }
+
+    private static void InsertOrIncreaseRelation(
+        SQLite.SQLiteConnection connection,
+        Guid itemId,
+        Guid containerId,
+        int quantity)
+    {
+        var existingQuantity = connection.Table<DbItemContainerRelation>()
+            .Where(relation => relation.ItemId == itemId && relation.ContainerId == containerId)
+            .ToList()
+            .Sum(relation => relation.Quantity);
+
+        connection.Execute(
+            $"DELETE FROM {nameof(DbItemContainerRelation)} WHERE {nameof(DbItemContainerRelation.ItemId)} = ? AND {nameof(DbItemContainerRelation.ContainerId)} = ?",
+            itemId,
+            containerId);
+
+        connection.Insert(new DbItemContainerRelation
+        {
+            ItemId = itemId,
+            ContainerId = containerId,
+            Quantity = existingQuantity + quantity,
+        });
     }
 }

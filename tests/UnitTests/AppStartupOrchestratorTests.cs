@@ -1,4 +1,3 @@
-using CoreApp.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
 using MothballMobile.Infrastructure;

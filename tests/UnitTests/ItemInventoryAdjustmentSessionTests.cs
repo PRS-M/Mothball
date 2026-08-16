@@ -1,5 +1,5 @@
+using CoreApp.Entities.Inventory;
 using CoreApp.Contracts;
-using CoreApp.Services;
 
 namespace UnitTests;
 
@@ -171,12 +171,13 @@ public sealed class ItemInventoryAdjustmentSessionTests
         int requestedTotal,
         params (Guid id, string name, int quantity)[] allocations)
     {
-        var item = new CoreApp.Entities.ItemAggregate.Item(Guid.NewGuid(), "Widget", "", total);
+        var item = new CoreApp.Entities.ItemAggregate.Item(Guid.NewGuid(), "Widget", "");
         var allocationModels = allocations
             .Select(value => new ItemContainerAllocation(value.id, value.name, value.quantity))
             .ToList();
-        var summary = new ItemInventorySummary(
+        var summary = new InventorySnapshot(
             item,
+            total,
             allocationModels.Sum(allocation => allocation.Quantity),
             allocationModels);
 

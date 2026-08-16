@@ -36,7 +36,7 @@
                     Command="{Binding NavigateToContainerCommand}"/>
                 <Button Text="Associate with a container"
                     Style="{StaticResource OutlinedButton}"
-                    IsVisible="{Binding HasNoContainerRelation}"
+                    IsVisible="{Binding HasUnassignedQuantity}"
                     Command="{Binding NavigateToAssociateWithContainerCommand}"/>
                 </VerticalStackLayout>
             </controls:TitleActionRow.Actions>
@@ -69,18 +69,47 @@
                 </VerticalStackLayout>
             </Border>
 
-                <Border Style="{StaticResource Card}"
-                    IsVisible="{Binding HasDescription}">
+            <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Description"
-                           FontAttributes="Bold"
-                              TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Description"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                        <Button Grid.Column="1"
+                                Text="Edit Description"
+                                Style="{StaticResource OutlinedButton}"
+                                HeightRequest="34"
+                                FontSize="12"
+                                Padding="10,0"
+                                IsVisible="{Binding IsViewingDescription}"
+                                Command="{Binding EditDescriptionCommand}" />
+                        <Button Grid.Column="1"
+                                Text="Save"
+                                Style="{StaticResource TonalButton}"
+                                HeightRequest="34"
+                                FontSize="12"
+                                Padding="10,0"
+                                IsVisible="{Binding IsEditingDescription}"
+                                Command="{Binding SaveDescriptionCommand}" />
+                    </Grid>
                     <Label Text="{Binding Description}"
-                              TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
+                           IsVisible="{Binding IsViewingDescription}"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
+                    <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="8"
+                            IsVisible="{Binding IsEditingDescription}">
+                        <Editor Text="{Binding DescriptionDraft}"
+                                AutoSize="TextChanges"
+                                MinimumHeightRequest="96"
+                                Placeholder="Description" />
+                    </Border>
                 </VerticalStackLayout>
             </Border>
 
-                 <Border Style="{StaticResource Card}">
+                 <Border Style="{StaticResource Card}"
+                         IsVisible="{Binding ShowQuantityManagement}">
                   <VerticalStackLayout Spacing="8">
                       <Label Text="Inventory"
                           FontAttributes="Bold"

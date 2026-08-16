@@ -1,5 +1,4 @@
-﻿using MothballMobile.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 #if IOS || ANDROID
 using Plugin.AdMob.Services;
@@ -16,18 +15,22 @@ public partial class App : Application
 #endif
 	private readonly IAppStartupOrchestrator startupOrchestrator;
 	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
+	private readonly IApplicationSettings applicationSettings;
 	private readonly ILogger<App> logger;
 	private readonly ILogger<AppShell> appShellLogger;
 
 	public App(
 		IAppStartupOrchestrator startupOrchestrator,
 		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+		IApplicationSettings applicationSettings,
 		ILogger<App> logger,
 		ILogger<AppShell> appShellLogger)
 	{
 		InitializeComponent();
 		this.startupOrchestrator = startupOrchestrator;
 		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
+		this.applicationSettings = applicationSettings;
+		UserAppTheme = applicationSettings.ThemeOverride;
 		this.logger = logger;
 		this.appShellLogger = appShellLogger;
 	}
@@ -44,8 +47,10 @@ public partial class App : Application
 		try
 		{
 			await startupOrchestrator.StartAsync();
-			await ShowStartupAdAsync();
 			window.Page = new AppShell(photoBackgroundOperationTracker, appShellLogger);
+
+			await Task.Yield();
+			await ShowStartupAdAsync();
 		}
 		catch (Exception ex)
 		{
