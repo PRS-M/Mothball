@@ -23,6 +23,12 @@ public sealed class ContainerAssociationQueryHandler : IContainerAssociationQuer
                 PageNumber: pageNumber,
                 PageSize: pageSize));
 
+    public Task<List<Container>> QueryContainersAsync(string searchTerm)
+        => inventoryQueries.QueryContainersAsync(
+            new ContainerListSpecification(
+                Filter: ContainerQueryFilter.All,
+                SearchTerm: searchTerm));
+
     public Task<List<InventorySnapshot>> QueryUnassignedItemsAsync(
         int pageNumber,
         int pageSize,

@@ -9,19 +9,24 @@
                 Title="Select container"
                 Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
-    <Grid Padding="16"
-          RowDefinitions="Auto,*"
+        <Grid Padding="16"
+            RowDefinitions="Auto,Auto,*"
           ColumnDefinitions="*">
 
-                <controls:PageHeader Grid.Row="0"
-                                                         Title="Select container"
-                                                         Subtitle="Tap a container to associate this item"
-                                                         TitleFontSize="28"
-                                                         SubtitleFontSize="14"
-                                                         Spacing="4"
-                                                         HeaderMargin="0,0,0,10" />
+          <controls:PageHeader Grid.Row="0"
+                         Title="Select container"
+                         Subtitle="Tap a container to associate this item"
+                         TitleFontSize="28"
+                         SubtitleFontSize="14"
+                         Spacing="4"
+                         HeaderMargin="0,0,0,10" />
 
-        <CollectionView Grid.Row="1"
+          <controls:SearchBarCard Grid.Row="1"
+                          Placeholder="Search containers..."
+                          Text="{Binding SearchQuery}"
+                          SearchCommand="{Binding ApplySearchCommand}" />
+
+          <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Containers}"
                         Margin="0,8,0,0"
                         SelectionMode="None"

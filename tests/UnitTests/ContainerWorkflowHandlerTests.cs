@@ -88,6 +88,28 @@ public sealed class ContainerWorkflowHandlerTests
     }
 
     [Test]
+    public async Task ContainerAssociationQueryHandler_QueryContainersWithSearch_UsesSearchTerm()
+    {
+        var queries = new Mock<IInventoryQueryRepository>();
+        ContainerListSpecification? capturedSpecification = null;
+        queries.Setup(q => q.QueryContainersAsync(It.IsAny<ContainerListSpecification>()))
+            .Callback<ContainerListSpecification>(specification => capturedSpecification = specification)
+            .ReturnsAsync([]);
+        var handler = new ContainerAssociationQueryHandler(queries.Object);
+
+        await handler.QueryContainersAsync("archive");
+
+        Assert.That(capturedSpecification, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedSpecification!.Filter, Is.EqualTo(ContainerQueryFilter.All));
+            Assert.That(capturedSpecification.SearchTerm, Is.EqualTo("archive"));
+            Assert.That(capturedSpecification.PageNumber, Is.Null);
+            Assert.That(capturedSpecification.PageSize, Is.Null);
+        });
+    }
+
+    [Test]
     public async Task AssignItemToContainerCommandHandler_AssignsDefaultQuantity()
     {
         var itemId = Guid.NewGuid();

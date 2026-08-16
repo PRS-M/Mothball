@@ -1,14 +1,16 @@
 ﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Popups;
 using Infrastructure.Services;
 
 namespace MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 
-public partial class AssociateItemWithContainerViewModel : PagedListViewModelBase<Container, SelectableContainerViewModel>, IQueryAttributable
+public partial class AssociateItemWithContainerViewModel : PagedListViewModelBase<Container, SelectableContainerViewModel>, IQueryAttributable, IDisposable
 {
     private readonly IImagePathResolver imagePaths;
     private readonly IContainerAssociationQueryHandler associationQueries;
@@ -20,9 +22,13 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly DemoDataSeeder? demoSeeder;
+    private readonly IDebouncer debouncer;
 
     private string? itemId;
     private int unassignedQuantity;
+
+    [ObservableProperty]
+    private string searchQuery = string.Empty;
 
     public AssociateItemWithContainerViewModel(
         IImagePathResolver imagePaths,
@@ -34,6 +40,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         IBackgroundTaskObserver backgroundTasks,
+        IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
         : base(pageSize: 10)
     {
@@ -46,6 +53,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
         this.backgroundTasks = backgroundTasks;
+        this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
     }
 
@@ -85,6 +93,28 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
 
     protected override void OnViewModelAdded(SelectableContainerViewModel vm)
         => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load selectable container images");
+
+    [RelayCommand]
+    private async Task ApplySearchAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                await ReplaceWithFirstPagedAsync();
+                return;
+            }
+
+            var containers = await associationQueries.QueryContainersAsync(SearchQuery);
+            ReplaceWithFullResultSet(containers);
+        });
+    }
+
+    partial void OnSearchQueryChanged(string value)
+    {
+        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(ApplySearchAsync))
+            .FireAndForget(backgroundTasks, "Search association containers");
+    }
 
     private async Task AssociateWithContainerAsync(Guid containerId)
     {
@@ -131,5 +161,15 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         var currentContainerQuantity = details.Inventory.Allocations
             .FirstOrDefault(allocation => allocation.ContainerId == selectedContainerId)?.Quantity ?? 0;
         return unassignedQuantity + currentContainerQuantity;
+    }
+
+    public void Dispose()
+    {
+        if (debouncer is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+
+        GC.SuppressFinalize(this);
     }
 }
