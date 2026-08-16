@@ -55,6 +55,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public bool HasUnassignedQuantity => UnassignedQuantity > 0;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+    public string DisplayDescription => HasDescription ? Description : "No description.";
     public bool IsViewingDescription => !IsEditingDescription;
     public bool ShowGoToContainerButton => HasContainerRelation
         && (string.IsNullOrWhiteSpace(sourceContainerId)
@@ -113,7 +114,10 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         => OnPropertyChanged(nameof(HasUnassignedQuantity));
 
     partial void OnDescriptionChanged(string value)
-        => OnPropertyChanged(nameof(HasDescription));
+    {
+        OnPropertyChanged(nameof(HasDescription));
+        OnPropertyChanged(nameof(DisplayDescription));
+    }
 
     partial void OnIsEditingDescriptionChanged(bool value)
         => OnPropertyChanged(nameof(IsViewingDescription));

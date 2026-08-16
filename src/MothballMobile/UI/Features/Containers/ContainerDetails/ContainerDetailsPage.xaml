@@ -42,8 +42,10 @@
                                    LineBreakMode="TailTruncation"
                                    MaxLines="2"
                                    Style="{StaticResource TitleLarge}"/>
+                            <Label Text="{Binding ItemTypesStoredText}"
+                                Style="{StaticResource BodyMedium}"/>
                             <Label Text="{Binding ItemsStoredText}"
-                                   Style="{StaticResource BodyMedium}"/>
+                                Style="{StaticResource BodyMedium}"/>
                         </VerticalStackLayout>
                     </VerticalStackLayout>
                 </Border>
@@ -72,7 +74,7 @@
                                     IsVisible="{Binding IsEditingNotes}"
                                     Command="{Binding SaveNotesCommand}" />
                         </Grid>
-                        <Label Text="{Binding Notes}"
+                           <Label Text="{Binding DisplayNotes}"
                                IsVisible="{Binding IsViewingNotes}"
                                TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                         <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"

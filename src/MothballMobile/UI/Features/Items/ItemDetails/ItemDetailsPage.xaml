@@ -93,7 +93,7 @@
                                 IsVisible="{Binding IsEditingDescription}"
                                 Command="{Binding SaveDescriptionCommand}" />
                     </Grid>
-                    <Label Text="{Binding Description}"
+                          <Label Text="{Binding DisplayDescription}"
                            IsVisible="{Binding IsViewingDescription}"
                            TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
                     <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
