@@ -71,38 +71,66 @@
                     Text="{Binding Query}"
                     SearchCommand="{Binding SearchCommand}" />
 
-        <RefreshView Grid.Row="2"
-                     IsRefreshing="{Binding IsRefreshing}"
-                     Command="{Binding RefreshCommand}">
-            <CollectionView ItemsSource="{Binding Items}"
-                            Margin="0,2,0,0"
-                            SelectionMode="None"
-                            RemainingItemsThreshold="4"
-                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
-                <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical"
-                                     Span="{OnIdiom Phone=1, Tablet=2, Desktop=2}"
-                                     VerticalItemSpacing="16"
-                                     HorizontalItemSpacing="16"/>
-                </CollectionView.ItemsLayout>
-                <CollectionView.EmptyView>
-                    <controls:EmptyStateView Title="No items yet" />
-                </CollectionView.EmptyView>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:ItemViewModel">
-                        <controls:ItemTile
-                                           Command="{Binding NavigateToItemDetailsCommand}"
-                                           Name="{Binding Name}"
-                                           Description="{Binding Description}"
-                                           TotalQuantity="{Binding TotalQuantity}"
-                                           AssignedQuantity="{Binding AssignedQuantity}"
-                                           UnassignedQuantity="{Binding UnassignedQuantity}"
-                                           ShowInventorySummary="{Binding ShowQuantityManagement}"
-                                           ImagePaths="{Binding ImagePaths}"
-                                           ImageSize="125" />
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </RefreshView>
+        <Grid Grid.Row="2">
+            <RefreshView IsRefreshing="{Binding IsRefreshing}"
+                         Command="{Binding RefreshCommand}">
+                <RefreshView.Triggers>
+                    <DataTrigger TargetType="RefreshView"
+                                 Binding="{Binding IsRefreshing}"
+                                 Value="True">
+                        <Setter Property="IsVisible"
+                                Value="False" />
+                    </DataTrigger>
+                </RefreshView.Triggers>
+                <CollectionView ItemsSource="{Binding Items}"
+                                Margin="0,2,0,0"
+                                SelectionMode="None"
+                                RemainingItemsThreshold="4"
+                                RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical"
+                                         Span="{OnIdiom Phone=1, Tablet=2, Desktop=2}"
+                                         VerticalItemSpacing="16"
+                                         HorizontalItemSpacing="16"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.EmptyView>
+                        <controls:EmptyStateView Title="No items yet" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ItemViewModel">
+                            <controls:ItemTile
+                                               Command="{Binding NavigateToItemDetailsCommand}"
+                                               Name="{Binding Name}"
+                                               Description="{Binding Description}"
+                                               TotalQuantity="{Binding TotalQuantity}"
+                                               AssignedQuantity="{Binding AssignedQuantity}"
+                                               UnassignedQuantity="{Binding UnassignedQuantity}"
+                                               ShowInventorySummary="{Binding ShowQuantityManagement}"
+                                               ImagePaths="{Binding ImagePaths}"
+                                               ImageSize="125" />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+
+            <VerticalStackLayout IsVisible="False"
+                                 Spacing="12"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center">
+                <VerticalStackLayout.Triggers>
+                    <DataTrigger TargetType="VerticalStackLayout"
+                                 Binding="{Binding IsRefreshing}"
+                                 Value="True">
+                        <Setter Property="IsVisible"
+                                Value="True" />
+                    </DataTrigger>
+                </VerticalStackLayout.Triggers>
+                <ActivityIndicator IsRunning="{Binding IsRefreshing}"
+                                   WidthRequest="44"
+                                   HeightRequest="44" />
+                <Label Text="Loading items..."
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+        </Grid>
     </Grid>
 </views:BasePage>
