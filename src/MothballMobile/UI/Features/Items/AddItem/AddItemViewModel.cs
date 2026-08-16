@@ -21,7 +21,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
     public bool IsAddingToContainer => Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
-    public bool ShowQuantityField => IsAddingToContainer && ShowQuantityManagement;
+    public bool ShowQuantityField => ShowQuantityManagement;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -31,7 +31,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private string description = string.Empty;
 
     [ObservableProperty]
-    private string quantity = "1"; // reserved for future relation quantity use
+    private string quantity = "1";
 
     [ObservableProperty]
     private string? validationMessage;
@@ -163,7 +163,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         var isAddingToContainer = IsAddingToContainer;
         var parsedQuantity = 1;
-        if (isAddingToContainer && ShowQuantityManagement &&
+        if (ShowQuantityManagement &&
             (!int.TryParse(Quantity?.Trim(), out parsedQuantity) || parsedQuantity <= 0))
         {
             ValidationMessage = "Quantity must be a positive number.";
