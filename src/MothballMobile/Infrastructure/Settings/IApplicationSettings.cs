@@ -12,4 +12,6 @@ public interface IApplicationSettings
     AppMode AppMode { get; set; }
 
     bool IsAdvancedMode { get; set; }
+
+    bool IsBackupSigningKeyEnabled { get; set; }
 }

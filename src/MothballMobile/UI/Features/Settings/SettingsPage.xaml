@@ -69,20 +69,29 @@
                       StrokeShape="RoundRectangle 16"
                       Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
                   <VerticalStackLayout Spacing="10">
-                      <Label Text="Backup signing key"
-                              Style="{StaticResource HeadlineSmall}"
-                              TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                      <Grid ColumnDefinitions="*,Auto"
+                            ColumnSpacing="12">
+                          <Label Text="Backup signing key"
+                                 Style="{StaticResource HeadlineSmall}"
+                                 VerticalOptions="Center"
+                                 TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                          <Switch Grid.Column="1"
+                                  IsToggled="{Binding IsBackupSigningKeyEnabled, Mode=TwoWay}"
+                                  SemanticProperties.Hint="Enable or disable backup signing key use" />
+                      </Grid>
 
-                    <Label Text="Share or import a key to verify backups across devices. Treat the transfer file like a password."
+                    <Label Text="When enabled, backups are signed with this device key. Share or import it to verify backups across devices."
                               Style="{StaticResource BodyMedium}"
                               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
 
                       <Button Text="Share signing key"
+                                IsEnabled="{Binding IsBackupSigningKeyEnabled}"
                                 Command="{Binding ShareBackupSigningKeyCommand}"
                                 SemanticProperties.Hint="Share the backup signing key using the system share sheet, including AirDrop" />
 
                     <Button Text="Import signing key"
                             Style="{StaticResource OutlinedButton}"
+                            IsEnabled="{Binding IsBackupSigningKeyEnabled}"
                             Command="{Binding ImportBackupSigningKeyCommand}"
                             SemanticProperties.Hint="Import a backup signing key file received from another device" />
                   </VerticalStackLayout>

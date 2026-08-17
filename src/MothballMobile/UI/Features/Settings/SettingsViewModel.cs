@@ -103,6 +103,21 @@ public partial class SettingsViewModel : BaseViewModel
         }
     }
 
+    public bool IsBackupSigningKeyEnabled
+    {
+        get => applicationSettings.IsBackupSigningKeyEnabled;
+        set
+        {
+            if (applicationSettings.IsBackupSigningKeyEnabled == value)
+            {
+                return;
+            }
+
+            applicationSettings.IsBackupSigningKeyEnabled = value;
+            OnPropertyChanged();
+        }
+    }
+
     [RelayCommand]
     private Task NavigateToBackgroundOperationsAsync()
         => nav.GoToAsync(NavigationRoutes.BackgroundOperations);

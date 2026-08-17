@@ -11,6 +11,7 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
     private readonly IInventoryBackupRestoreService backupRestoreService;
     private readonly IInventoryBackupZipRestoreService backupZipRestoreService;
     private readonly IBackupSignatureSecretProvider signatureSecretProvider;
+    private readonly IApplicationSettings applicationSettings;
     private readonly IFileHandler fileHandler;
     private readonly IShare share;
 
@@ -19,6 +20,7 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
         IInventoryBackupRestoreService backupRestoreService,
         IInventoryBackupZipRestoreService backupZipRestoreService,
         IBackupSignatureSecretProvider signatureSecretProvider,
+        IApplicationSettings applicationSettings,
         IFileHandler fileHandler,
         IShare share)
     {
@@ -26,16 +28,17 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
         this.backupRestoreService = backupRestoreService ?? throw new ArgumentNullException(nameof(backupRestoreService));
         this.backupZipRestoreService = backupZipRestoreService ?? throw new ArgumentNullException(nameof(backupZipRestoreService));
         this.signatureSecretProvider = signatureSecretProvider ?? throw new ArgumentNullException(nameof(signatureSecretProvider));
+        this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
         this.share = share ?? throw new ArgumentNullException(nameof(share));
     }
 
     public async Task<InventoryBackupExportResult> ExportJsonAsync(CancellationToken cancellationToken = default)
     {
-        var signatureSecret = await signatureSecretProvider.GetOrCreateAsync(cancellationToken).ConfigureAwait(false);
+        var signature = await GetBackupSignatureAsync(cancellationToken).ConfigureAwait(false);
         var backupJson = await backupExporter.ExportAsJsonAsync(
-            signatureSecret,
-            BackupSignatureSecretProvider.SignatureKeyId,
+            signature.Secret,
+            signature.KeyId,
             cancellationToken).ConfigureAwait(false);
         var fileName = BuildBackupFileName("json");
         var fullPath = await fileHandler.SaveTextFileAsync(fileName, BackupsFolder, backupJson).ConfigureAwait(false);
@@ -44,10 +47,10 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
 
     public async Task<InventoryBackupExportResult> ExportZipAsync(CancellationToken cancellationToken = default)
     {
-        var signatureSecret = await signatureSecretProvider.GetOrCreateAsync(cancellationToken).ConfigureAwait(false);
+        var signature = await GetBackupSignatureAsync(cancellationToken).ConfigureAwait(false);
         var backupZip = await backupExporter.ExportAsZipAsync(
-            signatureSecret,
-            BackupSignatureSecretProvider.SignatureKeyId,
+            signature.Secret,
+            signature.KeyId,
             cancellationToken).ConfigureAwait(false);
         var fileName = BuildBackupFileName("zip");
         var fullPath = await fileHandler.SaveFileAsync(fileName, BackupsFolder, backupZip).ConfigureAwait(false);
@@ -115,9 +118,29 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
         => new()
         {
             ConflictPolicy = conflictPolicy,
-            SignatureSecret = await signatureSecretProvider.GetOrCreateAsync(cancellationToken).ConfigureAwait(false),
+            SignatureSecret = await GetSignatureSecretAsync(cancellationToken).ConfigureAwait(false),
         };
+
+    private async Task<string?> GetSignatureSecretAsync(CancellationToken cancellationToken)
+    {
+        if (!applicationSettings.IsBackupSigningKeyEnabled)
+        {
+            return null;
+        }
+
+        return await signatureSecretProvider.GetOrCreateAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<BackupSignature> GetBackupSignatureAsync(CancellationToken cancellationToken)
+    {
+        var secret = await GetSignatureSecretAsync(cancellationToken).ConfigureAwait(false);
+        return new BackupSignature(
+            secret,
+            secret is null ? null : BackupSignatureSecretProvider.SignatureKeyId);
+    }
 
     private static string BuildBackupFileName(string extension)
         => $"mothball-backup-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}Z.{extension}";
+
+    private sealed record BackupSignature(string? Secret, string? KeyId);
 }
