@@ -93,13 +93,14 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
             .Take(25)
             .ToArray();
 
-    public Task ShareAsync(string fileName, string title)
+    public async Task ShareAsync(string fileName, string title)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
 
         var fullPath = Path.Combine(fileHandler.AppDataPath, BackupsFolder, fileName);
-        return share.RequestAsync(new ShareFileRequest(title, new ShareFile(fullPath)));
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+            await share.RequestAsync(new ShareFileRequest(title, new ShareFile(fullPath))));
     }
 
     public Task DeleteAsync(string fileName)

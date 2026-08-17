@@ -29,7 +29,8 @@ public sealed class BackupSigningKeyTransferService : IBackupSigningKeyTransferS
             signatureSecret);
         var transferPath = Path.Combine(FileSystem.CacheDirectory, TransferFileName);
         await File.WriteAllTextAsync(transferPath, JsonSerializer.Serialize(transfer), cancellationToken).ConfigureAwait(false);
-        await share.RequestAsync(new ShareFileRequest("Share Mothball backup signing key", new ShareFile(transferPath))).ConfigureAwait(false);
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+            await share.RequestAsync(new ShareFileRequest("Share Mothball backup signing key", new ShareFile(transferPath))));
     }
 
     public async Task ImportAsync(Stream transferStream, CancellationToken cancellationToken = default)
