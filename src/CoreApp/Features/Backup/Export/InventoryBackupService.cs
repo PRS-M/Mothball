@@ -2,7 +2,7 @@ using CoreApp.Contracts;
 
 namespace CoreApp.Features.Backup.Export;
 
-public sealed class InventoryBackupService : IInventoryBackupService
+public sealed class InventoryBackupService
 {
     private readonly IInventoryBackupExporter backupExporter;
     private readonly IInventoryBackupClient backupClient;
@@ -15,7 +15,6 @@ public sealed class InventoryBackupService : IInventoryBackupService
         this.backupClient = backupClient;
     }
 
-    /// <inheritdoc />
     public async Task<InventoryBackupEnvelope> ExportAndUploadAsync(CancellationToken cancellationToken = default)
     {
         var backup = await backupExporter.ExportAsync(cancellationToken).ConfigureAwait(false);

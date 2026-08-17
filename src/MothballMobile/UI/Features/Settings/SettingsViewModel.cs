@@ -14,7 +14,7 @@ public partial class SettingsViewModel : BaseViewModel
 
     private readonly IInventoryBackupExporter backupExporter;
     private readonly IInventoryBackupRestoreService backupRestoreService;
-    private readonly IInventoryBackupZipRestoreService backupZipRestoreService;
+    private readonly InventoryBackupZipRestoreService backupZipRestoreService;
     private readonly IFileHandler fileHandler;
     private readonly IShare share;
     private readonly IFilePicker filePicker;
@@ -35,7 +35,7 @@ public partial class SettingsViewModel : BaseViewModel
     public SettingsViewModel(
         IInventoryBackupExporter backupExporter,
         IInventoryBackupRestoreService backupRestoreService,
-        IInventoryBackupZipRestoreService backupZipRestoreService,
+        InventoryBackupZipRestoreService backupZipRestoreService,
         IFileHandler fileHandler,
         IShare share,
         IFilePicker filePicker,

@@ -12,8 +12,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 {
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
     private readonly IItemInventoryCommandService inventoryCommands;
-    private readonly IDeleteItemCommandHandler deleteItemHandler;
-    private readonly IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler;
+    private readonly DeleteItemCommandHandler deleteItemHandler;
+    private readonly UpdateItemDescriptionCommandHandler updateItemDescriptionHandler;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
@@ -67,8 +67,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public ItemDetailsViewModel(
         IItemDetailsQueryHandler itemDetailsQueries,
         IItemInventoryCommandService inventoryCommands,
-        IDeleteItemCommandHandler deleteItemHandler,
-        IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler,
+        DeleteItemCommandHandler deleteItemHandler,
+        UpdateItemDescriptionCommandHandler updateItemDescriptionHandler,
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IImagePathResolver paths,

@@ -4,7 +4,7 @@ using CoreApp.Specifications;
 
 namespace CoreApp.Features.Items.Queries;
 
-public sealed class ItemsListQueryHandler : IItemsListQueryHandler
+public sealed class ItemsListQueryHandler
 {
     private readonly IInventoryQueryRepository inventoryQueries;
 

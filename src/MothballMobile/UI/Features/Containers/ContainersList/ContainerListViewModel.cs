@@ -17,7 +17,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 {
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService nav;
-    private readonly IContainerListQueryHandler containerListQueries;
+    private readonly ContainerListQueryHandler containerListQueries;
     private readonly IApplicationSettings applicationSettings;
     private readonly IDebouncer debouncer;
     private readonly IBackgroundTaskObserver backgroundTasks;
@@ -48,7 +48,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
 
     public ContainerListViewModel(
         IImagePathResolver imagePaths,
-        IContainerListQueryHandler containerListQueries,
+        ContainerListQueryHandler containerListQueries,
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IBackgroundTaskObserver backgroundTasks,

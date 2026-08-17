@@ -6,7 +6,7 @@ using CoreApp.Utilities;
 
 namespace CoreApp.Features.Backup.Restore;
 
-public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestoreService
+public sealed class InventoryBackupZipRestoreService
 {
     private readonly IInventoryBackupRestoreService backupRestoreService;
     private readonly IFileHandler fileHandler;
@@ -19,7 +19,6 @@ public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestor
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
     }
 
-    /// <inheritdoc />
     public async Task<InventoryBackupZipRestoreResult> RestoreFromZipAsync(
         byte[] backupZip,
         InventoryBackupRestoreOptions? options = null,

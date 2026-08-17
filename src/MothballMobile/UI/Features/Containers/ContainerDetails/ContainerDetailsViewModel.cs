@@ -11,15 +11,15 @@ namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
 public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
 {
-    private readonly IContainerDetailsQueryHandler containerDetailsQueries;
-    private readonly IDeleteContainerCommandHandler deleteContainerHandler;
-    private readonly IUpdateContainerNotesCommandHandler updateContainerNotesHandler;
+    private readonly ContainerDetailsQueryHandler containerDetailsQueries;
+    private readonly DeleteContainerCommandHandler deleteContainerHandler;
+    private readonly UpdateContainerNotesCommandHandler updateContainerNotesHandler;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly ContainerItemPagingController itemPaging;
     private readonly ContainerDetailsItemRowsViewModel itemRows;
-    private readonly IContainerItemQuantityService quantityService;
+    private readonly ContainerItemQuantityService quantityService;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private Container? currentContainer;
 
@@ -71,9 +71,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         => OnPropertyChanged(nameof(DisplayNotes));
 
     public ContainerDetailsViewModel(
-        IContainerDetailsQueryHandler containerDetailsQueries,
-        IDeleteContainerCommandHandler deleteContainerHandler,
-        IUpdateContainerNotesCommandHandler updateContainerNotesHandler,
+        ContainerDetailsQueryHandler containerDetailsQueries,
+        DeleteContainerCommandHandler deleteContainerHandler,
+        UpdateContainerNotesCommandHandler updateContainerNotesHandler,
         IImagePathResolver paths,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
@@ -81,7 +81,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
-        IContainerItemQuantityService quantityService,
+        ContainerItemQuantityService quantityService,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)

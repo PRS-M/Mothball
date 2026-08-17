@@ -7,7 +7,7 @@ namespace MothballMobile.UI.Features.Containers.AddContainer;
 public partial class AddContainerViewModel : BaseViewModel
 {
     private readonly ImageService imageService;
-    private readonly ICreateContainerCommandHandler createContainer;
+    private readonly CreateContainerCommandHandler createContainer;
     private readonly INavigationService navigationService;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
@@ -15,7 +15,7 @@ public partial class AddContainerViewModel : BaseViewModel
 
     public AddContainerViewModel(
         ImageService imageService,
-        ICreateContainerCommandHandler createContainer,
+        CreateContainerCommandHandler createContainer,
         INavigationService navigationService,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions)

@@ -1,7 +1,7 @@
 
 namespace CoreApp.Features.Items.Commands;
 
-public sealed class DeleteItemCommandHandler : IDeleteItemCommandHandler
+public sealed class DeleteItemCommandHandler
 {
     private readonly IInventoryCommandRepository inventoryCommands;
 
@@ -10,7 +10,6 @@ public sealed class DeleteItemCommandHandler : IDeleteItemCommandHandler
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
 
-    /// <inheritdoc />
     public Task DeleteAsync(string itemId)
         => inventoryCommands.DeleteItemAsync(itemId);
 }
