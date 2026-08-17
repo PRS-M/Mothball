@@ -47,6 +47,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();
         services.AddSingleton<IBackupSignatureSecretProvider, BackupSignatureSecretProvider>();
+        services.AddSingleton<IInventoryBackupWorkflowService, InventoryBackupWorkflowService>();
+        services.AddSingleton<IBackupSigningKeyTransferService, BackupSigningKeyTransferService>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
         services.AddSingleton<IInventoryBackupZipRestoreService, InventoryBackupZipRestoreService>();

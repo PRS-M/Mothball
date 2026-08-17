@@ -1,29 +1,19 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using CoreApp.Contracts;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
 using MothballMobile.UI.Shared;
-using System.Text.Json;
 
 namespace MothballMobile.UI.Features.Settings;
 
 public partial class SettingsViewModel : BaseViewModel
 {
-    private const string BackupsFolder = "Backups";
-    private const string SigningKeyTransferFileName = "mothball-backup-signing-key.json";
-    private const int SigningKeyTransferFormatVersion = 1;
-
-    private readonly IInventoryBackupExporter backupExporter;
-    private readonly IInventoryBackupRestoreService backupRestoreService;
-    private readonly IInventoryBackupZipRestoreService backupZipRestoreService;
-    private readonly IFileHandler fileHandler;
-    private readonly IShare share;
+    private readonly IInventoryBackupWorkflowService backupWorkflows;
+    private readonly IBackupSigningKeyTransferService signingKeyTransfer;
     private readonly IFilePicker filePicker;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
-    private readonly IBackupSignatureSecretProvider backupSignatureSecretProvider;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly ILogger<SettingsViewModel> logger;
@@ -37,28 +27,20 @@ public partial class SettingsViewModel : BaseViewModel
     ];
 
     public SettingsViewModel(
-        IInventoryBackupExporter backupExporter,
-        IInventoryBackupRestoreService backupRestoreService,
-        IInventoryBackupZipRestoreService backupZipRestoreService,
-        IFileHandler fileHandler,
-        IShare share,
+        IInventoryBackupWorkflowService backupWorkflows,
+        IBackupSigningKeyTransferService signingKeyTransfer,
         IFilePicker filePicker,
         INavigationService nav,
         IApplicationSettings applicationSettings,
-        IBackupSignatureSecretProvider backupSignatureSecretProvider,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         ILogger<SettingsViewModel> logger)
     {
-        this.backupExporter = backupExporter;
-        this.backupRestoreService = backupRestoreService;
-        this.backupZipRestoreService = backupZipRestoreService;
-        this.fileHandler = fileHandler;
-        this.share = share;
+        this.backupWorkflows = backupWorkflows ?? throw new ArgumentNullException(nameof(backupWorkflows));
+        this.signingKeyTransfer = signingKeyTransfer ?? throw new ArgumentNullException(nameof(signingKeyTransfer));
         this.filePicker = filePicker;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
-        this.backupSignatureSecretProvider = backupSignatureSecretProvider;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -136,14 +118,8 @@ public partial class SettingsViewModel : BaseViewModel
         {
             try
             {
-                var signatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync();
-                var backupJson = await backupExporter.ExportAsJsonAsync(
-                    signatureSecret,
-                    BackupSignatureSecretProvider.SignatureKeyId);
-                var fileName = BuildBackupFileName();
-                var fullPath = await fileHandler.SaveTextFileAsync(fileName, BackupsFolder, backupJson);
-
-                await popup.ShowAlertAsync(popupDefinitions.BackupExported(fullPath));
+                var export = await backupWorkflows.ExportJsonAsync();
+                await popup.ShowAlertAsync(popupDefinitions.BackupExported(export.FullPath));
             }
             catch (Exception ex)
             {
@@ -160,14 +136,8 @@ public partial class SettingsViewModel : BaseViewModel
         {
             try
             {
-                var signatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync();
-                var backupZip = await backupExporter.ExportAsZipAsync(
-                    signatureSecret,
-                    BackupSignatureSecretProvider.SignatureKeyId);
-                var fileName = BuildBackupZipFileName();
-                var fullPath = await fileHandler.SaveFileAsync(fileName, BackupsFolder, backupZip);
-
-                await popup.ShowAlertAsync(popupDefinitions.BackupExported(fullPath));
+                var export = await backupWorkflows.ExportZipAsync();
+                await popup.ShowAlertAsync(popupDefinitions.BackupExported(export.FullPath));
             }
             catch (Exception ex)
             {
@@ -192,7 +162,7 @@ public partial class SettingsViewModel : BaseViewModel
 
             try
             {
-                var backupJson = await fileHandler.ReadTextFileAsync(fileName, BackupsFolder);
+                var backupJson = await backupWorkflows.ReadJsonAsync(fileName);
                 await RestoreJsonAsync(backupJson, policy.Value, fileName);
             }
             catch (Exception ex)
@@ -260,7 +230,7 @@ public partial class SettingsViewModel : BaseViewModel
 
             try
             {
-                var backupZip = await fileHandler.ReadFileAsync(fileName, BackupsFolder);
+                var backupZip = await backupWorkflows.ReadZipAsync(fileName);
                 await RestoreZipAsync(backupZip, policy.Value, fileName);
             }
             catch (Exception ex)
@@ -320,19 +290,7 @@ public partial class SettingsViewModel : BaseViewModel
         {
             try
             {
-                var signatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync();
-                var transfer = new BackupSigningKeyTransfer(
-                    SigningKeyTransferFormatVersion,
-                    BackupSignatureSecretProvider.SignatureKeyId,
-                    signatureSecret);
-                var transferPath = Path.Combine(FileSystem.CacheDirectory, SigningKeyTransferFileName);
-                await File.WriteAllTextAsync(transferPath, JsonSerializer.Serialize(transfer));
-
-                await share.RequestAsync(new ShareFileRequest
-                {
-                    Title = "Share Mothball backup signing key",
-                    File = new ShareFile(transferPath),
-                });
+                await signingKeyTransfer.ShareAsync();
             }
             catch (Exception ex)
             {
@@ -356,16 +314,6 @@ public partial class SettingsViewModel : BaseViewModel
             try
             {
                 await using var stream = await file.OpenReadAsync();
-                using var reader = new StreamReader(stream);
-                var transfer = JsonSerializer.Deserialize<BackupSigningKeyTransfer>(await reader.ReadToEndAsync())
-                    ?? throw new InvalidDataException("The signing key file is empty or invalid.");
-
-                if (transfer.FormatVersion != SigningKeyTransferFormatVersion ||
-                    !string.Equals(transfer.KeyId, BackupSignatureSecretProvider.SignatureKeyId, StringComparison.Ordinal))
-                {
-                    throw new InvalidDataException("The signing key file is not compatible with this version of Mothball.");
-                }
-
                 var confirmed = await popup.ConfirmAsync(
                     "Import signing key",
                     "This replaces the current backup signing key on this device. Backups signed by the current key will no longer verify here.",
@@ -376,7 +324,7 @@ public partial class SettingsViewModel : BaseViewModel
                     return;
                 }
 
-                await backupSignatureSecretProvider.ReplaceAsync(transfer.SignatureSecret);
+                await signingKeyTransfer.ImportAsync(stream);
                 await popup.ShowAlertAsync(new AlertPopupDefinition(
                     "Signing key imported",
                     "This device can now verify backups signed by the imported key."));
@@ -405,7 +353,7 @@ public partial class SettingsViewModel : BaseViewModel
 
             try
             {
-                await fileHandler.DeleteFileAsync(fileName, BackupsFolder);
+                await backupWorkflows.DeleteAsync(fileName);
                 await popup.ShowAlertAsync(popupDefinitions.BackupDeleted(fileName));
             }
             catch (Exception ex)
@@ -432,7 +380,7 @@ public partial class SettingsViewModel : BaseViewModel
 
             try
             {
-                await fileHandler.DeleteFileAsync(fileName, BackupsFolder);
+                await backupWorkflows.DeleteAsync(fileName);
                 await popup.ShowAlertAsync(popupDefinitions.BackupDeleted(fileName));
             }
             catch (Exception ex)
@@ -443,18 +391,6 @@ public partial class SettingsViewModel : BaseViewModel
         });
     }
 
-    private static string BuildBackupFileName()
-    {
-        var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
-        return $"mothball-backup-{stamp}Z.json";
-    }
-
-    private static string BuildBackupZipFileName()
-    {
-        var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
-        return $"mothball-backup-{stamp}Z.zip";
-    }
-
     private async Task<InventoryBackupConflictPolicy?> SelectRestorePolicyAsync()
         => await popup.SelectValueOptionAsync(popupDefinitions.RestorePolicyPicker());
 
@@ -463,13 +399,7 @@ public partial class SettingsViewModel : BaseViewModel
         InventoryBackupConflictPolicy policy,
         string fileName)
     {
-        var options = new InventoryBackupRestoreOptions
-        {
-            ConflictPolicy = policy,
-            SignatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync(),
-        };
-
-        var result = await backupRestoreService.RestoreFromJsonAsync(backupJson, options);
+        var result = await backupWorkflows.RestoreJsonAsync(backupJson, policy);
 
         await popup.ShowAlertAsync(popupDefinitions.RestoreCompleted(BuildRestoreSummary(result, policy, fileName)));
     }
@@ -479,13 +409,7 @@ public partial class SettingsViewModel : BaseViewModel
         InventoryBackupConflictPolicy policy,
         string fileName)
     {
-        var options = new InventoryBackupRestoreOptions
-        {
-            ConflictPolicy = policy,
-            SignatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync(),
-        };
-
-        var restore = await backupZipRestoreService.RestoreFromZipAsync(backupZip, options);
+        var restore = await backupWorkflows.RestoreZipAsync(backupZip, policy);
 
         await popup.ShowAlertAsync(popupDefinitions.RestoreCompleted(BuildRestoreSummary(restore.Result, policy, fileName, restore.RestoredPhotoFiles)));
     }
@@ -494,12 +418,7 @@ public partial class SettingsViewModel : BaseViewModel
     {
         try
         {
-            var fullPath = Path.Combine(fileHandler.AppDataPath, BackupsFolder, fileName);
-            await share.RequestAsync(new ShareFileRequest
-            {
-                Title = title,
-                File = new ShareFile(fullPath),
-            });
+            await backupWorkflows.ShareAsync(fileName, title);
         }
         catch (Exception ex)
         {
@@ -538,13 +457,9 @@ public partial class SettingsViewModel : BaseViewModel
 
     private async Task<string?> SelectBackupFileAsync()
     {
-        var fileNames = fileHandler
-            .EnumerateFiles(BackupsFolder, "*.json")
-            .OrderByDescending(name => name, StringComparer.Ordinal)
-            .Take(25)
-            .ToArray();
+        var fileNames = backupWorkflows.GetBackupFileNames("*.json");
 
-        if (fileNames.Length == 0)
+        if (fileNames.Count == 0)
         {
             await popup.ShowAlertAsync(popupDefinitions.NoBackupsFound());
             return null;
@@ -555,13 +470,9 @@ public partial class SettingsViewModel : BaseViewModel
 
     private async Task<string?> SelectZipBackupFileAsync()
     {
-        var fileNames = fileHandler
-            .EnumerateFiles(BackupsFolder, "*.zip")
-            .OrderByDescending(name => name, StringComparer.Ordinal)
-            .Take(25)
-            .ToArray();
+        var fileNames = backupWorkflows.GetBackupFileNames("*.zip");
 
-        if (fileNames.Length == 0)
+        if (fileNames.Count == 0)
         {
             await popup.ShowAlertAsync(popupDefinitions.NoBackupsFound());
             return null;
@@ -588,8 +499,4 @@ public partial class SettingsViewModel : BaseViewModel
                photoSummary;
     }
 
-    private sealed record BackupSigningKeyTransfer(
-        int FormatVersion,
-        string KeyId,
-        string SignatureSecret);
 }
