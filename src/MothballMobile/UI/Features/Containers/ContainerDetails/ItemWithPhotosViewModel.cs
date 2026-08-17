@@ -14,6 +14,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly Func<Guid, int, Task> saveQuantity;
+    private readonly Action skipNextInitialization;
 
     public ItemWithPhotosViewModel(
         ContainerItemInventoryEntry entry,
@@ -24,7 +25,8 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         IPopupDefinitionService popupDefinitions,
         string? sourceContainerId,
         bool showQuantityManagement,
-        Func<Guid, int, Task> saveQuantity)
+        Func<Guid, int, Task> saveQuantity,
+        Action skipNextInitialization)
         : base(entry.Inventory, paths)
     {
         quantity = entry.ContainerQuantity;
@@ -34,6 +36,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         this.popupDefinitions = popupDefinitions;
         this.sourceContainerId = sourceContainerId;
         this.saveQuantity = saveQuantity;
+        this.skipNextInitialization = skipNextInitialization;
         ShowQuantityManagement = showQuantityManagement;
     }
 
@@ -78,6 +81,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
             return;
         }
 
+        skipNextInitialization();
         var selectedQuantity = await popup.PickNumberAsync(popupDefinitions.SetQuantity(Quantity));
 
         if (selectedQuantity is null || selectedQuantity.Value == Quantity)
@@ -87,6 +91,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
 
         if (selectedQuantity.Value == 0)
         {
+            skipNextInitialization();
             var confirmed = await popup.ConfirmAsync(popupDefinitions.RemoveItemFromContainer(Name));
 
             if (!confirmed)
@@ -106,6 +111,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
             return;
         }
 
+        skipNextInitialization();
         var confirmed = await popup.ConfirmAsync(popupDefinitions.RemoveItemFromContainer(Name));
 
         if (!confirmed)

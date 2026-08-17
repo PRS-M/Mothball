@@ -22,6 +22,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IContainerItemQuantityService quantityService;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private Container? currentContainer;
+    private bool skipNextInitialization;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -121,7 +122,15 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     /// <inheritdoc />
     public Task InitializeAsync()
-        => InitializeAsync(ContainerId);
+    {
+        if (skipNextInitialization)
+        {
+            skipNextInitialization = false;
+            return Task.CompletedTask;
+        }
+
+        return InitializeAsync(ContainerId);
+    }
 
     /// <summary>
     /// Loads container details, photos, and initial item-list state for the specified container.
@@ -187,7 +196,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                     popupDefinitions,
                     ContainerId,
                     ShowQuantityManagement,
-                    SaveItemQuantityAsync);
+                    SaveItemQuantityAsync,
+                    SkipNextInitialization);
                 itemVm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load container item images");
                 return itemVm;
             });
@@ -209,13 +219,24 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
 
         var result = await quantityService.SaveQuantityAsync(currentContainer, itemId, quantity);
-        ItemTypesCount = await containerDetailsQueries.GetDistinctItemCountAsync(ContainerId);
+        if (result.Removed)
+        {
+            itemRows.Remove(itemId);
+            ItemTypesCount--;
+            IsItemListEmpty = itemRows.IsEmpty;
+        }
+        else if (itemRows.Find(itemId) is { } item)
+        {
+            item.Quantity = quantity;
+        }
+
         TotalItemCount = ShowQuantityManagement
             ? result.TotalItemCount
             : ItemTypesCount;
-        var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
-        await ReloadItemsAsync(searchTerm);
     }
+
+    private void SkipNextInitialization()
+        => skipNextInitialization = true;
 
     [RelayCommand]
     private async Task LoadMoreItemsAsync()
