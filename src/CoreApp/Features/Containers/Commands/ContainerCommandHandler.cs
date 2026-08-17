@@ -2,17 +2,21 @@ using CoreApp.Entities.ContainerAggregate;
 
 namespace CoreApp.Features.Containers.Commands;
 
-public sealed class UpdateContainerNotesCommandHandler : IUpdateContainerNotesCommandHandler
+public sealed class ContainerCommandHandler : IContainerCommandHandler
 {
     private readonly IInventoryCommandRepository inventoryCommands;
 
-    public UpdateContainerNotesCommandHandler(IInventoryCommandRepository inventoryCommands)
+    public ContainerCommandHandler(IInventoryCommandRepository inventoryCommands)
     {
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
 
     /// <inheritdoc />
-    public async Task UpdateAsync(Container container, string notes)
+    public Task DeleteAsync(string containerId)
+        => inventoryCommands.DeleteContainerAsync(containerId);
+
+    /// <inheritdoc />
+    public async Task UpdateNotesAsync(Container container, string notes)
     {
         ArgumentNullException.ThrowIfNull(container);
 

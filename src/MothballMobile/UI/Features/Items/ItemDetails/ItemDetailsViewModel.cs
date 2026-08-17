@@ -12,8 +12,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 {
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
     private readonly IItemInventoryCommandService inventoryCommands;
-    private readonly IDeleteItemCommandHandler deleteItemHandler;
-    private readonly IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler;
+    private readonly IItemCommandHandler itemCommandHandler;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
@@ -67,8 +66,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public ItemDetailsViewModel(
         IItemDetailsQueryHandler itemDetailsQueries,
         IItemInventoryCommandService inventoryCommands,
-        IDeleteItemCommandHandler deleteItemHandler,
-        IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler,
+        IItemCommandHandler itemCommandHandler,
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IImagePathResolver paths,
@@ -82,8 +80,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     {
         this.itemDetailsQueries = itemDetailsQueries;
         this.inventoryCommands = inventoryCommands;
-        this.deleteItemHandler = deleteItemHandler;
-        this.updateItemDescriptionHandler = updateItemDescriptionHandler;
+        this.itemCommandHandler = itemCommandHandler;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
@@ -453,7 +450,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         var updatedDescription = DescriptionDraft?.Trim() ?? string.Empty;
         await RunCommandAsync(async () =>
         {
-            await updateItemDescriptionHandler.UpdateAsync(currentItem, updatedDescription);
+            await itemCommandHandler.UpdateDescriptionAsync(currentItem, updatedDescription);
             Description = currentItem.Description;
             DescriptionDraft = currentItem.Description;
             IsEditingDescription = false;
@@ -467,7 +464,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteItem());
         if (!confirmed) return;
 
-        await deleteItemHandler.DeleteAsync(ItemId);
+        await itemCommandHandler.DeleteAsync(ItemId);
         await nav.GoBackAsync();
     }
 

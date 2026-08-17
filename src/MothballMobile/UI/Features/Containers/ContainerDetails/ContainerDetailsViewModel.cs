@@ -12,8 +12,7 @@ namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
 {
     private readonly IContainerDetailsQueryHandler containerDetailsQueries;
-    private readonly IDeleteContainerCommandHandler deleteContainerHandler;
-    private readonly IUpdateContainerNotesCommandHandler updateContainerNotesHandler;
+    private readonly IContainerCommandHandler containerCommandHandler;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
@@ -72,8 +71,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     public ContainerDetailsViewModel(
         IContainerDetailsQueryHandler containerDetailsQueries,
-        IDeleteContainerCommandHandler deleteContainerHandler,
-        IUpdateContainerNotesCommandHandler updateContainerNotesHandler,
+        IContainerCommandHandler containerCommandHandler,
         IImagePathResolver paths,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
@@ -87,8 +85,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.containerDetailsQueries = containerDetailsQueries;
-        this.deleteContainerHandler = deleteContainerHandler;
-        this.updateContainerNotesHandler = updateContainerNotesHandler;
+        this.containerCommandHandler = containerCommandHandler;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
         this.quantityService = quantityService;
@@ -282,7 +279,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         var updatedNotes = NotesDraft?.Trim() ?? string.Empty;
         await RunCommandAsync(async () =>
         {
-            await updateContainerNotesHandler.UpdateAsync(currentContainer, updatedNotes);
+            await containerCommandHandler.UpdateNotesAsync(currentContainer, updatedNotes);
             Notes = currentContainer.Notes;
             NotesDraft = currentContainer.Notes;
             IsEditingNotes = false;
@@ -301,7 +298,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         if (!confirmed) return;
 
-        await deleteContainerHandler.DeleteAsync(ContainerId);
+        await containerCommandHandler.DeleteAsync(ContainerId);
         await nav.GoBackAsync();
     }
 
