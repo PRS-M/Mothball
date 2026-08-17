@@ -5,12 +5,15 @@ using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
 using MothballMobile.UI.Shared;
+using System.Text.Json;
 
 namespace MothballMobile.UI.Features.Settings;
 
 public partial class SettingsViewModel : BaseViewModel
 {
     private const string BackupsFolder = "Backups";
+    private const string SigningKeyTransferFileName = "mothball-backup-signing-key.json";
+    private const int SigningKeyTransferFormatVersion = 1;
 
     private readonly IInventoryBackupExporter backupExporter;
     private readonly IInventoryBackupRestoreService backupRestoreService;
@@ -318,16 +321,70 @@ public partial class SettingsViewModel : BaseViewModel
             try
             {
                 var signatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync();
-                await share.RequestAsync(new ShareTextRequest
+                var transfer = new BackupSigningKeyTransfer(
+                    SigningKeyTransferFormatVersion,
+                    BackupSignatureSecretProvider.SignatureKeyId,
+                    signatureSecret);
+                var transferPath = Path.Combine(FileSystem.CacheDirectory, SigningKeyTransferFileName);
+                await File.WriteAllTextAsync(transferPath, JsonSerializer.Serialize(transfer));
+
+                await share.RequestAsync(new ShareFileRequest
                 {
                     Title = "Share Mothball backup signing key",
-                    Text = $"Mothball backup signing key ({BackupSignatureSecretProvider.SignatureKeyId}):\n{signatureSecret}",
+                    File = new ShareFile(transferPath),
                 });
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to share the Mothball backup signing key.");
                 await popup.ShowAlertAsync(popupDefinitions.BackupSigningKeyShareFailed(ex.Message));
+            }
+        });
+    }
+
+    [RelayCommand]
+    private async Task ImportBackupSigningKeyAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            var file = await PickBackupSigningKeyFileAsync();
+            if (file is null)
+            {
+                return;
+            }
+
+            try
+            {
+                await using var stream = await file.OpenReadAsync();
+                using var reader = new StreamReader(stream);
+                var transfer = JsonSerializer.Deserialize<BackupSigningKeyTransfer>(await reader.ReadToEndAsync())
+                    ?? throw new InvalidDataException("The signing key file is empty or invalid.");
+
+                if (transfer.FormatVersion != SigningKeyTransferFormatVersion ||
+                    !string.Equals(transfer.KeyId, BackupSignatureSecretProvider.SignatureKeyId, StringComparison.Ordinal))
+                {
+                    throw new InvalidDataException("The signing key file is not compatible with this version of Mothball.");
+                }
+
+                var confirmed = await popup.ConfirmAsync(
+                    "Import signing key",
+                    "This replaces the current backup signing key on this device. Backups signed by the current key will no longer verify here.",
+                    "Import",
+                    "Cancel");
+                if (!confirmed)
+                {
+                    return;
+                }
+
+                await backupSignatureSecretProvider.ReplaceAsync(transfer.SignatureSecret);
+                await popup.ShowAlertAsync(new AlertPopupDefinition(
+                    "Signing key imported",
+                    "This device can now verify backups signed by the imported key."));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to import the Mothball backup signing key from {FileName}.", file.FileName);
+                await popup.ShowAlertAsync(popupDefinitions.BackupSigningKeyImportFailed(ex.Message));
             }
         });
     }
@@ -458,6 +515,9 @@ public partial class SettingsViewModel : BaseViewModel
             FileTypes = fileType,
         });
 
+    private async Task<FileResult?> PickBackupSigningKeyFileAsync()
+        => await PickBackupFileAsync("Choose signing key", JsonBackupFileType);
+
     private static FilePickerFileType JsonBackupFileType => new(new Dictionary<DevicePlatform, IEnumerable<string>>
     {
         [DevicePlatform.iOS] = ["public.json"],
@@ -527,4 +587,9 @@ public partial class SettingsViewModel : BaseViewModel
                $"Skipped: containers {result.SkippedExistingContainers}, items {result.SkippedExistingItems}, relations {result.SkippedExistingRelations}, images {result.SkippedExistingImages}" +
                photoSummary;
     }
+
+    private sealed record BackupSigningKeyTransfer(
+        int FormatVersion,
+        string KeyId,
+        string SignatureSecret);
 }

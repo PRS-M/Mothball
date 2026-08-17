@@ -56,6 +56,23 @@ public sealed class BackupSignatureSecretProvider : IBackupSignatureSecretProvid
         }
     }
 
+    public async Task ReplaceAsync(string signatureSecret, CancellationToken cancellationToken = default)
+    {
+        ValidateSignatureSecret(signatureSecret);
+
+        await synchronizationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ReplaceSynchronizedSecret(signatureSecret);
+            await secureStorage.SetAsync(StorageKey, signatureSecret).ConfigureAwait(false);
+            this.signatureSecret = signatureSecret;
+        }
+        finally
+        {
+            synchronizationLock.Release();
+        }
+    }
+
     private static string? GetSynchronizedSecret()
     {
 #if IOS || MACCATALYST
@@ -96,6 +113,46 @@ public sealed class BackupSignatureSecretProvider : IBackupSignatureSecretProvid
         throw new InvalidOperationException($"Could not save the backup signing key to the iCloud Keychain: {status}.");
 #else
         return secret;
+#endif
+    }
+
+    private static void ValidateSignatureSecret(string signatureSecret)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(signatureSecret);
+
+        try
+        {
+            if (Convert.FromBase64String(signatureSecret).Length != 32)
+            {
+                throw new ArgumentException("The backup signing key must contain 32 bytes.", nameof(signatureSecret));
+            }
+        }
+        catch (FormatException ex)
+        {
+            throw new ArgumentException("The backup signing key is not valid base64.", nameof(signatureSecret), ex);
+        }
+    }
+
+    private static void ReplaceSynchronizedSecret(string secret)
+    {
+#if IOS || MACCATALYST
+        using var query = CreateKeychainRecord();
+        using var updatedRecord = new SecRecord(SecKind.GenericPassword)
+        {
+            ValueData = NSData.FromString(secret, NSStringEncoding.UTF8),
+        };
+
+        var status = SecKeyChain.Update(query, updatedRecord);
+        if (status == SecStatusCode.ItemNotFound)
+        {
+            StoreSynchronizedSecret(secret);
+            return;
+        }
+
+        if (status != SecStatusCode.Success)
+        {
+            throw new InvalidOperationException($"Could not update the backup signing key in the iCloud Keychain: {status}.");
+        }
 #endif
     }
 

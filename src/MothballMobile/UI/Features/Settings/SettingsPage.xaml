@@ -73,13 +73,18 @@
                               Style="{StaticResource HeadlineSmall}"
                               TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
 
-                      <Label Text="Share the key with another device to verify backups created on this device. Treat it like a password."
+                    <Label Text="Share or import a key to verify backups across devices. Treat the transfer file like a password."
                               Style="{StaticResource BodyMedium}"
                               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
 
                       <Button Text="Share signing key"
                                 Command="{Binding ShareBackupSigningKeyCommand}"
                                 SemanticProperties.Hint="Share the backup signing key using the system share sheet, including AirDrop" />
+
+                    <Button Text="Import signing key"
+                            Style="{StaticResource OutlinedButton}"
+                            Command="{Binding ImportBackupSigningKeyCommand}"
+                            SemanticProperties.Hint="Import a backup signing key file received from another device" />
                   </VerticalStackLayout>
              </Border>
 
