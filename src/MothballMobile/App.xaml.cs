@@ -11,6 +11,7 @@ public partial class App : Application
 	private readonly IAppStartupOrchestrator startupOrchestrator;
 	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 	private readonly IApplicationSettings applicationSettings;
+	private readonly IBackupSignatureSecretProvider backupSignatureSecretProvider;
 	private readonly AdMobSettings adMobSettings;
 	private readonly ILogger<App> logger;
 	private readonly ILogger<AppShell> appShellLogger;
@@ -19,6 +20,7 @@ public partial class App : Application
 		IAppStartupOrchestrator startupOrchestrator,
 		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
 		IApplicationSettings applicationSettings,
+		IBackupSignatureSecretProvider backupSignatureSecretProvider,
 		AdMobSettings adMobSettings,
 		ILogger<App> logger,
 		ILogger<AppShell> appShellLogger)
@@ -27,6 +29,7 @@ public partial class App : Application
 		this.startupOrchestrator = startupOrchestrator;
 		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
 		this.applicationSettings = applicationSettings;
+		this.backupSignatureSecretProvider = backupSignatureSecretProvider;
 		this.adMobSettings = adMobSettings;
 		UserAppTheme = applicationSettings.ThemeOverride;
 		this.logger = logger;
@@ -44,6 +47,7 @@ public partial class App : Application
 	{
 		try
 		{
+			await backupSignatureSecretProvider.GetOrCreateAsync();
 			await startupOrchestrator.StartAsync();
 			var shell = new AppShell(photoBackgroundOperationTracker, appShellLogger);
 			var shellLoaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

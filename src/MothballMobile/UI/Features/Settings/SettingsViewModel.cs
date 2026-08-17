@@ -20,6 +20,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IFilePicker filePicker;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
+    private readonly IBackupSignatureSecretProvider backupSignatureSecretProvider;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly ILogger<SettingsViewModel> logger;
@@ -41,6 +42,7 @@ public partial class SettingsViewModel : BaseViewModel
         IFilePicker filePicker,
         INavigationService nav,
         IApplicationSettings applicationSettings,
+        IBackupSignatureSecretProvider backupSignatureSecretProvider,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         ILogger<SettingsViewModel> logger)
@@ -53,6 +55,7 @@ public partial class SettingsViewModel : BaseViewModel
         this.filePicker = filePicker;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
+        this.backupSignatureSecretProvider = backupSignatureSecretProvider;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -130,7 +133,10 @@ public partial class SettingsViewModel : BaseViewModel
         {
             try
             {
-                var backupJson = await backupExporter.ExportAsJsonAsync();
+                var signatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync();
+                var backupJson = await backupExporter.ExportAsJsonAsync(
+                    signatureSecret,
+                    BackupSignatureSecretProvider.SignatureKeyId);
                 var fileName = BuildBackupFileName();
                 var fullPath = await fileHandler.SaveTextFileAsync(fileName, BackupsFolder, backupJson);
 
@@ -151,7 +157,10 @@ public partial class SettingsViewModel : BaseViewModel
         {
             try
             {
-                var backupZip = await backupExporter.ExportAsZipAsync();
+                var signatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync();
+                var backupZip = await backupExporter.ExportAsZipAsync(
+                    signatureSecret,
+                    BackupSignatureSecretProvider.SignatureKeyId);
                 var fileName = BuildBackupZipFileName();
                 var fullPath = await fileHandler.SaveFileAsync(fileName, BackupsFolder, backupZip);
 
@@ -378,6 +387,7 @@ public partial class SettingsViewModel : BaseViewModel
         var options = new InventoryBackupRestoreOptions
         {
             ConflictPolicy = policy,
+            SignatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync(),
         };
 
         var result = await backupRestoreService.RestoreFromJsonAsync(backupJson, options);
@@ -393,6 +403,7 @@ public partial class SettingsViewModel : BaseViewModel
         var options = new InventoryBackupRestoreOptions
         {
             ConflictPolicy = policy,
+            SignatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync(),
         };
 
         var restore = await backupZipRestoreService.RestoreFromZipAsync(backupZip, options);

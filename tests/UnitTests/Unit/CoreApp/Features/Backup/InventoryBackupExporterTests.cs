@@ -2,6 +2,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.Inventory;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Entities.Shared;
+using CoreApp.Contracts;
 using CoreApp.Utilities;
 using Moq;
 using System.IO.Compression;
@@ -123,6 +124,43 @@ public class InventoryBackupExporterTests
             Assert.That(archive.GetEntry("backup.json"), Is.Not.Null);
             Assert.That(archive.GetEntry($"images/containers/{containerPhoto.FileName}"), Is.Not.Null);
             Assert.That(archive.GetEntry($"images/items/{itemPhoto.FileName}"), Is.Not.Null);
+        });
+    }
+
+    [Test]
+    public async Task ExportAsZipAsync_WithSignatureSecret_SignsEmbeddedBackupJson()
+    {
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries
+            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Specifications.ContainerListSpecification>()))
+            .ReturnsAsync([]);
+        queries
+            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .ReturnsAsync([]);
+        queries
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .ReturnsAsync([]);
+
+        var sut = new InventoryBackupExporter(queries.Object, Mock.Of<IFileHandler>());
+
+        byte[] zipBytes = await sut.ExportAsZipAsync("test-signature-secret", "device-key");
+
+        using var zipStream = new MemoryStream(zipBytes);
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
+        var backupJsonEntry = archive.GetEntry("backup.json");
+        Assert.That(backupJsonEntry, Is.Not.Null);
+
+        await using var entryStream = backupJsonEntry!.Open();
+        using var reader = new StreamReader(entryStream);
+        var backup = InventoryBackupRestorePlanner.ParseBackupJson(await reader.ReadToEndAsync());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(backup.Integrity.SignatureAlgorithm, Is.EqualTo("HMAC-SHA256"));
+            Assert.That(backup.Integrity.KeyId, Is.EqualTo("device-key"));
+            Assert.DoesNotThrow(() => InventoryBackupRestorePlanner.ValidateIntegrity(
+                backup,
+                new InventoryBackupRestoreOptions { SignatureSecret = "test-signature-secret" }));
         });
     }
 
