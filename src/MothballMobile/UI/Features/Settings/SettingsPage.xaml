@@ -63,6 +63,26 @@
                 </VerticalStackLayout>
             </Border>
 
+             <Border Padding="14"
+                      StrokeThickness="1"
+                      Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                      StrokeShape="RoundRectangle 16"
+                      Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
+                  <VerticalStackLayout Spacing="10">
+                      <Label Text="Backup signing key"
+                              Style="{StaticResource HeadlineSmall}"
+                              TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+
+                      <Label Text="Share the key with another device to verify backups created on this device. Treat it like a password."
+                              Style="{StaticResource BodyMedium}"
+                              TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+
+                      <Button Text="Share signing key"
+                                Command="{Binding ShareBackupSigningKeyCommand}"
+                                SemanticProperties.Hint="Share the backup signing key using the system share sheet, including AirDrop" />
+                  </VerticalStackLayout>
+             </Border>
+
             <Border Padding="14"
                     StrokeThickness="1"
                     Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"

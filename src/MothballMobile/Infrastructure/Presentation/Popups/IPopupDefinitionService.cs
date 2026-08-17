@@ -28,6 +28,12 @@ public interface IPopupDefinitionService
     AlertPopupDefinition BackupShareFailed(string errorMessage);
 
     /// <summary>
+    /// Creates an alert describing a backup signing-key sharing failure.
+    /// </summary>
+    /// <param name="errorMessage">The value used by the operation.</param>
+    AlertPopupDefinition BackupSigningKeyShareFailed(string errorMessage);
+
+    /// <summary>
     /// Creates an alert summarizing a completed backup restore.
     /// </summary>
     /// <param name="summary">The value used by the operation.</param>

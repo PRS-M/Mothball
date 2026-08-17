@@ -311,6 +311,28 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task ShareBackupSigningKeyAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            try
+            {
+                var signatureSecret = await backupSignatureSecretProvider.GetOrCreateAsync();
+                await share.RequestAsync(new ShareTextRequest
+                {
+                    Title = "Share Mothball backup signing key",
+                    Text = $"Mothball backup signing key ({BackupSignatureSecretProvider.SignatureKeyId}):\n{signatureSecret}",
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to share the Mothball backup signing key.");
+                await popup.ShowAlertAsync(popupDefinitions.BackupSigningKeyShareFailed(ex.Message));
+            }
+        });
+    }
+
+    [RelayCommand]
     private async Task DeleteJsonAsync()
     {
         await RunCommandAsync(async () =>
