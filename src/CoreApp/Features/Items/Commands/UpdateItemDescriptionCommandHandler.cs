@@ -2,7 +2,7 @@ using CoreApp.Entities.ItemAggregate;
 
 namespace CoreApp.Features.Items.Commands;
 
-public sealed class UpdateItemDescriptionCommandHandler
+public sealed class UpdateItemDescriptionCommandHandler : IUpdateItemDescriptionCommandHandler
 {
     private readonly IInventoryCommandRepository inventoryCommands;
 
@@ -11,6 +11,7 @@ public sealed class UpdateItemDescriptionCommandHandler
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
 
+    /// <inheritdoc />
     public async Task UpdateAsync(Item item, string description)
     {
         ArgumentNullException.ThrowIfNull(item);

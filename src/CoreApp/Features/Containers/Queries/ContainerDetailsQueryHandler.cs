@@ -4,7 +4,7 @@ using CoreApp.Specifications;
 
 namespace CoreApp.Features.Containers.Queries;
 
-public sealed class ContainerDetailsQueryHandler
+public sealed class ContainerDetailsQueryHandler : IContainerDetailsQueryHandler
 {
     private readonly IInventoryQueryRepository inventoryQueries;
 
@@ -13,6 +13,7 @@ public sealed class ContainerDetailsQueryHandler
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
     }
 
+    /// <inheritdoc />
     public async Task<ContainerDetailsResult?> GetDetailsAsync(string containerId)
     {
         var container = await inventoryQueries.GetContainerAsync(containerId);
@@ -25,6 +26,7 @@ public sealed class ContainerDetailsQueryHandler
         return new ContainerDetailsResult(container, totalItemCount);
     }
 
+    /// <inheritdoc />
     public Task<int> GetDistinctItemCountAsync(string containerId)
         => inventoryQueries.GetDistinctItemCountInContainerAsync(containerId);
 

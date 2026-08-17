@@ -3,7 +3,7 @@ using CoreApp.Specifications;
 
 namespace CoreApp.Features.Containers.Queries;
 
-public sealed class ContainerListQueryHandler
+public sealed class ContainerListQueryHandler : IContainerListQueryHandler
 {
     private readonly IInventoryQueryRepository inventoryQueries;
 

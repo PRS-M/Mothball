@@ -3,7 +3,7 @@ using CoreApp.Features.Photos;
 
 namespace CoreApp.Features.Containers.Commands;
 
-public sealed class CreateContainerCommandHandler
+public sealed class CreateContainerCommandHandler : ICreateContainerCommandHandler
 {
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly ImageService imageService;
@@ -16,6 +16,7 @@ public sealed class CreateContainerCommandHandler
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
     }
 
+    /// <inheritdoc />
     public async Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null)
     {
         var container = new Container(

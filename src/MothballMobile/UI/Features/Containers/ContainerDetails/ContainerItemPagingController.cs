@@ -5,14 +5,14 @@ namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
 internal sealed class ContainerItemPagingController
 {
-    private readonly ContainerDetailsQueryHandler containerDetailsQueries;
+    private readonly IContainerDetailsQueryHandler containerDetailsQueries;
     private readonly int pageSize;
     private int currentPage;
     private bool hasMoreItems = true;
     private int loadVersion;
     private string? activeSearchTerm;
 
-    public ContainerItemPagingController(ContainerDetailsQueryHandler containerDetailsQueries, int pageSize)
+    public ContainerItemPagingController(IContainerDetailsQueryHandler containerDetailsQueries, int pageSize)
     {
         this.containerDetailsQueries = containerDetailsQueries ?? throw new ArgumentNullException(nameof(containerDetailsQueries));
         this.pageSize = pageSize;

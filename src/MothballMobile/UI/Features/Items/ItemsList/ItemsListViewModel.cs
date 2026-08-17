@@ -19,7 +19,7 @@ public enum ItemsListFilter
 public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapshot, ItemViewModel>, IDisposable
 {
     private readonly IImagePathResolver paths;
-    private readonly ItemsListQueryHandler itemListQueries;
+    private readonly IItemsListQueryHandler itemListQueries;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly IDebouncer debouncer;
@@ -50,7 +50,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
 
     public ItemsListViewModel(
         IImagePathResolver paths,
-        ItemsListQueryHandler itemListQueries,
+        IItemsListQueryHandler itemListQueries,
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IBackgroundTaskObserver backgroundTasks,

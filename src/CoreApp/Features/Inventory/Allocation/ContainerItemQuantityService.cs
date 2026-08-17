@@ -3,7 +3,7 @@ using CoreApp.Entities.ContainerAggregate;
 
 namespace CoreApp.Features.Inventory.Allocation;
 
-public sealed class ContainerItemQuantityService
+public sealed class ContainerItemQuantityService : IContainerItemQuantityService
 {
     private readonly IItemInventoryCommandService inventoryCommands;
 
@@ -12,6 +12,7 @@ public sealed class ContainerItemQuantityService
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
     }
 
+    /// <inheritdoc />
     public async Task<ContainerItemQuantityUpdateResult> SaveQuantityAsync(Container container, Guid itemId, int quantity)
     {
         ArgumentNullException.ThrowIfNull(container);

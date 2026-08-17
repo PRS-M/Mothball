@@ -47,22 +47,23 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
-        services.AddSingleton<InventoryBackupZipRestoreService>();
+        services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
+        services.AddSingleton<IInventoryBackupZipRestoreService, InventoryBackupZipRestoreService>();
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
         services.AddSingleton<IItemInventoryCommandService, ItemInventoryCommandService>();
-        services.AddSingleton<ContainerItemQuantityService>();
-        services.AddSingleton<ContainerDetailsQueryHandler>();
+        services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
+        services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
         services.AddSingleton<IContainerAssociationQueryHandler, ContainerAssociationQueryHandler>();
         services.AddSingleton<IAssignItemToContainerCommandHandler, AssignItemToContainerCommandHandler>();
-        services.AddSingleton<DeleteContainerCommandHandler>();
-        services.AddSingleton<ContainerListQueryHandler>();
-        services.AddSingleton<CreateContainerCommandHandler>();
-        services.AddSingleton<ItemsListQueryHandler>();
+        services.AddSingleton<IDeleteContainerCommandHandler, DeleteContainerCommandHandler>();
+        services.AddSingleton<IContainerListQueryHandler, ContainerListQueryHandler>();
+        services.AddSingleton<ICreateContainerCommandHandler, CreateContainerCommandHandler>();
+        services.AddSingleton<IItemsListQueryHandler, ItemsListQueryHandler>();
         services.AddSingleton<IItemDetailsQueryHandler, ItemDetailsQueryHandler>();
         services.AddSingleton<ICreateItemCommandHandler, CreateItemCommandHandler>();
-        services.AddSingleton<DeleteItemCommandHandler>();
-        services.AddSingleton<UpdateItemDescriptionCommandHandler>();
-        services.AddSingleton<UpdateContainerNotesCommandHandler>();
+        services.AddSingleton<IDeleteItemCommandHandler, DeleteItemCommandHandler>();
+        services.AddSingleton<IUpdateItemDescriptionCommandHandler, UpdateItemDescriptionCommandHandler>();
+        services.AddSingleton<IUpdateContainerNotesCommandHandler, UpdateContainerNotesCommandHandler>();
 
         return services;
     }

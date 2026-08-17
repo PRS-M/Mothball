@@ -252,8 +252,8 @@ public sealed class ItemDetailsViewModelTests
         => new(
             itemDetails,
             inventoryCommands,
-            new DeleteItemCommandHandler(Mock.Of<IInventoryCommandRepository>()),
-            new UpdateItemDescriptionCommandHandler(Mock.Of<IInventoryCommandRepository>()),
+            Mock.Of<IDeleteItemCommandHandler>(),
+            Mock.Of<IUpdateItemDescriptionCommandHandler>(),
             nav ?? Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true),
             CreatePaths(),
