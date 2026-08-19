@@ -56,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IItemInventoryCommandService, ItemInventoryCommandService>();
         services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
         services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
+        services.AddSingleton<IContainerDetailsHandler, ContainerDetailsHandler>();
         services.AddSingleton<IContainerAssociationQueryHandler, ContainerAssociationQueryHandler>();
         services.AddSingleton<IAssignItemToContainerCommandHandler, AssignItemToContainerCommandHandler>();
         services.AddSingleton<IDeleteContainerCommandHandler, DeleteContainerCommandHandler>();
@@ -135,7 +136,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddViewModels(this IServiceCollection services)
     {
-        services.AddTransient<ContainerDetailsItemsHandler>();
+        services.AddTransient<ContainerDetailsItemsCoordinator>();
         services.AddTransient<AddContainerViewModel>();
         services.AddTransient<ContainerListViewModel>();
         services.AddTransient<ItemsListViewModel>();

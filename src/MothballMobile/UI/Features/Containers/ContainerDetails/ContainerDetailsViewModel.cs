@@ -1,9 +1,7 @@
-using CoreApp.Entities.Inventory;
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
 using CoreApp.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -16,10 +14,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
-    private readonly ContainerDetailsItemsHandler itemHandler;
+    private readonly ContainerDetailsItemsCoordinator itemCoordinator;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private Container? currentContainer;
-    private bool skipNextInitialization;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -43,8 +40,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private int itemTypesCount = 0;
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
-    public ObservableCollection<ItemWithPhotosViewModel> Items => itemHandler.Items;
-    public ObservableCollection<object> Rows => itemHandler.Rows;
+    public ObservableCollection<ItemWithPhotosViewModel> Items => itemCoordinator.Items;
+    public ObservableCollection<object> Rows => itemCoordinator.Rows;
 
     [ObservableProperty]
     private string searchQuery = string.Empty;
@@ -77,7 +74,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
-        ContainerDetailsItemsHandler itemHandler,
+        ContainerDetailsItemsCoordinator itemCoordinator,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
@@ -86,10 +83,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.updateContainerNotesHandler = updateContainerNotesHandler;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
-        this.itemHandler = itemHandler;
+        this.itemCoordinator = itemCoordinator;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
-        itemHandler.Reset(this);
+        itemCoordinator.Reset(this);
 
         // Debounce search query changes
         PropertyChanged += (s, e) =>
@@ -116,9 +113,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     /// <inheritdoc />
     public Task InitializeAsync()
     {
-        if (skipNextInitialization)
+        if (itemCoordinator.TryConsumeSkipNextInitialization())
         {
-            skipNextInitialization = false;
             return Task.CompletedTask;
         }
 
@@ -136,12 +132,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         ContainerId = containerId;
         SearchQuery = string.Empty;
 
-        itemHandler.Reset(this);
         IsItemListEmpty = true;
         ContainerImagePaths.Clear();
 
-        var details = await itemHandler.GetDetailsAsync(containerId);
-        if (details is null)
+        var summary = await itemCoordinator.InitializeAsync(containerId, this, ShowQuantityManagement);
+        if (summary is null)
         {
             currentContainer = null;
             Name = "Container not found";
@@ -151,71 +146,22 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             TotalItemCount = 0;
             ItemTypesCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
-            itemHandler.MarkComplete();
             IsItemListEmpty = true;
             return;
         }
 
-        var container = details.Container;
-        currentContainer = container;
-        Name = container.Name;
-        Notes = container.Notes;
-        NotesDraft = container.Notes;
+        currentContainer = summary.Container;
+        Name = currentContainer.Name;
+        Notes = currentContainer.Notes;
+        NotesDraft = currentContainer.Notes;
         IsEditingNotes = false;
-        ItemTypesCount = await itemHandler.GetDistinctItemCountAsync(containerId);
-        TotalItemCount = ShowQuantityManagement
-            ? details.TotalItemCount
-            : ItemTypesCount;
+        ItemTypesCount = summary.ItemTypesCount;
+        TotalItemCount = ShowQuantityManagement ? summary.TotalItemCount : summary.ItemTypesCount;
 
         // Load container photos (all, as a small carousel)
-        ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
-
-        await ReloadItemsAsync(searchTerm: null);
+        ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(currentContainer));
+        IsItemListEmpty = itemCoordinator.IsEmpty;
     }
-
-    private ItemWithPhotosViewModel CreateItemViewModel(ContainerItemInventoryEntry entry)
-    {
-        var itemViewModel = new ItemWithPhotosViewModel(
-            entry,
-            currentContainer?.ContainerId ?? Guid.Empty,
-            paths,
-            nav,
-            popup,
-            popupDefinitions,
-            ContainerId,
-            ShowQuantityManagement,
-            SaveItemQuantityAsync,
-            SkipNextInitialization);
-        itemViewModel.LoadImagesAsync().FireAndForget(backgroundTasks, "Load container item images");
-        return itemViewModel;
-    }
-
-    private async Task SaveItemQuantityAsync(Guid itemId, int quantity)
-    {
-        if (!ShowQuantityManagement && quantity != 0)
-        {
-            return;
-        }
-
-        if (currentContainer is null)
-        {
-            return;
-        }
-
-        var result = await itemHandler.SaveQuantityAsync(currentContainer, itemId, quantity);
-        if (result.Removed)
-        {
-            ItemTypesCount--;
-        }
-
-        IsItemListEmpty = itemHandler.IsEmpty;
-        TotalItemCount = ShowQuantityManagement
-            ? result.TotalItemCount
-            : ItemTypesCount;
-    }
-
-    private void SkipNextInitialization()
-        => skipNextInitialization = true;
 
     [RelayCommand]
     private async Task LoadMoreItemsAsync()
@@ -223,8 +169,13 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         // Use RunCommandAsync to prevent concurrent loads and manage busy state
         await RunCommandAsync(async () =>
         {
-            await itemHandler.LoadMoreAsync(ContainerId, CreateItemViewModel);
-            IsItemListEmpty = itemHandler.IsEmpty;
+            if (currentContainer is null)
+            {
+                return;
+            }
+
+            await itemCoordinator.LoadMoreAsync(ContainerId, currentContainer, ShowQuantityManagement);
+            IsItemListEmpty = itemCoordinator.IsEmpty;
         });
     }
 
@@ -233,16 +184,15 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (string.IsNullOrWhiteSpace(ContainerId)) return;
 
         var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
-        await ReloadItemsAsync(searchTerm);
-    }
-
-    private async Task ReloadItemsAsync(string? searchTerm)
-    {
         IsItemListEmpty = false;
 
-        if (await itemHandler.ReloadAsync(ContainerId, searchTerm, CreateItemViewModel))
+        if (currentContainer is not null && await itemCoordinator.ReloadAsync(
+                ContainerId,
+                currentContainer,
+                searchTerm,
+                ShowQuantityManagement))
         {
-            IsItemListEmpty = itemHandler.IsEmpty;
+            IsItemListEmpty = itemCoordinator.IsEmpty;
         }
     }
 
