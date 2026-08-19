@@ -169,6 +169,53 @@ public sealed class ContainerWorkflowHandlerTests
     }
 
     [Test]
+    public async Task ContainerItemAssociationHandler_GetAvailableQuantity_IncludesCurrentContainerAllocation()
+    {
+        var itemId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+        var item = new Item(itemId, "Widget", "");
+        var details = new Mock<IItemDetailsQueryHandler>();
+        details.Setup(query => query.GetDetailsAsync(itemId.ToString()))
+            .ReturnsAsync(new ItemDetailsResult(new InventorySnapshot(
+                item,
+                5,
+                3,
+                [
+                    new ItemContainerAllocation(containerId, "Box", 2),
+                    new ItemContainerAllocation(Guid.NewGuid(), "Shelf", 1),
+                ])));
+        var handler = new ContainerItemAssociationHandler(
+            details.Object,
+            Mock.Of<IAssignItemToContainerCommandHandler>());
+
+        var availableQuantity = await handler.GetAvailableQuantityAsync(itemId, containerId, 1);
+
+        Assert.That(availableQuantity, Is.EqualTo(4));
+    }
+
+    [Test]
+    public async Task ContainerItemAssociationHandler_TryAssociate_RejectsQuantityAboveAvailable()
+    {
+        var itemId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+        var item = new Item(itemId, "Widget", "");
+        var details = new Mock<IItemDetailsQueryHandler>();
+        details.Setup(query => query.GetDetailsAsync(itemId.ToString()))
+            .ReturnsAsync(new ItemDetailsResult(new InventorySnapshot(item, 2, 0, [])));
+        var assign = new Mock<IAssignItemToContainerCommandHandler>();
+        var handler = new ContainerItemAssociationHandler(details.Object, assign.Object);
+
+        var result = await handler.TryAssociateAsync(itemId, containerId, quantity: 3, fallbackUnassignedQuantity: 2);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Associated, Is.False);
+            Assert.That(result.AvailableQuantity, Is.EqualTo(2));
+        });
+        assign.Verify(command => command.AssignAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Test]
     public async Task AssociateItemWithContainerViewModel_SelectContainer_AssignsSelectedUnassignedQuantity()
     {
         var itemId = Guid.NewGuid();
@@ -181,28 +228,30 @@ public sealed class ContainerWorkflowHandlerTests
         associationQueries.Setup(q => q.QueryContainersAsync(0, 10))
             .ReturnsAsync([container]);
 
-        var item = new Item(itemId, "Widget", "");
-        var itemDetails = new Mock<IItemDetailsQueryHandler>();
-        itemDetails.Setup(q => q.GetDetailsAsync(itemId.ToString()))
-            .ReturnsAsync(new ItemDetailsResult(new InventorySnapshot(item, 5, 0, [])));
-
-        var assign = new Mock<IAssignItemToContainerCommandHandler>();
+        var itemAssociation = new Mock<IContainerItemAssociationHandler>();
+        itemAssociation.Setup(handler => handler.GetAvailableQuantityAsync(itemId, container.ContainerId, 5))
+            .ReturnsAsync(5);
+        itemAssociation.Setup(handler => handler.TryAssociateAsync(itemId, container.ContainerId, 3, 5))
+            .ReturnsAsync(new ContainerItemAssociationResult(Associated: true, AvailableQuantity: 5));
         var popup = new Mock<IPopupService>();
         popup.Setup(p => p.PickNumberAsync(It.Is<NumberPickerPopupDefinition>(
                 definition => definition.Max == 5)))
             .ReturnsAsync(3);
 
         var nav = new Mock<INavigationService>();
+        var applicationSettings = Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode);
+        var backgroundTasks = Mock.Of<IBackgroundTaskObserver>();
         var viewModel = new AssociateItemWithContainerViewModel(
-            imagePaths.Object,
-            associationQueries.Object,
-            itemDetails.Object,
-            assign.Object,
+            new AssociateItemWithContainerCoordinator(
+                imagePaths.Object,
+                associationQueries.Object,
+                applicationSettings,
+                backgroundTasks),
+            itemAssociation.Object,
             nav.Object,
-            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true),
+            applicationSettings,
             popup.Object,
-            new PopupDefinitionService(),
-            Mock.Of<IBackgroundTaskObserver>());
+            new PopupDefinitionService());
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
             [NavigationParams.ItemId] = itemId.ToString(),
@@ -212,7 +261,7 @@ public sealed class ContainerWorkflowHandlerTests
 
         await viewModel.Containers.Single().SelectCommand.ExecuteAsync(null);
 
-        assign.Verify(a => a.AssignAsync(itemId, container.ContainerId, 3), Times.Once);
+        itemAssociation.Verify(handler => handler.TryAssociateAsync(itemId, container.ContainerId, 3, 5), Times.Once);
         nav.Verify(n => n.GoBackAsync(), Times.Once);
     }
 
@@ -229,29 +278,30 @@ public sealed class ContainerWorkflowHandlerTests
         associationQueries.Setup(q => q.QueryContainersAsync(0, 10))
             .ReturnsAsync([container]);
 
-        var item = new Item(itemId, "Widget", "");
-        var allocation = new ItemContainerAllocation(container.ContainerId, container.Name, 1);
-        var itemDetails = new Mock<IItemDetailsQueryHandler>();
-        itemDetails.Setup(q => q.GetDetailsAsync(itemId.ToString()))
-            .ReturnsAsync(new ItemDetailsResult(new InventorySnapshot(item, 4, 1, [allocation])));
-
-        var assign = new Mock<IAssignItemToContainerCommandHandler>();
+        var itemAssociation = new Mock<IContainerItemAssociationHandler>();
+        itemAssociation.Setup(handler => handler.GetAvailableQuantityAsync(itemId, container.ContainerId, 3))
+            .ReturnsAsync(4);
+        itemAssociation.Setup(handler => handler.TryAssociateAsync(itemId, container.ContainerId, 4, 3))
+            .ReturnsAsync(new ContainerItemAssociationResult(Associated: true, AvailableQuantity: 4));
         var popup = new Mock<IPopupService>();
         popup.Setup(p => p.PickNumberAsync(It.Is<NumberPickerPopupDefinition>(
                 definition => definition.Max == 4 && definition.InitialValue == 4)))
             .ReturnsAsync(4);
 
         var nav = new Mock<INavigationService>();
+        var applicationSettings = Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode);
+        var backgroundTasks = Mock.Of<IBackgroundTaskObserver>();
         var viewModel = new AssociateItemWithContainerViewModel(
-            imagePaths.Object,
-            associationQueries.Object,
-            itemDetails.Object,
-            assign.Object,
+            new AssociateItemWithContainerCoordinator(
+                imagePaths.Object,
+                associationQueries.Object,
+                applicationSettings,
+                backgroundTasks),
+            itemAssociation.Object,
             nav.Object,
-            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true),
+            applicationSettings,
             popup.Object,
-            new PopupDefinitionService(),
-            Mock.Of<IBackgroundTaskObserver>());
+            new PopupDefinitionService());
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
             [NavigationParams.ItemId] = itemId.ToString(),
@@ -261,7 +311,7 @@ public sealed class ContainerWorkflowHandlerTests
 
         await viewModel.Containers.Single().SelectCommand.ExecuteAsync(null);
 
-        assign.Verify(a => a.AssignAsync(itemId, container.ContainerId, 4), Times.Once);
+        itemAssociation.Verify(handler => handler.TryAssociateAsync(itemId, container.ContainerId, 4, 3), Times.Once);
     }
 
 }
