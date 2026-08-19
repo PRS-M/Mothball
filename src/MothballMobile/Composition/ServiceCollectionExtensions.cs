@@ -135,6 +135,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddViewModels(this IServiceCollection services)
     {
+        services.AddTransient<ContainerDetailsItemsHandler>();
         services.AddTransient<AddContainerViewModel>();
         services.AddTransient<ContainerListViewModel>();
         services.AddTransient<ItemsListViewModel>();
