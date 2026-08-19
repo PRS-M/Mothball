@@ -46,6 +46,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();
+        services.AddSingleton<IBackupSignatureSecretProvider, BackupSignatureSecretProvider>();
+        services.AddSingleton<IInventoryBackupWorkflowService, InventoryBackupWorkflowService>();
+        services.AddSingleton<IBackupSigningKeyTransferService, BackupSigningKeyTransferService>();
         services.AddSingleton<IInventoryBackupExporter, InventoryBackupExporter>();
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
         services.AddSingleton<IInventoryBackupZipRestoreService, InventoryBackupZipRestoreService>();
@@ -53,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IItemInventoryCommandService, ItemInventoryCommandService>();
         services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
         services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
+        services.AddSingleton<IContainerDetailsHandler, ContainerDetailsHandler>();
         services.AddSingleton<IContainerAssociationQueryHandler, ContainerAssociationQueryHandler>();
         services.AddSingleton<IAssignItemToContainerCommandHandler, AssignItemToContainerCommandHandler>();
         services.AddSingleton<IDeleteContainerCommandHandler, DeleteContainerCommandHandler>();
@@ -125,12 +129,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IShare>(Share.Default);
         services.AddSingleton<IFilePicker>(FilePicker.Default);
         services.AddSingleton(Preferences.Default);
+        services.AddSingleton<ISecureStorage>(SecureStorage.Default);
 
         return services;
     }
 
     public static IServiceCollection AddViewModels(this IServiceCollection services)
     {
+        services.AddTransient<ContainerDetailsItemsCoordinator>();
         services.AddTransient<AddContainerViewModel>();
         services.AddTransient<ContainerListViewModel>();
         services.AddTransient<ItemsListViewModel>();

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                xmlns:infra="clr-namespace:MothballMobile.Infrastructure"
+                xmlns:backgroundOperations="clr-namespace:MothballMobile.Infrastructure.BackgroundOperations.Photos"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.BackgroundOperations.BackgroundOperationsPage"
-                x:DataType="infra:IPhotoBackgroundOperationTracker"
+                x:DataType="backgroundOperations:IPhotoBackgroundOperationTracker"
                 Title="Background Operations"
                 Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
@@ -46,7 +46,7 @@
                     <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="infra:PhotoBackgroundOperationEntry">
+                    <DataTemplate x:DataType="backgroundOperations:PhotoBackgroundOperationEntry">
                         <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 12"

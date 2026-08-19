@@ -3,6 +3,7 @@ using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Contracts;
 using CoreApp.Specifications;
+using CoreApp.Features.Containers.ContainerDetails;
 using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Presentation.Popups;
@@ -13,6 +14,53 @@ namespace Mothball.Tests.Unit.Core.Features.Containers;
 [TestFixture]
 public sealed class ContainerWorkflowHandlerTests
 {
+    [Test]
+    public async Task ContainerDetailsHandler_GetSummary_ReturnsContainerAndBothItemCounts()
+    {
+        var container = new Container(Guid.NewGuid(), "Box", "Notes");
+        var queries = new Mock<IContainerDetailsQueryHandler>();
+        queries.Setup(query => query.GetDetailsAsync(container.ContainerId.ToString()))
+            .ReturnsAsync(new ContainerDetailsResult(container, 6));
+        queries.Setup(query => query.GetDistinctItemCountAsync(container.ContainerId.ToString()))
+            .ReturnsAsync(2);
+
+        var handler = new ContainerDetailsHandler(queries.Object, Mock.Of<IContainerItemQuantityService>());
+
+        var result = await handler.GetSummaryAsync(container.ContainerId.ToString());
+
+        Assert.That(result, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result!.Container, Is.SameAs(container));
+            Assert.That(result.ItemTypesCount, Is.EqualTo(2));
+            Assert.That(result.TotalItemCount, Is.EqualTo(6));
+        });
+    }
+
+    [Test]
+    public async Task ContainerDetailsHandler_SaveItemQuantity_ReturnsUpdatedCountsAndRemovalState()
+    {
+        var container = new Container(Guid.NewGuid(), "Box", "Notes");
+        var itemId = Guid.NewGuid();
+        var queries = new Mock<IContainerDetailsQueryHandler>();
+        queries.Setup(query => query.GetDistinctItemCountAsync(container.ContainerId.ToString()))
+            .ReturnsAsync(1);
+        var quantities = new Mock<IContainerItemQuantityService>();
+        quantities.Setup(service => service.SaveQuantityAsync(container, itemId, 0))
+            .ReturnsAsync(new ContainerItemQuantityUpdateResult(Removed: true, TotalItemCount: 3));
+
+        var handler = new ContainerDetailsHandler(queries.Object, quantities.Object);
+
+        var result = await handler.SaveItemQuantityAsync(container, itemId, 0);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Removed, Is.True);
+            Assert.That(result.Summary.ItemTypesCount, Is.EqualTo(1));
+            Assert.That(result.Summary.TotalItemCount, Is.EqualTo(3));
+        });
+    }
+
     [Test]
     public async Task ContainerDetailsQueryHandler_WhenContainerExists_ReturnsContainerWithTotalItemCount()
     {

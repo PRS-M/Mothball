@@ -1,9 +1,7 @@
-using CoreApp.Entities.Inventory;
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
 using CoreApp.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -11,15 +9,12 @@ namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
 public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
 {
-    private readonly IContainerDetailsQueryHandler containerDetailsQueries;
     private readonly IDeleteContainerCommandHandler deleteContainerHandler;
     private readonly IUpdateContainerNotesCommandHandler updateContainerNotesHandler;
     private readonly IDebouncer debouncer;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
-    private readonly ContainerItemPagingController itemPaging;
-    private readonly ContainerDetailsItemRowsViewModel itemRows;
-    private readonly IContainerItemQuantityService quantityService;
+    private readonly ContainerDetailsItemsCoordinator itemCoordinator;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private Container? currentContainer;
 
@@ -45,8 +40,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private int itemTypesCount = 0;
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
-    public ObservableCollection<ItemWithPhotosViewModel> Items { get; } = new();
-    public ObservableCollection<object> Rows { get; } = new();
+    public ObservableCollection<ItemWithPhotosViewModel> Items => itemCoordinator.Items;
+    public ObservableCollection<object> Rows => itemCoordinator.Rows;
 
     [ObservableProperty]
     private string searchQuery = string.Empty;
@@ -54,7 +49,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     [ObservableProperty]
     private bool isItemListEmpty = true;
 
-    private const int PageSize = 5;
     public bool IsViewingNotes => !IsEditingNotes;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public string DisplayNotes => string.IsNullOrWhiteSpace(Notes) ? "No description." : Notes;
@@ -71,7 +65,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         => OnPropertyChanged(nameof(DisplayNotes));
 
     public ContainerDetailsViewModel(
-        IContainerDetailsQueryHandler containerDetailsQueries,
         IDeleteContainerCommandHandler deleteContainerHandler,
         IUpdateContainerNotesCommandHandler updateContainerNotesHandler,
         IImagePathResolver paths,
@@ -81,21 +74,19 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
-        IContainerItemQuantityService quantityService,
+        ContainerDetailsItemsCoordinator itemCoordinator,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
-        this.containerDetailsQueries = containerDetailsQueries;
         this.deleteContainerHandler = deleteContainerHandler;
         this.updateContainerNotesHandler = updateContainerNotesHandler;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
-        this.quantityService = quantityService;
+        this.itemCoordinator = itemCoordinator;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
-        itemPaging = new ContainerItemPagingController(containerDetailsQueries, PageSize);
-        itemRows = new ContainerDetailsItemRowsViewModel(this, Items, Rows);
+        itemCoordinator.Reset(this);
 
         // Debounce search query changes
         PropertyChanged += (s, e) =>
@@ -121,7 +112,14 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     /// <inheritdoc />
     public Task InitializeAsync()
-        => InitializeAsync(ContainerId);
+    {
+        if (itemCoordinator.TryConsumeSkipNextInitialization())
+        {
+            return Task.CompletedTask;
+        }
+
+        return InitializeAsync(ContainerId);
+    }
 
     /// <summary>
     /// Loads container details, photos, and initial item-list state for the specified container.
@@ -132,15 +130,13 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (string.IsNullOrWhiteSpace(containerId)) return;
 
         ContainerId = containerId;
-        itemPaging.Reset();
         SearchQuery = string.Empty;
 
-        itemRows.Reset();
         IsItemListEmpty = true;
         ContainerImagePaths.Clear();
 
-        var details = await containerDetailsQueries.GetDetailsAsync(containerId);
-        if (details is null)
+        var summary = await itemCoordinator.InitializeAsync(containerId, this, ShowQuantityManagement);
+        if (summary is null)
         {
             currentContainer = null;
             Name = "Container not found";
@@ -150,71 +146,21 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             TotalItemCount = 0;
             ItemTypesCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
-            itemPaging.MarkComplete();
             IsItemListEmpty = true;
             return;
         }
 
-        var container = details.Container;
-        currentContainer = container;
-        Name = container.Name;
-        Notes = container.Notes;
-        NotesDraft = container.Notes;
+        currentContainer = summary.Container;
+        Name = currentContainer.Name;
+        Notes = currentContainer.Notes;
+        NotesDraft = currentContainer.Notes;
         IsEditingNotes = false;
-        ItemTypesCount = await containerDetailsQueries.GetDistinctItemCountAsync(containerId);
-        TotalItemCount = ShowQuantityManagement
-            ? details.TotalItemCount
-            : ItemTypesCount;
+        ItemTypesCount = summary.ItemTypesCount;
+        TotalItemCount = ShowQuantityManagement ? summary.TotalItemCount : summary.ItemTypesCount;
 
         // Load container photos (all, as a small carousel)
-        ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(container));
-
-        await ReloadItemsAsync(searchTerm: null);
-    }
-
-    private void AddItemsToCollection(IEnumerable<ContainerItemInventoryEntry> items)
-    {
-        itemRows.Append(
-            items,
-            entry =>
-            {
-                var itemVm = new ItemWithPhotosViewModel(
-                    entry,
-                    currentContainer?.ContainerId ?? Guid.Empty,
-                    paths,
-                    nav,
-                    popup,
-                    popupDefinitions,
-                    ContainerId,
-                    ShowQuantityManagement,
-                    SaveItemQuantityAsync);
-                itemVm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load container item images");
-                return itemVm;
-            });
-
-        IsItemListEmpty = itemRows.IsEmpty;
-        OnPropertyChanged(nameof(Items));
-    }
-
-    private async Task SaveItemQuantityAsync(Guid itemId, int quantity)
-    {
-        if (!ShowQuantityManagement && quantity != 0)
-        {
-            return;
-        }
-
-        if (currentContainer is null)
-        {
-            return;
-        }
-
-        var result = await quantityService.SaveQuantityAsync(currentContainer, itemId, quantity);
-        ItemTypesCount = await containerDetailsQueries.GetDistinctItemCountAsync(ContainerId);
-        TotalItemCount = ShowQuantityManagement
-            ? result.TotalItemCount
-            : ItemTypesCount;
-        var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
-        await ReloadItemsAsync(searchTerm);
+        ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(currentContainer));
+        IsItemListEmpty = itemCoordinator.IsEmpty;
     }
 
     [RelayCommand]
@@ -223,16 +169,13 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         // Use RunCommandAsync to prevent concurrent loads and manage busy state
         await RunCommandAsync(async () =>
         {
-            var page = await itemPaging.LoadMoreAsync(ContainerId);
-            if (page.IsStale)
+            if (currentContainer is null)
             {
                 return;
             }
 
-            if (page.Items.Count > 0)
-            {
-                AddItemsToCollection(page.Items);
-            }
+            await itemCoordinator.LoadMoreAsync(ContainerId, currentContainer, ShowQuantityManagement);
+            IsItemListEmpty = itemCoordinator.IsEmpty;
         });
     }
 
@@ -241,21 +184,16 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (string.IsNullOrWhiteSpace(ContainerId)) return;
 
         var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
-        await ReloadItemsAsync(searchTerm);
-    }
-
-    private async Task ReloadItemsAsync(string? searchTerm)
-    {
-        itemRows.ClearItems();
         IsItemListEmpty = false;
 
-        var page = await itemPaging.ReloadAsync(ContainerId, searchTerm);
-        if (page.IsStale)
+        if (currentContainer is not null && await itemCoordinator.ReloadAsync(
+                ContainerId,
+                currentContainer,
+                searchTerm,
+                ShowQuantityManagement))
         {
-            return;
+            IsItemListEmpty = itemCoordinator.IsEmpty;
         }
-
-        AddItemsToCollection(page.Items);
     }
 
     [RelayCommand]

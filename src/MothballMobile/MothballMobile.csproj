@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+	<Import Project="Properties\AdMob.Release.props" Condition="Exists('Properties\AdMob.Release.props')" />
+
 	<PropertyGroup>
 		<TargetFrameworks>net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
@@ -45,6 +47,14 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+		<AdMobApplicationId>ca-app-pub-3940256099942544~1458002511</AdMobApplicationId>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<CollectAppManifestsDependsOn>$(CollectAppManifestsDependsOn);GenerateAdMobAppManifest</CollectAppManifestsDependsOn>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
 		<!-- DevFlow injects Microsoft.Maui.DevFlow.Agent with Version metadata; CPM treats that as NU1008. -->
 		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
@@ -66,6 +76,7 @@
 
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+		<MauiAsset Include="Properties\appsettings.Release.json" LogicalName="appsettings.Release.json" Condition="Exists('Properties\appsettings.Release.json')" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -105,6 +116,20 @@
 			<_CustomLinkFlags Include="$(_SdkDevPath)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(_SwiftPlatform)" />
 			<_CustomLinkFlags Include="-Wl,-rpath" />
 			<_CustomLinkFlags Include="-Wl,/usr/lib/swift" />
+		</ItemGroup>
+	</Target>
+
+	<Target Name="GenerateAdMobAppManifest"
+			Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+		<Error
+			Condition="'$(Configuration)' == 'Release' and '$(AdMobApplicationId)' == ''"
+			Text="Release iOS builds require AdMobApplicationId. Set it in Properties/AdMob.Release.props or pass -p:AdMobApplicationId=... from CI." />
+		<WriteLinesToFile
+			File="$(IntermediateOutputPath)AdMob.Info.plist"
+			Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#xA;&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;&#xA;&lt;plist version=&quot;1.0&quot;&gt;&#xA;&lt;dict&gt;&#xA;&lt;key&gt;GADApplicationIdentifier&lt;/key&gt;&#xA;&lt;string&gt;$(AdMobApplicationId)&lt;/string&gt;&#xA;&lt;/dict&gt;&#xA;&lt;/plist&gt;"
+			Overwrite="true" />
+		<ItemGroup>
+			<PartialAppManifest Include="$(IntermediateOutputPath)AdMob.Info.plist" />
 		</ItemGroup>
 	</Target>
 

@@ -6,16 +6,15 @@ namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 internal sealed class ContainerItemPagingController
 {
     private readonly IContainerDetailsQueryHandler containerDetailsQueries;
-    private readonly int pageSize;
+    private const int PageSize = 5;
     private int currentPage;
     private bool hasMoreItems = true;
     private int loadVersion;
     private string? activeSearchTerm;
 
-    public ContainerItemPagingController(IContainerDetailsQueryHandler containerDetailsQueries, int pageSize)
+    public ContainerItemPagingController(IContainerDetailsQueryHandler containerDetailsQueries)
     {
         this.containerDetailsQueries = containerDetailsQueries ?? throw new ArgumentNullException(nameof(containerDetailsQueries));
-        this.pageSize = pageSize;
     }
 
     public void Reset()
@@ -44,7 +43,7 @@ internal sealed class ContainerItemPagingController
             return new ContainerItemPageLoad([], IsStale: true);
         }
 
-        hasMoreItems = items.Count == pageSize;
+        hasMoreItems = items.Count == PageSize;
         return new ContainerItemPageLoad(items, IsStale: false);
     }
 
@@ -65,7 +64,7 @@ internal sealed class ContainerItemPagingController
         }
 
         currentPage = pageToLoad;
-        hasMoreItems = items.Count == pageSize;
+        hasMoreItems = items.Count == PageSize;
         return new ContainerItemPageLoad(items, IsStale: false);
     }
 
@@ -73,5 +72,5 @@ internal sealed class ContainerItemPagingController
         string containerId,
         int pageNumber,
         string? searchTerm)
-        => containerDetailsQueries.QueryItemsAsync(containerId, searchTerm, pageNumber, pageSize);
+        => containerDetailsQueries.QueryItemsAsync(containerId, searchTerm, pageNumber, PageSize);
 }

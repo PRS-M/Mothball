@@ -6,6 +6,7 @@ global using CoreApp.Features.Backup.Export;
 global using CoreApp.Features.Backup.Restore;
 global using CoreApp.Features.Backup.Serialization;
 global using CoreApp.Features.Containers.Commands;
+global using CoreApp.Features.Containers.ContainerDetails;
 global using CoreApp.Features.Containers.Queries;
 global using CoreApp.Features.Inventory.Allocation;
 global using CoreApp.Features.Inventory.Withdrawal;

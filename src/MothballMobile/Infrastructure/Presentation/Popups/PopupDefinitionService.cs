@@ -25,6 +25,18 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             $"Could not share backup.\n\n{errorMessage}");
 
     /// <inheritdoc />
+    public AlertPopupDefinition BackupSigningKeyShareFailed(string errorMessage)
+        => new(
+            "Share Failed",
+            $"Could not share the backup signing key.\n\n{errorMessage}");
+
+    /// <inheritdoc />
+    public AlertPopupDefinition BackupSigningKeyImportFailed(string errorMessage)
+        => new(
+            "Import Failed",
+            $"Could not import the backup signing key.\n\n{errorMessage}");
+
+    /// <inheritdoc />
     public AlertPopupDefinition RestoreCompleted(string summary)
         => new("Restore Completed", summary);
 

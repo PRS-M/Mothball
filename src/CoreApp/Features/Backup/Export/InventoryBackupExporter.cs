@@ -30,6 +30,13 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
 
     /// <inheritdoc />
     public async Task<InventoryBackupEnvelope> ExportAsync(CancellationToken cancellationToken = default)
+        => await ExportAsync(signatureSecret: null, keyId: null, cancellationToken).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<InventoryBackupEnvelope> ExportAsync(
+        string? signatureSecret,
+        string? keyId = null,
+        CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -113,20 +120,34 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
             },
         };
 
-        return InventoryBackupRestorePlanner.AttachIntegrity(backup);
+        return InventoryBackupRestorePlanner.AttachIntegrity(backup, signatureSecret, keyId);
     }
 
     /// <inheritdoc />
     public async Task<string> ExportAsJsonAsync(CancellationToken cancellationToken = default)
+        => await ExportAsJsonAsync(signatureSecret: null, keyId: null, cancellationToken).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<string> ExportAsJsonAsync(
+        string? signatureSecret,
+        string? keyId = null,
+        CancellationToken cancellationToken = default)
     {
-        var backup = await ExportAsync(cancellationToken).ConfigureAwait(false);
+        var backup = await ExportAsync(signatureSecret, keyId, cancellationToken).ConfigureAwait(false);
         return SerializeBackup(backup);
     }
 
     /// <inheritdoc />
     public async Task<byte[]> ExportAsZipAsync(CancellationToken cancellationToken = default)
+        => await ExportAsZipAsync(signatureSecret: null, keyId: null, cancellationToken).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<byte[]> ExportAsZipAsync(
+        string? signatureSecret,
+        string? keyId = null,
+        CancellationToken cancellationToken = default)
     {
-        var backup = await ExportAsync(cancellationToken).ConfigureAwait(false);
+        var backup = await ExportAsync(signatureSecret, keyId, cancellationToken).ConfigureAwait(false);
 
         await using var zipStream = new MemoryStream();
         using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))

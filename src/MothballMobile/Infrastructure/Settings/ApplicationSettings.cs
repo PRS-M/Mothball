@@ -6,6 +6,7 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
 {
     private const string AppModeKey = "AppMode";
     private const string ThemeOverrideKey = "ThemeOverride";
+    private const string BackupSigningKeyEnabledKey = "BackupSigningKeyEnabled";
 
     public event EventHandler? AppModeChanged;
 
@@ -54,5 +55,11 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
     {
         get => AppMode == AppMode.Advanced;
         set => AppMode = value ? AppMode.Advanced : AppMode.Simple;
+    }
+
+    public bool IsBackupSigningKeyEnabled
+    {
+        get => preferences.Get(BackupSigningKeyEnabledKey, defaultValue: true);
+        set => preferences.Set(BackupSigningKeyEnabledKey, value);
     }
 }

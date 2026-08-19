@@ -90,6 +90,8 @@ Use shelves, bins, cabinets, or zones as containers and treat products, spare pa
   - Details the JSON backend layout, commit algorithm, slot/manifest strategy, and recovery logic.
 - [Seeding](docs/Seeding.md)
   - Documents development-only demo data seeding triggers, safety rules, and current seeded-entity marker behavior.
+- [AdMob Configuration](docs/AdMobConfiguration.md)
+  - Explains Debug test IDs and the local/CI Release configuration process.
 
 ## Supported platforms
 

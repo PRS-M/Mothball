@@ -56,7 +56,7 @@
 
                     <Picker Grid.Column="1"
                             AutomationId="ItemsFilterPicker"
-                            ItemsSource="{x:Static vm:ItemsListViewModel.AvailableFilters}"
+                            ItemsSource="{x:Static Member=vm:ItemsListViewModel.AvailableFilters}"
                             SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
                             FontSize="12"
                             TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"

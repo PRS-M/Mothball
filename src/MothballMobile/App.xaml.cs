@@ -8,14 +8,11 @@ namespace MothballMobile;
 
 public partial class App : Application
 {
-#if IOS
-	private const string AppOpenTestAdUnitId = "ca-app-pub-3940256099942544/5575463023";
-#elif ANDROID
-	private const string AppOpenTestAdUnitId = "ca-app-pub-3940256099942544/9257395921";
-#endif
 	private readonly IAppStartupOrchestrator startupOrchestrator;
 	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 	private readonly IApplicationSettings applicationSettings;
+	private readonly IBackupSignatureSecretProvider backupSignatureSecretProvider;
+	private readonly AdMobSettings adMobSettings;
 	private readonly ILogger<App> logger;
 	private readonly ILogger<AppShell> appShellLogger;
 
@@ -23,6 +20,8 @@ public partial class App : Application
 		IAppStartupOrchestrator startupOrchestrator,
 		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
 		IApplicationSettings applicationSettings,
+		IBackupSignatureSecretProvider backupSignatureSecretProvider,
+		AdMobSettings adMobSettings,
 		ILogger<App> logger,
 		ILogger<AppShell> appShellLogger)
 	{
@@ -30,6 +29,8 @@ public partial class App : Application
 		this.startupOrchestrator = startupOrchestrator;
 		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
 		this.applicationSettings = applicationSettings;
+		this.backupSignatureSecretProvider = backupSignatureSecretProvider;
+		this.adMobSettings = adMobSettings;
 		UserAppTheme = applicationSettings.ThemeOverride;
 		this.logger = logger;
 		this.appShellLogger = appShellLogger;
@@ -46,11 +47,20 @@ public partial class App : Application
 	{
 		try
 		{
+			await backupSignatureSecretProvider.GetOrCreateAsync();
 			await startupOrchestrator.StartAsync();
-			window.Page = new AppShell(photoBackgroundOperationTracker, appShellLogger);
-
-			await Task.Yield();
+			var shell = new AppShell(photoBackgroundOperationTracker, appShellLogger);
+			var shellLoaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			shell.Loaded += OnShellLoaded;
+			window.Page = shell;
+			await shellLoaded.Task;
 			await ShowStartupAdAsync();
+
+			void OnShellLoaded(object? sender, EventArgs args)
+			{
+				shell.Loaded -= OnShellLoaded;
+				shellLoaded.TrySetResult();
+			}
 		}
 		catch (Exception ex)
 		{
@@ -80,7 +90,7 @@ public partial class App : Application
 		appOpenAdService.OnAdLoaded += OnAdLoaded;
 		try
 		{
-			appOpenAdService.PrepareAd(AppOpenTestAdUnitId);
+			appOpenAdService.PrepareAd(adMobSettings.AppOpenAdUnitId);
 			await Task.WhenAny(adLoaded.Task, Task.Delay(TimeSpan.FromSeconds(5)));
 
 			if (appOpenAdService.IsAdLoaded)
