@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Contracts;
@@ -104,9 +104,9 @@ public sealed class ContainerWorkflowHandlerTests
     {
         var queries = new Mock<IInventoryQueryRepository>();
         var item = new Item("Hammer", string.Empty);
-        var expected = new List<CoreApp.Entities.Inventory.InventorySnapshot>
+        var expected = new List<CoreApp.Entities.InventoryAggregate.InventorySnapshot>
         {
-            new(item, 3, 1, [new CoreApp.Entities.Inventory.ItemContainerAllocation(Guid.NewGuid(), "Box", 1)]),
+            new(item, 3, 1, [new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(Guid.NewGuid(), "Box", 1)]),
         };
         ItemListSpecification? capturedSpecification = null;
 

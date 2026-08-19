@@ -2,7 +2,7 @@ using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Specifications;
 using Infrastructure.Services.Repositories;

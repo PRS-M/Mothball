@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using System.Text.Json;
 using CoreApp.Contracts;
 using CoreApp.Entities.ContainerAggregate;

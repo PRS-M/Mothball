@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using Infrastructure.Services.JsonStore.Models;
 
 namespace Infrastructure.Services.JsonStore.Repositories;

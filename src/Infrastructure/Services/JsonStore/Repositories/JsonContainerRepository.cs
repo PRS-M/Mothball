@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using System;
 using System.Collections.Generic;
 using System.Linq;

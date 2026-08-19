@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Specifications;
@@ -83,11 +83,11 @@ public sealed class ListAndItemWorkflowHandlerTests
     {
         var item = new Item(Guid.NewGuid(), "Hat", "Blue");
         var containerId = Guid.NewGuid();
-        var summary = new CoreApp.Entities.Inventory.InventorySnapshot(
+        var summary = new CoreApp.Entities.InventoryAggregate.InventorySnapshot(
             item,
             3,
             2,
-            [new CoreApp.Entities.Inventory.ItemContainerAllocation(containerId, "Box", 2)]);
+            [new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(containerId, "Box", 2)]);
         var queries = new Mock<IInventoryQueryRepository>();
         queries.Setup(q => q.GetInventorySnapshotAsync(item.ItemId))
             .ReturnsAsync(summary);

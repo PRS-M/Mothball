@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using CoreApp.Contracts;
 
 namespace Mothball.Tests.Unit.Core.Features.Inventory;

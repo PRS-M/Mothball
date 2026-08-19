@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
 using Moq;
@@ -133,10 +133,10 @@ public sealed class ItemInventoryCommandServiceTests
         var item = new Item(Guid.NewGuid(), "Widget", "");
         var allocations = new[]
         {
-            new CoreApp.Entities.Inventory.ItemContainerAllocation(Guid.NewGuid(), "Box", 2),
-            new CoreApp.Entities.Inventory.ItemContainerAllocation(Guid.NewGuid(), "Drawer", 4),
+            new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(Guid.NewGuid(), "Box", 2),
+            new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(Guid.NewGuid(), "Drawer", 4),
         };
-        var plan = new CoreApp.Entities.Inventory.ItemInventoryWithdrawalPlan(7, 6, 1, allocations, false);
+        var plan = new CoreApp.Entities.InventoryAggregate.ItemInventoryWithdrawalPlan(7, 6, 1, allocations, false);
         var queries = new Mock<IInventoryQueryRepository>();
         queries.Setup(q => q.GetInventorySnapshotAsync(item.ItemId))
             .ReturnsAsync(Summary(item, 7));
@@ -164,9 +164,9 @@ public sealed class ItemInventoryCommandServiceTests
         var item = new Item(Guid.NewGuid(), "Widget", "");
         var allocations = new[]
         {
-            new CoreApp.Entities.Inventory.ItemContainerAllocation(containerId, "Box", 8),
+            new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(containerId, "Box", 8),
         };
-        var plan = new CoreApp.Entities.Inventory.ItemInventoryWithdrawalPlan(8, 8, 0, allocations, false);
+        var plan = new CoreApp.Entities.InventoryAggregate.ItemInventoryWithdrawalPlan(8, 8, 0, allocations, false);
         var queries = new Mock<IInventoryQueryRepository>();
         queries.Setup(q => q.GetInventorySnapshotAsync(item.ItemId))
             .ReturnsAsync(Summary(item, 10));
@@ -191,7 +191,7 @@ public sealed class ItemInventoryCommandServiceTests
     public async Task ApplyWithdrawalAsync_WhenPlanExhaustsStock_DeletesItemInsteadOfPersistingZero()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
-        var plan = new CoreApp.Entities.Inventory.ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
+        var plan = new CoreApp.Entities.InventoryAggregate.ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
         var queries = new Mock<IInventoryQueryRepository>();
         queries.Setup(q => q.GetInventorySnapshotAsync(item.ItemId))
             .ReturnsAsync(Summary(item, 0));
@@ -214,31 +214,31 @@ public sealed class ItemInventoryCommandServiceTests
         int assignedQuantity)
     {
         var queries = new Mock<IInventoryQueryRepository>();
-        var allocation = new CoreApp.Entities.Inventory.ItemContainerAllocation(
+        var allocation = new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(
             container.ContainerId,
             container.Name,
             container.Items.First(itemInContainer => itemInContainer.ItemId == item.ItemId).Quantity);
-        var allocations = new List<CoreApp.Entities.Inventory.ItemContainerAllocation> { allocation };
+        var allocations = new List<CoreApp.Entities.InventoryAggregate.ItemContainerAllocation> { allocation };
         int remainingAssigned = assignedQuantity - allocation.Quantity;
         if (remainingAssigned > 0)
         {
-            allocations.Add(new CoreApp.Entities.Inventory.ItemContainerAllocation(
+            allocations.Add(new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(
                 Guid.NewGuid(),
                 "Other",
                 remainingAssigned));
         }
 
         queries.Setup(q => q.GetInventorySnapshotAsync(item.ItemId))
-            .ReturnsAsync(new CoreApp.Entities.Inventory.InventorySnapshot(item, totalQuantity, assignedQuantity, allocations));
+            .ReturnsAsync(new CoreApp.Entities.InventoryAggregate.InventorySnapshot(item, totalQuantity, assignedQuantity, allocations));
         return queries;
     }
 
-    private static CoreApp.Entities.Inventory.InventorySnapshot Summary(Item item, int assignedQuantity)
+    private static CoreApp.Entities.InventoryAggregate.InventorySnapshot Summary(Item item, int assignedQuantity)
         => new(
             item,
             Math.Max(5, assignedQuantity),
             assignedQuantity,
             assignedQuantity == 0
                 ? []
-                : [new CoreApp.Entities.Inventory.ItemContainerAllocation(Guid.NewGuid(), "Container", assignedQuantity)]);
+                : [new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(Guid.NewGuid(), "Container", assignedQuantity)]);
 }

@@ -1,6 +1,6 @@
 using CoreApp.Entities.ItemAggregate;
 
-namespace CoreApp.Entities.Inventory;
+namespace CoreApp.Entities.InventoryAggregate;
 
 public sealed record InventorySnapshot
 {
@@ -41,6 +41,4 @@ public sealed record InventorySnapshot
     public int UnassignedQuantity => TotalQuantity - AssignedQuantity;
 }
 
-public sealed record ContainerItemInventoryEntry(
-    InventorySnapshot Inventory,
-    int ContainerQuantity);
+public sealed record ContainerItemInventoryEntry(InventorySnapshot Inventory, int ContainerQuantity);

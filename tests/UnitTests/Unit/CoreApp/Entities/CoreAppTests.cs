@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 ﻿using CoreApp.Entities;
 using CoreApp.Entities.ContainerAggregate;
 using CoreApp.Entities.ItemAggregate;
@@ -76,11 +76,11 @@ public class CoreAppTests
     {
         var item = new Item("Hat", "Blue");
 
-        var summary = new CoreApp.Entities.Inventory.InventorySnapshot(
+        var summary = new CoreApp.Entities.InventoryAggregate.InventorySnapshot(
             item,
             12,
             7,
-            [new CoreApp.Entities.Inventory.ItemContainerAllocation(Guid.NewGuid(), "Box", 7)]);
+            [new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(Guid.NewGuid(), "Box", 7)]);
 
         Assert.That(summary.UnassignedQuantity, Is.EqualTo(5));
     }

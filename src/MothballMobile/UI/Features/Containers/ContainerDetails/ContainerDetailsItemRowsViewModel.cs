@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using System.Collections.ObjectModel;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Contracts;

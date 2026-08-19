@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using CoreApp.Contracts;
 using CoreApp.Entities.ItemAggregate;
 using CoreApp.Features.Photos;

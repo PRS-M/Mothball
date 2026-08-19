@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Entities.InventoryAggregate;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using CoreApp.Entities.ItemAggregate;
@@ -38,7 +38,7 @@ public interface IRelationRepository
     /// <param name="allocations">The remaining allocations to persist.</param>
     Task ApplyItemInventoryWithdrawalAsync(
         Item item,
-        IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations);
+        IReadOnlyCollection<CoreApp.Entities.InventoryAggregate.ItemContainerAllocation> allocations);
     /// <summary>
     /// Removes the allocation between an item and a container.
     /// </summary>
@@ -111,7 +111,7 @@ public class RelationRepository : IRelationRepository
     /// <inheritdoc />
     public Task ApplyItemInventoryWithdrawalAsync(
         Item item,
-        IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations)
+        IReadOnlyCollection<CoreApp.Entities.InventoryAggregate.ItemContainerAllocation> allocations)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(allocations);
