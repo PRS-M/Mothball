@@ -15,7 +15,7 @@ public class ContainerItemQuantityServiceTests
         container.AddItem(itemId, 1);
         var commands = new Mock<IItemInventoryCommandService>();
         commands.Setup(c => c.SetContainerAllocationAsync(itemId, containerId, 3))
-            .ReturnsAsync(new CoreApp.Contracts.ItemInventoryUpdateResult(false, 3, 3, 0));
+            .ReturnsAsync(new CoreApp.Contracts.Inventory.ItemInventoryUpdateResult(false, 3, 3, 0));
         var service = new ContainerItemQuantityService(commands.Object);
 
         var result = await service.SaveQuantityAsync(container, itemId, 3);
@@ -39,7 +39,7 @@ public class ContainerItemQuantityServiceTests
         container.AddItem(itemId, 2);
         var commands = new Mock<IItemInventoryCommandService>();
         commands.Setup(c => c.SetContainerAllocationAsync(itemId, containerId, 0))
-            .ReturnsAsync(new CoreApp.Contracts.ItemInventoryUpdateResult(true, 2, 0, 2));
+            .ReturnsAsync(new CoreApp.Contracts.Inventory.ItemInventoryUpdateResult(true, 2, 0, 2));
         var service = new ContainerItemQuantityService(commands.Object);
 
         var result = await service.SaveQuantityAsync(container, itemId, 0);

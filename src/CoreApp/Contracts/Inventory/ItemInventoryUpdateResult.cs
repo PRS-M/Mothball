@@ -1,4 +1,4 @@
-namespace CoreApp.Contracts;
+namespace CoreApp.Contracts.Inventory;
 
 public sealed record ItemInventoryUpdateResult(
     bool RemovedFromContainer,

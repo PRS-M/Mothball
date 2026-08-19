@@ -2,3 +2,8 @@ global using CoreApp.Abstractions.Domain;
 global using CoreApp.Abstractions.Persistence;
 global using CoreApp.Abstractions.Platform;
 global using CoreApp.Abstractions.Startup;
+global using CoreApp.Contracts.Backup;
+global using CoreApp.Contracts.Containers;
+global using CoreApp.Contracts.Inventory;
+global using CoreApp.Contracts.Items;
+global using CoreApp.Contracts.Serialization;

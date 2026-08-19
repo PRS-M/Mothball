@@ -1,4 +1,4 @@
-namespace CoreApp.Contracts;
+namespace CoreApp.Contracts.Backup;
 
 public sealed record InventoryBackupIntegrity
 {
