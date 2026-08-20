@@ -382,17 +382,17 @@ Do not expose SQLite row models, JSON row models, MAUI APIs, or Shell dictionari
 
 | Concern | Primary test location |
 | --- | --- |
-| Withdrawal validation and invariants | `tests/UnitTests/Unit/CoreApp/Inventory/ItemInventoryWithdrawalPlannerTests.cs` |
-| Backup planning and integrity | `tests/UnitTests/Unit/CoreApp/Features/Backup/InventoryBackupRestorePlannerTests.cs` |
-| JSON commit and recovery | `tests/UnitTests/Integration/Infrastructure/Persistence/JsonOperationalStoreTests.cs` |
-| Backend parity | `tests/UnitTests/Integration/Infrastructure/Persistence/BackendParityTests.cs` |
-| Navigation request serialization | `tests/UnitTests/Unit/MothballMobile/Infrastructure/Navigation/NavigationRequestTests.cs` |
-| Shared command error state | `tests/UnitTests/Unit/MothballMobile/UI/Shared/BaseViewModelTests.cs` |
-| Error presentation | `tests/UnitTests/Unit/MothballMobile/Infrastructure/Presentation/Errors/AppErrorPresenterTests.cs` |
-| ZIP archive restore | `tests/UnitTests/Unit/CoreApp/Features/Backup/InventoryBackupZipRestoreServiceTests.cs` |
+| Withdrawal validation and invariants | `tests/UnitTests/CoreApp/Features/Inventory/ItemInventoryWithdrawalPlannerTests.cs` |
+| Backup planning and integrity | `tests/UnitTests/CoreApp/Features/Backup/InventoryBackupRestorePlannerTests.cs` |
+| JSON commit and recovery | `tests/IntegrationTests/Infrastructure/Persistence/JsonOperationalStoreTests.cs` |
+| Backend parity | `tests/IntegrationTests/Infrastructure/Persistence/BackendParityTests.cs` |
+| Navigation request serialization | `tests/UnitTests/MothballMobile/Infrastructure/Navigation/NavigationRequestTests.cs` |
+| Shared command error state | `tests/UnitTests/MothballMobile/UI/Shared/BaseViewModelTests.cs` |
+| Error presentation | `tests/UnitTests/MothballMobile/Infrastructure/Presentation/Errors/AppErrorPresenterTests.cs` |
+| ZIP archive restore | `tests/UnitTests/CoreApp/Features/Backup/InventoryBackupZipRestoreServiceTests.cs` |
 
 Run the relevant focused tests during an algorithm change, then run the full project suite:
 
 ```bash
-dotnet test tests/UnitTests/UnitTests.csproj -v minimal
+dotnet test Mothball.Tests.slnf -v minimal
 ```

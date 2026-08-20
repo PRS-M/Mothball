@@ -15,8 +15,6 @@
     <PackageReference Include="NUnit.Analyzers" />
     <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="sqlite-net-pcl" />
-    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
@@ -27,9 +25,11 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/CoreApp.Application/CoreApp.Application.csproj" />
+    <ProjectReference Include="../../src/Infrastructure/Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="../Tests.Shared/Tests.Shared.csproj" />
   </ItemGroup>
 
-  <!-- Bring in UI-only Debouncer source directly for testability without MAUI target dependencies. -->
+  <!-- Bring in mobile-only source directly for testability without referencing the MAUI-targeted app project. -->
   <ItemGroup>
     <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/IDebouncer.cs" Link="Infrastructure/Resilience/IDebouncer.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/Debouncer.cs" Link="Infrastructure/Resilience/Debouncer.cs" />
@@ -51,12 +51,17 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/RetryService.cs" Link="Infrastructure/Resilience/RetryService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Startup/IAppStartupOrchestrator.cs" Link="Infrastructure/Startup/IAppStartupOrchestrator.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Startup/AppStartupOrchestrator.cs" Link="Infrastructure/Startup/AppStartupOrchestrator.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IBackupSignatureSecretProvider.cs" Link="Infrastructure/Backup/IBackupSignatureSecretProvider.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Backup/BackupSignatureSecretProvider.cs" Link="Infrastructure/Backup/BackupSignatureSecretProvider.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IBackupSigningKeyTransferService.cs" Link="Infrastructure/Backup/IBackupSigningKeyTransferService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IInventoryBackupWorkflowService.cs" Link="Infrastructure/Backup/IInventoryBackupWorkflowService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Utilities/IInitializable.cs" Link="Infrastructure/Utilities/IInitializable.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/AppMode.cs" Link="Infrastructure/Settings/AppMode.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/IApplicationSettings.cs" Link="Infrastructure/Settings/IApplicationSettings.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="../../src/MothballMobile/UI/Features/Settings/SettingsViewModel.cs" Link="UI/Features/Settings/SettingsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/BaseViewModel.cs" Link="UI/Shared/BaseViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/PagedListViewModelBase.cs" Link="UI/Shared/PagedListViewModelBase.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/ContainerWithImagesViewModelBase.cs" Link="UI/Shared/ContainerWithImagesViewModelBase.cs" />
@@ -71,21 +76,6 @@
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerCoordinator.cs" Link="UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs" Link="UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/SelectableContainerViewModel.cs" Link="UI/Features/Containers/AssociateItemWithContainer/SelectableContainerViewModel.cs" />
-  </ItemGroup>
-
-  <!-- Compile non-MAUI Infrastructure sources directly to avoid referencing the MAUI-only Infrastructure project. -->
-  <ItemGroup>
-    <Compile Include="../../src/Infrastructure/DatabaseModels/**/*.cs" Link="Infrastructure/DatabaseModels/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Abstractions/Repositories/**/*.cs" Link="Infrastructure/Abstractions/Repositories/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Abstractions/Transactions/**/*.cs" Link="Infrastructure/Abstractions/Transactions/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Mappers/**/*.cs" Link="Infrastructure/Mappers/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Services/Seeding/DemoDataSeeder.cs" Link="Infrastructure/Services/Seeding/DemoDataSeeder.cs" />
-    <Compile Include="../../src/Infrastructure/Services/Images/ImagePathResolver.cs" Link="Infrastructure/Services/Images/ImagePathResolver.cs" />
-    <Compile Include="../../src/Infrastructure/Services/Database/MothballDatabase.cs" Link="Infrastructure/Services/Database/MothballDatabase.cs" />
-    <Compile Include="../../src/Infrastructure/Services/Startup/SqliteStartupInitializer.cs" Link="Infrastructure/Services/Startup/SqliteStartupInitializer.cs" />
-    <Compile Include="../../src/Infrastructure/Services/Restore/**/*.cs" Link="Infrastructure/Services/Restore/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Services/JsonStore/**/*.cs" Link="Infrastructure/Services/JsonStore/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="../../src/Infrastructure/Services/Repositories/**/*.cs" Link="Infrastructure/Services/Repositories/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

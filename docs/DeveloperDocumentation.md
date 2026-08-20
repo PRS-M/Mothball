@@ -12,10 +12,10 @@ From the repository root, restore and build the solution:
 dotnet build Mothball.sln
 ```
 
-Run the unit tests:
+Run the test suite:
 
 ```bash
-dotnet test tests/UnitTests/UnitTests.csproj -v minimal
+dotnet test Mothball.Tests.slnf -v minimal
 ```
 
 To run the app, open the workspace in VS Code or Visual Studio, select `MothballMobile` as the startup project, choose an iOS simulator, Mac Catalyst, or Windows target, and start debugging.
@@ -31,7 +31,9 @@ Development prerequisites are listed in the [README](../README.md). On macOS, iO
 | `src/Infrastructure` | Persistence implementations: SQLite, the JSON operational store, repository adapters, data models, mappings, startup, and restore services. |
 | `src/Infrastructure.Platform.Maui` | Implementations that require MAUI or a device platform, such as camera and file access. |
 | `src/MothballMobile` | The MAUI app: pages, view models, navigation, app composition, resources, and platform setup. |
-| `tests/UnitTests` | NUnit tests for core behavior, persistence behavior, view models, and utilities. |
+| `tests/UnitTests` | NUnit unit tests for core behavior, view models, and utilities. |
+| `tests/IntegrationTests` | NUnit integration tests for persistence, restore, and backend parity behavior. |
+| `tests/Tests.Shared` | Shared test-only stubs and support code used by multiple test projects. |
 | `docs` | User and contributor documentation. |
 
 The project references flow in one direction:
@@ -232,12 +234,12 @@ Tests use NUnit and Moq. Prefer focused tests beside similar existing tests:
 - JSON backend behavior: JSON operational store and JSON restore tests.
 - View model or UI utility behavior: targeted view model and utility tests.
 
-The test project directly compiles selected non-MAUI source files so it can test them without targeting iOS or Mac Catalyst. When adding a test for a new MAUI-project class, first check whether an existing abstraction can be tested from `CoreApp.Application`; only link the minimal source files needed when that is not possible.
+The test projects reference the `net10.0` application and persistence projects directly. Unit tests still link selected mobile-only source files so those classes can be tested without targeting iOS or Mac Catalyst; shared MAUI stubs live in `tests/Tests.Shared`. When adding a test for a new MAUI-project class, first check whether an existing abstraction can be tested from `CoreApp.Application`; only link the minimal source files needed when that is not possible.
 
-Run the focused test file while iterating, then run the unit-test project before submitting a change:
+Run the focused test file while iterating, then run the test solution filter before submitting a change:
 
 ```bash
-dotnet test tests/UnitTests/UnitTests.csproj -v minimal
+dotnet test Mothball.Tests.slnf -v minimal
 ```
 
 ## Contributor Checklist

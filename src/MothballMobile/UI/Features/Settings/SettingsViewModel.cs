@@ -17,7 +17,7 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly ILogger<SettingsViewModel> logger;
-    private bool isZipBackupMode;
+    private bool isZipBackupMode = true;
 
     public IReadOnlyList<string> ThemeOptions { get; } =
     [

@@ -39,15 +39,16 @@ public sealed class BackupSignatureSecretProvider : IBackupSignatureSecretProvid
                 return signatureSecret;
             }
 
-            signatureSecret = GetSynchronizedSecret();
-            if (string.IsNullOrWhiteSpace(signatureSecret))
+            var resolvedSecret = GetSynchronizedSecret();
+            if (string.IsNullOrWhiteSpace(resolvedSecret))
             {
-                signatureSecret = await secureStorage.GetAsync(StorageKey).ConfigureAwait(false)
+                resolvedSecret = await secureStorage.GetAsync(StorageKey).ConfigureAwait(false)
                     ?? Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-                signatureSecret = StoreSynchronizedSecret(signatureSecret);
+                resolvedSecret = StoreSynchronizedSecret(resolvedSecret);
             }
 
-            await secureStorage.SetAsync(StorageKey, signatureSecret).ConfigureAwait(false);
+            await secureStorage.SetAsync(StorageKey, resolvedSecret).ConfigureAwait(false);
+            signatureSecret = resolvedSecret;
             return signatureSecret;
         }
         finally

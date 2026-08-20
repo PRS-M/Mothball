@@ -2,7 +2,9 @@
   "solution": {
     "path": "Mothball.sln",
     "projects": [
-      "tests\\UnitTests\\UnitTests.csproj"
+      "tests\\UnitTests\\UnitTests.csproj",
+      "tests\\IntegrationTests\\IntegrationTests.csproj",
+      "tests\\Tests.Shared\\Tests.Shared.csproj"
     ]
   }
 }
