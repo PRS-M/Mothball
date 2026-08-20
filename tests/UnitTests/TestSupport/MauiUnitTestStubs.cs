@@ -40,3 +40,13 @@ namespace Microsoft.Maui.Controls
         void ApplyQueryAttributes(IDictionary<string, object> query);
     }
 }
+
+namespace Microsoft.Maui.Storage
+{
+    public interface ISecureStorage
+    {
+        Task<string?> GetAsync(string key);
+
+        Task SetAsync(string key, string value);
+    }
+}
