@@ -300,19 +300,19 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     [RelayCommand]
     private Task NavigateToAddExistingItemAsync()
     {
-        if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
+        if (!Guid.TryParse(ContainerId, out var containerId)) return Task.CompletedTask;
 
         return nav.GoToAsync(NavigationRoutes.AddExistingItemToContainer,
-            new Dictionary<string, object> { [NavigationParams.ContainerId] = ContainerId });
+            new Infrastructure.Navigation.AddExistingItemToContainerNavigationRequest(containerId));
     }
 
     [RelayCommand]
     private Task NavigateToAddNewItemAsync()
     {
-        if (string.IsNullOrWhiteSpace(ContainerId)) return Task.CompletedTask;
+        if (!Guid.TryParse(ContainerId, out var containerId)) return Task.CompletedTask;
 
         return nav.GoToAsync(NavigationRoutes.AddItem,
-            new Dictionary<string, object> { [NavigationParams.ContainerId] = ContainerId });
+            new Infrastructure.Navigation.AddItemNavigationRequest(containerId));
     }
 
     private bool disposed;

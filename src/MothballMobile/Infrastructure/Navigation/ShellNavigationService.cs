@@ -16,6 +16,10 @@ public class ShellNavigationService : INavigationService
         => Shell.Current.GoToAsync(route, parameters);
 
     /// <inheritdoc />
+    public Task GoToAsync(string route, INavigationRequest request)
+        => Shell.Current.GoToAsync(route, request.ToParameters());
+
+    /// <inheritdoc />
     public Task GoBackAsync()
         => Shell.Current.GoToAsync("..");
 }

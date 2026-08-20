@@ -158,4 +158,75 @@ public sealed class ItemInventoryWithdrawalPlannerTests
             Assert.That(plan.DeleteItem, Is.True);
         });
     }
+
+    [Test]
+    public void Plan_WhenRequestedTotalIsLowerThanRemainingAssignedQuantity_RejectsPlan()
+    {
+        Assert.Throws<InvalidOperationException>(() => ItemInventoryWithdrawalPlanner.Plan(
+            currentTotal: 10,
+            allocations: [new ItemContainerAllocation(BoxId, "Box", 6)],
+            assignedWithdrawals: [],
+            unassignedWithdrawals: [],
+            requestedTotal: 5));
+    }
+
+    [Test]
+    public void Plan_WhenAllocationIsMalformed_RejectsPlan()
+    {
+        Assert.Throws<ArgumentException>(() => ItemInventoryWithdrawalPlanner.Plan(
+            currentTotal: 3,
+            allocations: [new ItemContainerAllocation(Guid.Empty, "Box", 1)],
+            assignedWithdrawals: [],
+            unassignedWithdrawals: []));
+    }
+
+    [Test]
+    public void Plan_WhenWithdrawalQuantityDecreasesBelowCarry_RejectsPlan()
+    {
+        Assert.Throws<InvalidOperationException>(() => ItemInventoryWithdrawalPlanner.Plan(
+            currentTotal: 10,
+            allocations:
+            [
+                new ItemContainerAllocation(BoxId, "Box", 3),
+                new ItemContainerAllocation(DrawerId, "Drawer", 4),
+            ],
+            assignedWithdrawals:
+            [
+                new ItemAllocationWithdrawal(BoxId, 5),
+                new ItemAllocationWithdrawal(DrawerId, 1),
+            ],
+            unassignedWithdrawals: []));
+    }
+
+    [Test]
+    public void Plan_WhenWithdrawalContainerHasNoRemainingAllocation_RejectsPlan()
+    {
+        Assert.Throws<ArgumentException>(() => ItemInventoryWithdrawalPlanner.Plan(
+            currentTotal: 4,
+            allocations: [new ItemContainerAllocation(BoxId, "Box", 4)],
+            assignedWithdrawals: [new ItemAllocationWithdrawal(DrawerId, 1)],
+            unassignedWithdrawals: []));
+    }
+
+    [Test]
+    public void Plan_WhenWithdrawalsComplete_MaintainsFinalPlanInvariants()
+    {
+        var plan = ItemInventoryWithdrawalPlanner.Plan(
+            currentTotal: 10,
+            allocations:
+            [
+                new ItemContainerAllocation(BoxId, "Box", 4),
+                new ItemContainerAllocation(DrawerId, "Drawer", 2),
+            ],
+            assignedWithdrawals: [new ItemAllocationWithdrawal(BoxId, 2)],
+            unassignedWithdrawals: [1],
+            requestedTotal: 8);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.TotalQuantity, Is.EqualTo(plan.AssignedQuantity + plan.UnassignedQuantity));
+            Assert.That(plan.Allocations, Is.All.Matches<ItemContainerAllocation>(allocation => allocation.Quantity >= 0));
+            Assert.That(plan.DeleteItem, Is.EqualTo(plan.TotalQuantity == 0));
+        });
+    }
 }

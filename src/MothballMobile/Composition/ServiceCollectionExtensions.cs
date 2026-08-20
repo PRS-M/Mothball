@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
+using MothballMobile.Infrastructure.Presentation.Errors;
 using MothballMobile.UI.Features.Containers.AddContainer;
 using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
@@ -41,6 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService, ShellNavigationService>();
         services.AddSingleton<IPopupService, MauiPopupService>();
         services.AddSingleton<IPopupDefinitionService, PopupDefinitionService>();
+        services.AddSingleton<IAppErrorPresenter, AppErrorPresenter>();
         services.AddSingleton<IRetryService, RetryService>();
         services.AddSingleton<IBackgroundTaskObserver, LoggingBackgroundTaskObserver>();
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
@@ -139,6 +141,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddTransient<ContainerDetailsItemsCoordinator>();
         services.AddTransient<AssociateItemWithContainerCoordinator>();
+        services.AddTransient<ItemInventoryWithdrawalCoordinator>();
+        services.AddTransient<ItemDetailsCoordinator>();
         services.AddTransient<AddContainerViewModel>();
         services.AddTransient<ContainerListViewModel>();
         services.AddTransient<ItemsListViewModel>();

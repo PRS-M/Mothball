@@ -34,8 +34,5 @@ public partial class ItemLocationViewModel : ContainerWithImagesViewModelBase
     private Task NavigateAsync()
         => nav.GoToAsync(
             NavigationRoutes.ContainerDetails,
-            new Dictionary<string, object>
-            {
-                [NavigationParams.ContainerId] = Allocation.ContainerId.ToString()
-            });
+            new Infrastructure.Navigation.ContainerDetailsNavigationRequest(Allocation.ContainerId));
 }

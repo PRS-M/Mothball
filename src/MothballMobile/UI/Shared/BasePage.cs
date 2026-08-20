@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Extensions.Logging;
+using MothballMobile.Infrastructure.Presentation.Errors;
 #if IOS || ANDROID
 using Plugin.AdMob;
 #endif
@@ -9,6 +10,7 @@ namespace MothballMobile.UI.Shared;
 public class BasePage : ContentPage
 {
     private IDisposable? previousDisposable;
+    private BaseViewModel? errorSource;
     private readonly SemaphoreSlim initializationGate = new(1, 1);
     private bool contentWrappedWithAdBanner;
 
@@ -34,8 +36,19 @@ public class BasePage : ContentPage
     protected override void OnBindingContextChanged()
     {
         var old = previousDisposable;
+        if (errorSource is not null)
+        {
+            errorSource.ErrorOccurred -= OnViewModelErrorOccurred;
+        }
+
         base.OnBindingContextChanged();
         previousDisposable = BindingContext as IDisposable;
+        errorSource = BindingContext as BaseViewModel;
+        if (errorSource is not null)
+        {
+            errorSource.ErrorOccurred += OnViewModelErrorOccurred;
+        }
+
         if (old is not null && !ReferenceEquals(old, previousDisposable))
         {
             old.Dispose();
@@ -84,6 +97,13 @@ public class BasePage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
+    }
+
+    private static void OnViewModelErrorOccurred(string message)
+    {
+        IPlatformApplication.Current?.Services
+            .GetService<IAppErrorPresenter>()
+            ?.Show(message);
     }
 
     private void WrapContentWithAdBanner()

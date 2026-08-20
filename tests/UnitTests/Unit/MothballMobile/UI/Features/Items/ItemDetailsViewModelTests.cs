@@ -109,8 +109,7 @@ public sealed class ItemDetailsViewModelTests
 
         nav.Verify(n => n.GoToAsync(
             NavigationRoutes.ContainerDetails,
-            It.Is<IDictionary<string, object>>(parameters =>
-                (string)parameters[NavigationParams.ContainerId] == containerId.ToString())), Times.Once);
+            It.Is<ContainerDetailsNavigationRequest>(request => request.ContainerId == containerId)), Times.Once);
     }
 
     [Test]
@@ -138,8 +137,7 @@ public sealed class ItemDetailsViewModelTests
 
         nav.Verify(n => n.GoToAsync(
             NavigationRoutes.ItemLocations,
-            It.Is<IDictionary<string, object>>(parameters =>
-                (string)parameters[NavigationParams.ItemId] == item.ItemId.ToString())), Times.Once);
+            It.Is<ItemLocationsNavigationRequest>(request => request.ItemId == item.ItemId)), Times.Once);
     }
 
     [Test]
@@ -164,7 +162,7 @@ public sealed class ItemDetailsViewModelTests
             inventoryQueries.Object,
             paths.Object,
             Mock.Of<INavigationService>(),
-            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true));
+            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode));
         viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ItemId] = item.ItemId.ToString() });
 
         await viewModel.InitializeAsync();
@@ -250,19 +248,27 @@ public sealed class ItemDetailsViewModelTests
         IPopupService popup,
         INavigationService? nav = null)
         => new(
-            itemDetails,
-            inventoryCommands,
-            Mock.Of<IDeleteItemCommandHandler>(),
-            Mock.Of<IUpdateItemDescriptionCommandHandler>(),
+            CreateCoordinator(itemDetails, inventoryCommands, popup),
             nav ?? Mock.Of<INavigationService>(),
-            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true),
+            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode),
             CreatePaths(),
             popup,
             new PopupDefinitionService(),
             CreateImageService(),
             Mock.Of<IPhotoBackgroundOperationTracker>(),
-            Mock.Of<IBackgroundTaskObserver>(),
-            NullLogger<ItemDetailsViewModel>.Instance);
+            Mock.Of<IBackgroundTaskObserver>());
+
+    private static ItemDetailsCoordinator CreateCoordinator(
+        IItemDetailsQueryHandler itemDetails,
+        IItemInventoryCommandService inventoryCommands,
+        IPopupService popup)
+        => new(
+            itemDetails,
+            inventoryCommands,
+            Mock.Of<IDeleteItemCommandHandler>(),
+            Mock.Of<IUpdateItemDescriptionCommandHandler>(),
+            new ItemInventoryWithdrawalCoordinator(inventoryCommands, popup, new PopupDefinitionService()),
+            NullLogger<ItemDetailsCoordinator>.Instance);
 
     private static Mock<IItemDetailsQueryHandler> CreateItemDetailsQuery(Guid itemId, ItemDetailsResult details)
     {

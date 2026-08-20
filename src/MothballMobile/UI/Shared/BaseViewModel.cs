@@ -10,6 +10,9 @@ public abstract class BaseViewModel : ObservableObject
 {
     private bool isBusy;
     private bool isRefreshing;
+    private string? errorMessage;
+
+    public event Action<string>? ErrorOccurred;
 
     /// <summary>
     /// Gets or sets whether the view model is executing a command.
@@ -30,6 +33,26 @@ public abstract class BaseViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Gets the message from the most recent command failure, if any.
+    /// </summary>
+    public string? ErrorMessage
+    {
+        get => errorMessage;
+        private set
+        {
+            if (SetProperty(ref errorMessage, value))
+            {
+                OnPropertyChanged(nameof(HasError));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets whether the most recent command failed.
+    /// </summary>
+    public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+
+    /// <summary>
     /// Runs an asynchronous command while managing busy and optional refresh state.
     /// </summary>
     /// <param name="action">The command to run.</param>
@@ -39,6 +62,7 @@ public abstract class BaseViewModel : ObservableObject
         if (IsBusy)
             return;
 
+        ErrorMessage = null;
         IsBusy = true;
         if (showRefreshing)
             IsRefreshing = true;
@@ -46,6 +70,12 @@ public abstract class BaseViewModel : ObservableObject
         try
         {
             await action();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+            ErrorOccurred?.Invoke(ex.Message);
+            throw;
         }
         finally
         {

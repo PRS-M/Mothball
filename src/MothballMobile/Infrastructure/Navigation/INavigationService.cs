@@ -22,6 +22,14 @@ public interface INavigationService
     Task GoToAsync(string route, IDictionary<string, object> parameters);
 
     /// <summary>
+    /// Navigates to the specified route with a typed request.
+    /// </summary>
+    /// <param name="route">The route to navigate to.</param>
+    /// <param name="request">Typed parameters for the destination page.</param>
+    /// <returns>A task representing the navigation operation.</returns>
+    Task GoToAsync(string route, INavigationRequest request);
+
+    /// <summary>
     /// Navigates back to the previous page in the navigation stack.
     /// </summary>
     /// <returns>A task representing the navigation operation.</returns>
