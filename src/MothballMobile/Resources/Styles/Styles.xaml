@@ -316,10 +316,10 @@
         <Setter Property="HorizontalTextAlignment" Value="Center" />
     </Style>
 
-    <Style TargetType="Picker">
+    <Style TargetType="Picker" x:Key="PickerBaseStyle">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource OnSurfaceDark}}" />
         <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource OnSurfaceDark}}" />
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource PickerSurface}, Dark={StaticResource PickerSurfaceDark}}" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14" />
         <Setter Property="MinimumHeightRequest" Value="44"/>
@@ -337,6 +337,17 @@
                 </VisualStateGroup>
             </VisualStateGroupList>
         </Setter>
+    </Style>
+
+    <Style TargetType="Picker" BasedOn="{StaticResource PickerBaseStyle}" />
+
+    <Style TargetType="Picker" x:Key="CompactFilterPicker" BasedOn="{StaticResource PickerBaseStyle}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Margin" Value="0,4" />
+        <Setter Property="HeightRequest" Value="34" />
+        <Setter Property="MinimumHeightRequest" Value="34" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
+        <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
     </Style>
 
     <Style TargetType="ProgressBar">

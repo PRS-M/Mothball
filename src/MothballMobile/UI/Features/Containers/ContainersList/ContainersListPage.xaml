@@ -37,7 +37,7 @@
 
             <Border Grid.Column="1"
                     Padding="10,0"
-                    HeightRequest="36"
+                    HeightRequest="42"
                     MinimumWidthRequest="124"
                     VerticalOptions="Center"
                     Background="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}"
@@ -56,9 +56,7 @@
                             AutomationId="ContainersFilterPicker"
                             ItemsSource="{x:Static Member=vm:ContainerListViewModel.AvailableFilters}"
                             SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
-                            FontSize="12"
-                            TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
-                            Background="Transparent" />
+                            Style="{StaticResource CompactFilterPicker}" />
                 </Grid>
             </Border>
         </Grid>
