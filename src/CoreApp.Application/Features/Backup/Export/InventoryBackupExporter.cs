@@ -1,13 +1,13 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
-using CoreApp.Contracts;
-using CoreApp.Features.Backup.Archive;
-using CoreApp.Features.Backup.Restore.Planning;
-using CoreApp.Specifications;
-using CoreApp.Utilities;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Features.Backup.Archive;
+using CoreApp.Application.Features.Backup.Restore.Planning;
+using CoreApp.Application.Specifications;
+using CoreApp.Application.Utilities;
 
-namespace CoreApp.Features.Backup.Export;
+namespace CoreApp.Application.Features.Backup.Export;
 
 public sealed class InventoryBackupExporter : IInventoryBackupExporter
 {

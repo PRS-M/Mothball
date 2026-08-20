@@ -1,9 +1,9 @@
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
-using CoreApp.Contracts;
-using CoreApp.Utilities;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Utilities;
 using Moq;
 using System.IO.Compression;
 
@@ -24,13 +24,13 @@ public class InventoryBackupExporterTests
 
         var queries = new Mock<IInventoryQueryRepository>();
         queries
-            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Specifications.ContainerListSpecification>()))
+            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Application.Specifications.ContainerListSpecification>()))
             .ReturnsAsync([container]);
         queries
-            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync([item]);
         queries
-            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync([
                 new InventorySnapshot(
                     item,
@@ -61,13 +61,13 @@ public class InventoryBackupExporterTests
     {
         var queries = new Mock<IInventoryQueryRepository>();
         queries
-            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Specifications.ContainerListSpecification>()))
+            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Application.Specifications.ContainerListSpecification>()))
             .ReturnsAsync(new List<Container>());
         queries
-            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync(new List<Item>());
         queries
-            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync(new List<InventorySnapshot>());
 
         var sut = new InventoryBackupExporter(queries.Object, Mock.Of<IFileHandler>());
@@ -95,13 +95,13 @@ public class InventoryBackupExporterTests
 
         var queries = new Mock<IInventoryQueryRepository>();
         queries
-            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Specifications.ContainerListSpecification>()))
+            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Application.Specifications.ContainerListSpecification>()))
             .ReturnsAsync([container]);
         queries
-            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync([item]);
         queries
-            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync([new InventorySnapshot(item, 1, 0, [])]);
 
         var fileHandler = new Mock<IFileHandler>();
@@ -132,13 +132,13 @@ public class InventoryBackupExporterTests
     {
         var queries = new Mock<IInventoryQueryRepository>();
         queries
-            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Specifications.ContainerListSpecification>()))
+            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Application.Specifications.ContainerListSpecification>()))
             .ReturnsAsync([]);
         queries
-            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync([]);
         queries
-            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync([]);
 
         var sut = new InventoryBackupExporter(queries.Object, Mock.Of<IFileHandler>());
@@ -172,13 +172,13 @@ public class InventoryBackupExporterTests
 
         var queries = new Mock<IInventoryQueryRepository>();
         queries
-            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Specifications.ContainerListSpecification>()))
+            .Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Application.Specifications.ContainerListSpecification>()))
             .ReturnsAsync([container]);
         queries
-            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync([]);
         queries
-            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Specifications.ItemListSpecification>()))
+            .Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>()))
             .ReturnsAsync([]);
 
         var fileHandler = new Mock<IFileHandler>();

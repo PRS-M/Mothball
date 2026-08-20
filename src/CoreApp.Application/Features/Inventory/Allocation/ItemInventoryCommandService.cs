@@ -1,9 +1,9 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Contracts;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Features.Photos;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Features.Photos;
 
-namespace CoreApp.Features.Inventory.Allocation;
+namespace CoreApp.Application.Features.Inventory.Allocation;
 
 public sealed class ItemInventoryCommandService : IItemInventoryCommandService
 {

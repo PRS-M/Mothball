@@ -1,9 +1,9 @@
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Utilities;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging;
 
-namespace CoreApp.Features.Photos;
+namespace CoreApp.Application.Features.Photos;
 
 public sealed class PhotoDeletionService : IPhotoDeletionService
 {

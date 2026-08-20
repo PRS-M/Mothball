@@ -1,7 +1,7 @@
-using CoreApp.Abstractions.Domain;
-using CoreApp.Entities;
+using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Entities;
 
-namespace CoreApp.Entities.InventoryAggregate;
+namespace CoreApp.Domain.Entities.InventoryAggregate;
 
 public sealed class ItemInventory : BaseEntity, IAggregateRoot
 {

@@ -1,4 +1,4 @@
-namespace CoreApp.Entities.Shared;
+namespace CoreApp.Domain.Entities.Shared;
 
 public record ImageItem // Value Object
 {

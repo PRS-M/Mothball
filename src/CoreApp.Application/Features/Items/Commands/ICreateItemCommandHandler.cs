@@ -1,6 +1,6 @@
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
 
-namespace CoreApp.Features.Items.Commands;
+namespace CoreApp.Application.Features.Items.Commands;
 
 /// <summary>
 /// Defines the command that creates an item.

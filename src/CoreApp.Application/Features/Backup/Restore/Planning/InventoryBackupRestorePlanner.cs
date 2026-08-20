@@ -1,8 +1,8 @@
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 using CoreApp.Domain.Inventory;
 using Microsoft.Extensions.Logging;
 
-namespace CoreApp.Features.Backup.Restore.Planning;
+namespace CoreApp.Application.Features.Backup.Restore.Planning;
 
 public static class InventoryBackupRestorePlanner
 {

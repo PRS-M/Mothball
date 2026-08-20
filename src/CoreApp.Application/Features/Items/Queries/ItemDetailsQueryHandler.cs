@@ -1,6 +1,6 @@
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Features.Items.Queries;
+namespace CoreApp.Application.Features.Items.Queries;
 
 public sealed class ItemDetailsQueryHandler : IItemDetailsQueryHandler
 {

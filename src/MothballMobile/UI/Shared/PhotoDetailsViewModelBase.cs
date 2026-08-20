@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using CoreApp.Entities.Shared;
+using CoreApp.Domain.Entities.Shared;
 
 namespace MothballMobile.UI.Shared;
 

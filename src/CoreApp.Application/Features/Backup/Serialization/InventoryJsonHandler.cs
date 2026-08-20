@@ -1,11 +1,11 @@
 using System;
-using CoreApp.Contracts;
-using CoreApp.Shared.Serialization;
-using CoreApp.Utilities;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.Shared;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Shared.Serialization;
+using CoreApp.Application.Utilities;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.Shared;
 
-namespace CoreApp.Features.Backup.Serialization;
+namespace CoreApp.Application.Features.Backup.Serialization;
 
 public class InventoryJsonHandler
 {

@@ -1,6 +1,6 @@
 using System;
 
-namespace CoreApp.Abstractions.Domain;
+namespace CoreApp.Domain.Abstractions;
 
 /// <summary>
 /// Marker interface that identifies domain entities as aggregate roots in Domain-Driven Design.

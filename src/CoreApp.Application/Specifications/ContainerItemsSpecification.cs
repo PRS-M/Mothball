@@ -1,4 +1,4 @@
-namespace CoreApp.Specifications;
+namespace CoreApp.Application.Specifications;
 
 /// <summary>
 /// Defines container-item query semantics shared by all persistence backends.

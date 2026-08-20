@@ -1,10 +1,10 @@
-using CoreApp.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
 using System.Text.Json;
-using CoreApp.Contracts;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
-using CoreApp.Specifications;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
+using CoreApp.Application.Specifications;
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore;

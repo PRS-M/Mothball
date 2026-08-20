@@ -1,9 +1,9 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Contracts;
-using CoreApp.Specifications;
-using CoreApp.Features.Containers.ContainerDetails;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Specifications;
+using CoreApp.Application.Features.Containers.ContainerDetails;
 using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Presentation.Popups;
@@ -104,9 +104,9 @@ public sealed class ContainerWorkflowHandlerTests
     {
         var queries = new Mock<IInventoryQueryRepository>();
         var item = new Item("Hammer", string.Empty);
-        var expected = new List<CoreApp.Entities.InventoryAggregate.InventorySnapshot>
+        var expected = new List<CoreApp.Domain.Entities.InventoryAggregate.InventorySnapshot>
         {
-            new(item, 3, 1, [new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(Guid.NewGuid(), "Box", 1)]),
+            new(item, 3, 1, [new CoreApp.Domain.Entities.InventoryAggregate.ItemContainerAllocation(Guid.NewGuid(), "Box", 1)]),
         };
         ItemListSpecification? capturedSpecification = null;
 

@@ -1,7 +1,7 @@
-using CoreApp.Abstractions.Domain;
-using CoreApp.Entities.Shared;
+using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Entities.Shared;
 
-namespace CoreApp.Entities.ItemAggregate;
+namespace CoreApp.Domain.Entities.ItemAggregate;
 
 public class Item : BaseEntity, IAggregateRoot
 {

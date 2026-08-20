@@ -1,6 +1,6 @@
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
 
-namespace CoreApp.Entities.InventoryAggregate;
+namespace CoreApp.Domain.Entities.InventoryAggregate;
 
 public sealed record InventorySnapshot
 {

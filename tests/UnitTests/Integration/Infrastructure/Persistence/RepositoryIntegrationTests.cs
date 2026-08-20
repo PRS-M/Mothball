@@ -1,10 +1,10 @@
 using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Specifications;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Specifications;
 using Infrastructure.Services.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;

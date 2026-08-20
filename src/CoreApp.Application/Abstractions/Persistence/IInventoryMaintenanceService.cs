@@ -1,4 +1,4 @@
-namespace CoreApp.Abstractions.Persistence;
+namespace CoreApp.Application.Abstractions.Persistence;
 
 /// <summary>
 /// Maintenance operations for the active inventory data store.

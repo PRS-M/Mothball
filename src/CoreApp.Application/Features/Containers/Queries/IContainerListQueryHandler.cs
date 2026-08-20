@@ -1,6 +1,6 @@
-using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
 
-namespace CoreApp.Features.Containers.Queries;
+namespace CoreApp.Application.Features.Containers.Queries;
 
 /// <summary>
 /// Defines queries for listing containers.

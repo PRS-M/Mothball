@@ -1,8 +1,8 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Contracts;
-using CoreApp.Specifications;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Specifications;
 
-namespace CoreApp.Features.Containers.Queries;
+namespace CoreApp.Application.Features.Containers.Queries;
 
 public sealed class ContainerDetailsQueryHandler : IContainerDetailsQueryHandler
 {

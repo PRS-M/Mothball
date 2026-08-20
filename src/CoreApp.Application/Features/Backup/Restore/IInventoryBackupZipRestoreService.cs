@@ -1,6 +1,6 @@
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Features.Backup.Restore;
+namespace CoreApp.Application.Features.Backup.Restore;
 
 /// <summary>
 /// Defines operations for restoring compressed inventory backups.

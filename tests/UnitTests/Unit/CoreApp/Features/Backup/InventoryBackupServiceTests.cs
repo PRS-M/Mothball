@@ -1,4 +1,4 @@
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 using Moq;
 
 namespace Mothball.Tests.Unit.Core.Features.Backup;

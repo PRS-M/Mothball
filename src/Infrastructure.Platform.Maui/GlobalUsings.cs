@@ -1,1 +1,1 @@
-global using CoreApp.Abstractions.Platform;
+global using CoreApp.Application.Abstractions.Platform;

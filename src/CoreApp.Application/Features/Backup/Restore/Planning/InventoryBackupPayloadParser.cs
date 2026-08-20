@@ -1,7 +1,7 @@
 using System.Text.Json;
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Features.Backup.Restore.Planning;
+namespace CoreApp.Application.Features.Backup.Restore.Planning;
 
 internal static class InventoryBackupPayloadParser
 {

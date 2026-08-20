@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Text.Json;
 
-namespace CoreApp.Shared.Serialization;
+namespace CoreApp.Application.Shared.Serialization;
 
 public class JsonHandler
 {

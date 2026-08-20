@@ -1,10 +1,10 @@
-using CoreApp.Contracts;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
-using CoreApp.Specifications;
-using CoreApp.Utilities;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
+using CoreApp.Application.Specifications;
+using CoreApp.Application.Utilities;
 using Moq;
 using System.Text.Json;
 

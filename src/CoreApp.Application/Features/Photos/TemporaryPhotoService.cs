@@ -1,7 +1,7 @@
-using CoreApp.Utilities;
+using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging;
 
-namespace CoreApp.Features.Photos;
+namespace CoreApp.Application.Features.Photos;
 
 public sealed class TemporaryPhotoService : ITemporaryPhotoService
 {

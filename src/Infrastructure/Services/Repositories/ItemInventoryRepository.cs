@@ -1,4 +1,4 @@
-using CoreApp.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Infrastructure.Services.Repositories;

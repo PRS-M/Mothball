@@ -1,6 +1,6 @@
-using CoreApp.Entities.Shared;
+using CoreApp.Domain.Entities.Shared;
 
-namespace CoreApp.Abstractions.Platform;
+namespace CoreApp.Application.Abstractions.Platform;
 
 /// <summary>
 /// Defines operations for reading image metadata.

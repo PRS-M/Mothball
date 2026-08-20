@@ -1,7 +1,7 @@
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Features.Photos;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Application.Features.Photos;
 
-namespace CoreApp.Features.Containers.Commands;
+namespace CoreApp.Application.Features.Containers.Commands;
 
 public sealed class CreateContainerCommandHandler : ICreateContainerCommandHandler
 {

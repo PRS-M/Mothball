@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace CoreApp.Utilities;
+namespace CoreApp.Application.Utilities;
 
 public static class EnumValues
 {

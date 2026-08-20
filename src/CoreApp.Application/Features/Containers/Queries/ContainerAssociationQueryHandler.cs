@@ -1,10 +1,10 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Specifications;
-using CoreApp.Contracts;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Specifications;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Features.Containers.Queries;
+namespace CoreApp.Application.Features.Containers.Queries;
 
 public sealed class ContainerAssociationQueryHandler : IContainerAssociationQueryHandler
 {

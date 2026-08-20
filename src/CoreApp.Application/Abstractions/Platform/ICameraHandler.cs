@@ -1,6 +1,6 @@
 using System;
 
-namespace CoreApp.Abstractions.Platform;
+namespace CoreApp.Application.Abstractions.Platform;
 
 public enum PhotoSource
 {

@@ -1,8 +1,8 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Features.Photos;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Features.Photos;
 
-namespace CoreApp.Features.Items.Commands;
+namespace CoreApp.Application.Features.Items.Commands;
 
 public sealed class CreateItemCommandHandler : ICreateItemCommandHandler
 {

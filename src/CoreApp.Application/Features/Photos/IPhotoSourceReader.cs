@@ -1,6 +1,6 @@
-using CoreApp.Utilities;
+using CoreApp.Application.Utilities;
 
-namespace CoreApp.Features.Photos;
+namespace CoreApp.Application.Features.Photos;
 
 /// <summary>
 /// Defines operations for reading bytes from a photo source.

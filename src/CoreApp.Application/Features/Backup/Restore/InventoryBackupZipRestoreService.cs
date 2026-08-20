@@ -1,10 +1,10 @@
 using System.IO.Compression;
-using CoreApp.Contracts;
-using CoreApp.Features.Backup.Archive;
-using CoreApp.Features.Backup.Restore.Planning;
-using CoreApp.Utilities;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Features.Backup.Archive;
+using CoreApp.Application.Features.Backup.Restore.Planning;
+using CoreApp.Application.Utilities;
 
-namespace CoreApp.Features.Backup.Restore;
+namespace CoreApp.Application.Features.Backup.Restore;
 
 public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestoreService
 {

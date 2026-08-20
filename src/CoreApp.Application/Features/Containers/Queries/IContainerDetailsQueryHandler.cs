@@ -1,7 +1,7 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Contracts;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Features.Containers.Queries;
+namespace CoreApp.Application.Features.Containers.Queries;
 
 /// <summary>
 /// Defines queries for container details and contents.

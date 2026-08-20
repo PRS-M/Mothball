@@ -1,5 +1,5 @@
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Utilities;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Application.Utilities;
 using Moq;
 
 namespace Mothball.Tests.Unit.Infrastructure.Services.JsonStore;

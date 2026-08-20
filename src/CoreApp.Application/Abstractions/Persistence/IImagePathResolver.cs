@@ -1,7 +1,7 @@
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
 
-namespace CoreApp.Abstractions.Persistence;
+namespace CoreApp.Application.Abstractions.Persistence;
 
 /// <summary>
 /// Provides UI-friendly file system paths for image value objects while hiding

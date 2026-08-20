@@ -1,7 +1,7 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Specifications;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Specifications;
 using Moq;
 
 namespace Mothball.Tests.Unit.Core.Features.Items;
@@ -83,11 +83,11 @@ public sealed class ListAndItemWorkflowHandlerTests
     {
         var item = new Item(Guid.NewGuid(), "Hat", "Blue");
         var containerId = Guid.NewGuid();
-        var summary = new CoreApp.Entities.InventoryAggregate.InventorySnapshot(
+        var summary = new CoreApp.Domain.Entities.InventoryAggregate.InventorySnapshot(
             item,
             3,
             2,
-            [new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(containerId, "Box", 2)]);
+            [new CoreApp.Domain.Entities.InventoryAggregate.ItemContainerAllocation(containerId, "Box", 2)]);
         var queries = new Mock<IInventoryQueryRepository>();
         queries.Setup(q => q.GetInventorySnapshotAsync(item.ItemId))
             .ReturnsAsync(summary);

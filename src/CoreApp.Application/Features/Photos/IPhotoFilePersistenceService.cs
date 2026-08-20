@@ -1,6 +1,6 @@
-using CoreApp.Entities.Shared;
+using CoreApp.Domain.Entities.Shared;
 
-namespace CoreApp.Features.Photos;
+namespace CoreApp.Application.Features.Photos;
 
 /// <summary>
 /// Defines the workflow for persisting photo bytes and metadata.

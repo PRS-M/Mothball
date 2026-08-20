@@ -1,6 +1,6 @@
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Features.Backup.Export;
+namespace CoreApp.Application.Features.Backup.Export;
 
 /// <summary>
 /// Defines operations for exporting inventory backups.

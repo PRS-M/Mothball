@@ -1,13 +1,13 @@
-using CoreApp.Contracts;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
-using CoreApp.Features.Backup.Restore.Planning;
-using CoreApp.Specifications;
-using CoreApp.Utilities;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
+using CoreApp.Application.Features.Backup.Restore.Planning;
+using CoreApp.Application.Specifications;
+using CoreApp.Application.Utilities;
 
-namespace CoreApp.Features.Backup.Restore;
+namespace CoreApp.Application.Features.Backup.Restore;
 
 public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreService
 {

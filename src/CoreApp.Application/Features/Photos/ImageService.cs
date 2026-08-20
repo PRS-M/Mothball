@@ -1,8 +1,8 @@
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
-using CoreApp.Utilities;
-namespace CoreApp.Features.Photos;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
+using CoreApp.Application.Utilities;
+namespace CoreApp.Application.Features.Photos;
 
 /// <summary>
 /// Provides high-level operations for capturing, saving, and persisting photos

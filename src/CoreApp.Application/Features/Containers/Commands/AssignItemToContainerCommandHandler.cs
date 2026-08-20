@@ -1,6 +1,6 @@
-using CoreApp.Features.Inventory.Allocation;
+using CoreApp.Application.Features.Inventory.Allocation;
 
-namespace CoreApp.Features.Containers.Commands;
+namespace CoreApp.Application.Features.Containers.Commands;
 
 public sealed class AssignItemToContainerCommandHandler : IAssignItemToContainerCommandHandler
 {

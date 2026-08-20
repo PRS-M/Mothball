@@ -1,10 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 using Microsoft.Extensions.Logging;
 
-namespace CoreApp.Features.Backup.Restore.Planning;
+namespace CoreApp.Application.Features.Backup.Restore.Planning;
 
 internal static class InventoryBackupPayloadIntegrity
 {

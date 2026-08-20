@@ -1,4 +1,4 @@
-namespace CoreApp.Specifications;
+namespace CoreApp.Application.Specifications;
 
 public enum ContainerQueryFilter
 {

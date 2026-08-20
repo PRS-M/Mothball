@@ -1,6 +1,6 @@
 using System;
 
-namespace CoreApp.Entities.ContainerAggregate;
+namespace CoreApp.Domain.Entities.ContainerAggregate;
 
 public class StoredItem
 {

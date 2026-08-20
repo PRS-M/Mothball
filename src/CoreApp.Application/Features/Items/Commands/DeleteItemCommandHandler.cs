@@ -1,5 +1,5 @@
 
-namespace CoreApp.Features.Items.Commands;
+namespace CoreApp.Application.Features.Items.Commands;
 
 public sealed class DeleteItemCommandHandler : IDeleteItemCommandHandler
 {

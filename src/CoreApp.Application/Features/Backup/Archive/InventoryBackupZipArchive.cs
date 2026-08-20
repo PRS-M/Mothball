@@ -1,7 +1,7 @@
-using CoreApp.Contracts;
-using CoreApp.Utilities;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Utilities;
 
-namespace CoreApp.Features.Backup.Archive;
+namespace CoreApp.Application.Features.Backup.Archive;
 
 internal static class InventoryBackupZipArchive
 {

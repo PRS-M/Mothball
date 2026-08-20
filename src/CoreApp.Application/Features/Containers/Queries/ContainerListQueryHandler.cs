@@ -1,7 +1,7 @@
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Specifications;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Application.Specifications;
 
-namespace CoreApp.Features.Containers.Queries;
+namespace CoreApp.Application.Features.Containers.Queries;
 
 public sealed class ContainerListQueryHandler : IContainerListQueryHandler
 {

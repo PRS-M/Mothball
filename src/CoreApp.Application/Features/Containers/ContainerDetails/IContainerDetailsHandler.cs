@@ -1,7 +1,7 @@
-using CoreApp.Contracts;
-using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ContainerAggregate;
 
-namespace CoreApp.Features.Containers.ContainerDetails;
+namespace CoreApp.Application.Features.Containers.ContainerDetails;
 
 public interface IContainerDetailsHandler
 {

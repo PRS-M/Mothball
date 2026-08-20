@@ -1,5 +1,5 @@
 
-namespace CoreApp.Features.Containers.Commands;
+namespace CoreApp.Application.Features.Containers.Commands;
 
 public sealed class DeleteContainerCommandHandler : IDeleteContainerCommandHandler
 {

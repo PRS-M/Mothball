@@ -1,6 +1,6 @@
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 using CoreApp.Domain.Inventory;
-using CoreApp.Utilities;
+using CoreApp.Application.Utilities;
 
 namespace Mothball.Tests.Unit.Core.Features.Backup;
 

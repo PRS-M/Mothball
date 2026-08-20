@@ -1,6 +1,6 @@
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Features.Containers.Association;
+namespace CoreApp.Application.Features.Containers.Association;
 
 public interface IContainerItemAssociationHandler
 {

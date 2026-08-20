@@ -1,7 +1,7 @@
-using CoreApp.Contracts;
-using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ContainerAggregate;
 
-namespace CoreApp.Features.Inventory.Allocation;
+namespace CoreApp.Application.Features.Inventory.Allocation;
 
 /// <summary>
 /// Defines operations for setting an item's quantity in a container.

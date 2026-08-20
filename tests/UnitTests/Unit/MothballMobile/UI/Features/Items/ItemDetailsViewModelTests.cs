@@ -1,6 +1,6 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Contracts;
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ItemAggregate;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using MothballMobile.Infrastructure;
@@ -146,7 +146,7 @@ public sealed class ItemDetailsViewModelTests
     public async Task ItemLocationsViewModel_UsesContainersForTilesAndLoadsImages()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
-        var container = new CoreApp.Entities.ContainerAggregate.Container(Guid.NewGuid(), "Box", "Shelf");
+        var container = new CoreApp.Domain.Entities.ContainerAggregate.Container(Guid.NewGuid(), "Box", "Shelf");
         var allocation = new ItemContainerAllocation(container.ContainerId, container.Name, 3);
         var details = new ItemDetailsResult(new InventorySnapshot(item, 3, 3, [allocation]));
         var itemDetails = CreateItemDetailsQuery(item.ItemId, details);

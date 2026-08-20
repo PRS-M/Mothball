@@ -1,4 +1,4 @@
-namespace CoreApp.Features.Items.Commands;
+namespace CoreApp.Application.Features.Items.Commands;
 
 /// <summary>
 /// Defines the command that deletes an item.

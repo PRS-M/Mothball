@@ -12,7 +12,7 @@ public sealed class AddItemViewModelTests
     {
         var createItem = new Mock<ICreateItemCommandHandler>();
         createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 4, null))
-            .ReturnsAsync(new CoreApp.Entities.ItemAggregate.Item("Widget", ""));
+            .ReturnsAsync(new CoreApp.Domain.Entities.ItemAggregate.Item("Widget", ""));
         var viewModel = CreateViewModel(createItem.Object, isAdvancedMode: true);
         viewModel.Name = "Widget";
         viewModel.Quantity = "4";
@@ -28,7 +28,7 @@ public sealed class AddItemViewModelTests
     {
         var createItem = new Mock<ICreateItemCommandHandler>();
         createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null))
-            .ReturnsAsync(new CoreApp.Entities.ItemAggregate.Item("Widget", ""));
+            .ReturnsAsync(new CoreApp.Domain.Entities.ItemAggregate.Item("Widget", ""));
         var viewModel = CreateViewModel(createItem.Object, isAdvancedMode: false);
         viewModel.Name = "Widget";
         viewModel.Quantity = "4";

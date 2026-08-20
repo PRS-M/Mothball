@@ -1,6 +1,6 @@
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Features.Backup.Restore.Planning;
+namespace CoreApp.Application.Features.Backup.Restore.Planning;
 
 /// <summary>
 /// Defines planning behavior for a backup restore conflict policy.

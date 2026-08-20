@@ -1,7 +1,7 @@
-using CoreApp.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Contracts;
-using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.Features.Items.ItemLocations;
 

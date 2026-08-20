@@ -1,4 +1,4 @@
-namespace CoreApp.Features.Containers.Commands;
+namespace CoreApp.Application.Features.Containers.Commands;
 
 /// <summary>
 /// Defines the command that deletes a container.

@@ -1,8 +1,8 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
-using CoreApp.Contracts;
-using CoreApp.Utilities;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Utilities;
 using Moq;
 
 namespace Mothball.Tests.Unit.Core.Features.Backup;

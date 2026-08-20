@@ -1,4 +1,4 @@
-namespace CoreApp.Abstractions.Startup;
+namespace CoreApp.Application.Abstractions.Startup;
 
 /// <summary>
 /// Initializes the app's active persistence layer at startup.

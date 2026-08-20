@@ -1,4 +1,4 @@
-namespace CoreApp.Abstractions.Platform;
+namespace CoreApp.Application.Abstractions.Platform;
 
 /// <summary>
 /// Provides platform-agnostic file system operations for the application.

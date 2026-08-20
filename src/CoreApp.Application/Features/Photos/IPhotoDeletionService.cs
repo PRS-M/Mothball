@@ -1,7 +1,7 @@
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
 
-namespace CoreApp.Features.Photos;
+namespace CoreApp.Application.Features.Photos;
 
 /// <summary>
 /// Defines operations for deleting persisted photos.

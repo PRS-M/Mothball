@@ -1,7 +1,7 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Contracts;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Features.Inventory.Allocation;
+namespace CoreApp.Application.Features.Inventory.Allocation;
 
 /// <summary>
 /// Defines commands that update item inventory quantities and allocations.

@@ -1,4 +1,4 @@
-namespace CoreApp.Utilities;
+namespace CoreApp.Application.Utilities;
 
 public record class Constants
 {

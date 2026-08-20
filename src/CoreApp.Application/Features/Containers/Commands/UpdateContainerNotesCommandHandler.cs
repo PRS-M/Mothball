@@ -1,6 +1,6 @@
-using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
 
-namespace CoreApp.Features.Containers.Commands;
+namespace CoreApp.Application.Features.Containers.Commands;
 
 public sealed class UpdateContainerNotesCommandHandler : IUpdateContainerNotesCommandHandler
 {

@@ -1,4 +1,4 @@
-namespace CoreApp.Contracts.Backup;
+namespace CoreApp.Application.Contracts.Backup;
 
 public enum InventoryBackupOwnerType
 {

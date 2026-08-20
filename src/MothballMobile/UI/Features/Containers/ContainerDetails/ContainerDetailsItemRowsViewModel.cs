@@ -1,7 +1,7 @@
-using CoreApp.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
 using System.Collections.ObjectModel;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Contracts;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Contracts;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 

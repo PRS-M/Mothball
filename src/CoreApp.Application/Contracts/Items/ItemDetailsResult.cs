@@ -1,5 +1,5 @@
-using CoreApp.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
 
-namespace CoreApp.Contracts.Items;
+namespace CoreApp.Application.Contracts.Items;
 
 public sealed record ItemDetailsResult(InventorySnapshot Inventory);

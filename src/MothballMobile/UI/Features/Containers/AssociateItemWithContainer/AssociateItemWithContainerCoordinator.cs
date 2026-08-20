@@ -1,4 +1,4 @@
-using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
 using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 

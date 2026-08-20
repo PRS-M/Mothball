@@ -1,8 +1,8 @@
-using CoreApp.Entities.InventoryAggregate;
-﻿using CoreApp.Entities;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Utilities;
+using CoreApp.Domain.Entities.InventoryAggregate;
+﻿using CoreApp.Domain.Entities;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Utilities;
 
 namespace Mothball.Tests.Unit.Core.Entities;
 
@@ -76,11 +76,11 @@ public class CoreAppTests
     {
         var item = new Item("Hat", "Blue");
 
-        var summary = new CoreApp.Entities.InventoryAggregate.InventorySnapshot(
+        var summary = new CoreApp.Domain.Entities.InventoryAggregate.InventorySnapshot(
             item,
             12,
             7,
-            [new CoreApp.Entities.InventoryAggregate.ItemContainerAllocation(Guid.NewGuid(), "Box", 7)]);
+            [new CoreApp.Domain.Entities.InventoryAggregate.ItemContainerAllocation(Guid.NewGuid(), "Box", 7)]);
 
         Assert.That(summary.UnassignedQuantity, Is.EqualTo(5));
     }
@@ -201,7 +201,7 @@ public class CoreAppTests
         Assert.Multiple(() =>
         {
             Assert.That(((ICollection<StoredItem>)container.Items).IsReadOnly, Is.True);
-            Assert.That(((ICollection<CoreApp.Entities.Shared.ImageItem>)container.Photos).IsReadOnly, Is.True);
+            Assert.That(((ICollection<CoreApp.Domain.Entities.Shared.ImageItem>)container.Photos).IsReadOnly, Is.True);
         });
     }
 

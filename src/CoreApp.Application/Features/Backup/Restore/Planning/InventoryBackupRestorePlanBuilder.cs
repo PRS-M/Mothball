@@ -1,7 +1,7 @@
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 using CoreApp.Domain.Inventory;
 
-namespace CoreApp.Features.Backup.Restore.Planning;
+namespace CoreApp.Application.Features.Backup.Restore.Planning;
 
 internal sealed class InventoryBackupRestorePlanBuilder
 {

@@ -1,9 +1,9 @@
-using CoreApp.Contracts;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Features.Containers.Queries;
-using CoreApp.Features.Inventory.Allocation;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Application.Features.Containers.Queries;
+using CoreApp.Application.Features.Inventory.Allocation;
 
-namespace CoreApp.Features.Containers.ContainerDetails;
+namespace CoreApp.Application.Features.Containers.ContainerDetails;
 
 public sealed class ContainerDetailsHandler : IContainerDetailsHandler
 {

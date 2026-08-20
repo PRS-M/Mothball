@@ -1,8 +1,8 @@
-using CoreApp.Contracts;
-using CoreApp.Features.Containers.Commands;
-using CoreApp.Features.Items.Queries;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Features.Containers.Commands;
+using CoreApp.Application.Features.Items.Queries;
 
-namespace CoreApp.Features.Containers.Association;
+namespace CoreApp.Application.Features.Containers.Association;
 
 public sealed class ContainerItemAssociationHandler : IContainerItemAssociationHandler
 {

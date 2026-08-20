@@ -1,10 +1,10 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
-using CoreApp.Contracts;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
+using CoreApp.Application.Contracts;
 
-namespace CoreApp.Abstractions.Persistence;
+namespace CoreApp.Application.Abstractions.Persistence;
 
 /// <summary>
 /// Defines commands that persist inventory changes.

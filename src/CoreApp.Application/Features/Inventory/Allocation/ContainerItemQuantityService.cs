@@ -1,7 +1,7 @@
-using CoreApp.Contracts;
-using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Application.Contracts;
+using CoreApp.Domain.Entities.ContainerAggregate;
 
-namespace CoreApp.Features.Inventory.Allocation;
+namespace CoreApp.Application.Features.Inventory.Allocation;
 
 public sealed class ContainerItemQuantityService : IContainerItemQuantityService
 {

@@ -1,4 +1,4 @@
-namespace CoreApp.Contracts.Serialization;
+namespace CoreApp.Application.Contracts.Serialization;
 
 internal sealed record InventoryContainerDto(
     Guid ContainerId,

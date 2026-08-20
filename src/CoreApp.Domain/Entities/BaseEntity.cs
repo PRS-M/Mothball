@@ -1,6 +1,6 @@
 using System;
 
-namespace CoreApp.Entities;
+namespace CoreApp.Domain.Entities;
 
 /// <summary>
 /// Provides the persistence identifier shared by entities.

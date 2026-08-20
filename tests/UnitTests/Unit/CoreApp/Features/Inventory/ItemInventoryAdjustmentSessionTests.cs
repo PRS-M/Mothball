@@ -1,5 +1,5 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Contracts;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts;
 
 namespace Mothball.Tests.Unit.Core.Features.Inventory;
 
@@ -171,7 +171,7 @@ public sealed class ItemInventoryAdjustmentSessionTests
         int requestedTotal,
         params (Guid id, string name, int quantity)[] allocations)
     {
-        var item = new CoreApp.Entities.ItemAggregate.Item(Guid.NewGuid(), "Widget", "");
+        var item = new CoreApp.Domain.Entities.ItemAggregate.Item(Guid.NewGuid(), "Widget", "");
         var allocationModels = allocations
             .Select(value => new ItemContainerAllocation(value.id, value.name, value.quantity))
             .ToList();

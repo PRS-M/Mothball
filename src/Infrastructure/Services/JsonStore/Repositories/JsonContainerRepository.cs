@@ -1,15 +1,15 @@
-using CoreApp.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.InventoryAggregate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;
 using Infrastructure.Services.Repositories;
-using CoreApp.Specifications;
-using CoreApp.Contracts;
+using CoreApp.Application.Specifications;
+using CoreApp.Application.Contracts;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 

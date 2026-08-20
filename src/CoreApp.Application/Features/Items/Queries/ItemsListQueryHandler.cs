@@ -1,8 +1,8 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Contracts;
-using CoreApp.Specifications;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Specifications;
 
-namespace CoreApp.Features.Items.Queries;
+namespace CoreApp.Application.Features.Items.Queries;
 
 public sealed class ItemsListQueryHandler : IItemsListQueryHandler
 {

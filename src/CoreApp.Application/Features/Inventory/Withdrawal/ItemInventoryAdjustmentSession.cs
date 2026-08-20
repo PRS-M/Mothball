@@ -1,8 +1,8 @@
-using CoreApp.Entities.InventoryAggregate;
-using CoreApp.Contracts;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts;
 using CoreApp.Domain.Inventory;
 
-namespace CoreApp.Features.Inventory.Withdrawal;
+namespace CoreApp.Application.Features.Inventory.Withdrawal;
 
 public enum ItemInventoryAdjustmentState
 {

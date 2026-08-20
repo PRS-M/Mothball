@@ -1,7 +1,7 @@
-using CoreApp.Entities.Shared;
+using CoreApp.Domain.Entities.Shared;
 using Microsoft.Extensions.Logging;
 
-namespace CoreApp.Features.Photos;
+namespace CoreApp.Application.Features.Photos;
 
 public sealed class PhotoFilePersistenceService : IPhotoFilePersistenceService
 {
