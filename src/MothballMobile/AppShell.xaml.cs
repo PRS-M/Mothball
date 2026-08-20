@@ -1,19 +1,28 @@
 ﻿using Microsoft.Extensions.Logging;
+using MothballMobile.Infrastructure.Presentation.Errors;
 
 namespace MothballMobile;
 
 public partial class AppShell : Shell
 {
 	private readonly ILogger<AppShell> logger;
+	public IAppErrorPresenter ErrorPresenter { get; }
 
 	public AppShell(
 		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
+		IAppErrorPresenter appErrorPresenter,
 		ILogger<AppShell> logger)
 	{
 		this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		ErrorPresenter = appErrorPresenter ?? throw new ArgumentNullException(nameof(appErrorPresenter));
 		InitializeComponent();
 		BindingContext = photoBackgroundOperationTracker;
 		RegisterRoutes();
+	}
+
+	private void OnErrorBannerDismissed(object? sender, EventArgs e)
+	{
+		ErrorPresenter.Dismiss();
 	}
 
 	private async void OnBackgroundOperationsBannerTapped(object? sender, TappedEventArgs e)

@@ -12,6 +12,8 @@ public abstract class BaseViewModel : ObservableObject
     private bool isRefreshing;
     private string? errorMessage;
 
+    public event Action<string>? ErrorOccurred;
+
     /// <summary>
     /// Gets or sets whether the view model is executing a command.
     /// </summary>
@@ -72,6 +74,7 @@ public abstract class BaseViewModel : ObservableObject
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
+            ErrorOccurred?.Invoke(ex.Message);
             throw;
         }
         finally

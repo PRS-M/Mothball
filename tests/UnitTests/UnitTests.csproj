@@ -46,6 +46,7 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/IPopupDefinitionService.cs" Link="Infrastructure/Presentation/Popups/IPopupDefinitionService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/PopupDefinitionService.cs" Link="Infrastructure/Presentation/Popups/PopupDefinitionService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/PopupDefinitions.cs" Link="Infrastructure/Presentation/Popups/PopupDefinitions.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Errors/*.cs" Link="Infrastructure/Presentation/Errors/%(Filename)%(Extension)" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/IRetryService.cs" Link="Infrastructure/Resilience/IRetryService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/RetryService.cs" Link="Infrastructure/Resilience/RetryService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Startup/IAppStartupOrchestrator.cs" Link="Infrastructure/Startup/IAppStartupOrchestrator.cs" />

@@ -5,14 +5,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MothballMobile"
     xmlns:backgroundOperations="clr-namespace:MothballMobile.Infrastructure.BackgroundOperations.Photos"
+    xmlns:errors="clr-namespace:MothballMobile.Infrastructure.Presentation.Errors"
     xmlns:containers="clr-namespace:MothballMobile.UI.Features.Containers.ContainersList"
     xmlns:items="clr-namespace:MothballMobile.UI.Features.Items.ItemsList"
     xmlns:settings="clr-namespace:MothballMobile.UI.Features.Settings"
     Title="MothballMobile">
     <Shell.TitleView>
-        <Grid HorizontalOptions="Fill"
-              x:DataType="backgroundOperations:IPhotoBackgroundOperationTracker"
-              Padding="12,0">
+        <VerticalStackLayout HorizontalOptions="Fill"
+                             Padding="12,0"
+                             Spacing="2">
             <Border IsVisible="{Binding IsBannerVisible}"
                     HorizontalOptions="Center"
                     Margin="8,2"
@@ -25,7 +26,8 @@
                     <TapGestureRecognizer Tapped="OnBackgroundOperationsBannerTapped" />
                 </Border.GestureRecognizers>
                 <VerticalStackLayout Spacing="4"
-                                     WidthRequest="280">
+                                     WidthRequest="280"
+                                     x:DataType="backgroundOperations:IPhotoBackgroundOperationTracker">
                     <Label Text="{Binding StatusText}"
                            FontSize="12"
                            LineBreakMode="TailTruncation"
@@ -33,7 +35,33 @@
                     <ProgressBar Progress="{Binding OverallProgress}" />
                 </VerticalStackLayout>
             </Border>
-        </Grid>
+            <Border BindingContext="{Binding Source={RelativeSource AncestorType={x:Type local:AppShell}}, Path=ErrorPresenter}"
+                    x:DataType="errors:IAppErrorPresenter"
+                    IsVisible="{Binding IsVisible}"
+                    HorizontalOptions="Center"
+                    Margin="8,2"
+                    Stroke="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="10,6"
+                    Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                <Grid ColumnDefinitions="*,Auto"
+                      WidthRequest="280">
+                    <Label Text="{Binding Message}"
+                           FontSize="12"
+                           LineBreakMode="TailTruncation"
+                           VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <Button Grid.Column="1"
+                            Text="&#xf00d;"
+                            FontFamily="FontAwesomeSolid"
+                            FontSize="14"
+                            BackgroundColor="Transparent"
+                            Clicked="OnErrorBannerDismissed"
+                            SemanticProperties.Description="Dismiss error" />
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
     </Shell.TitleView>
 
     <FlyoutItem Title="Home" Route="Home">
