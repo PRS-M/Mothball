@@ -53,19 +53,13 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     [RelayCommand]
     private Task NavigateToItemDetailsAsync()
     {
-        var parameters = new Dictionary<string, object>
-        {
-            [NavigationParams.ItemId] = Item.ItemId.ToString()
-        };
-
-        if (!string.IsNullOrWhiteSpace(sourceContainerId))
-        {
-            parameters[NavigationParams.ContainerId] = sourceContainerId;
-        }
+        Guid? parsedSourceContainerId = Guid.TryParse(this.sourceContainerId, out var parsedContainerId)
+            ? parsedContainerId
+            : null;
 
         return navigation.GoToAsync(
             NavigationRoutes.ItemDetails,
-            parameters);
+            new Infrastructure.Navigation.ItemDetailsNavigationRequest(Item.ItemId, parsedSourceContainerId));
     }
 
     [RelayCommand]

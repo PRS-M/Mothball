@@ -128,9 +128,8 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
     [RelayCommand]
     private Task NavigateToItemDetailsAsync(Guid itemId)
     {
-        var id = itemId.ToString();
         return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemDetails,
-            new Dictionary<string, object> { [Infrastructure.NavigationParams.ItemId] = id });
+            new Infrastructure.Navigation.ItemDetailsNavigationRequest(itemId));
     }
 
     [RelayCommand]
