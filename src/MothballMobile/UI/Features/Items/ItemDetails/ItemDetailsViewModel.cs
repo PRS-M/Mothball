@@ -10,15 +10,10 @@ namespace MothballMobile.UI.Features.Items.ItemDetails;
 
 public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable
 {
-    private readonly IItemDetailsQueryHandler itemDetailsQueries;
-    private readonly IItemInventoryCommandService inventoryCommands;
-    private readonly IDeleteItemCommandHandler deleteItemHandler;
-    private readonly IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler;
+    private readonly ItemDetailsCoordinator itemDetailsCoordinator;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
-    private readonly ILogger<ItemDetailsViewModel> logger;
-    private readonly ItemInventoryWithdrawalCoordinator withdrawalCoordinator;
     private Item? currentItem;
     private InventorySnapshot? currentInventory;
     private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
@@ -66,10 +61,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public ObservableCollection<string> ImagePaths { get; } = new();
 
     public ItemDetailsViewModel(
-        IItemDetailsQueryHandler itemDetailsQueries,
-        IItemInventoryCommandService inventoryCommands,
-        IDeleteItemCommandHandler deleteItemHandler,
-        IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler,
+        ItemDetailsCoordinator itemDetailsCoordinator,
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IImagePathResolver paths,
@@ -77,20 +69,13 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IPopupDefinitionService popupDefinitions,
         ImageService imageService,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
-        IBackgroundTaskObserver backgroundTasks,
-        ItemInventoryWithdrawalCoordinator withdrawalCoordinator,
-        ILogger<ItemDetailsViewModel> logger)
+        IBackgroundTaskObserver backgroundTasks)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
-        this.itemDetailsQueries = itemDetailsQueries;
-        this.inventoryCommands = inventoryCommands;
-        this.deleteItemHandler = deleteItemHandler;
-        this.updateItemDescriptionHandler = updateItemDescriptionHandler;
+        this.itemDetailsCoordinator = itemDetailsCoordinator;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
-        this.withdrawalCoordinator = withdrawalCoordinator;
-        this.logger = logger;
     }
 
     /// <inheritdoc />
@@ -149,7 +134,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             ContainerId = null;
             NotifyContainerRelationStateChanged();
 
-            var details = await itemDetailsQueries.GetDetailsAsync(itemId);
+            var details = await itemDetailsCoordinator.GetDetailsAsync(itemId);
             if (details is null)
             {
                 Name = "Item not found";
@@ -259,14 +244,6 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private async Task ApplyTotalQuantitySelectionAsync(QuantityEditSnapshot snapshot, int selectedQuantity)
     {
-        logger.LogInformation(
-            "Set item total requested: itemId={ItemId}, selected={Selected}, currentTotal={CurrentTotal}, assigned={Assigned}, sourceContainer={SourceContainer}",
-            snapshot.Item.ItemId,
-            selectedQuantity,
-            snapshot.TotalQuantity,
-            snapshot.AssignedQuantity,
-            sourceContainerId);
-
         if (selectedQuantity == 0)
         {
             await DeleteBySettingTotalToZeroAsync(snapshot.Item);
@@ -279,7 +256,6 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             return;
         }
 
-        logger.LogDebug("Routing item total request to withdrawal workflow.");
         await RunWithdrawalWorkflowAsync(selectedQuantity, snapshot.Inventory);
     }
 
@@ -290,8 +266,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             return;
         }
 
-        var deletionPlan = new ItemInventoryWithdrawalPlan(0, 0, 0, [], true);
-        var deletionResult = await inventoryCommands.ApplyWithdrawalAsync(item.ItemId, deletionPlan);
+        var deletionResult = await itemDetailsCoordinator.DeleteBySettingTotalToZeroAsync(item);
         if (deletionResult.ItemDeleted)
         {
             await nav.GoBackAsync();
@@ -300,8 +275,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
     private async Task IncreaseTotalQuantityAsync(Item item, int selectedQuantity)
     {
-        logger.LogDebug("Routing item total request to increase command.");
-        var result = await inventoryCommands.IncreaseTotalQuantityAsync(item.ItemId, selectedQuantity);
+        var result = await itemDetailsCoordinator.IncreaseTotalQuantityAsync(item, selectedQuantity);
         ApplyInventoryResult(result);
     }
 
@@ -312,7 +286,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             return false;
         }
 
-        var details = await itemDetailsQueries.GetDetailsAsync(ItemId);
+        var details = await itemDetailsCoordinator.GetDetailsAsync(ItemId);
         if (details is null)
         {
             return false;
@@ -335,7 +309,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             ? parsedSourceContainerId
             : null;
 
-        var execution = await withdrawalCoordinator.ExecuteAsync(
+        var execution = await itemDetailsCoordinator.WithdrawAsync(
             inventorySnapshot,
             requestedTotal,
             preferredContainerId);
@@ -392,7 +366,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         var updatedDescription = DescriptionDraft?.Trim() ?? string.Empty;
         await RunCommandAsync(async () =>
         {
-            await updateItemDescriptionHandler.UpdateAsync(currentItem, updatedDescription);
+            await itemDetailsCoordinator.UpdateDescriptionAsync(currentItem, updatedDescription);
             Description = currentItem.Description;
             DescriptionDraft = currentItem.Description;
             IsEditingDescription = false;
@@ -406,7 +380,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteItem());
         if (!confirmed) return;
 
-        await deleteItemHandler.DeleteAsync(ItemId);
+        await itemDetailsCoordinator.DeleteItemAsync(ItemId);
         await nav.GoBackAsync();
     }
 
