@@ -164,7 +164,7 @@ public sealed class ItemDetailsViewModelTests
             inventoryQueries.Object,
             paths.Object,
             Mock.Of<INavigationService>(),
-            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true));
+            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode));
         viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ItemId] = item.ItemId.ToString() });
 
         await viewModel.InitializeAsync();
@@ -252,7 +252,7 @@ public sealed class ItemDetailsViewModelTests
         => new(
             CreateCoordinator(itemDetails, inventoryCommands, popup),
             nav ?? Mock.Of<INavigationService>(),
-            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == true),
+            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode),
             CreatePaths(),
             popup,
             new PopupDefinitionService(),

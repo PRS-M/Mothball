@@ -32,59 +32,19 @@ public sealed class ItemInventoryWithdrawalCoordinator
             switch (session.State)
             {
                 case ItemInventoryAdjustmentState.WithdrawAssigned:
-                    var selectedContainer = session.PreferredAllocation
-                        ?? await popup.SelectOptionAsync(
-                            popupDefinitions.WithdrawalContainerPicker(session.RemainingAllocations));
-                    if (selectedContainer is null)
-                    {
-                        session.Cancel();
-                        continue;
-                    }
-
-                    var assignedWithdrawal = await popup.PickNumberAsync(
-                        popupDefinitions.WithdrawFromContainer(
-                            selectedContainer,
-                            session.CarriedWithdrawal,
-                            session.SuggestedAssignedWithdrawal));
-                    if (assignedWithdrawal is null)
-                    {
-                        session.Cancel();
-                        continue;
-                    }
-
-                    try
-                    {
-                        session.WithdrawAssigned(selectedContainer.ContainerId, assignedWithdrawal.Value);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        await popup.ShowAlertAsync(
-                            popupDefinitions.WithdrawalCarryTooSmall(session.CarriedWithdrawal));
-                    }
+                    await WithdrawAssignedAsync(session);
                     break;
 
                 case ItemInventoryAdjustmentState.ConfirmUnassignedWithdrawal:
-                    if (await popup.ConfirmAsync(
-                        popupDefinitions.ConfirmUnassignedWithdrawal(session.UnassignedQuantity)))
-                    {
-                        session.AcceptUnassignedWithdrawal();
-                    }
-                    else
-                    {
-                        session.DeclineUnassignedWithdrawal();
-                    }
+                    await ConfirmUnassignedWithdrawalAsync(session);
                     break;
 
                 case ItemInventoryAdjustmentState.WithdrawUnassigned:
-                    var unassignedWithdrawal = await popup.PickNumberAsync(
-                        popupDefinitions.WithdrawUnassignedQuantity(session.UnassignedQuantity));
-                    session.WithdrawUnassigned(unassignedWithdrawal ?? 0);
+                    await WithdrawUnassignedAsync(session);
                     break;
 
                 case ItemInventoryAdjustmentState.ReadyToCommit:
-                    var plan = session.BuildPlan();
-                    var update = await inventoryCommands.ApplyWithdrawalAsync(inventory.Item.ItemId, plan);
-                    return new ItemInventoryWithdrawalExecutionResult(plan, update);
+                    return await CommitAsync(inventory.Item.ItemId, session);
 
                 case ItemInventoryAdjustmentState.Cancelled:
                     return null;
@@ -93,6 +53,67 @@ public sealed class ItemInventoryWithdrawalCoordinator
                     throw new InvalidOperationException($"Unsupported adjustment state {session.State}.");
             }
         }
+    }
+
+    private async Task WithdrawAssignedAsync(ItemInventoryAdjustmentSession session)
+    {
+        var selectedContainer = session.PreferredAllocation
+            ?? await popup.SelectOptionAsync(
+                popupDefinitions.WithdrawalContainerPicker(session.RemainingAllocations));
+        if (selectedContainer is null)
+        {
+            session.Cancel();
+            return;
+        }
+
+        var assignedWithdrawal = await popup.PickNumberAsync(
+            popupDefinitions.WithdrawFromContainer(
+                selectedContainer,
+                session.CarriedWithdrawal,
+                session.SuggestedAssignedWithdrawal));
+        if (assignedWithdrawal is null)
+        {
+            session.Cancel();
+            return;
+        }
+
+        try
+        {
+            session.WithdrawAssigned(selectedContainer.ContainerId, assignedWithdrawal.Value);
+        }
+        catch (InvalidOperationException)
+        {
+            await popup.ShowAlertAsync(
+                popupDefinitions.WithdrawalCarryTooSmall(session.CarriedWithdrawal));
+        }
+    }
+
+    private async Task ConfirmUnassignedWithdrawalAsync(ItemInventoryAdjustmentSession session)
+    {
+        if (await popup.ConfirmAsync(
+            popupDefinitions.ConfirmUnassignedWithdrawal(session.UnassignedQuantity)))
+        {
+            session.AcceptUnassignedWithdrawal();
+            return;
+        }
+
+        session.DeclineUnassignedWithdrawal();
+    }
+
+    private async Task WithdrawUnassignedAsync(ItemInventoryAdjustmentSession session)
+    {
+        var unassignedWithdrawal = await popup.PickNumberAsync(
+            popupDefinitions.WithdrawUnassignedQuantity(session.UnassignedQuantity));
+        session.WithdrawUnassigned(unassignedWithdrawal ?? 0);
+    }
+
+    private async Task<ItemInventoryWithdrawalExecutionResult> CommitAsync(
+        Guid itemId,
+        ItemInventoryAdjustmentSession session)
+    {
+        var plan = session.BuildPlan();
+        var update = await inventoryCommands.ApplyWithdrawalAsync(itemId, plan);
+        return new ItemInventoryWithdrawalExecutionResult(plan, update);
     }
 }
 
