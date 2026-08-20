@@ -14,6 +14,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../CoreApp.Domain/CoreApp.Domain.csproj" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
     <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
   </ItemGroup>

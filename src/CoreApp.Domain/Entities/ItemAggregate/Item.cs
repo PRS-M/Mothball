@@ -1,3 +1,4 @@
+using CoreApp.Abstractions.Domain;
 using CoreApp.Entities.Shared;
 
 namespace CoreApp.Entities.ItemAggregate;

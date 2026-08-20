@@ -1,3 +1,4 @@
+using CoreApp.Abstractions.Domain;
 using CoreApp.Entities;
 
 namespace CoreApp.Entities.InventoryAggregate;
