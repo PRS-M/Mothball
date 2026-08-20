@@ -12,18 +12,18 @@ This document describes the backup/export and restore features added for invento
 
 ## Main Components
 
-- `CoreApp.Contracts.InventoryBackupEnvelope`
-- `CoreApp.Contracts.InventoryBackupData`
-- `CoreApp.Contracts.InventoryBackupIntegrity`
-- `CoreApp.Contracts.InventoryBackupRestoreOptions`
-- `CoreApp.Contracts.InventoryBackupRestoreResult`
-- `CoreApp.Features.Backup.Export.IInventoryBackupExporter`
-- `CoreApp.Features.Backup.Export.IInventoryBackupService`
-- `CoreApp.Features.Backup.Restore.IInventoryBackupRestoreService`
-- `CoreApp.Features.Backup.Export.InventoryBackupExporter`
-- `CoreApp.Features.Backup.Export.InventoryBackupService`
-- `CoreApp.Features.Backup.Restore.InventoryBackupRestoreService`
-- `CoreApp.Features.Backup.Restore.Planning.InventoryBackupRestorePlanner`
+- `CoreApp.Application.Contracts.InventoryBackupEnvelope`
+- `CoreApp.Application.Contracts.InventoryBackupData`
+- `CoreApp.Application.Contracts.InventoryBackupIntegrity`
+- `CoreApp.Application.Contracts.InventoryBackupRestoreOptions`
+- `CoreApp.Application.Contracts.InventoryBackupRestoreResult`
+- `CoreApp.Application.Features.Backup.Export.IInventoryBackupExporter`
+- `CoreApp.Application.Features.Backup.Export.IInventoryBackupService`
+- `CoreApp.Application.Features.Backup.Restore.IInventoryBackupRestoreService`
+- `CoreApp.Application.Features.Backup.Export.InventoryBackupExporter`
+- `CoreApp.Application.Features.Backup.Export.InventoryBackupService`
+- `CoreApp.Application.Features.Backup.Restore.InventoryBackupRestoreService`
+- `CoreApp.Application.Features.Backup.Restore.Planning.InventoryBackupRestorePlanner`
 - `Infrastructure.Services.Restore.SqliteInventoryBackupRestoreService`
 
 ## Backup Export
@@ -63,7 +63,7 @@ ZIP import behavior:
 
 ### Backend-agnostic restore
 
-`CoreApp.Features.Backup.Restore.InventoryBackupRestoreService`:
+`CoreApp.Application.Features.Backup.Restore.InventoryBackupRestoreService`:
 
 - Uses repository abstractions only.
 - Works for all backends.
@@ -79,7 +79,7 @@ ZIP import behavior:
 
 ## Shared Planner
 
-`CoreApp.Features.Backup.Restore.Planning.InventoryBackupRestorePlanner` centralizes common logic:
+`CoreApp.Application.Features.Backup.Restore.Planning.InventoryBackupRestorePlanner` centralizes common logic:
 
 - JSON parsing.
 - Payload version validation.
