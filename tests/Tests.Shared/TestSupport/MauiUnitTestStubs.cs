@@ -1,6 +1,5 @@
 global using Microsoft.Maui.ApplicationModel;
 global using Microsoft.Maui.Controls;
-global using MothballMobile.UI.Shared;
 
 namespace Microsoft.Maui.ApplicationModel
 {

@@ -147,6 +147,12 @@ Run unit tests:
 dotnet test tests/UnitTests/UnitTests.csproj -v minimal
 ```
 
+Run integration tests:
+
+```bash
+dotnet test tests/IntegrationTests/IntegrationTests.csproj -v minimal
+```
+
 Or use the test-only solution filter:
 
 ```bash
