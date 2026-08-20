@@ -7,6 +7,7 @@ global using CoreApp.Contracts.Containers;
 global using CoreApp.Contracts.Inventory;
 global using CoreApp.Contracts.Items;
 global using CoreApp.Contracts.Serialization;
+global using CoreApp.Domain.Inventory;
 global using CoreApp.Features.Backup.Export;
 global using CoreApp.Features.Backup.Restore;
 global using CoreApp.Features.Backup.Restore.Planning;

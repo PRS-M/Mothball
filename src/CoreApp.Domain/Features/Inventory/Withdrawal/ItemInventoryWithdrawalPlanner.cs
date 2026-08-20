@@ -1,6 +1,6 @@
 using CoreApp.Entities.InventoryAggregate;
 
-namespace CoreApp.Features.Inventory.Withdrawal;
+namespace CoreApp.Domain.Inventory;
 
 public static class ItemInventoryWithdrawalPlanner
 {
