@@ -16,6 +16,7 @@ public sealed partial class JsonInventoryStore
 {
     private readonly IFileHandler files;
     private readonly ILogger<JsonInventoryStore> logger;
+    private readonly JsonStoreManifestManager manifestManager;
     private readonly SemaphoreSlim writeLock = new(1, 1);
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -28,19 +29,20 @@ public sealed partial class JsonInventoryStore
     {
         this.files = files ?? throw new ArgumentNullException(nameof(files));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        manifestManager = new JsonStoreManifestManager(this.files, this.logger, JsonOptions, IsSlotCompleteAsync);
     }
 
     public async Task<bool> TryRecoverAsync()
     {
         // Ensure there is at least one valid manifest+slot.
         // If none exist, initialize empty store into slot A.
-        var active = await TryGetActiveManifestAsync();
+        var active = await manifestManager.TryGetActiveAsync();
         if (active is not null) return true;
 
         await writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            active = await TryGetActiveManifestAsync();
+            active = await manifestManager.TryGetActiveAsync();
             if (active is not null) return true;
 
             var empty = new StoreState();
@@ -53,7 +55,7 @@ public sealed partial class JsonInventoryStore
             };
 
             await WriteSlotAsync("A", empty, generation: initial.Generation).ConfigureAwait(false);
-            await WriteManifestAsync(JsonStoreConstants.ManifestAFileName, initial).ConfigureAwait(false);
+            await manifestManager.WriteAsync(JsonStoreConstants.ManifestAFileName, initial).ConfigureAwait(false);
             return true;
         }
         catch (Exception ex)
@@ -72,7 +74,7 @@ public sealed partial class JsonInventoryStore
         await writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            var active = await TryGetActiveManifestAsync().ConfigureAwait(false);
+            var active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
             if (active is null) return false;
 
             // If previous == current, nothing to rollback to.
@@ -90,7 +92,7 @@ public sealed partial class JsonInventoryStore
             };
 
             string inactiveManifest = active.InactiveManifestFileName;
-            await WriteManifestAsync(inactiveManifest, rollback).ConfigureAwait(false);
+            await manifestManager.WriteAsync(inactiveManifest, rollback).ConfigureAwait(false);
             return true;
         }
         catch (Exception ex)
@@ -106,7 +108,7 @@ public sealed partial class JsonInventoryStore
 
     public async Task<StoreState> LoadAsync()
     {
-        var active = await TryGetActiveManifestAsync().ConfigureAwait(false);
+        var active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
         if (active is null)
         {
             // Best-effort auto-recovery for callers who didn't run startup init.
@@ -116,7 +118,7 @@ public sealed partial class JsonInventoryStore
                 return new StoreState();
             }
 
-            active = await TryGetActiveManifestAsync().ConfigureAwait(false);
+            active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
             if (active is null) return new StoreState();
         }
 
@@ -131,12 +133,12 @@ public sealed partial class JsonInventoryStore
         await writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            var active = await TryGetActiveManifestAsync().ConfigureAwait(false);
+            var active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
             if (active is null)
             {
                 var recovered = await TryRecoverAsync().ConfigureAwait(false);
                 if (!recovered) throw new IOException("Failed to initialize JSON store.");
-                active = await TryGetActiveManifestAsync().ConfigureAwait(false);
+                active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
                 if (active is null) throw new IOException("Failed to initialize JSON store.");
             }
 
@@ -156,7 +158,7 @@ public sealed partial class JsonInventoryStore
                 SchemaVersion = state.Metadata.SchemaVersion,
             };
 
-            await WriteManifestAsync(active.InactiveManifestFileName, nextManifest).ConfigureAwait(false);
+            await manifestManager.WriteAsync(active.InactiveManifestFileName, nextManifest).ConfigureAwait(false);
         }
         finally
         {
