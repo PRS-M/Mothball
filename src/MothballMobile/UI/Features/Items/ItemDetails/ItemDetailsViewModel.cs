@@ -18,6 +18,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly ILogger<ItemDetailsViewModel> logger;
+    private readonly ItemInventoryWithdrawalCoordinator withdrawalCoordinator;
     private Item? currentItem;
     private InventorySnapshot? currentInventory;
     private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
@@ -77,6 +78,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         ImageService imageService,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IBackgroundTaskObserver backgroundTasks,
+        ItemInventoryWithdrawalCoordinator withdrawalCoordinator,
         ILogger<ItemDetailsViewModel> logger)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
@@ -87,6 +89,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         this.nav = nav;
         this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
+        this.withdrawalCoordinator = withdrawalCoordinator;
         this.logger = logger;
     }
 
@@ -277,7 +280,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         }
 
         logger.LogDebug("Routing item total request to withdrawal workflow.");
-        await RunWithdrawalWorkflowAsync(selectedQuantity, snapshot.Inventory, snapshot.Item);
+        await RunWithdrawalWorkflowAsync(selectedQuantity, snapshot.Inventory);
     }
 
     private async Task DeleteBySettingTotalToZeroAsync(Item item)
@@ -326,93 +329,29 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         return true;
     }
 
-    private async Task RunWithdrawalWorkflowAsync(
-        int requestedTotal,
-        InventorySnapshot inventorySnapshot,
-        Item itemSnapshot)
+    private async Task RunWithdrawalWorkflowAsync(int requestedTotal, InventorySnapshot inventorySnapshot)
     {
         Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
             ? parsedSourceContainerId
             : null;
-        var session = new ItemInventoryAdjustmentSession(
+
+        var execution = await withdrawalCoordinator.ExecuteAsync(
             inventorySnapshot,
             requestedTotal,
             preferredContainerId);
-
-        while (true)
+        if (execution is null)
         {
-            switch (session.State)
-            {
-                case ItemInventoryAdjustmentState.WithdrawAssigned:
-                    var selectedContainer = session.PreferredAllocation
-                        ?? await popup.SelectOptionAsync(
-                            popupDefinitions.WithdrawalContainerPicker(session.RemainingAllocations));
-                    if (selectedContainer is null)
-                    {
-                        session.Cancel();
-                        continue;
-                    }
-
-                    var assignedWithdrawal = await popup.PickNumberAsync(
-                        popupDefinitions.WithdrawFromContainer(
-                            selectedContainer,
-                            session.CarriedWithdrawal,
-                            session.SuggestedAssignedWithdrawal));
-                    if (assignedWithdrawal is null)
-                    {
-                        session.Cancel();
-                        continue;
-                    }
-
-                    try
-                    {
-                        session.WithdrawAssigned(selectedContainer.ContainerId, assignedWithdrawal.Value);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        await popup.ShowAlertAsync(
-                            popupDefinitions.WithdrawalCarryTooSmall(session.CarriedWithdrawal));
-                    }
-                    break;
-
-                case ItemInventoryAdjustmentState.ConfirmUnassignedWithdrawal:
-                    if (await popup.ConfirmAsync(
-                        popupDefinitions.ConfirmUnassignedWithdrawal(session.UnassignedQuantity)))
-                    {
-                        session.AcceptUnassignedWithdrawal();
-                    }
-                    else
-                    {
-                        session.DeclineUnassignedWithdrawal();
-                    }
-                    break;
-
-                case ItemInventoryAdjustmentState.WithdrawUnassigned:
-                    var unassignedWithdrawal = await popup.PickNumberAsync(
-                        popupDefinitions.WithdrawUnassignedQuantity(session.UnassignedQuantity));
-                    session.WithdrawUnassigned(unassignedWithdrawal ?? 0);
-                    break;
-
-                case ItemInventoryAdjustmentState.ReadyToCommit:
-                    var plan = session.BuildPlan();
-                    var result = await inventoryCommands.ApplyWithdrawalAsync(itemSnapshot.ItemId, plan);
-                    if (result.ItemDeleted)
-                    {
-                        await nav.GoBackAsync();
-                        return;
-                    }
-
-                    currentAllocations = plan.Allocations;
-                    ApplyInventoryResult(result);
-                    return;
-
-                case ItemInventoryAdjustmentState.Cancelled:
-                    return;
-
-                default:
-                    throw new InvalidOperationException($"Unsupported adjustment state {session.State}.");
-            }
+            return;
         }
+
+        if (execution.Update.ItemDeleted)
+        {
+            await nav.GoBackAsync();
+            return;
+        }
+
+        currentAllocations = execution.Plan.Allocations;
+        ApplyInventoryResult(execution.Update);
     }
 
     private void ApplyInventoryResult(ItemInventoryUpdateResult result)

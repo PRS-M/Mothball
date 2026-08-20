@@ -139,6 +139,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddTransient<ContainerDetailsItemsCoordinator>();
         services.AddTransient<AssociateItemWithContainerCoordinator>();
+        services.AddTransient<ItemInventoryWithdrawalCoordinator>();
         services.AddTransient<AddContainerViewModel>();
         services.AddTransient<ContainerListViewModel>();
         services.AddTransient<ItemsListViewModel>();

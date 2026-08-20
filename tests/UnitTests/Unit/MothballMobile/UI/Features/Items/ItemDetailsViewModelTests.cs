@@ -262,6 +262,7 @@ public sealed class ItemDetailsViewModelTests
             CreateImageService(),
             Mock.Of<IPhotoBackgroundOperationTracker>(),
             Mock.Of<IBackgroundTaskObserver>(),
+            new ItemInventoryWithdrawalCoordinator(inventoryCommands, popup, new PopupDefinitionService()),
             NullLogger<ItemDetailsViewModel>.Instance);
 
     private static Mock<IItemDetailsQueryHandler> CreateItemDetailsQuery(Guid itemId, ItemDetailsResult details)
