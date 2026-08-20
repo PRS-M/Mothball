@@ -53,12 +53,15 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/Startup/AppStartupOrchestrator.cs" Link="Infrastructure/Startup/AppStartupOrchestrator.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IBackupSignatureSecretProvider.cs" Link="Infrastructure/Backup/IBackupSignatureSecretProvider.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Backup/BackupSignatureSecretProvider.cs" Link="Infrastructure/Backup/BackupSignatureSecretProvider.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IBackupSigningKeyTransferService.cs" Link="Infrastructure/Backup/IBackupSigningKeyTransferService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IInventoryBackupWorkflowService.cs" Link="Infrastructure/Backup/IInventoryBackupWorkflowService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Utilities/IInitializable.cs" Link="Infrastructure/Utilities/IInitializable.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/AppMode.cs" Link="Infrastructure/Settings/AppMode.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/IApplicationSettings.cs" Link="Infrastructure/Settings/IApplicationSettings.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="../../src/MothballMobile/UI/Features/Settings/SettingsViewModel.cs" Link="UI/Features/Settings/SettingsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/BaseViewModel.cs" Link="UI/Shared/BaseViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/PagedListViewModelBase.cs" Link="UI/Shared/PagedListViewModelBase.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/ContainerWithImagesViewModelBase.cs" Link="UI/Shared/ContainerWithImagesViewModelBase.cs" />

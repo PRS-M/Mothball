@@ -22,6 +22,7 @@ global using CoreApp.Application.Features.Items.Queries;
 global using CoreApp.Application.Features.Photos;
 global using CoreApp.Application.Shared.Serialization;
 global using MothballMobile.Infrastructure;
+global using MothballMobile.Infrastructure.Backup;
 global using MothballMobile.Infrastructure.BackgroundOperations.Observability;
 global using MothballMobile.Infrastructure.BackgroundOperations.Photos;
 global using MothballMobile.Infrastructure.Navigation;
