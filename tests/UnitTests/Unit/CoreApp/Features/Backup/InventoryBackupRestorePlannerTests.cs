@@ -1,4 +1,5 @@
 using CoreApp.Contracts;
+using CoreApp.Domain.Inventory;
 using CoreApp.Utilities;
 
 namespace Mothball.Tests.Unit.Core.Features.Backup;
@@ -6,6 +7,39 @@ namespace Mothball.Tests.Unit.Core.Features.Backup;
 [TestFixture]
 public class InventoryBackupRestorePlannerTests
 {
+    [Test]
+    public void BuildPlan_InventoryMergePolicy_UsesFormatAgnosticPolicy()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+
+        var existing = new InventoryBackupExistingState(
+            Containers: [new InventoryBackupExistingContainer(containerId, "Old", "Old notes")],
+            Items: [new InventoryBackupExistingItem(itemId, "Old item", "Old description")],
+            ContainerImages: [],
+            ItemImages: [],
+            Relations: []);
+
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = containerId, Name = "New", Notes = "New notes" }],
+                Items = [new InventoryBackupItem { ItemId = itemId, Name = "New item", Description = "New description" }],
+                Relations = [],
+                Images = [],
+            },
+        };
+
+        var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existing, InventoryMergePolicy.AddAndUpsertMetadata);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.ContainersToUpdate, Has.Count.EqualTo(1));
+            Assert.That(plan.ItemsToUpdate, Has.Count.EqualTo(1));
+        });
+    }
+
     [Test]
     public void BuildPlan_AddOnly_InsertsMissingAndSkipsExisting()
     {

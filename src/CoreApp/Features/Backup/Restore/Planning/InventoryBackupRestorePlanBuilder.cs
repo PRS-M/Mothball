@@ -1,4 +1,5 @@
 using CoreApp.Contracts;
+using CoreApp.Domain.Inventory;
 
 namespace CoreApp.Features.Backup.Restore.Planning;
 
@@ -8,56 +9,60 @@ internal sealed class InventoryBackupRestorePlanBuilder
         InventoryBackupEnvelope backup,
         InventoryBackupExistingState existingState,
         InventoryBackupConflictPolicy conflictPolicy)
+        => BuildPlan(backup, existingState, MapConflictPolicy(conflictPolicy));
+
+    public InventoryBackupRestorePlan BuildPlan(
+        InventoryBackupEnvelope backup,
+        InventoryBackupExistingState existingState,
+        InventoryMergePolicy mergePolicy)
     {
         ArgumentNullException.ThrowIfNull(backup);
         ArgumentNullException.ThrowIfNull(backup.Data);
         ArgumentNullException.ThrowIfNull(existingState);
+        ArgumentNullException.ThrowIfNull(mergePolicy);
 
-        ConflictPolicyProfile policyProfile = CreatePolicyProfile(conflictPolicy);
         var context = new PlannerContext(existingState);
 
-        PlanContainerInsertOrUpdate(backup.Data.Containers, context, policyProfile);
-        PlanItemInsertOrUpdate(backup.Data.Items, context, policyProfile);
-        PlanRootDeletesForSync(context, policyProfile);
+        PlanContainerInsertOrUpdate(backup.Data.Containers, context, mergePolicy);
+        PlanItemInsertOrUpdate(backup.Data.Items, context, mergePolicy);
+        PlanRootDeletesForSync(context, mergePolicy);
 
         var normalized = NormalizeBackupData(backup.Data, context);
         context.SkippedInvalidRelations += normalized.SkippedInvalidRelations;
         context.SkippedImagesWithMissingOwner += normalized.SkippedImagesWithMissingOwner;
 
-        policyProfile.ChildReconciliationStrategy.PlanRelations(context, normalized.ValidRelations);
-        policyProfile.ChildReconciliationStrategy.PlanImages(context, normalized.ValidContainerImages, normalized.ValidItemImages);
+        IConflictPolicyStrategy reconciliationStrategy = GetReconciliationStrategy(mergePolicy);
+        reconciliationStrategy.PlanRelations(context, normalized.ValidRelations);
+        reconciliationStrategy.PlanImages(context, normalized.ValidContainerImages, normalized.ValidItemImages);
 
         return BuildPlanResult(context);
     }
 
-    private static ConflictPolicyProfile CreatePolicyProfile(InventoryBackupConflictPolicy conflictPolicy)
+    private static InventoryMergePolicy MapConflictPolicy(InventoryBackupConflictPolicy conflictPolicy)
     {
         return conflictPolicy switch
         {
-            InventoryBackupConflictPolicy.AddOnly => new ConflictPolicyProfile(
-                AllowMetadataUpsert: false,
-                DeleteMissingRoots: false,
-                ChildReconciliationStrategy: AdditiveStrategy.Instance),
-            InventoryBackupConflictPolicy.AddAndUpsertMetadata => new ConflictPolicyProfile(
-                AllowMetadataUpsert: true,
-                DeleteMissingRoots: false,
-                ChildReconciliationStrategy: AdditiveStrategy.Instance),
-            InventoryBackupConflictPolicy.FullSync => new ConflictPolicyProfile(
-                AllowMetadataUpsert: true,
-                DeleteMissingRoots: true,
-                ChildReconciliationStrategy: AdditiveStrategy.Instance),
-            InventoryBackupConflictPolicy.StrictFullSync => new ConflictPolicyProfile(
-                AllowMetadataUpsert: true,
-                DeleteMissingRoots: true,
-                ChildReconciliationStrategy: StrictFullSyncStrategy.Instance),
+            InventoryBackupConflictPolicy.AddOnly => InventoryMergePolicy.AddOnly,
+            InventoryBackupConflictPolicy.AddAndUpsertMetadata => InventoryMergePolicy.AddAndUpsertMetadata,
+            InventoryBackupConflictPolicy.FullSync => InventoryMergePolicy.FullSync,
+            InventoryBackupConflictPolicy.StrictFullSync => InventoryMergePolicy.StrictFullSync,
             _ => throw new NotSupportedException($"Unsupported conflict policy '{conflictPolicy}' for restore planning."),
         };
     }
 
+    private static IConflictPolicyStrategy GetReconciliationStrategy(InventoryMergePolicy mergePolicy)
+        => mergePolicy.ChildReconciliationMode switch
+        {
+            InventoryChildReconciliationMode.Additive => AdditiveStrategy.Instance,
+            InventoryChildReconciliationMode.Exact => StrictFullSyncStrategy.Instance,
+            _ => throw new NotSupportedException(
+                $"Unsupported child reconciliation mode '{mergePolicy.ChildReconciliationMode}' for restore planning."),
+        };
+
     private static void PlanContainerInsertOrUpdate(
         IReadOnlyCollection<InventoryBackupContainer> containers,
         PlannerContext context,
-        ConflictPolicyProfile policyProfile)
+        InventoryMergePolicy mergePolicy)
     {
         foreach (var container in containers)
         {
@@ -65,7 +70,7 @@ internal sealed class InventoryBackupRestorePlanBuilder
 
             if (context.ExistingContainersById.TryGetValue(container.ContainerId, out var existing))
             {
-                bool shouldUpdate = policyProfile.AllowMetadataUpsert
+                bool shouldUpdate = mergePolicy.AllowMetadataUpdates
                     && (!string.Equals(existing.Name, container.Name, StringComparison.Ordinal)
                     || !string.Equals(existing.Notes, container.Notes, StringComparison.Ordinal));
 
@@ -89,7 +94,7 @@ internal sealed class InventoryBackupRestorePlanBuilder
     private static void PlanItemInsertOrUpdate(
         IReadOnlyCollection<InventoryBackupItem> items,
         PlannerContext context,
-        ConflictPolicyProfile policyProfile)
+        InventoryMergePolicy mergePolicy)
     {
         foreach (var item in items)
         {
@@ -97,7 +102,7 @@ internal sealed class InventoryBackupRestorePlanBuilder
 
             if (context.ExistingItemsById.TryGetValue(item.ItemId, out var existing))
             {
-                bool shouldUpdate = policyProfile.AllowMetadataUpsert
+                bool shouldUpdate = mergePolicy.AllowMetadataUpdates
                     && (!string.Equals(existing.Name, item.Name, StringComparison.Ordinal)
                     || !string.Equals(existing.Description, item.Description, StringComparison.Ordinal));
 
@@ -118,9 +123,9 @@ internal sealed class InventoryBackupRestorePlanBuilder
         }
     }
 
-    private static void PlanRootDeletesForSync(PlannerContext context, ConflictPolicyProfile policyProfile)
+    private static void PlanRootDeletesForSync(PlannerContext context, InventoryMergePolicy mergePolicy)
     {
-        if (!policyProfile.DeleteMissingRoots)
+        if (!mergePolicy.DeleteMissingRoots)
         {
             return;
         }
