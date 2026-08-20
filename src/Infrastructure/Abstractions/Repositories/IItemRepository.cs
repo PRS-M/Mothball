@@ -1,5 +1,5 @@
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Specifications;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Specifications;
 
 namespace Infrastructure.Abstractions.Repositories;
 

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Mappers;
 using Infrastructure.Services.Repositories;
-using CoreApp.Specifications;
+using CoreApp.Application.Specifications;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 

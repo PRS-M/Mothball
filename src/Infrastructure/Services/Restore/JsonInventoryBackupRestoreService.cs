@@ -1,5 +1,5 @@
-using CoreApp.Contracts;
-using CoreApp.Utilities;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Utilities;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Models;
 

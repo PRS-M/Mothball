@@ -1,7 +1,7 @@
-using CoreApp.Entities.Inventory;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
 
 namespace Infrastructure.Services.Repositories;
 
@@ -77,7 +77,7 @@ public class InventoryCommandRepository : IInventoryCommandRepository
     /// <inheritdoc />
     public Task ApplyItemInventoryWithdrawalAsync(
         Item item,
-        IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations)
+        IReadOnlyCollection<CoreApp.Domain.Entities.InventoryAggregate.ItemContainerAllocation> allocations)
         => relationRepo.ApplyItemInventoryWithdrawalAsync(item, allocations);
 
     /// <inheritdoc />

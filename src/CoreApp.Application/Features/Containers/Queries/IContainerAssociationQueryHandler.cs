@@ -1,0 +1,24 @@
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Contracts;
+
+namespace CoreApp.Application.Features.Containers.Queries;
+
+/// <summary>
+/// Defines queries for container associations and unassigned items.
+/// </summary>
+public interface IContainerAssociationQueryHandler
+{
+    /// <param name="pageNumber">The value used by the operation.</param>
+    /// <param name="pageSize">The value used by the operation.</param>
+    Task<List<Container>> QueryContainersAsync(int pageNumber, int pageSize);
+
+    /// <param name="searchTerm">The value used by the operation.</param>
+    Task<List<Container>> QueryContainersAsync(string searchTerm);
+
+    Task<List<InventorySnapshot>> QueryUnassignedItemsAsync(
+        int pageNumber,
+        int pageSize,
+        Guid? excludedContainerId = null);
+}

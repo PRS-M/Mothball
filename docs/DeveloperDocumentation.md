@@ -2,7 +2,7 @@
 
 This guide is for contributors opening Mothball for the first time. It explains how the solution is organized, where new code belongs, and the usual path for adding a feature.
 
-Mothball is a .NET MAUI app for cataloging containers and items. It has a small core application layer, interchangeable SQLite and JSON persistence backends, and a MAUI application project for the user interface and device-specific services.
+Mothball is a .NET MAUI app for cataloging containers and items. It has separate Domain and Application layers, interchangeable SQLite and JSON persistence backends, and a MAUI application project for the user interface and device-specific services.
 
 ## Start Here
 
@@ -26,7 +26,8 @@ Development prerequisites are listed in the [README](../README.md). On macOS, iO
 
 | Location | Responsibility |
 | --- | --- |
-| `src/CoreApp` | Platform-independent application concepts, contracts, feature handlers, entities, and utilities. |
+| `src/CoreApp.Domain` | Domain entities, aggregate markers, and format-independent inventory policies. It has no project or package dependencies. |
+| `src/CoreApp.Application` | Use cases, contracts, ports, specifications, backup workflows, and platform-independent utilities. It references Domain. |
 | `src/Infrastructure` | Persistence implementations: SQLite, the JSON operational store, repository adapters, data models, mappings, startup, and restore services. |
 | `src/Infrastructure.Platform.Maui` | Implementations that require MAUI or a device platform, such as camera and file access. |
 | `src/MothballMobile` | The MAUI app: pages, view models, navigation, app composition, resources, and platform setup. |
@@ -36,24 +37,24 @@ Development prerequisites are listed in the [README](../README.md). On macOS, iO
 The project references flow in one direction:
 
 ```text
-MothballMobile -> CoreApp
-MothballMobile -> Infrastructure.Persistence -> CoreApp
-MothballMobile -> Infrastructure.Platform.Maui
+MothballMobile -> CoreApp.Application -> CoreApp.Domain
+MothballMobile -> Infrastructure.Persistence -> CoreApp.Application
+MothballMobile -> Infrastructure.Platform.Maui -> CoreApp.Application
 ```
 
-Keep `CoreApp` independent of MAUI, SQLite, and device APIs. This keeps application behavior testable and lets the SQLite and JSON backends implement the same application contracts.
+Keep `CoreApp.Domain` independent of Application, Infrastructure, MAUI, persistence, serialization, and device APIs. Keep `CoreApp.Application` independent of MAUI, SQLite, and device APIs. This keeps behavior testable and lets the SQLite and JSON backends implement the same application contracts.
 
 ## How the App Is Put Together
 
 A typical user action follows this path:
 
 ```text
-Page (XAML) -> ViewModel -> CoreApp feature handler/service -> repository contract
+Page (XAML) -> ViewModel -> Application feature handler/service -> repository contract
     -> SQLite or JSON implementation -> persisted data
 ```
 
 - Pages and view models present data and collect user input.
-- Core feature handlers contain application actions and queries, such as creating an item or loading container details.
+- Application feature handlers contain application actions and queries, such as creating an item or loading container details.
 - Repository contracts describe the data operations needed by the application.
 - Infrastructure provides those operations for the selected backend.
 - `MauiProgram.cs` and `Composition/ServiceCollectionExtensions.cs` register everything with dependency injection.
@@ -62,12 +63,22 @@ This separation is a guide, not ceremony for its own sake: put behavior in the l
 
 ## Main Folders
 
-### `src/CoreApp`
+### `src/CoreApp.Domain`
 
-Use this project for behavior that should work regardless of UI platform or persistence backend.
+Use this project for the business model and policies that must remain independent of external formats and technical concerns.
 
+- `Entities`: aggregate roots, value types, and inventory state.
+- `Inventory`: format-independent inventory merge and withdrawal policies.
+- `Abstractions`: domain markers such as `IAggregateRoot`.
+
+Do not add repository contracts, DTOs, logging, backup payloads, JSON parsing, persistence behavior, or platform APIs here.
+
+### `src/CoreApp.Application`
+
+Use this project for use cases that should work regardless of UI platform or persistence backend.
+
+- `Abstractions`: repository, platform, and startup ports required by application use cases.
 - `Contracts`: data transfer and result types used across layers.
-- `Entities`: domain models such as items, containers, and inventory relationships.
 - `Features`: focused application workflows. Backup-related code, for example, is grouped by export, restore, archive, and serialization responsibilities.
 - `Specifications`: interfaces for repositories and application services.
 - `Utilities`: small reusable, platform-independent helpers.
@@ -150,7 +161,7 @@ Pages should use compiled bindings where possible by setting `x:DataType`, and l
 
 ## Add Application Behavior
 
-Put a new use case in the appropriate `CoreApp/Features` area. A query or command handler usually makes a good seam between UI and persistence: it accepts the input needed for one user action, uses repository contracts, and returns a result suitable for the caller.
+Put a new use case in the appropriate `CoreApp.Application/Features` area. A query or command handler usually makes a good seam between UI and persistence: it accepts the input needed for one user action, uses repository contracts, and returns a result suitable for the caller.
 
 ```csharp
 public interface IItemHistoryQueryHandler
@@ -179,11 +190,11 @@ Then register the handler in `AddCoreApplication`. Avoid placing business rules 
 
 ## Change Stored Data
 
-Start with the application-facing model and contract in `CoreApp`, then implement the required storage behavior in `Infrastructure`.
+Start with the application-facing model and contract in `CoreApp.Application`, then implement the required storage behavior in `Infrastructure`. Move invariant-bearing behavior to `CoreApp.Domain` when it does not depend on external formats or technical concerns.
 
 For a change that affects items, containers, images, or relations:
 
-1. Update the relevant CoreApp entity, contract, or repository interface.
+1. Update the relevant Domain entity or Application contract/repository interface.
 2. Update the SQLite data model, mapper, and repository implementation as required.
 3. Update the JSON store model and repository implementation with equivalent behavior.
 4. Check backup/export and restore behavior when the new data should be portable.
@@ -221,7 +232,7 @@ Tests use NUnit and Moq. Prefer focused tests beside similar existing tests:
 - JSON backend behavior: JSON operational store and JSON restore tests.
 - View model or UI utility behavior: targeted view model and utility tests.
 
-The test project directly compiles selected non-MAUI source files so it can test them without targeting iOS or Mac Catalyst. When adding a test for a new MAUI-project class, first check whether an existing abstraction can be tested from `CoreApp`; only link the minimal source files needed when that is not possible.
+The test project directly compiles selected non-MAUI source files so it can test them without targeting iOS or Mac Catalyst. When adding a test for a new MAUI-project class, first check whether an existing abstraction can be tested from `CoreApp.Application`; only link the minimal source files needed when that is not possible.
 
 Run the focused test file while iterating, then run the unit-test project before submitting a change:
 

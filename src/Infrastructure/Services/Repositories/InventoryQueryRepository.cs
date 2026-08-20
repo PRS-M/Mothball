@@ -1,8 +1,8 @@
-using CoreApp.Entities.Inventory;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Specifications;
-using CoreApp.Contracts;
+using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Application.Specifications;
+using CoreApp.Application.Contracts;
 
 namespace Infrastructure.Services.Repositories;
 

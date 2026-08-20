@@ -1,11 +1,11 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Domain.Entities.InventoryAggregate;
 using System.Diagnostics;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Specifications;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Application.Specifications;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using Microsoft.Extensions.Logging;
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 
 namespace Infrastructure.Services.Repositories;
 

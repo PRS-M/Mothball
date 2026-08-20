@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Contracts;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Application.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;

@@ -1,26 +1,18 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Entities.ContainerAggregate;
-using Microsoft.Extensions.Logging.Abstractions;
-using Infrastructure.Services;
+using CoreApp.Domain.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 
 public partial class AssociateItemWithContainerViewModel : PagedListViewModelBase<Container, SelectableContainerViewModel>, IQueryAttributable, IDisposable
 {
-    private readonly IImagePathResolver imagePaths;
-    private readonly IContainerAssociationQueryHandler associationQueries;
-    private readonly IItemDetailsQueryHandler itemDetailsQueries;
-    private readonly IAssignItemToContainerCommandHandler assignItemToContainer;
+    private readonly AssociateItemWithContainerCoordinator coordinator;
+    private readonly IContainerItemAssociationHandler itemAssociationHandler;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
-    private readonly IBackgroundTaskObserver backgroundTasks;
-    private readonly DemoDataSeeder? demoSeeder;
-    private readonly IDebouncer debouncer;
-
     private string? itemId;
     private int unassignedQuantity;
 
@@ -28,30 +20,20 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     private string searchQuery = string.Empty;
 
     public AssociateItemWithContainerViewModel(
-        IImagePathResolver imagePaths,
-        IContainerAssociationQueryHandler associationQueries,
-        IItemDetailsQueryHandler itemDetailsQueries,
-        IAssignItemToContainerCommandHandler assignItemToContainer,
+        AssociateItemWithContainerCoordinator coordinator,
+        IContainerItemAssociationHandler itemAssociationHandler,
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IPopupService popup,
-        IPopupDefinitionService popupDefinitions,
-        IBackgroundTaskObserver backgroundTasks,
-        IDebouncer? debouncer = null,
-        DemoDataSeeder? demoSeeder = null)
+        IPopupDefinitionService popupDefinitions)
         : base(pageSize: 10)
     {
-        this.imagePaths = imagePaths;
-        this.associationQueries = associationQueries;
-        this.itemDetailsQueries = itemDetailsQueries;
-        this.assignItemToContainer = assignItemToContainer;
+        this.coordinator = coordinator;
+        this.itemAssociationHandler = itemAssociationHandler;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
-        this.backgroundTasks = backgroundTasks;
-        this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
-        this.demoSeeder = demoSeeder;
     }
 
     public ObservableCollection<SelectableContainerViewModel> Containers => Items;
@@ -78,23 +60,16 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     /// <inheritdoc />
     protected override async Task EnsureDummyData()
     {
-        if (demoSeeder is not null)
-        {
-            await demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
-        }
+        await coordinator.EnsureDummyDataAsync();
     }
 
     /// <inheritdoc />
     protected override Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => associationQueries.QueryContainersAsync(pageNumber, pageSize);
+        => coordinator.LoadPageAsync(pageNumber, pageSize);
 
     /// <inheritdoc />
     protected override SelectableContainerViewModel MapToViewModel(Container source)
-        => new(source, imagePaths, AssociateWithContainerAsync, applicationSettings.IsAdvancedMode);
-
-    /// <inheritdoc />
-    protected override void OnViewModelAdded(SelectableContainerViewModel vm)
-        => vm.LoadImagesAsync().FireAndForget(backgroundTasks, "Load selectable container images");
+        => coordinator.CreateContainerViewModel(source, AssociateWithContainerAsync);
 
     [RelayCommand]
     private async Task ApplySearchAsync()
@@ -107,16 +82,13 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
                 return;
             }
 
-            var containers = await associationQueries.QueryContainersAsync(SearchQuery);
+            var containers = await coordinator.SearchAsync(SearchQuery);
             ReplaceWithFullResultSet(containers);
         });
     }
 
     partial void OnSearchQueryChanged(string value)
-    {
-        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(ApplySearchAsync))
-            .FireAndForget(backgroundTasks, "Search association containers");
-    }
+        => coordinator.DebounceSearch(ApplySearchAsync);
 
     private async Task AssociateWithContainerAsync(Guid containerId)
     {
@@ -125,7 +97,10 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
 
         await RunCommandAsync(async () =>
         {
-            var availableQuantity = await GetAvailableQuantityAsync(parsedItemId, containerId);
+            var availableQuantity = await itemAssociationHandler.GetAvailableQuantityAsync(
+                parsedItemId,
+                containerId,
+                unassignedQuantity);
             if (availableQuantity <= 0)
             {
                 await nav.GoBackAsync();
@@ -134,8 +109,15 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
 
             if (!applicationSettings.IsAdvancedMode)
             {
-                await assignItemToContainer.AssignAsync(parsedItemId, containerId);
-                await nav.GoBackAsync();
+                var association = await itemAssociationHandler.TryAssociateAsync(
+                    parsedItemId,
+                    containerId,
+                    quantity: 1,
+                    unassignedQuantity);
+                if (association.Associated)
+                {
+                    await nav.GoBackAsync();
+                }
                 return;
             }
 
@@ -146,33 +128,38 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
                 return;
             }
 
-            await assignItemToContainer.AssignAsync(parsedItemId, containerId, selectedQuantity.Value);
-            await nav.GoBackAsync();
+            var associationResult = await itemAssociationHandler.TryAssociateAsync(
+                parsedItemId,
+                containerId,
+                selectedQuantity.Value,
+                unassignedQuantity);
+            if (associationResult.Associated)
+            {
+                await nav.GoBackAsync();
+            }
         });
     }
 
-    private async Task<int> GetAvailableQuantityAsync(Guid parsedItemId, Guid selectedContainerId)
-    {
-        var details = await itemDetailsQueries.GetDetailsAsync(parsedItemId.ToString());
-        if (details is null)
-        {
-            return unassignedQuantity;
-        }
+    private bool disposed;
 
-        unassignedQuantity = details.Inventory.UnassignedQuantity;
-        var currentContainerQuantity = details.Inventory.Allocations
-            .FirstOrDefault(allocation => allocation.ContainerId == selectedContainerId)?.Quantity ?? 0;
-        return unassignedQuantity + currentContainerQuantity;
-    }
-
-    /// <inheritdoc />
     public void Dispose()
     {
-        if (debouncer is IDisposable disposable)
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
         {
-            disposable.Dispose();
+            return;
         }
 
-        GC.SuppressFinalize(this);
+        if (disposing)
+        {
+            coordinator.Dispose();
+        }
+
+        disposed = true;
     }
 }

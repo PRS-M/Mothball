@@ -1,9 +1,9 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Domain.Entities.InventoryAggregate;
 using System;
 using System.Threading.Tasks;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Repositories;
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 
@@ -87,7 +87,7 @@ public sealed class JsonRelationRepository : IRelationRepository
     /// <inheritdoc />
     public Task ApplyItemInventoryWithdrawalAsync(
         Item item,
-        IReadOnlyCollection<CoreApp.Entities.Inventory.ItemContainerAllocation> allocations)
+        IReadOnlyCollection<CoreApp.Domain.Entities.InventoryAggregate.ItemContainerAllocation> allocations)
     {
         ArgumentNullException.ThrowIfNull(item);
         ArgumentNullException.ThrowIfNull(allocations);

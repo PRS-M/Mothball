@@ -1,5 +1,5 @@
 using System.Collections;
-using CoreApp.Utilities;
+using CoreApp.Application.Utilities;
 
 namespace Mothball.Tests.Unit.Utilities;
 

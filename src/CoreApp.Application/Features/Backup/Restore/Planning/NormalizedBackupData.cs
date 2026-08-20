@@ -1,0 +1,10 @@
+using CoreApp.Application.Contracts;
+
+namespace CoreApp.Application.Features.Backup.Restore.Planning;
+
+internal sealed record NormalizedBackupData(
+    IReadOnlyList<InventoryBackupRelation> ValidRelations,
+    IReadOnlyList<InventoryBackupImageRef> ValidContainerImages,
+    IReadOnlyList<InventoryBackupImageRef> ValidItemImages,
+    int SkippedInvalidRelations,
+    int SkippedImagesWithMissingOwner);

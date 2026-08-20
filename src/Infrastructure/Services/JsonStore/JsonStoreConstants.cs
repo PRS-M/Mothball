@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using CoreApp.Utilities;
+using CoreApp.Application.Utilities;
 
 namespace Infrastructure.Services.JsonStore;
 

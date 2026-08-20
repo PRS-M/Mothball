@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using CoreApp.Entities.Shared;
+using CoreApp.Domain.Entities.Shared;
 using Infrastructure.Services.JsonStore.Models;
 
 namespace Infrastructure.Services.JsonStore.Repositories;

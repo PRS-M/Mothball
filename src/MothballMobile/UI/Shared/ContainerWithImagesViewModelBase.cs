@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CoreApp.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.Shared;
 

@@ -1,7 +1,7 @@
 using System.Linq;
-using CoreApp.Entities.ContainerAggregate;
-using CoreApp.Entities.ItemAggregate;
-using CoreApp.Entities.Shared;
+using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Infrastructure.Services.Mappers;

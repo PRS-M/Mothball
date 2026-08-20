@@ -1,4 +1,4 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Domain.Entities.InventoryAggregate;
 
 namespace Infrastructure.Abstractions.Repositories;
 

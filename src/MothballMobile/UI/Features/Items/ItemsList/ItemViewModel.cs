@@ -1,8 +1,8 @@
-using CoreApp.Entities.Inventory;
+using CoreApp.Domain.Entities.InventoryAggregate;
 ﻿using CommunityToolkit.Mvvm.Input;
-using CoreApp.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.ItemAggregate;
 using System.Threading.Tasks;
-using CoreApp.Contracts;
+using CoreApp.Application.Contracts;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
 

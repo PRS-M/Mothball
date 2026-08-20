@@ -1,4 +1,4 @@
-using CoreApp.Entities.Shared;
+using CoreApp.Domain.Entities.Shared;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 

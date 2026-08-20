@@ -70,7 +70,8 @@ Use shelves, bins, cabinets, or zones as containers and treat products, spare pa
 
 ## Project structure
 
-- `src/CoreApp`: domain contracts, entities, interfaces, and core services.
+- `src/CoreApp.Domain`: domain entities, aggregate markers, and format-independent inventory policies.
+- `src/CoreApp.Application`: use cases, contracts, ports, specifications, backup workflows, and platform-independent utilities.
 - `src/Infrastructure`: persistence-focused infrastructure implementations.
 - `src/Infrastructure.Platform.Maui`: MAUI platform-specific infrastructure services.
 - `src/MothballMobile`: .NET MAUI app project (UI, composition, app startup).
@@ -209,7 +210,8 @@ Main solution:
 
 Projects included:
 
-- `CoreApp`
+- `CoreApp.Domain`
+- `CoreApp.Application`
 - `Infrastructure.Persistence`
 - `Infrastructure.Platform.Maui`
 - `MothballMobile`
