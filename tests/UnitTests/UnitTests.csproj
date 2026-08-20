@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/CoreApp/CoreApp.csproj" />
+    <ProjectReference Include="../../src/CoreApp.Application/CoreApp.Application.csproj" />
   </ItemGroup>
 
   <!-- Bring in UI-only Debouncer source directly for testability without MAUI target dependencies. -->
