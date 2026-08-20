@@ -46,3 +46,11 @@ The runtime JSON file is still required for Release banner and app-open units.
 ## Do Not Store
 
 Never add Google service-account JSON keys, OAuth client secrets, AdMob API refresh tokens, or backend credentials to either file. Those are actual secrets and belong in a backend or the CI provider's encrypted secret store.
+
+## Runtime Behavior
+
+AdMob is initialized only for iOS and Android builds. Debug builds configure Google's official test IDs and disable the consent check; Release builds configure production IDs and retain the normal consent behavior.
+
+`BasePage` adds a fixed-height banner host below each page's existing content on supported platforms. The host displays a development placeholder until a banner loads and restores the placeholder when loading fails. This preserves page layout and makes ad-loading failures non-blocking for the app's core inventory workflows.
+
+Mac Catalyst and Windows do not create AdMob banner controls. `AdMobSettings` returns empty values for those targets so shared application composition can still resolve the settings service without platform-specific branching in feature view models.

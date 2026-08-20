@@ -13,6 +13,7 @@ This guide maps Mothball's visible features to the code that implements them. It
 | Backup | Export JSON or ZIP and restore it using a merge policy | Settings | Backup workflow and restore planner |
 | Settings | Select theme, backup format, advanced options, and signing | Settings | `IApplicationSettings` and backup services |
 | Operations | View ongoing photo work after leaving a page | Background operations | Photo background operation tracker |
+| Advertising | Display test or production banner and app-open ads on supported mobile platforms | Shared page base and app startup | `AdMobSettings`, `BasePage`, and MAUI AdMob setup |
 | Navigation and errors | Move between feature pages and surface failures consistently | Shell and shared UI | Typed navigation requests and error presenter |
 
 ## Containers
@@ -83,6 +84,8 @@ Items are catalogued things that may be stored in one or more containers. Their 
 ## Assignments and Inventory Quantities
 
 An item can have allocations in multiple containers. Each allocation is a container ID plus a positive quantity. The app also supports unassigned quantity, so an item can exist before a storage location is known.
+
+The inventory model keeps the invariant $\text{total quantity} = \text{assigned quantity} + \text{unassigned quantity}$. Quantity command services reconcile this model after allocation changes, so list rows, item details, and container details use a consistent inventory summary rather than recalculating independent totals.
 
 ### User workflows
 
@@ -198,8 +201,10 @@ Mothball can export JSON metadata or a ZIP archive containing metadata and avail
 ### User workflows
 
 - Select JSON or ZIP export in Settings.
-- Export and share a backup.
-- Restore a selected backup with an appropriate conflict policy.
+- Export a dated JSON or ZIP backup to the app's `Backups` folder.
+- Share a selected local backup through the platform share sheet.
+- Restore a selected local backup or import a JSON/ZIP file from the device file system.
+- Select a conflict policy before an import or restore.
 - Optionally enable backup signing keys for HMAC verification.
 
 ### Developer map
@@ -210,6 +215,30 @@ Mothball can export JSON metadata or a ZIP archive containing metadata and avail
 - Restore planner: `CoreApp.Application/Features/Backup/Restore/Planning`
 - SQLite atomic implementation: `Infrastructure/Services/Restore/SqliteInventoryBackupRestoreService.cs`
 - Detailed contract and policy reference: [Backup and Restore](BackupRestore.md)
+
+### Export, sharing, and import flow
+
+The Settings screen keeps file selection and confirmation in the UI, while `InventoryBackupWorkflowService` owns the reusable file workflow:
+
+```text
+export:
+  obtain the optional signing secret when signing is enabled
+  export JSON or ZIP through the application exporter
+  save it as mothball-backup-{UTC timestamp}.json or .zip in Backups
+
+share:
+  select a local backup file
+  resolve its app-data path
+  invoke the platform share sheet on the UI thread
+
+import:
+  ask the user for a restore policy
+  read a selected local backup or a picker-provided external file
+  dispatch JSON to RestoreJsonAsync or ZIP bytes to RestoreZipAsync
+  display the restore result or a user-facing failure
+```
+
+External file import intentionally reuses the same restore methods as app-local backups. File selection is not a second restore implementation. This keeps integrity validation, signature lookup, merge policy handling, and backend behavior identical regardless of where the file originated.
 
 ### Restore planning algorithm
 
@@ -292,6 +321,26 @@ Relevant code:
 
 Development builds may seed demo data. The seeder identifies its own containers with a fixed marker token, so normal user-created containers remain untouched. See [Seeding](Seeding.md).
 
+## Advertising
+
+Mobile builds on iOS and Android initialize the AdMob plugin at app startup. `BasePage` wraps ordinary page content in a two-row layout and reserves the lower row for a banner. A development placeholder remains visible until an ad loads and returns if the ad fails to load, so page layout remains stable during ad lifecycle changes.
+
+```text
+application startup:
+  initialize AdMob on supported platforms
+  load AdMob settings
+  use Google's test IDs in Debug
+  use validated packaged production IDs in Release
+
+page load / handler creation:
+  wrap page content once with a banner host
+  create a banner from configured banner ID
+  hide the placeholder after a successful load
+  show the placeholder after a load failure
+```
+
+`AdMobSettings` uses test IDs in Debug and requires valid packaged app-open and banner IDs for iOS/Android Release builds. Other targets receive empty settings and do not add the banner. See [AdMob Configuration](AdMobConfiguration.md) for the required Release files and CI setup.
+
 ## Navigation and Error Handling
 
 View models navigate through `INavigationService`. Callers construct an `INavigationRequest` record rather than a `Dictionary<string, object>`. The navigation service converts the request to a dictionary only at the MAUI Shell boundary, which keeps route keys and parameter serialization out of feature code.
@@ -340,6 +389,7 @@ Do not expose SQLite row models, JSON row models, MAUI APIs, or Shell dictionari
 | Navigation request serialization | `tests/UnitTests/Unit/MothballMobile/Infrastructure/Navigation/NavigationRequestTests.cs` |
 | Shared command error state | `tests/UnitTests/Unit/MothballMobile/UI/Shared/BaseViewModelTests.cs` |
 | Error presentation | `tests/UnitTests/Unit/MothballMobile/Infrastructure/Presentation/Errors/AppErrorPresenterTests.cs` |
+| ZIP archive restore | `tests/UnitTests/Unit/CoreApp/Features/Backup/InventoryBackupZipRestoreServiceTests.cs` |
 
 Run the relevant focused tests during an algorithm change, then run the full project suite:
 
