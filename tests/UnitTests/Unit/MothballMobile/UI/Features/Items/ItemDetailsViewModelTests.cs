@@ -109,8 +109,7 @@ public sealed class ItemDetailsViewModelTests
 
         nav.Verify(n => n.GoToAsync(
             NavigationRoutes.ContainerDetails,
-            It.Is<IDictionary<string, object>>(parameters =>
-                (string)parameters[NavigationParams.ContainerId] == containerId.ToString())), Times.Once);
+            It.Is<ContainerDetailsNavigationRequest>(request => request.ContainerId == containerId)), Times.Once);
     }
 
     [Test]
@@ -138,8 +137,7 @@ public sealed class ItemDetailsViewModelTests
 
         nav.Verify(n => n.GoToAsync(
             NavigationRoutes.ItemLocations,
-            It.Is<IDictionary<string, object>>(parameters =>
-                (string)parameters[NavigationParams.ItemId] == item.ItemId.ToString())), Times.Once);
+            It.Is<ItemLocationsNavigationRequest>(request => request.ItemId == item.ItemId)), Times.Once);
     }
 
     [Test]

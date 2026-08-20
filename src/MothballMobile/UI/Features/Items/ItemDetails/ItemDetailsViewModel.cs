@@ -183,30 +183,23 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         if (currentAllocations.Count == 1)
         {
             return nav.GoToAsync(Infrastructure.NavigationRoutes.ContainerDetails,
-                new Dictionary<string, object>
-                {
-                    [Infrastructure.NavigationParams.ContainerId] = currentAllocations[0].ContainerId.ToString()
-                });
+                new Infrastructure.Navigation.ContainerDetailsNavigationRequest(currentAllocations[0].ContainerId));
         }
 
-        if (string.IsNullOrWhiteSpace(ItemId)) return Task.CompletedTask;
+        if (!Guid.TryParse(ItemId, out var itemId)) return Task.CompletedTask;
 
         return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemLocations,
-            new Dictionary<string, object> { [NavigationParams.ItemId] = ItemId });
+            new Infrastructure.Navigation.ItemLocationsNavigationRequest(itemId));
     }
 
     [RelayCommand]
     private Task NavigateToAssociateWithContainerAsync()
     {
-        if (string.IsNullOrWhiteSpace(ItemId)) return Task.CompletedTask;
+        if (!Guid.TryParse(ItemId, out var itemId)) return Task.CompletedTask;
 
         return nav.GoToAsync(
             Infrastructure.NavigationRoutes.AssociateItemWithContainer,
-            new Dictionary<string, object>
-            {
-                [NavigationParams.ItemId] = ItemId,
-                [NavigationParams.UnassignedQuantity] = UnassignedQuantity,
-            });
+            new Infrastructure.Navigation.AssociateItemWithContainerNavigationRequest(itemId, UnassignedQuantity));
     }
 
     [RelayCommand]

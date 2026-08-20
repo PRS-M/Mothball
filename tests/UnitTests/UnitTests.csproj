@@ -37,6 +37,7 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Observability/LoggingBackgroundTaskObserver.cs" Link="Infrastructure/BackgroundOperations/Observability/LoggingBackgroundTaskObserver.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Utilities/TaskExtensions.cs" Link="Infrastructure/Utilities/TaskExtensions.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/INavigationService.cs" Link="Infrastructure/Navigation/INavigationService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationRequest.cs" Link="Infrastructure/Navigation/NavigationRequest.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationParams.cs" Link="Infrastructure/Navigation/NavigationParams.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationRoutes.cs" Link="Infrastructure/Navigation/NavigationRoutes.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" Link="Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" />
