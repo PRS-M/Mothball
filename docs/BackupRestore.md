@@ -184,7 +184,20 @@ Persistence-based selection:
 - `FullSync` remains root-level strict for compatibility.
 - Use `StrictFullSync` when you need exact relation and image reconciliation for surviving roots.
 
-## How to Use Restore
+## File Export, Sharing, and Import
+
+The Settings feature provides both app-local and external-file workflows for JSON and ZIP backups.
+
+- Exports are stored in the app's `Backups` folder with UTC timestamped names such as `mothball-backup-20260820-120000Z.json`.
+- A selected local JSON or ZIP backup can be shared using the platform share sheet.
+- Import can read a selected backup from the app's `Backups` folder or use the device file picker to import an external `.json` or `.zip` file.
+- Both import paths call the same restore services, so integrity checks, optional HMAC verification, conflict policy selection, and result reporting do not vary by file origin.
+
+The Settings view model selects the restore policy before it reads a backup file. The workflow service then supplies the configured signing secret when backup signing is enabled and dispatches content to JSON or ZIP restore as appropriate.
+
+The in-app Documentation / Help page explains the user-facing effect of each conflict policy. The full developer policy model is described below.
+
+## Restore Examples
 
 Below are common usage patterns for `IInventoryBackupRestoreService`.
 

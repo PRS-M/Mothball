@@ -252,4 +252,4 @@ Before considering a feature complete:
 - Run the relevant tests and build the app for the target platform you changed.
 - Update user-facing documentation when the feature changes how the app is used.
 
-For deeper information on specific areas, see [Backup and Restore](BackupRestore.md), [JSON Operational Store](JsonStore.md), [Debouncer](Debouncer.md), and [Seeding](Seeding.md).
+For a feature-by-feature implementation map and algorithm overviews, see [Features and Algorithms](FeaturesAndAlgorithms.md). For deeper information on specific areas, see [Backup and Restore](BackupRestore.md), [JSON Operational Store](JsonStore.md), [Debouncer](Debouncer.md), and [Seeding](Seeding.md).
