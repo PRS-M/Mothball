@@ -1,17 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Application.Features.Photos;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;
 
 public partial class AddContainerViewModel : BaseViewModel
 {
-    private readonly ImageService imageService;
     private readonly ICreateContainerCommandHandler createContainer;
     private readonly INavigationService navigationService;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
-    private ImageService.TemporaryPhotoCapture? pendingPhoto;
+    private readonly PendingPhoto pendingPhoto;
 
     public AddContainerViewModel(
         ImageService imageService,
@@ -20,11 +20,11 @@ public partial class AddContainerViewModel : BaseViewModel
         IPopupService popup,
         IPopupDefinitionService popupDefinitions)
     {
-        this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.createContainer = createContainer ?? throw new ArgumentNullException(nameof(createContainer));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
+        pendingPhoto = new PendingPhoto(imageService ?? throw new ArgumentNullException(nameof(imageService)));
     }
 
     [ObservableProperty]
@@ -91,29 +91,20 @@ public partial class AddContainerViewModel : BaseViewModel
 
         await RunCommandAsync(async () =>
         {
-            ImageService.TemporaryPhotoCapture? selectedPhoto;
             IsPhotoProcessing = true;
             try
             {
-                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync(source: source.Value);
+                if (!await pendingPhoto.CaptureAsync(source.Value))
+                {
+                    return;
+                }
             }
             finally
             {
                 IsPhotoProcessing = false;
             }
 
-            if (selectedPhoto is null)
-            {
-                return;
-            }
-
-            if (pendingPhoto is not null)
-            {
-                await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
-            }
-
-            pendingPhoto = selectedPhoto;
-            PhotoThumbnailPath = selectedPhoto.FullPath;
+            PhotoThumbnailPath = pendingPhoto.FullPath;
             ValidationMessage = null;
         });
     }
@@ -139,14 +130,9 @@ public partial class AddContainerViewModel : BaseViewModel
             await createContainer.CreateAsync(
                 trimmedName,
                 string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim(),
-                pendingPhoto?.Bytes);
+                pendingPhoto.Bytes);
 
-            if (pendingPhoto is not null)
-            {
-                await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
-            }
-
-            pendingPhoto = null;
+            await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;
             ValidationMessage = null;
             await navigationService.GoBackAsync();

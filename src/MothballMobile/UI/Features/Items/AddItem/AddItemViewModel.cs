@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Application.Features.Photos;
 using Microsoft.Extensions.Logging;
 using MothballMobile.UI.Shared;
 
@@ -7,14 +8,13 @@ namespace MothballMobile.UI.Features.Items.AddItem;
 
 public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 {
-    private readonly ImageService imageService;
     private readonly ICreateItemCommandHandler createItem;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly ILogger<AddItemViewModel> logger;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
-    private ImageService.TemporaryPhotoCapture? pendingPhoto;
+    private readonly PendingPhoto pendingPhoto;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -51,13 +51,13 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         IPopupService popup,
         IPopupDefinitionService popupDefinitions)
     {
-        this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.createItem = createItem ?? throw new ArgumentNullException(nameof(createItem));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
         this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
+        pendingPhoto = new PendingPhoto(imageService ?? throw new ArgumentNullException(nameof(imageService)));
     }
 
     /// <inheritdoc />
@@ -121,29 +121,20 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         await RunCommandAsync(async () =>
         {
-            ImageService.TemporaryPhotoCapture? selectedPhoto;
             IsPhotoProcessing = true;
             try
             {
-                selectedPhoto = await imageService.CaptureTemporaryPhotoAsync(source: source.Value);
+                if (!await pendingPhoto.CaptureAsync(source.Value))
+                {
+                    return;
+                }
             }
             finally
             {
                 IsPhotoProcessing = false;
             }
 
-            if (selectedPhoto is null)
-            {
-                return;
-            }
-
-            if (pendingPhoto is not null)
-            {
-                await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
-            }
-
-            pendingPhoto = selectedPhoto;
-            PhotoThumbnailPath = selectedPhoto.FullPath;
+            PhotoThumbnailPath = pendingPhoto.FullPath;
             ValidationMessage = null;
         });
     }
@@ -183,14 +174,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                     Description?.Trim() ?? string.Empty,
                     cid,
                     parsedQuantity,
-                    pendingPhoto?.Bytes);
+                    pendingPhoto.Bytes);
 
-                if (pendingPhoto is not null)
-                {
-                    await imageService.DeleteTemporaryPhotoAsync(pendingPhoto.FileName);
-                }
-
-                pendingPhoto = null;
+                await pendingPhoto.DiscardAsync();
                 PhotoThumbnailPath = null;
                 ValidationMessage = null;
                 await nav.GoBackAsync();
