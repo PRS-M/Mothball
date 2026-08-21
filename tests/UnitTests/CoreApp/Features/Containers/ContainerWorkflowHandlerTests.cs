@@ -47,7 +47,7 @@ public sealed class ContainerWorkflowHandlerTests
             .ReturnsAsync(1);
         var quantities = new Mock<IContainerItemQuantityService>();
         quantities.Setup(service => service.SaveQuantityAsync(container, itemId, 0))
-            .ReturnsAsync(new ContainerItemQuantityUpdateResult(Removed: true, TotalItemCount: 3));
+            .ReturnsAsync(new ContainerItemQuantityUpdateResult(Removed: true, TotalItemCount: 3, TotalQuantity: 0, AssignedQuantity: 0, UnassignedQuantity: 0));
 
         var handler = new ContainerDetailsHandler(queries.Object, quantities.Object);
 
@@ -58,6 +58,9 @@ public sealed class ContainerWorkflowHandlerTests
             Assert.That(result.Removed, Is.True);
             Assert.That(result.Summary.ItemTypesCount, Is.EqualTo(1));
             Assert.That(result.Summary.TotalItemCount, Is.EqualTo(3));
+            Assert.That(result.TotalQuantity, Is.EqualTo(0));
+            Assert.That(result.AssignedQuantity, Is.EqualTo(0));
+            Assert.That(result.UnassignedQuantity, Is.EqualTo(0));
         });
     }
 

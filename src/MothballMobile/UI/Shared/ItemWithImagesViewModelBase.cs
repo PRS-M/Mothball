@@ -12,20 +12,36 @@ public abstract class ItemWithImagesViewModelBase : ObservableObject
     {
         Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
         this.paths = paths;
+        totalQuantity = inventory.TotalQuantity;
+        assignedQuantity = inventory.AssignedQuantity;
+        unassignedQuantity = inventory.UnassignedQuantity;
     }
 
     private readonly IImagePathResolver paths;
+    private int totalQuantity;
+    private int assignedQuantity;
+    private int unassignedQuantity;
 
     public InventorySnapshot Inventory { get; }
     public Item Item => Inventory.Item;
 
     public string Name => Item.Name;
     public string Description => Item.Description;
-    public int TotalQuantity => Inventory.TotalQuantity;
-    public int AssignedQuantity => Inventory.AssignedQuantity;
-    public int UnassignedQuantity => Inventory.UnassignedQuantity;
+    public int TotalQuantity => totalQuantity;
+    public int AssignedQuantity => assignedQuantity;
+    public int UnassignedQuantity => unassignedQuantity;
 
     public ObservableCollection<string> ImagePaths { get; } = new();
+
+    /// <summary>
+    /// Refreshes the total/assigned/unassigned quantities after a save that changes global allocation.
+    /// </summary>
+    public void UpdateQuantities(int total, int assigned, int unassigned)
+    {
+        SetProperty(ref totalQuantity, total, nameof(TotalQuantity));
+        SetProperty(ref assignedQuantity, assigned, nameof(AssignedQuantity));
+        SetProperty(ref unassignedQuantity, unassigned, nameof(UnassignedQuantity));
+    }
 
     /// <summary>
     /// Loads this item's photo paths into <see cref="ImagePaths"/>.

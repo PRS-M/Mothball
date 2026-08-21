@@ -15,6 +15,7 @@ public sealed class ContainerDetailsItemsCoordinator
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly ContainerItemPagingController itemPaging;
     private ContainerDetailsItemRowsViewModel? itemRows;
+    private ContainerDetailsViewModel? header;
     private bool skipNextInitialization;
 
     public ContainerDetailsItemsCoordinator(
@@ -41,7 +42,7 @@ public sealed class ContainerDetailsItemsCoordinator
 
     public async Task<ContainerDetailsSummary?> InitializeAsync(
         string containerId,
-        object header,
+        ContainerDetailsViewModel header,
         bool showQuantityManagement)
     {
         Reset(header);
@@ -57,8 +58,9 @@ public sealed class ContainerDetailsItemsCoordinator
         return summary;
     }
 
-    public void Reset(object header)
+    public void Reset(ContainerDetailsViewModel header)
     {
+        this.header = header;
         itemPaging.Reset();
         itemRows = new ContainerDetailsItemRowsViewModel(header, Items, Rows);
         itemRows.Reset();
@@ -115,6 +117,14 @@ public sealed class ContainerDetailsItemsCoordinator
         else if (rows.Find(itemId) is { } item)
         {
             item.Quantity = quantity;
+            item.UpdateQuantities(update.TotalQuantity, update.AssignedQuantity, update.UnassignedQuantity);
+        }
+
+        // Item counts depend on the whole container, so refresh the header from the latest summary.
+        if (header is not null)
+        {
+            header.ItemTypesCount = update.Summary.ItemTypesCount;
+            header.TotalItemCount = showQuantityManagement ? update.Summary.TotalItemCount : update.Summary.ItemTypesCount;
         }
 
         return update.Summary;
