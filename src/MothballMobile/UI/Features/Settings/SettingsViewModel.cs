@@ -70,6 +70,14 @@ public partial class SettingsViewModel : BaseViewModel
 
     public bool IsJsonBackupMode => !IsZipBackupMode;
 
+    [RelayCommand]
+    private void SelectJsonBackupMode()
+        => IsZipBackupMode = false;
+
+    [RelayCommand]
+    private void SelectZipBackupMode()
+        => IsZipBackupMode = true;
+
     public string SelectedModeOption
     {
         get => applicationSettings.ThemeOverride switch
@@ -151,6 +159,14 @@ public partial class SettingsViewModel : BaseViewModel
             OnPropertyChanged();
         }
     }
+
+    [RelayCommand]
+    private void SelectSimpleAppMode()
+        => IsAdvancedAppMode = false;
+
+    [RelayCommand]
+    private void SelectAdvancedAppMode()
+        => IsAdvancedAppMode = true;
 
     public bool IsBackupSigningKeyEnabled
     {
