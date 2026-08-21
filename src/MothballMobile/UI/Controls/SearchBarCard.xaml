@@ -9,10 +9,10 @@
     <SearchBar Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
                Text="{Binding Source={x:Reference this}, Path=Text}"
                SearchCommand="{Binding Source={x:Reference this}, Path=SearchCommand}"
-               Background="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}"
+               Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"
                Margin="0,1"
                FontSize="12"
-               TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+               TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
                PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-               CancelButtonColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
+               CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
 </ContentView>

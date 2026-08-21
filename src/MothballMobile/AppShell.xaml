@@ -65,6 +65,9 @@
     </Shell.TitleView>
 
     <FlyoutItem Title="Home" Route="Home">
+        <FlyoutItem.Icon>
+            <FontImageSource Glyph="&#xf015;" FontFamily="FontAwesomeSolid" Size="26" Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+        </FlyoutItem.Icon>
         <ShellContent
             Title="Home"
             ContentTemplate="{DataTemplate local:MainPage}"

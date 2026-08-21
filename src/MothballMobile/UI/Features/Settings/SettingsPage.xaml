@@ -108,13 +108,23 @@
                       <Button Text="Share signing key"
                                 IsEnabled="{Binding IsBackupSigningKeyEnabled}"
                                 Command="{Binding ShareBackupSigningKeyCommand}"
-                                SemanticProperties.Hint="Share the backup signing key using the system share sheet, including AirDrop" />
+                                                                                                                                SemanticProperties.Hint="Share the backup signing key using the system share sheet, including AirDrop">
+                                                                                                <Button.ImageSource>
+                                                                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
+                                                                                                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                                                                </Button.ImageSource>
+                                                                                        </Button>
 
                     <Button Text="Import signing key"
                             Style="{StaticResource OutlinedButton}"
                             IsEnabled="{Binding IsBackupSigningKeyEnabled}"
                             Command="{Binding ImportBackupSigningKeyCommand}"
-                            SemanticProperties.Hint="Import a backup signing key file received from another device" />
+                                                        SemanticProperties.Hint="Import a backup signing key file received from another device">
+                                                <Button.ImageSource>
+                                                        <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
+                                                                                         Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                                </Button.ImageSource>
+                                        </Button>
                   </VerticalStackLayout>
              </Border>
 
@@ -167,52 +177,107 @@
                     <Button Text="Documentation / Help"
                             Style="{StaticResource OutlinedButton}"
                             Command="{Binding NavigateToImportDocumentationCommand}"
-                            SemanticProperties.Hint="Open documentation that explains backup import modes" />
+                                                        SemanticProperties.Hint="Open documentation that explains backup import modes">
+                                                <Button.ImageSource>
+                                                        <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF02D;" Size="16"
+                                                                                         Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                                </Button.ImageSource>
+                                        </Button>
 
                     <VerticalStackLayout Spacing="10"
                                          IsVisible="{Binding IsJsonBackupMode}">
                         <Button Text="Export to JSON"
                                 Command="{Binding ExportToJsonCommand}"
-                                SemanticProperties.Hint="Create a local backup JSON file with full inventory data" />
+                                                                SemanticProperties.Hint="Create a local backup JSON file with full inventory data">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF019;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
 
                         <Button Text="Import from JSON"
                                 Command="{Binding ImportFromJsonCommand}"
-                                SemanticProperties.Hint="Choose restore mode and import a local backup JSON file" />
+                                                                SemanticProperties.Hint="Choose restore mode and import a local backup JSON file">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
 
                         <Button Text="Import from JSON from files"
                                 Command="{Binding ImportJsonFromFileSystemCommand}"
-                                SemanticProperties.Hint="Choose restore mode and import a JSON backup from the file system" />
+                                                                SemanticProperties.Hint="Choose restore mode and import a JSON backup from the file system">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF15B;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
 
                         <Button Text="Share backup JSON"
                                 Command="{Binding ShareJsonCommand}"
-                                SemanticProperties.Hint="Choose and share a local backup JSON file outside the app" />
+                                                                SemanticProperties.Hint="Choose and share a local backup JSON file outside the app">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
 
                         <Button Text="Delete backup JSON"
                                 Command="{Binding DeleteJsonCommand}"
-                                SemanticProperties.Hint="Choose and delete a local backup JSON file" />
+                                                                SemanticProperties.Hint="Choose and delete a local backup JSON file">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF2ED;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="10"
                                          IsVisible="{Binding IsZipBackupMode}">
                         <Button Text="Export with photos to ZIP"
                                 Command="{Binding ExportToZipCommand}"
-                                SemanticProperties.Hint="Create a local ZIP backup with inventory data and photo files" />
+                                                                SemanticProperties.Hint="Create a local ZIP backup with inventory data and photo files">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF019;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
 
                         <Button Text="Import with photos from ZIP"
                                 Command="{Binding ImportFromZipCommand}"
-                                SemanticProperties.Hint="Choose restore mode and import a local ZIP backup with photo files" />
+                                                                SemanticProperties.Hint="Choose restore mode and import a local ZIP backup with photo files">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
 
                         <Button Text="Import from ZIP from files"
                                 Command="{Binding ImportZipFromFileSystemCommand}"
-                                SemanticProperties.Hint="Choose restore mode and import a ZIP backup from the file system" />
+                                                                SemanticProperties.Hint="Choose restore mode and import a ZIP backup from the file system">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF15B;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
 
                         <Button Text="Share backup ZIP"
                                 Command="{Binding ShareZipCommand}"
-                                SemanticProperties.Hint="Choose and share a local backup ZIP file outside the app" />
+                                                                SemanticProperties.Hint="Choose and share a local backup ZIP file outside the app">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
 
                         <Button Text="Delete backup ZIP"
                                 Command="{Binding DeleteZipCommand}"
-                                SemanticProperties.Hint="Choose and delete a local backup ZIP file" />
+                                                                SemanticProperties.Hint="Choose and delete a local backup ZIP file">
+                                                        <Button.ImageSource>
+                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF2ED;" Size="16"
+                                                                                                 Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                        </Button.ImageSource>
+                                                </Button>
                     </VerticalStackLayout>
 
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
@@ -238,7 +303,12 @@
 
                     <Button Text="View image processing"
                             Command="{Binding NavigateToBackgroundOperationsCommand}"
-                            SemanticProperties.Hint="Open the background photo operations page" />
+                                                        SemanticProperties.Hint="Open the background photo operations page">
+                                                <Button.ImageSource>
+                                                        <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1C5;" Size="16"
+                                                                                         Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}" />
+                                                </Button.ImageSource>
+                                        </Button>
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>

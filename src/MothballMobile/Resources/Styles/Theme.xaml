@@ -48,12 +48,12 @@
         <Setter Property="StrokeThickness" Value="1"/>
         <Setter Property="Shadow">
             <Setter.Value>
-                <Shadow Brush="{StaticResource Shadow}" Opacity="0.08" Radius="8" Offset="0,2"/>
+                <Shadow Brush="{StaticResource Shadow}" Opacity="0.06" Radius="6" Offset="0,2"/>
             </Setter.Value>
         </Setter>
         <Setter Property="StrokeShape">
             <Setter.Value>
-                <RoundRectangle CornerRadius="12"/>
+                <RoundRectangle CornerRadius="16"/>
             </Setter.Value>
         </Setter>
     </Style>

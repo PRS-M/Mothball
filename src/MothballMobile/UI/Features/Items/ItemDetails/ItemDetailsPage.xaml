@@ -33,11 +33,25 @@
                 <Button Text="Go to the container"
                     Style="{StaticResource TonalButton}"
                     IsVisible="{Binding ShowGoToContainerButton}"
-                    Command="{Binding NavigateToContainerCommand}"/>
+                    Command="{Binding NavigateToContainerCommand}">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="FontAwesomeSolid"
+                                         Glyph="&#xF07B;"
+                                         Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                                         Size="16" />
+                    </Button.ImageSource>
+                </Button>
                 <Button Text="Associate with a container"
                     Style="{StaticResource OutlinedButton}"
                     IsVisible="{Binding HasUnassignedQuantity}"
-                    Command="{Binding NavigateToAssociateWithContainerCommand}"/>
+                    Command="{Binding NavigateToAssociateWithContainerCommand}">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="FontAwesomeSolid"
+                                         Glyph="&#xF0C1;"
+                                         Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                         Size="16" />
+                    </Button.ImageSource>
+                </Button>
                 </VerticalStackLayout>
             </controls:TitleActionRow.Actions>
             </controls:TitleActionRow>
@@ -56,14 +70,28 @@
                                 HeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
-                                Command="{Binding AddPhotoCommand}" />
+                                Command="{Binding AddPhotoCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="FontAwesomeSolid"
+                                                 Glyph="&#xF030;"
+                                                 Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                                                 Size="14" />
+                            </Button.ImageSource>
+                        </Button>
 
                         <Button Text="Delete photo"
                                 Style="{StaticResource OutlinedButton}"
                                 HeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
-                                Command="{Binding DeletePhotoCommand}" />
+                                Command="{Binding DeletePhotoCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="FontAwesomeSolid"
+                                                 Glyph="&#xF2ED;"
+                                                 Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                 Size="14" />
+                            </Button.ImageSource>
+                        </Button>
                     </HorizontalStackLayout>
 
                 </VerticalStackLayout>
@@ -83,7 +111,14 @@
                                 FontSize="12"
                                 Padding="10,0"
                                 IsVisible="{Binding IsViewingDescription}"
-                                Command="{Binding EditDescriptionCommand}" />
+                                Command="{Binding EditDescriptionCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="FontAwesomeSolid"
+                                                 Glyph="&#xF044;"
+                                                 Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                 Size="14" />
+                            </Button.ImageSource>
+                        </Button>
                         <Button Grid.Column="1"
                                 Text="Save"
                                 Style="{StaticResource TonalButton}"
@@ -91,7 +126,14 @@
                                 FontSize="12"
                                 Padding="10,0"
                                 IsVisible="{Binding IsEditingDescription}"
-                                Command="{Binding SaveDescriptionCommand}" />
+                                Command="{Binding SaveDescriptionCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="FontAwesomeSolid"
+                                                 Glyph="&#xF0C7;"
+                                                 Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                                                 Size="14" />
+                            </Button.ImageSource>
+                        </Button>
                     </Grid>
                           <Label Text="{Binding DisplayDescription}"
                            IsVisible="{Binding IsViewingDescription}"
@@ -140,7 +182,14 @@
                       <Button Text="Set total quantity"
                               Style="{StaticResource OutlinedButton}"
                               HorizontalOptions="Start"
-                              Command="{Binding SetTotalQuantityCommand}" />
+                              Command="{Binding SetTotalQuantityCommand}">
+                          <Button.ImageSource>
+                              <FontImageSource FontFamily="FontAwesomeSolid"
+                                               Glyph="&#xF1EC;"
+                                               Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                               Size="16" />
+                          </Button.ImageSource>
+                      </Button>
                   </VerticalStackLayout>
                  </Border>
 

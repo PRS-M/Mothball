@@ -27,14 +27,28 @@
                                     HeightRequest="34"
                                     FontSize="12"
                                     Padding="10,0"
-                                    Command="{Binding AddPhotoCommand}" />
+                                    Command="{Binding AddPhotoCommand}">
+                                <Button.ImageSource>
+                                    <FontImageSource FontFamily="FontAwesomeSolid"
+                                                     Glyph="&#xF030;"
+                                                     Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                                                     Size="14" />
+                                </Button.ImageSource>
+                            </Button>
 
                             <Button Text="Delete photo"
                                     Style="{StaticResource OutlinedButton}"
                                     HeightRequest="34"
                                     FontSize="12"
                                     Padding="10,0"
-                                    Command="{Binding DeletePhotoCommand}" />
+                                    Command="{Binding DeletePhotoCommand}">
+                                <Button.ImageSource>
+                                    <FontImageSource FontFamily="FontAwesomeSolid"
+                                                     Glyph="&#xF2ED;"
+                                                     Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                     Size="14" />
+                                </Button.ImageSource>
+                            </Button>
                         </HorizontalStackLayout>
 
                         <VerticalStackLayout Spacing="8">
@@ -64,7 +78,14 @@
                                     FontSize="12"
                                     Padding="10,0"
                                     IsVisible="{Binding IsViewingNotes}"
-                                    Command="{Binding EditNotesCommand}" />
+                                    Command="{Binding EditNotesCommand}">
+                                <Button.ImageSource>
+                                    <FontImageSource FontFamily="FontAwesomeSolid"
+                                                     Glyph="&#xF044;"
+                                                     Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                     Size="14" />
+                                </Button.ImageSource>
+                            </Button>
                             <Button Grid.Column="1"
                                     Text="Save"
                                     Style="{StaticResource TonalButton}"
@@ -72,7 +93,14 @@
                                     FontSize="12"
                                     Padding="10,0"
                                     IsVisible="{Binding IsEditingNotes}"
-                                    Command="{Binding SaveNotesCommand}" />
+                                    Command="{Binding SaveNotesCommand}">
+                                <Button.ImageSource>
+                                    <FontImageSource FontFamily="FontAwesomeSolid"
+                                                     Glyph="&#xF0C7;"
+                                                     Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                                                     Size="14" />
+                                </Button.ImageSource>
+                            </Button>
                         </Grid>
                            <Label Text="{Binding DisplayNotes}"
                                IsVisible="{Binding IsViewingNotes}"
