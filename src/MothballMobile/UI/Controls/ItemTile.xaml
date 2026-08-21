@@ -118,7 +118,14 @@
                         FontSize="11"
                         Padding="8,0"
                         HorizontalOptions="End"
-                        VerticalOptions="End" />
+                        VerticalOptions="End">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="FontAwesomeSolid"
+                                         Glyph="&#xF044;"
+                                         Color="{DynamicResource Primary}"
+                                         Size="14" />
+                    </Button.ImageSource>
+                </Button>
             </Grid>
         </Grid>
     </Border>

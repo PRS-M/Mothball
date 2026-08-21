@@ -24,11 +24,11 @@
                                         StrokeShape="RoundRectangle 16"
                                         Background="{DynamicResource SurfaceVariant}">
                                 <VerticalStackLayout Spacing="10">
-                                        <Label Text="Mode"
+                                        <Label Text="Theme Mode"
                                                    Style="{StaticResource HeadlineSmall}"
                                                    TextColor="{DynamicResource OnSurface}" />
 
-                                        <Picker Title="Mode"
+                                        <Picker Title="Theme Mode"
                                                         ItemsSource="{Binding ModeOptions}"
                                                         SelectedItem="{Binding SelectedModeOption, Mode=TwoWay}"
                                                         SemanticProperties.Hint="Choose automatic system theme, light theme, or dark theme" />
@@ -67,7 +67,7 @@
                     <Grid ColumnDefinitions="Auto,*"
                           ColumnSpacing="12">
                         <Label Grid.Column="0"
-                               Text="Inventory mode"
+                               Text="App mode"
                                Style="{StaticResource HeadlineSmall}"
                                VerticalOptions="Center"
                                TextColor="{DynamicResource OnSurface}" />

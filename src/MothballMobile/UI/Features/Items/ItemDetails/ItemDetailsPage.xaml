@@ -181,7 +181,7 @@
                       </Grid>
                       <Button Text="Set total quantity"
                               Style="{StaticResource OutlinedButton}"
-                              HorizontalOptions="Start"
+                              HorizontalOptions="End"
                               Command="{Binding SetTotalQuantityCommand}">
                           <Button.ImageSource>
                               <FontImageSource FontFamily="FontAwesomeSolid"
