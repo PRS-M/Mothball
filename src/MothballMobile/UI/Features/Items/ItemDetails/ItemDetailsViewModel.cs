@@ -154,9 +154,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             Description = item.Description;
             DescriptionDraft = item.Description;
             IsEditingDescription = false;
-            TotalQuantity = details.Inventory.TotalQuantity;
-            AssignedQuantity = details.Inventory.AssignedQuantity;
-            UnassignedQuantity = details.Inventory.UnassignedQuantity;
+            ApplyQuantities(details.Inventory);
             OnPropertyChanged(nameof(HasDescription));
 
             ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(item));
@@ -288,9 +286,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         currentItem = details.Inventory.Item;
         currentInventory = details.Inventory;
         currentAllocations = details.Inventory.Allocations;
-        TotalQuantity = details.Inventory.TotalQuantity;
-        AssignedQuantity = details.Inventory.AssignedQuantity;
-        UnassignedQuantity = details.Inventory.UnassignedQuantity;
+        ApplyQuantities(details.Inventory);
         ContainerId = details.Inventory.Allocations.FirstOrDefault()?.ContainerId.ToString();
         NotifyContainerRelationStateChanged();
         return true;
@@ -328,11 +324,16 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             result.TotalQuantity,
             result.AssignedQuantity,
             currentAllocations);
-        TotalQuantity = result.TotalQuantity;
-        AssignedQuantity = result.AssignedQuantity;
-        UnassignedQuantity = result.UnassignedQuantity;
+        ApplyQuantities(currentInventory);
         ContainerId = currentAllocations.FirstOrDefault()?.ContainerId.ToString();
         NotifyContainerRelationStateChanged();
+    }
+
+    private void ApplyQuantities(InventorySnapshot inventory)
+    {
+        TotalQuantity = inventory.TotalQuantity;
+        AssignedQuantity = inventory.AssignedQuantity;
+        UnassignedQuantity = inventory.UnassignedQuantity;
     }
 
     private sealed record QuantityEditSnapshot(Item Item, InventorySnapshot Inventory)

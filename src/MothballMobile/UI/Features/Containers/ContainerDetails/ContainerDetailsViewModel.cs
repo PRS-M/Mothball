@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
-public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
+public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable, IContainerDetailsHeader
 {
     private readonly IDeleteContainerCommandHandler deleteContainerHandler;
     private readonly IUpdateContainerNotesCommandHandler updateContainerNotesHandler;

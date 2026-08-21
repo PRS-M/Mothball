@@ -15,7 +15,7 @@ public sealed class ContainerDetailsItemsCoordinator
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly ContainerItemPagingController itemPaging;
     private ContainerDetailsItemRowsViewModel? itemRows;
-    private ContainerDetailsViewModel? header;
+    private IContainerDetailsHeader? header;
     private bool skipNextInitialization;
 
     public ContainerDetailsItemsCoordinator(
@@ -42,7 +42,7 @@ public sealed class ContainerDetailsItemsCoordinator
 
     public async Task<ContainerDetailsSummary?> InitializeAsync(
         string containerId,
-        ContainerDetailsViewModel header,
+        IContainerDetailsHeader header,
         bool showQuantityManagement)
     {
         Reset(header);
@@ -58,7 +58,7 @@ public sealed class ContainerDetailsItemsCoordinator
         return summary;
     }
 
-    public void Reset(ContainerDetailsViewModel header)
+    public void Reset(IContainerDetailsHeader header)
     {
         this.header = header;
         itemPaging.Reset();
@@ -110,7 +110,7 @@ public sealed class ContainerDetailsItemsCoordinator
         var update = await containerDetailsHandler.SaveItemQuantityAsync(container, itemId, quantity);
         var rows = GetRows();
 
-        if (update.Removed)
+        if (update.Inventory.RemovedFromContainer)
         {
             rows.Remove(itemId);
         }

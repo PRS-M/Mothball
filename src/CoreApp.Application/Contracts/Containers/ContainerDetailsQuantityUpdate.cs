@@ -1,6 +1,3 @@
 namespace CoreApp.Application.Contracts.Containers;
 
-public sealed record ContainerDetailsQuantityUpdate(
-    ContainerDetailsSummary Summary,
-    bool Removed,
-    ItemInventoryUpdateResult Inventory);
+public sealed record ContainerDetailsQuantityUpdate(ContainerDetailsSummary Summary, ItemInventoryUpdateResult Inventory);
