@@ -399,36 +399,17 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     }
 
     [RelayCommand]
-    private async Task DeletePhotoAsync()
+    private Task DeletePhotoAsync()
     {
-        if (currentItem is null) return;
-        if (currentItem.Photos.Count == 0)
-        {
-            await popup.ShowAlertAsync(popupDefinitions.NoItemPhotos());
-            return;
-        }
+        if (currentItem is null) return Task.CompletedTask;
 
-        var selectedPhoto = await SelectPhotoAsync(popupDefinitions.ItemPhotoDeletePicker(currentItem.Photos));
-        if (selectedPhoto is null)
-        {
-            return;
-        }
-
-        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeletePhoto());
-
-        if (!confirmed)
-        {
-            return;
-        }
-
-        await RunCommandAsync(async () =>
-        {
-            var deleted = await imageService.DeleteItemPhotoAsync(currentItem, selectedPhoto.ImageId);
-            if (deleted)
-            {
-                ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(currentItem));
-            }
-        });
+        return DeleteSelectedPhotoAsync(
+            hasPhotos: currentItem.Photos.Count > 0,
+            noPhotosPopup: popupDefinitions.NoItemPhotos(),
+            pickerDefinition: popupDefinitions.ItemPhotoDeletePicker(currentItem.Photos),
+            deleteAsync: imageId => imageService.DeleteItemPhotoAsync(currentItem, imageId),
+            targetPaths: ImagePaths,
+            refreshedPaths: () => paths.GetItemPhotoPaths(currentItem));
     }
 
 }

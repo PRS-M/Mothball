@@ -132,4 +132,48 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
 
     protected async Task<PhotoSource?> SelectPhotoSourceAsync()
         => await PhotoSourceSelector.SelectPhotoSourceAsync(popup, popupDefinitions);
+
+    /// <summary>
+    /// Prompts to pick a photo to delete, confirms, deletes it, and refreshes the target paths on success.
+    /// </summary>
+    /// <param name="hasPhotos">Whether the owning entity currently has any photos.</param>
+    /// <param name="noPhotosPopup">Shown when there are no photos to delete.</param>
+    /// <param name="pickerDefinition">Lists the photos to choose from.</param>
+    /// <param name="deleteAsync">Deletes the selected photo and reports whether it was removed.</param>
+    /// <param name="targetPaths">The collection to refresh after a successful delete.</param>
+    /// <param name="refreshedPaths">Provides the refreshed collection of photo paths.</param>
+    protected async Task DeleteSelectedPhotoAsync(
+        bool hasPhotos,
+        AlertPopupDefinition noPhotosPopup,
+        OptionPickerPopupDefinition<ImageItem> pickerDefinition,
+        Func<Guid, Task<bool>> deleteAsync,
+        ObservableCollection<string> targetPaths,
+        Func<IEnumerable<string>> refreshedPaths)
+    {
+        if (!hasPhotos)
+        {
+            await popup.ShowAlertAsync(noPhotosPopup);
+            return;
+        }
+
+        var selectedPhoto = await SelectPhotoAsync(pickerDefinition);
+        if (selectedPhoto is null)
+        {
+            return;
+        }
+
+        if (!await popup.ConfirmAsync(popupDefinitions.DeletePhoto()))
+        {
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            var deleted = await deleteAsync(selectedPhoto.ImageId);
+            if (deleted)
+            {
+                ReplaceWith(targetPaths, refreshedPaths());
+            }
+        });
+    }
 }

@@ -265,36 +265,17 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     }
 
     [RelayCommand]
-    private async Task DeletePhotoAsync()
+    private Task DeletePhotoAsync()
     {
-        if (currentContainer is null) return;
-        if (currentContainer.Photos.Count == 0)
-        {
-            await popup.ShowAlertAsync(popupDefinitions.NoContainerPhotos());
-            return;
-        }
+        if (currentContainer is null) return Task.CompletedTask;
 
-        var selectedPhoto = await SelectPhotoAsync(popupDefinitions.ContainerPhotoDeletePicker(currentContainer.Photos));
-        if (selectedPhoto is null)
-        {
-            return;
-        }
-
-        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeletePhoto());
-
-        if (!confirmed)
-        {
-            return;
-        }
-
-        await RunCommandAsync(async () =>
-        {
-            var deleted = await imageService.DeleteContainerPhotoAsync(currentContainer, selectedPhoto.ImageId);
-            if (deleted)
-            {
-                ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(currentContainer));
-            }
-        });
+        return DeleteSelectedPhotoAsync(
+            hasPhotos: currentContainer.Photos.Count > 0,
+            noPhotosPopup: popupDefinitions.NoContainerPhotos(),
+            pickerDefinition: popupDefinitions.ContainerPhotoDeletePicker(currentContainer.Photos),
+            deleteAsync: imageId => imageService.DeleteContainerPhotoAsync(currentContainer, imageId),
+            targetPaths: ContainerImagePaths,
+            refreshedPaths: () => paths.GetContainerPhotoPaths(currentContainer));
     }
 
     [RelayCommand]
