@@ -117,7 +117,7 @@ public sealed class ContainerDetailsItemsCoordinator
         else if (rows.Find(itemId) is { } item)
         {
             item.Quantity = quantity;
-            item.UpdateQuantities(update.TotalQuantity, update.AssignedQuantity, update.UnassignedQuantity);
+            item.UpdateQuantities(update.Inventory.TotalQuantity, update.Inventory.AssignedQuantity, update.Inventory.UnassignedQuantity);
         }
 
         // Item counts depend on the whole container, so refresh the header from the latest summary.

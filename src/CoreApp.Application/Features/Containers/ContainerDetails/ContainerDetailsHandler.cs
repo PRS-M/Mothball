@@ -42,8 +42,6 @@ public sealed class ContainerDetailsHandler : IContainerDetailsHandler
         return new ContainerDetailsQuantityUpdate(
             new ContainerDetailsSummary(container, itemTypesCount, quantityUpdate.TotalItemCount),
             quantityUpdate.Removed,
-            quantityUpdate.TotalQuantity,
-            quantityUpdate.AssignedQuantity,
-            quantityUpdate.UnassignedQuantity);
+            quantityUpdate.Inventory);
     }
 }
