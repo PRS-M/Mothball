@@ -41,6 +41,7 @@ public sealed class ContainerDetailsHandler : IContainerDetailsHandler
         var itemTypesCount = await containerDetailsQueries.GetDistinctItemCountAsync(container.ContainerId.ToString());
         return new ContainerDetailsQuantityUpdate(
             new ContainerDetailsSummary(container, itemTypesCount, quantityUpdate.TotalItemCount),
-            quantityUpdate.Removed);
+            quantityUpdate.Removed,
+            quantityUpdate.Inventory);
     }
 }

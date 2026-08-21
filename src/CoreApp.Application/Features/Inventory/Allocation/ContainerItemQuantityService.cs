@@ -27,6 +27,6 @@ public sealed class ContainerItemQuantityService : IContainerItemQuantityService
             container.AddItem(itemId, quantity);
         }
 
-        return new ContainerItemQuantityUpdateResult(inventoryResult.RemovedFromContainer, container.ItemCount);
+        return new ContainerItemQuantityUpdateResult(inventoryResult.RemovedFromContainer, container.ItemCount, inventoryResult);
     }
 }

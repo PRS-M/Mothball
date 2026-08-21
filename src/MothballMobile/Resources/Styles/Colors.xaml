@@ -32,6 +32,7 @@
     <Color x:Key="Surface">#FEFAF4</Color>
     <Color x:Key="OnSurface">#1C1B1F</Color>
     <Color x:Key="SurfaceVariant">#EBE0EB</Color>
+    <Color x:Key="PickerSurface">#D0C4D2</Color>
     <Color x:Key="OnSurfaceVariant">#49454F</Color>
 
     <Color x:Key="Outline">#79747E</Color>
@@ -68,6 +69,7 @@
     <Color x:Key="SurfaceDark">#1C1B1F</Color>
     <Color x:Key="OnSurfaceDark">#E6E1E6</Color>
     <Color x:Key="SurfaceVariantDark">#49454F</Color>
+    <Color x:Key="PickerSurfaceDark">#35313B</Color>
     <Color x:Key="OnSurfaceVariantDark">#CAC4D0</Color>
 
     <Color x:Key="OutlineDark">#938F99</Color>

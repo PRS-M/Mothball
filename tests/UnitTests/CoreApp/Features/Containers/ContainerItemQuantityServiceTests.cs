@@ -24,6 +24,9 @@ public class ContainerItemQuantityServiceTests
         {
             Assert.That(result.Removed, Is.False);
             Assert.That(result.TotalItemCount, Is.EqualTo(3));
+            Assert.That(result.Inventory.TotalQuantity, Is.EqualTo(3));
+            Assert.That(result.Inventory.AssignedQuantity, Is.EqualTo(3));
+            Assert.That(result.Inventory.UnassignedQuantity, Is.EqualTo(0));
             Assert.That(container.Items.Single(i => i.ItemId == itemId).Quantity, Is.EqualTo(3));
         });
 
@@ -48,6 +51,9 @@ public class ContainerItemQuantityServiceTests
         {
             Assert.That(result.Removed, Is.True);
             Assert.That(result.TotalItemCount, Is.EqualTo(0));
+            Assert.That(result.Inventory.TotalQuantity, Is.EqualTo(2));
+            Assert.That(result.Inventory.AssignedQuantity, Is.EqualTo(0));
+            Assert.That(result.Inventory.UnassignedQuantity, Is.EqualTo(2));
             Assert.That(container.Items, Is.Empty);
         });
 
