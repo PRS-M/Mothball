@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Features.Items.AddItem.AddItemPage"
                 x:DataType="vm:AddItemViewModel"
                 Title="Add Item"
-                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{DynamicResource Surface}">
 
     <ScrollView>
         <Grid Padding="20"
@@ -50,7 +50,14 @@
                     <Button Text="Choose Photo"
                             Style="{StaticResource OutlinedButton}"
                             WidthRequest="{StaticResource WidthM}"
-                            Command="{Binding ChoosePhotoCommand}"/>
+                            Command="{Binding ChoosePhotoCommand}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF030;"
+                                             Color="{DynamicResource Primary}"
+                                             Size="16" />
+                        </Button.ImageSource>
+                    </Button>
 
                     <Border Style="{StaticResource InputWrapper}"
                             WidthRequest="{StaticResource WidthM}"
@@ -91,7 +98,14 @@
                     <Button Text="Save Item"
                             Style="{StaticResource PrimaryButton}"
                             WidthRequest="{StaticResource WidthM}"
-                            Command="{Binding SaveCommand}"/>
+                            Command="{Binding SaveCommand}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF0C7;"
+                                             Color="{DynamicResource OnPrimary}"
+                                             Size="16" />
+                        </Button.ImageSource>
+                    </Button>
                 </VerticalStackLayout>
             </Border>
         </Grid>

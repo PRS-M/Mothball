@@ -8,7 +8,7 @@
 
     <VerticalStackLayout Spacing="8">
         <Label Text="{Binding Source={x:Reference this}, Path=Label}"
-               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+               TextColor="{DynamicResource OnSurfaceVariant}"
                Margin="{Binding Source={x:Reference this}, Path=LabelMargin}" />
 
         <!-- Wrapped entry (matches InputWrapper usage) -->

@@ -56,28 +56,28 @@
                     FontSize="{StaticResource fontSize}"
                     FontAttributes="Bold"
                     Text="{Binding Source={x:Reference this}, Path=Name}"
-                    TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                    TextColor="{DynamicResource OnSurface}"
                     VerticalOptions="Start"
                     HorizontalOptions="Start" />
                 <Label
                     FontSize="{StaticResource fontSize}"
                     Text="{Binding Source={x:Reference this}, Path=ItemTypesCount}"
                     IsVisible="{Binding Source={x:Reference this}, Path=ShowItemTypesCount}"
-                    TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                    TextColor="{DynamicResource OnSurface}"
                     VerticalOptions="Start"
                     HorizontalOptions="Start" />
                 <Label
                     FontSize="{StaticResource fontSize}"
                     Text="{Binding Source={x:Reference this}, Path=ItemCount}"
                     IsVisible="{Binding Source={x:Reference this}, Path=ShowItemCount}"
-                    TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                    TextColor="{DynamicResource OnSurface}"
                     VerticalOptions="Start"
                     HorizontalOptions="Start" />
 
                 <Label
                     FontSize="12"
                     Text="{Binding Source={x:Reference this}, Path=Notes}"
-                    TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                    TextColor="{DynamicResource OnSurfaceVariant}"
                     LineBreakMode="WordWrap"
                     VerticalOptions="Start"
                     HorizontalOptions="Start" />

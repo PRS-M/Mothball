@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Features.Items.ItemDetails.ItemDetailsPage"
                 x:DataType="vm:ItemDetailsViewModel"
                 Title="Item"
-                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
@@ -16,7 +16,7 @@
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontAwesomeSolid"
                                  Glyph="&#xF1F8;"
-                                 Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                                 Color="{DynamicResource OnSurface}"
                                  Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
@@ -33,11 +33,25 @@
                 <Button Text="Go to the container"
                     Style="{StaticResource TonalButton}"
                     IsVisible="{Binding ShowGoToContainerButton}"
-                    Command="{Binding NavigateToContainerCommand}"/>
+                    Command="{Binding NavigateToContainerCommand}">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="FontAwesomeSolid"
+                                         Glyph="&#xF07B;"
+                                         Color="{DynamicResource OnSecondaryContainer}"
+                                         Size="16" />
+                    </Button.ImageSource>
+                </Button>
                 <Button Text="Associate with a container"
                     Style="{StaticResource OutlinedButton}"
                     IsVisible="{Binding HasUnassignedQuantity}"
-                    Command="{Binding NavigateToAssociateWithContainerCommand}"/>
+                    Command="{Binding NavigateToAssociateWithContainerCommand}">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="FontAwesomeSolid"
+                                         Glyph="&#xF0C1;"
+                                         Color="{DynamicResource Primary}"
+                                         Size="16" />
+                    </Button.ImageSource>
+                </Button>
                 </VerticalStackLayout>
             </controls:TitleActionRow.Actions>
             </controls:TitleActionRow>
@@ -56,14 +70,28 @@
                                 HeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
-                                Command="{Binding AddPhotoCommand}" />
+                                Command="{Binding AddPhotoCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="FontAwesomeSolid"
+                                                 Glyph="&#xF030;"
+                                                 Color="{DynamicResource OnSecondaryContainer}"
+                                                 Size="14" />
+                            </Button.ImageSource>
+                        </Button>
 
                         <Button Text="Delete photo"
                                 Style="{StaticResource OutlinedButton}"
                                 HeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
-                                Command="{Binding DeletePhotoCommand}" />
+                                Command="{Binding DeletePhotoCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="FontAwesomeSolid"
+                                                 Glyph="&#xF2ED;"
+                                                 Color="{DynamicResource Primary}"
+                                                 Size="14" />
+                            </Button.ImageSource>
+                        </Button>
                     </HorizontalStackLayout>
 
                 </VerticalStackLayout>
@@ -75,7 +103,7 @@
                         <Label Text="Description"
                                FontAttributes="Bold"
                                VerticalOptions="Center"
-                               TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                               TextColor="{DynamicResource OnSurface}"/>
                         <Button Grid.Column="1"
                                 Text="Edit Description"
                                 Style="{StaticResource OutlinedButton}"
@@ -83,7 +111,14 @@
                                 FontSize="12"
                                 Padding="10,0"
                                 IsVisible="{Binding IsViewingDescription}"
-                                Command="{Binding EditDescriptionCommand}" />
+                                Command="{Binding EditDescriptionCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="FontAwesomeSolid"
+                                                 Glyph="&#xF044;"
+                                                 Color="{DynamicResource Primary}"
+                                                 Size="14" />
+                            </Button.ImageSource>
+                        </Button>
                         <Button Grid.Column="1"
                                 Text="Save"
                                 Style="{StaticResource TonalButton}"
@@ -91,12 +126,19 @@
                                 FontSize="12"
                                 Padding="10,0"
                                 IsVisible="{Binding IsEditingDescription}"
-                                Command="{Binding SaveDescriptionCommand}" />
+                                Command="{Binding SaveDescriptionCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="FontAwesomeSolid"
+                                                 Glyph="&#xF0C7;"
+                                                 Color="{DynamicResource OnSecondaryContainer}"
+                                                 Size="14" />
+                            </Button.ImageSource>
+                        </Button>
                     </Grid>
                           <Label Text="{Binding DisplayDescription}"
                            IsVisible="{Binding IsViewingDescription}"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-                    <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                           TextColor="{DynamicResource OnSurfaceVariant}"/>
+                    <Border Stroke="{DynamicResource OutlineVariant}"
                             StrokeShape="RoundRectangle 8"
                             Padding="8"
                             IsVisible="{Binding IsEditingDescription}">
@@ -113,25 +155,25 @@
                   <VerticalStackLayout Spacing="8">
                       <Label Text="Inventory"
                           FontAttributes="Bold"
-                          TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                          TextColor="{DynamicResource OnSurface}" />
                       <Grid ColumnDefinitions="*,Auto"
                          RowDefinitions="Auto,Auto,Auto"
                          RowSpacing="6">
                        <Label Text="Total quantity"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
                        <Label Grid.Column="1"
                            Text="{Binding TotalQuantity}"
                            FontAttributes="Bold" />
                        <Label Grid.Row="1"
                            Text="Assigned quantity"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
                        <Label Grid.Row="1"
                            Grid.Column="1"
                            Text="{Binding AssignedQuantity}"
                            FontAttributes="Bold" />
                        <Label Grid.Row="2"
                            Text="Unassigned quantity"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
                        <Label Grid.Row="2"
                            Grid.Column="1"
                            Text="{Binding UnassignedQuantity}"
@@ -139,8 +181,15 @@
                       </Grid>
                       <Button Text="Set total quantity"
                               Style="{StaticResource OutlinedButton}"
-                              HorizontalOptions="Start"
-                              Command="{Binding SetTotalQuantityCommand}" />
+                              HorizontalOptions="End"
+                              Command="{Binding SetTotalQuantityCommand}">
+                          <Button.ImageSource>
+                              <FontImageSource FontFamily="FontAwesomeSolid"
+                                               Glyph="&#xF1EC;"
+                                               Color="{DynamicResource Primary}"
+                                               Size="16" />
+                          </Button.ImageSource>
+                      </Button>
                   </VerticalStackLayout>
                  </Border>
 

@@ -13,7 +13,7 @@
                Text="{Binding Source={x:Reference this}, Path=Title}"
                FontSize="{Binding Source={x:Reference this}, Path=TitleFontSize}"
                FontAttributes="{Binding Source={x:Reference this}, Path=TitleFontAttributes}"
-               TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+               TextColor="{DynamicResource OnSurface}"
                VerticalOptions="Center" />
 
         <ContentPresenter Grid.Column="1"

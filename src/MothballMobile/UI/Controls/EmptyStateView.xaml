@@ -11,10 +11,10 @@
                          HorizontalOptions="Center"
                          VerticalOptions="Center">
         <Label Text="{Binding Source={x:Reference this}, Path=Title}"
-               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+               TextColor="{DynamicResource OnSurfaceVariant}" />
         <Label Text="{Binding Source={x:Reference this}, Path=Subtitle}"
                IsVisible="{Binding Source={x:Reference this}, Path=HasSubtitle}"
                FontSize="{Binding Source={x:Reference this}, Path=SubtitleFontSize}"
-               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+               TextColor="{DynamicResource OnSurfaceVariant}" />
     </VerticalStackLayout>
 </ContentView>

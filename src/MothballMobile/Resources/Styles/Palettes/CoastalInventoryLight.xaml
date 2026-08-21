@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="MothballMobile.Resources.Styles.Palettes.CoastalInventoryLight">
+    <x:String x:Key="PaletteId">CoastalInventoryLight</x:String>
+    <Color x:Key="Primary">#245A63</Color><Color x:Key="OnPrimary">#FFFFFF</Color><Color x:Key="PrimaryContainer">#A7EAF1</Color><Color x:Key="OnPrimaryContainer">#002023</Color>
+    <Color x:Key="Secondary">#506367</Color><Color x:Key="OnSecondary">#FFFFFF</Color><Color x:Key="SecondaryContainer">#D5E9E9</Color><Color x:Key="OnSecondaryContainer">#102022</Color>
+    <Color x:Key="Tertiary">#5A5A89</Color><Color x:Key="OnTertiary">#FFFFFF</Color><Color x:Key="TertiaryContainer">#DCDCF9</Color><Color x:Key="OnTertiaryContainer">#18174A</Color>
+    <Color x:Key="Background">#F7FCFC</Color><Color x:Key="OnBackground">#171D1E</Color><Color x:Key="Surface">#F7FCFC</Color><Color x:Key="OnSurface">#171D1E</Color>
+    <Color x:Key="SurfaceVariant">#DEE9E9</Color><Color x:Key="PickerSurface">#CDDADA</Color><Color x:Key="OnSurfaceVariant">#3F4849</Color><Color x:Key="Outline">#6F797A</Color><Color x:Key="OutlineVariant">#BEC8C9</Color>
+</ResourceDictionary>

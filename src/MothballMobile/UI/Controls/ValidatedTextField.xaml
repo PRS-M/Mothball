@@ -8,7 +8,7 @@
 
     <VerticalStackLayout Spacing="8">
         <Label Text="{Binding Source={x:Reference this}, Path=Label}"
-               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+               TextColor="{DynamicResource OnSurfaceVariant}"
                Margin="{Binding Source={x:Reference this}, Path=LabelMargin}" />
 
         <Border Padding="0"
@@ -19,7 +19,7 @@
                                           <DataTrigger TargetType="Border"
                                                                 Binding="{Binding Source={x:Reference this}, Path=HasValidationMessage}"
                                                                 Value="True">
-                                                 <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
+                                                 <Setter Property="Stroke" Value="{DynamicResource Error}" />
                                           </DataTrigger>
                                    </Style.Triggers>
                             </Style>
@@ -33,7 +33,7 @@
         </Border>
 
         <Label Text="{Binding Source={x:Reference this}, Path=ValidationMessage}"
-               TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"
+               TextColor="{DynamicResource Error}"
                IsVisible="{Binding Source={x:Reference this}, Path=HasValidationMessage}" />
     </VerticalStackLayout>
 </ContentView>

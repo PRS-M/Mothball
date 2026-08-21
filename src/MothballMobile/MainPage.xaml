@@ -30,19 +30,40 @@
                 Text="Containers"
                 SemanticProperties.Hint="Open the containers view"
                 Clicked="OnContainersClicked"
-                HorizontalOptions="Fill" />
+                HorizontalOptions="Fill">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid"
+                                     Glyph="&#xF080;"
+                                     Color="{DynamicResource OnPrimary}"
+                                     Size="16" />
+                </Button.ImageSource>
+            </Button>
 
             <Button
                 Text="Items"
                 SemanticProperties.Hint="Open the items view"
                 Clicked="OnItemsClicked"
-                HorizontalOptions="Fill" />
+                HorizontalOptions="Fill">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid"
+                                     Glyph="&#xF02C;"
+                                     Color="{DynamicResource OnPrimary}"
+                                     Size="16" />
+                </Button.ImageSource>
+            </Button>
 
             <Button
                 Text="Settings"
                 SemanticProperties.Hint="Open the settings view"
                 Clicked="OnSettingsClicked"
-                HorizontalOptions="Fill" />
+                HorizontalOptions="Fill">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid"
+                                     Glyph="&#xF013;"
+                                     Color="{DynamicResource OnPrimary}"
+                                     Size="16" />
+                </Button.ImageSource>
+            </Button>
         </VerticalStackLayout>
     </ScrollView>
 

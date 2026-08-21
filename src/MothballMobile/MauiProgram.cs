@@ -85,18 +85,12 @@ public static class MauiProgram
 
 			// On iOS/MacCatalyst, SearchBar rendering is owned by UISearchTextField,
 			// so set contrast colors directly on the native field.
-			try
+					try
 			{
 				var tf = sb.SearchTextField;
 				if (tf is not null)
 				{
-					var isDark = sb.TraitCollection?.UserInterfaceStyle == UIUserInterfaceStyle.Dark;
-					tf.BackgroundColor = isDark
-						? UIColor.FromRGB(74, 68, 88)     // SecondaryContainerDark
-						: UIColor.FromRGB(232, 222, 248); // SecondaryContainer
-					tf.TextColor = isDark
-						? UIColor.FromRGB(232, 222, 248)   // OnSecondaryContainerDark
-						: UIColor.FromRGB(29, 25, 43);      // OnSecondaryContainer
+							tf.BackgroundColor = UIColor.Clear;
 					tf.BorderStyle = UITextBorderStyle.RoundedRect;
 					tf.Layer.BorderWidth = 0;
 					tf.Layer.CornerRadius = 10;

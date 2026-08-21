@@ -6,9 +6,12 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
 {
     private const string AppModeKey = "AppMode";
     private const string ThemeOverrideKey = "ThemeOverride";
+    private const string ThemePaletteKey = "ThemePalette";
+    private const string ThemePaletteConfiguredKey = "ThemePaletteConfigured";
     private const string BackupSigningKeyEnabledKey = "BackupSigningKeyEnabled";
 
     public event EventHandler? AppModeChanged;
+    public event EventHandler? ThemePaletteChanged;
 
     public AppTheme ThemeOverride
     {
@@ -27,6 +30,35 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
             }
 
             preferences.Set(ThemeOverrideKey, value.ToString());
+        }
+    }
+
+    public ThemePalette ThemePalette
+    {
+        get
+        {
+            if (!preferences.Get(ThemePaletteConfiguredKey, defaultValue: false))
+            {
+                preferences.Set(ThemePaletteKey, nameof(ThemePalette.BlueprintLedger));
+                preferences.Set(ThemePaletteConfiguredKey, true);
+                return ThemePalette.BlueprintLedger;
+            }
+
+            var raw = preferences.Get(ThemePaletteKey, nameof(ThemePalette.BlueprintLedger));
+            return Enum.TryParse<ThemePalette>(raw, out var palette)
+                ? palette
+                : ThemePalette.BlueprintLedger;
+        }
+        set
+        {
+            if (ThemePalette == value)
+            {
+                return;
+            }
+
+            preferences.Set(ThemePaletteKey, value.ToString());
+            preferences.Set(ThemePaletteConfiguredKey, true);
+            ThemePaletteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 

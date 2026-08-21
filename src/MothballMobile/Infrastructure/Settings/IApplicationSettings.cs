@@ -7,7 +7,11 @@ public interface IApplicationSettings
 {
     event EventHandler? AppModeChanged;
 
+    event EventHandler? ThemePaletteChanged;
+
     AppTheme ThemeOverride { get; set; }
+
+    ThemePalette ThemePalette { get; set; }
 
     AppMode AppMode { get; set; }
 

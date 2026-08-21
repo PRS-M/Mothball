@@ -35,6 +35,6 @@
                VerticalOptions="Center"
                FontSize="11"
                IsVisible="False"
-               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+               TextColor="{DynamicResource OnSurfaceVariant}" />
     </Grid>
 </ContentView>
