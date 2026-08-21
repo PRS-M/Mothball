@@ -87,16 +87,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
         itemCoordinator.Reset(this);
+    }
 
-        // Debounce search query changes
-        PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(SearchQuery))
-            {
-                this.debouncer?.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync))
-                    .FireAndForget(backgroundTasks, "Search container items");
-            }
-        };
+    partial void OnSearchQueryChanged(string value)
+    {
+        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync))
+            .FireAndForget(backgroundTasks, "Search container items");
     }
 
     // Let Shell pass query params directly to the ViewModel.

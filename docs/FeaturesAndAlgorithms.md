@@ -190,6 +190,8 @@ when complete:
 
 The identity check in cleanup prevents an older operation from clearing the cancellation token for a newer request. Disposal cancels any pending action. Use this for trailing search and delayed updates; do not use it for commands that must execute every time, such as a quantity adjustment.
 
+View models wire the debounce the same way: a generated `partial void On<Property>Changed` hook (e.g. `OnQueryChanged`, `OnSearchQueryChanged`) calls `debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync)).FireAndForget(backgroundTasks, "...")`. Prefer that hook over manually subscribing to `PropertyChanged` in the constructor — it is what `ContainerListViewModel`, `ItemsListViewModel`, and `ContainerDetailsViewModel` all do.
+
 Relevant code:
 
 - `src/MothballMobile/Infrastructure/Resilience/Debouncer.cs`
