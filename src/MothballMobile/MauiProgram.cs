@@ -92,11 +92,11 @@ public static class MauiProgram
 				{
 					var isDark = sb.TraitCollection?.UserInterfaceStyle == UIUserInterfaceStyle.Dark;
 					tf.BackgroundColor = isDark
-						? UIColor.FromRGB(74, 68, 88)     // SecondaryContainerDark
-						: UIColor.FromRGB(232, 222, 248); // SecondaryContainer
+						? UIColor.FromRGB(69, 72, 62)     // SurfaceVariantDark
+						: UIColor.FromRGB(225, 228, 216); // SurfaceVariant
 					tf.TextColor = isDark
-						? UIColor.FromRGB(232, 222, 248)   // OnSecondaryContainerDark
-						: UIColor.FromRGB(29, 25, 43);      // OnSecondaryContainer
+						? UIColor.FromRGB(227, 228, 217)   // OnSurfaceDark
+						: UIColor.FromRGB(26, 28, 23);      // OnSurface
 					tf.BorderStyle = UITextBorderStyle.RoundedRect;
 					tf.Layer.BorderWidth = 0;
 					tf.Layer.CornerRadius = 10;

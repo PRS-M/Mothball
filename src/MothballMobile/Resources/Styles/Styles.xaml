@@ -353,10 +353,12 @@
     <Style TargetType="Picker" BasedOn="{StaticResource PickerBaseStyle}" />
 
     <Style TargetType="Picker" x:Key="CompactFilterPicker" BasedOn="{StaticResource PickerBaseStyle}">
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Margin" Value="0,4" />
-        <Setter Property="HeightRequest" Value="34" />
-        <Setter Property="MinimumHeightRequest" Value="34" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
         <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
     </Style>

@@ -38,29 +38,29 @@
                                  HeaderMargin="0,0,0,4" />
 
             <Border Grid.Column="1"
-                    Padding="10,0"
-                    HeightRequest="42"
+                    Padding="12,0"
+                    HeightRequest="48"
                     MinimumWidthRequest="152"
                     VerticalOptions="Center"
                     Background="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}"
                     Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
                     StrokeThickness="1"
-                    StrokeShape="RoundRectangle 14">
-                  <Grid ColumnDefinitions="Auto,Auto,*"
-                      ColumnSpacing="8">
+                                        StrokeShape="RoundRectangle 12">
+                                <Grid ColumnDefinitions="Auto,Auto,*"
+                                            ColumnSpacing="8">
                       <Label Grid.Column="0"
                           Text="&#xf0b0;"
                           FontFamily="FontAwesomeSolid"
                           FontSize="14"
                           VerticalOptions="Center"
                           TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
-                          <Label Text="Filter:"
+                      <Label Text="Filter:"
                            VerticalOptions="Center"
                            FontSize="12"
                               TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
-                              Grid.Column="1" />
+                                                     Grid.Column="1" />
 
-                          <Picker Grid.Column="2"
+                                        <Picker Grid.Column="2"
                             AutomationId="ItemsFilterPicker"
                             ItemsSource="{x:Static Member=vm:ItemsListViewModel.AvailableFilters}"
                             SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
