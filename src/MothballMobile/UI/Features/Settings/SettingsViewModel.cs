@@ -116,22 +116,23 @@ public partial class SettingsViewModel : BaseViewModel
                 return;
             }
 
-            var palette = value switch
+            ThemePalette? palette = value switch
             {
+                "Olive Workshop" => ThemePalette.OliveWorkshop,
                 "Blueprint Ledger" => ThemePalette.BlueprintLedger,
                 "Terracotta Archive" => ThemePalette.TerracottaArchive,
                 "Saffron Utility" => ThemePalette.SaffronUtility,
                 "Coastal Inventory" => ThemePalette.CoastalInventory,
                 "Berry Archive" => ThemePalette.BerryArchive,
-                _ => ThemePalette.OliveWorkshop,
+                _ => null,
             };
 
-            if (applicationSettings.ThemePalette == palette)
+            if (palette is null || applicationSettings.ThemePalette == palette.Value)
             {
                 return;
             }
 
-            applicationSettings.ThemePalette = palette;
+            applicationSettings.ThemePalette = palette.Value;
             OnPropertyChanged();
         }
     }

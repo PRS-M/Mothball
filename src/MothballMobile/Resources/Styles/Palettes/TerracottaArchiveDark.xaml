@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="MothballMobile.Resources.Styles.Palettes.TerracottaArchiveDark">
+    <x:String x:Key="PaletteId">TerracottaArchiveDark</x:String>
+    <Color x:Key="Primary">#FFB4A0</Color><Color x:Key="OnPrimary">#571F12</Color><Color x:Key="PrimaryContainer">#733626</Color><Color x:Key="OnPrimaryContainer">#FFDBD0</Color>
+    <Color x:Key="Secondary">#E4BDB4</Color><Color x:Key="OnSecondary">#432A24</Color><Color x:Key="SecondaryContainer">#5A4039</Color><Color x:Key="OnSecondaryContainer">#F4DFDA</Color>
+    <Color x:Key="Tertiary">#C8C2FA</Color><Color x:Key="OnTertiary">#302D5F</Color><Color x:Key="TertiaryContainer">#4A3B6D</Color><Color x:Key="OnTertiaryContainer">#E6DEFB</Color>
+    <Color x:Key="Background">#211A18</Color><Color x:Key="OnBackground">#EEE0DC</Color><Color x:Key="Surface">#211A18</Color><Color x:Key="OnSurface">#EEE0DC</Color>
+    <Color x:Key="SurfaceVariant">#514541</Color><Color x:Key="PickerSurface">#3A302D</Color><Color x:Key="OnSurfaceVariant">#D7C2BC</Color><Color x:Key="Outline">#9F8C86</Color><Color x:Key="OutlineVariant">#514541</Color>
+</ResourceDictionary>

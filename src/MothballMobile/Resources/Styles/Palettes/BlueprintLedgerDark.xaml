@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="MothballMobile.Resources.Styles.Palettes.BlueprintLedgerDark">
+    <x:String x:Key="PaletteId">BlueprintLedgerDark</x:String>
+    <Color x:Key="Primary">#AEC6FF</Color><Color x:Key="OnPrimary">#092F62</Color><Color x:Key="PrimaryContainer">#264777</Color><Color x:Key="OnPrimaryContainer">#D7E2FF</Color>
+    <Color x:Key="Secondary">#C1C9D8</Color><Color x:Key="OnSecondary">#2C313B</Color><Color x:Key="SecondaryContainer">#3D4759</Color><Color x:Key="OnSecondaryContainer">#DFE6F7</Color>
+    <Color x:Key="Tertiary">#E2B9F2</Color><Color x:Key="OnTertiary">#422050</Color><Color x:Key="TertiaryContainer">#593F67</Color><Color x:Key="OnTertiaryContainer">#F4D9FF</Color>
+    <Color x:Key="Background">#1A1B20</Color><Color x:Key="OnBackground">#E3E2E9</Color><Color x:Key="Surface">#1A1B20</Color><Color x:Key="OnSurface">#E3E2E9</Color>
+    <Color x:Key="SurfaceVariant">#45464F</Color><Color x:Key="PickerSurface">#34353D</Color><Color x:Key="OnSurfaceVariant">#C6C6D0</Color><Color x:Key="Outline">#90919A</Color><Color x:Key="OutlineVariant">#45464F</Color>
+</ResourceDictionary>

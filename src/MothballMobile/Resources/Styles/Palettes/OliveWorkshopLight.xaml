@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="MothballMobile.Resources.Styles.Palettes.OliveWorkshopLight">
+    <x:String x:Key="PaletteId">OliveWorkshopLight</x:String>
+    <Color x:Key="Primary">#4C662B</Color><Color x:Key="OnPrimary">#FFFFFF</Color><Color x:Key="PrimaryContainer">#CDEDA3</Color><Color x:Key="OnPrimaryContainer">#102000</Color>
+    <Color x:Key="Secondary">#586249</Color><Color x:Key="OnSecondary">#FFFFFF</Color><Color x:Key="SecondaryContainer">#E9EFDC</Color><Color x:Key="OnSecondaryContainer">#18200F</Color>
+    <Color x:Key="Tertiary">#8B4F3F</Color><Color x:Key="OnTertiary">#FFFFFF</Color><Color x:Key="TertiaryContainer">#FFDAD6</Color><Color x:Key="OnTertiaryContainer">#410006</Color>
+    <Color x:Key="Background">#FBFCF5</Color><Color x:Key="OnBackground">#1A1C17</Color><Color x:Key="Surface">#FBFCF5</Color><Color x:Key="OnSurface">#1A1C17</Color>
+    <Color x:Key="SurfaceVariant">#E1E4D8</Color><Color x:Key="PickerSurface">#D8DCCD</Color><Color x:Key="OnSurfaceVariant">#45483E</Color><Color x:Key="Outline">#76786D</Color><Color x:Key="OutlineVariant">#C6C8BA</Color>
+</ResourceDictionary>

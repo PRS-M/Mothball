@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="MothballMobile.Resources.Styles.Palettes.BerryArchiveDark">
+    <x:String x:Key="PaletteId">BerryArchiveDark</x:String>
+    <Color x:Key="Primary">#F1B0C2</Color><Color x:Key="OnPrimary">#4A1B2D</Color><Color x:Key="PrimaryContainer">#653047</Color><Color x:Key="OnPrimaryContainer">#FFD9E3</Color>
+    <Color x:Key="Secondary">#DFBFCB</Color><Color x:Key="OnSecondary">#402A32</Color><Color x:Key="SecondaryContainer">#513A43</Color><Color x:Key="OnSecondaryContainer">#F3DFE5</Color>
+    <Color x:Key="Tertiary">#C8C580</Color><Color x:Key="OnTertiary">#323300</Color><Color x:Key="TertiaryContainer">#4B4D1C</Color><Color x:Key="OnTertiaryContainer">#E5E2BB</Color>
+    <Color x:Key="Background">#211A1D</Color><Color x:Key="OnBackground">#EEDFE3</Color><Color x:Key="Surface">#211A1D</Color><Color x:Key="OnSurface">#EEDFE3</Color>
+    <Color x:Key="SurfaceVariant">#514348</Color><Color x:Key="PickerSurface">#3A3034</Color><Color x:Key="OnSurfaceVariant">#D8C2C9</Color><Color x:Key="Outline">#A08D94</Color><Color x:Key="OutlineVariant">#514348</Color>
+</ResourceDictionary>
