@@ -39,9 +39,6 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
         await RunCommandAsync(() => LoadQuerySearchAsync(Query));
     }
 
-    [RelayCommand]
-    private Task RefreshAsync() => InitializeAsync();
-
     partial void OnQueryChanged(string value)
     {
         debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync))

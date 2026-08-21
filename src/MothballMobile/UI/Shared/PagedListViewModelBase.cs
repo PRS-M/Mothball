@@ -45,6 +45,12 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     }
 
     /// <summary>
+    /// Reinitializes the list from scratch.
+    /// </summary>
+    [RelayCommand]
+    private Task Refresh() => InitializeAsync();
+
+    /// <summary>
     /// Resets paging state and removes all current items.
     /// </summary>
     protected void ResetPaging()
