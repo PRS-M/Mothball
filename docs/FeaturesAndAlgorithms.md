@@ -102,6 +102,8 @@ The inventory model keeps the invariant $\text{total quantity} = \text{assigned 
 - Withdrawal planning: `CoreApp.Domain/Inventory/ItemInventoryWithdrawalPlanner.cs`
 - Interactive withdrawal workflow: `ItemInventoryWithdrawalCoordinator`
 
+Editing a container's item quantity touches counts at two levels, and both must be refreshed from the result of the save rather than the value the user entered: `ContainerItemQuantityService.SaveQuantityAsync` returns an `ItemInventoryUpdateResult` with the item's recalculated total/assigned/unassigned quantities, threaded through `ContainerDetailsQuantityUpdate`. `ContainerDetailsItemsCoordinator.SaveQuantityAsync` applies it to the edited row via `ItemWithImagesViewModelBase.UpdateQuantities` and refreshes the container header's item-type and total-item counts from the accompanying `ContainerDetailsSummary`. Skipping either update leaves the tile or the header showing stale numbers after an edit.
+
 ### Withdrawal planning algorithm
 
 `ItemInventoryWithdrawalPlanner` is a pure domain planner. It does not persist anything or display prompts. It validates inputs and returns the target inventory state that the coordinator can commit.
