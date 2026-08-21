@@ -162,58 +162,15 @@
                                VerticalOptions="Center"
                                TextColor="{DynamicResource OnSurface}" />
 
-                                                <Border Grid.Column="1"
-                                                                WidthRequest="240"
-                                                                Padding="4,0"
-                                                                Background="{DynamicResource PickerSurface}"
-                                                                Stroke="Transparent"
-                                                                StrokeThickness="0"
-                                                                StrokeShape="RoundRectangle 20"
-                                                                HorizontalOptions="End"
-                                                                VerticalOptions="Center">
-                                                        <Grid ColumnDefinitions="*,*">
-                                                        <Button Grid.Column="0"
-                                                                        Text="JSON"
-                                                                        Command="{Binding SelectJsonBackupModeCommand}"
-                                                                        Background="Transparent"
-                                                                        TextColor="{DynamicResource OnSurfaceVariant}"
-                                                                        BorderWidth="0"
-                                                                        CornerRadius="18"
-                                                                        Padding="8,0"
-                                                                        HeightRequest="36"
-                                                                        FontAttributes="Bold"
-                                                                        SemanticProperties.Hint="Use JSON metadata backups">
-                                                                <Button.Triggers>
-                                                                        <DataTrigger TargetType="Button"
-                                                                                                 Binding="{Binding IsZipBackupMode}"
-                                                                                                 Value="False">
-                                                                                <Setter Property="Background" Value="{DynamicResource Surface}" />
-                                                                                <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
-                                                                        </DataTrigger>
-                                                                </Button.Triggers>
-                                                        </Button>
-                                                        <Button Grid.Column="1"
-                                                                        Text="ZIP"
-                                                                        Command="{Binding SelectZipBackupModeCommand}"
-                                                                        Background="Transparent"
-                                                                        TextColor="{DynamicResource OnSurfaceVariant}"
-                                                                        BorderWidth="0"
-                                                                        CornerRadius="18"
-                                                                        Padding="8,0"
-                                                                        HeightRequest="36"
-                                                                        FontAttributes="Bold"
-                                                                        SemanticProperties.Hint="Use ZIP backups with photos">
-                                                                <Button.Triggers>
-                                                                        <DataTrigger TargetType="Button"
-                                                                                                 Binding="{Binding IsZipBackupMode}"
-                                                                                                 Value="True">
-                                                                                <Setter Property="Background" Value="{DynamicResource Surface}" />
-                                                                                <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
-                                                                        </DataTrigger>
-                                                                </Button.Triggers>
-                                                        </Button>
-                                                        </Grid>
-                                                </Border>
+                        <controls:SegmentedSwitch Grid.Column="1"
+                                                  WidthRequest="240"
+                                                  LeftText="JSON"
+                                                  RightText="ZIP"
+                                                  IsRightSelected="{Binding IsZipBackupMode, Mode=TwoWay}"
+                                                  LeftCommand="{Binding SelectJsonBackupModeCommand}"
+                                                  RightCommand="{Binding SelectZipBackupModeCommand}"
+                                                  HorizontalOptions="End"
+                                                  VerticalOptions="Center" />
                     </Grid>
 
                     <Label Text="Export inventory metadata as JSON, or create a ZIP backup that also includes photo files."
