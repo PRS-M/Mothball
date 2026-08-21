@@ -163,29 +163,30 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         await RunCommandAsync(async () =>
         {
+            Guid? cid = isAddingToContainer && Guid.TryParse(ContainerId, out var parsedContainerId) && parsedContainerId != Guid.Empty
+                ? parsedContainerId
+                : null;
+
             try
             {
-                Guid? cid = isAddingToContainer && Guid.TryParse(ContainerId, out var parsedContainerId) && parsedContainerId != Guid.Empty
-                    ? parsedContainerId
-                    : null;
-
                 await createItem.CreateAsync(
                     trimmed,
                     Description?.Trim() ?? string.Empty,
                     cid,
                     parsedQuantity,
                     pendingPhoto.Bytes);
-
-                await pendingPhoto.DiscardAsync();
-                PhotoThumbnailPath = null;
-                ValidationMessage = null;
-                await nav.GoBackAsync();
             }
             catch (Exception ex)
             {
+                // Log locally, then rethrow so RunCommandAsync surfaces it through the shared error banner.
                 logger.LogError(ex, "Failed to save item.");
-                ValidationMessage = $"Failed to save item: {ex.Message}";
+                throw;
             }
+
+            await pendingPhoto.DiscardAsync();
+            PhotoThumbnailPath = null;
+            ValidationMessage = null;
+            await nav.GoBackAsync();
         });
     }
 }

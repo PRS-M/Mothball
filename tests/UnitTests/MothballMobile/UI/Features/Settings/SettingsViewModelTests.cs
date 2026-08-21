@@ -21,6 +21,32 @@ public sealed class SettingsViewModelTests
         });
     }
 
+    [Test]
+    public async Task ExportToJsonCommand_WhenExportThrows_ShowsFailureAlert_AndDoesNotRethrow()
+    {
+        var backupWorkflows = new Mock<IInventoryBackupWorkflowService>();
+        backupWorkflows.Setup(w => w.ExportJsonAsync()).ThrowsAsync(new InvalidOperationException("disk full"));
+        var popupDefinitions = new Mock<IPopupDefinitionService>();
+        popupDefinitions.Setup(p => p.BackupExportFailed("disk full"))
+            .Returns(new AlertPopupDefinition("Export failed", "disk full"));
+        var popup = new Mock<IPopupService>();
+        var viewModel = new SettingsViewModel(
+            backupWorkflows.Object,
+            Mock.Of<IBackupSigningKeyTransferService>(),
+            Mock.Of<IFilePicker>(),
+            Mock.Of<INavigationService>(),
+            Mock.Of<IApplicationSettings>(),
+            popup.Object,
+            popupDefinitions.Object,
+            NullLogger<SettingsViewModel>.Instance);
+
+        await viewModel.ExportToJsonCommand.ExecuteAsync(null);
+
+        Assert.That(viewModel.HasError, Is.False);
+        popup.Verify(p => p.ShowAlertAsync(
+            It.Is<AlertPopupDefinition>(d => d.Message == "disk full")), Times.Once);
+    }
+
     private static SettingsViewModel CreateViewModel()
         => new(
             Mock.Of<IInventoryBackupWorkflowService>(),

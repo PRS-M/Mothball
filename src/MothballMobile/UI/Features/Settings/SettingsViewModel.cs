@@ -129,37 +129,27 @@ public partial class SettingsViewModel : BaseViewModel
     [RelayCommand]
     private async Task ExportToJsonAsync()
     {
-        await RunCommandAsync(async () =>
-        {
-            try
+        await RunCommandAsync(() => TryWithAlertAsync(
+            async () =>
             {
                 var export = await backupWorkflows.ExportJsonAsync();
                 await popup.ShowAlertAsync(popupDefinitions.BackupExported(export.FullPath));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to export inventory backup to JSON.");
-                await popup.ShowAlertAsync(popupDefinitions.BackupExportFailed(ex.Message));
-            }
-        });
+            },
+            "Failed to export inventory backup to JSON.",
+            popupDefinitions.BackupExportFailed));
     }
 
     [RelayCommand]
     private async Task ExportToZipAsync()
     {
-        await RunCommandAsync(async () =>
-        {
-            try
+        await RunCommandAsync(() => TryWithAlertAsync(
+            async () =>
             {
                 var export = await backupWorkflows.ExportZipAsync();
                 await popup.ShowAlertAsync(popupDefinitions.BackupExported(export.FullPath));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to export inventory backup to ZIP.");
-                await popup.ShowAlertAsync(popupDefinitions.BackupExportFailed(ex.Message));
-            }
-        });
+            },
+            "Failed to export inventory backup to ZIP.",
+            popupDefinitions.BackupExportFailed));
     }
 
     [RelayCommand]
@@ -175,16 +165,11 @@ public partial class SettingsViewModel : BaseViewModel
             if (string.IsNullOrWhiteSpace(fileName))
                 return;
 
-            try
-            {
-                var backupJson = await backupWorkflows.ReadJsonAsync(fileName);
-                await RestoreJsonAsync(backupJson, policy.Value, fileName);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to import inventory backup from JSON file {FileName}.", fileName);
-                await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
-            }
+            await TryWithAlertAsync(
+                () => RestoreFromJsonFileNameAsync(fileName, policy.Value),
+                "Failed to import inventory backup from JSON file {FileName}.",
+                popupDefinitions.RestoreFailed,
+                fileName);
         });
     }
 
@@ -201,19 +186,18 @@ public partial class SettingsViewModel : BaseViewModel
             if (file is null)
                 return;
 
-            try
-            {
-                await using var stream = await file.OpenReadAsync();
-                using var reader = new StreamReader(stream);
-                var backupJson = await reader.ReadToEndAsync();
+            await TryWithAlertAsync(
+                async () =>
+                {
+                    await using var stream = await file.OpenReadAsync();
+                    using var reader = new StreamReader(stream);
+                    var backupJson = await reader.ReadToEndAsync();
 
-                await RestoreJsonAsync(backupJson, policy.Value, file.FileName);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to import inventory backup from external JSON file {FileName}.", file.FileName);
-                await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
-            }
+                    await RestoreJsonAsync(backupJson, policy.Value, file.FileName);
+                },
+                "Failed to import inventory backup from external JSON file {FileName}.",
+                popupDefinitions.RestoreFailed,
+                file.FileName);
         });
     }
 
@@ -243,16 +227,15 @@ public partial class SettingsViewModel : BaseViewModel
             if (string.IsNullOrWhiteSpace(fileName))
                 return;
 
-            try
-            {
-                var backupZip = await backupWorkflows.ReadZipAsync(fileName);
-                await RestoreZipAsync(backupZip, policy.Value, fileName);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to import inventory backup from ZIP file {FileName}.", fileName);
-                await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
-            }
+            await TryWithAlertAsync(
+                async () =>
+                {
+                    var backupZip = await backupWorkflows.ReadZipAsync(fileName);
+                    await RestoreZipAsync(backupZip, policy.Value, fileName);
+                },
+                "Failed to import inventory backup from ZIP file {FileName}.",
+                popupDefinitions.RestoreFailed,
+                fileName);
         });
     }
 
@@ -269,19 +252,18 @@ public partial class SettingsViewModel : BaseViewModel
             if (file is null)
                 return;
 
-            try
-            {
-                await using var stream = await file.OpenReadAsync();
-                using var memory = new MemoryStream();
-                await stream.CopyToAsync(memory);
+            await TryWithAlertAsync(
+                async () =>
+                {
+                    await using var stream = await file.OpenReadAsync();
+                    using var memory = new MemoryStream();
+                    await stream.CopyToAsync(memory);
 
-                await RestoreZipAsync(memory.ToArray(), policy.Value, file.FileName);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to import inventory backup from external ZIP file {FileName}.", file.FileName);
-                await popup.ShowAlertAsync(popupDefinitions.RestoreFailed(ex.Message));
-            }
+                    await RestoreZipAsync(memory.ToArray(), policy.Value, file.FileName);
+                },
+                "Failed to import inventory backup from external ZIP file {FileName}.",
+                popupDefinitions.RestoreFailed,
+                file.FileName);
         });
     }
 
@@ -301,18 +283,10 @@ public partial class SettingsViewModel : BaseViewModel
     [RelayCommand]
     private async Task ShareBackupSigningKeyAsync()
     {
-        await RunCommandAsync(async () =>
-        {
-            try
-            {
-                await signingKeyTransfer.ShareAsync();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to share the Mothball backup signing key.");
-                await popup.ShowAlertAsync(popupDefinitions.BackupSigningKeyShareFailed(ex.Message));
-            }
-        });
+        await RunCommandAsync(() => TryWithAlertAsync(
+            () => signingKeyTransfer.ShareAsync(),
+            "Failed to share the Mothball backup signing key.",
+            popupDefinitions.BackupSigningKeyShareFailed));
     }
 
     [RelayCommand]
@@ -326,29 +300,28 @@ public partial class SettingsViewModel : BaseViewModel
                 return;
             }
 
-            try
-            {
-                await using var stream = await file.OpenReadAsync();
-                var confirmed = await popup.ConfirmAsync(
-                    "Import signing key",
-                    "This replaces the current backup signing key on this device. Backups signed by the current key will no longer verify here.",
-                    "Import",
-                    "Cancel");
-                if (!confirmed)
+            await TryWithAlertAsync(
+                async () =>
                 {
-                    return;
-                }
+                    await using var stream = await file.OpenReadAsync();
+                    var confirmed = await popup.ConfirmAsync(
+                        "Import signing key",
+                        "This replaces the current backup signing key on this device. Backups signed by the current key will no longer verify here.",
+                        "Import",
+                        "Cancel");
+                    if (!confirmed)
+                    {
+                        return;
+                    }
 
-                await signingKeyTransfer.ImportAsync(stream);
-                await popup.ShowAlertAsync(new AlertPopupDefinition(
-                    "Signing key imported",
-                    "This device can now verify backups signed by the imported key."));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to import the Mothball backup signing key from {FileName}.", file.FileName);
-                await popup.ShowAlertAsync(popupDefinitions.BackupSigningKeyImportFailed(ex.Message));
-            }
+                    await signingKeyTransfer.ImportAsync(stream);
+                    await popup.ShowAlertAsync(new AlertPopupDefinition(
+                        "Signing key imported",
+                        "This device can now verify backups signed by the imported key."));
+                },
+                "Failed to import the Mothball backup signing key from {FileName}.",
+                popupDefinitions.BackupSigningKeyImportFailed,
+                file.FileName);
         });
     }
 
@@ -366,16 +339,15 @@ public partial class SettingsViewModel : BaseViewModel
             if (!confirmed)
                 return;
 
-            try
-            {
-                await backupWorkflows.DeleteAsync(fileName);
-                await popup.ShowAlertAsync(popupDefinitions.BackupDeleted(fileName));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to delete inventory backup JSON file {FileName}.", fileName);
-                await popup.ShowAlertAsync(popupDefinitions.DeleteBackupFailed(ex.Message));
-            }
+            await TryWithAlertAsync(
+                async () =>
+                {
+                    await backupWorkflows.DeleteAsync(fileName);
+                    await popup.ShowAlertAsync(popupDefinitions.BackupDeleted(fileName));
+                },
+                "Failed to delete inventory backup JSON file {FileName}.",
+                popupDefinitions.DeleteBackupFailed,
+                fileName);
         });
     }
 
@@ -393,21 +365,44 @@ public partial class SettingsViewModel : BaseViewModel
             if (!confirmed)
                 return;
 
-            try
-            {
-                await backupWorkflows.DeleteAsync(fileName);
-                await popup.ShowAlertAsync(popupDefinitions.BackupDeleted(fileName));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to delete inventory backup ZIP file {FileName}.", fileName);
-                await popup.ShowAlertAsync(popupDefinitions.DeleteBackupFailed(ex.Message));
-            }
+            await TryWithAlertAsync(
+                async () =>
+                {
+                    await backupWorkflows.DeleteAsync(fileName);
+                    await popup.ShowAlertAsync(popupDefinitions.BackupDeleted(fileName));
+                },
+                "Failed to delete inventory backup ZIP file {FileName}.",
+                popupDefinitions.DeleteBackupFailed,
+                fileName);
         });
     }
 
     private async Task<InventoryBackupConflictPolicy?> SelectRestorePolicyAsync()
         => await popup.SelectValueOptionAsync(popupDefinitions.RestorePolicyPicker());
+
+    /// <summary>Runs an operation, logging and alerting the given failure popup on exception instead of propagating it.</summary>
+    private async Task TryWithAlertAsync(
+        Func<Task> action,
+        string logMessage,
+        Func<string, AlertPopupDefinition> onFailure,
+        params object?[] logArgs)
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, logMessage, logArgs);
+            await popup.ShowAlertAsync(onFailure(ex.Message));
+        }
+    }
+
+    private async Task RestoreFromJsonFileNameAsync(string fileName, InventoryBackupConflictPolicy policy)
+    {
+        var backupJson = await backupWorkflows.ReadJsonAsync(fileName);
+        await RestoreJsonAsync(backupJson, policy, fileName);
+    }
 
     private async Task RestoreJsonAsync(
         string backupJson,
@@ -429,18 +424,12 @@ public partial class SettingsViewModel : BaseViewModel
         await popup.ShowAlertAsync(popupDefinitions.RestoreCompleted(BuildRestoreSummary(restore.Result, policy, fileName, restore.RestoredPhotoFiles)));
     }
 
-    private async Task ShareBackupFileAsync(string fileName, string title)
-    {
-        try
-        {
-            await backupWorkflows.ShareAsync(fileName, title);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to share inventory backup file {FileName}.", fileName);
-            await popup.ShowAlertAsync(popupDefinitions.BackupShareFailed(ex.Message));
-        }
-    }
+    private Task ShareBackupFileAsync(string fileName, string title)
+        => TryWithAlertAsync(
+            () => backupWorkflows.ShareAsync(fileName, title),
+            "Failed to share inventory backup file {FileName}.",
+            popupDefinitions.BackupShareFailed,
+            fileName);
 
     private async Task<FileResult?> PickBackupFileAsync(string title, FilePickerFileType fileType)
         => await filePicker.PickAsync(new PickOptions
