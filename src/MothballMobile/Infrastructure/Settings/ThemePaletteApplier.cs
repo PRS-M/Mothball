@@ -6,7 +6,7 @@ namespace MothballMobile.Infrastructure.Settings;
 
 public static class ThemePaletteApplier
 {
-    public static void Apply(ResourceDictionary resources, ThemePalette palette)
+    public static void Apply(ResourceDictionary resources, ThemePalette palette, AppTheme mode)
     {
         var tokens = GetTokens(palette);
 
@@ -15,12 +15,31 @@ public static class ThemePaletteApplier
             resources[token.Key] = Color.FromArgb(token.Value);
         }
 
-        resources["PrimaryBrush"] = new SolidColorBrush(Color.FromArgb(tokens["Primary"]));
-        resources["SecondaryBrush"] = new SolidColorBrush(Color.FromArgb(tokens["Secondary"]));
-        resources["TertiaryBrush"] = new SolidColorBrush(Color.FromArgb(tokens["Tertiary"]));
-        resources["SurfaceBrush"] = new SolidColorBrush(Color.FromArgb(tokens["Surface"]));
-        resources["BackgroundBrush"] = new SolidColorBrush(Color.FromArgb(tokens["Background"]));
+        var activeSuffix = mode == AppTheme.Dark ? "Dark" : string.Empty;
+        foreach (var key in ActiveTokenKeys)
+        {
+            var activeKey = key + activeSuffix;
+            if (tokens.TryGetValue(activeKey, out var activeValue))
+            {
+                resources[key] = Color.FromArgb(activeValue);
+            }
+        }
+
+        resources["PrimaryBrush"] = new SolidColorBrush((Color)resources["Primary"]);
+        resources["SecondaryBrush"] = new SolidColorBrush((Color)resources["Secondary"]);
+        resources["TertiaryBrush"] = new SolidColorBrush((Color)resources["Tertiary"]);
+        resources["SurfaceBrush"] = new SolidColorBrush((Color)resources["Surface"]);
+        resources["BackgroundBrush"] = new SolidColorBrush((Color)resources["Background"]);
     }
+
+    private static readonly string[] ActiveTokenKeys =
+    [
+        "Primary", "OnPrimary", "PrimaryContainer", "OnPrimaryContainer",
+        "Secondary", "OnSecondary", "SecondaryContainer", "OnSecondaryContainer",
+        "Tertiary", "OnTertiary", "TertiaryContainer", "OnTertiaryContainer",
+        "Background", "OnBackground", "Surface", "OnSurface", "SurfaceVariant", "PickerSurface", "OnSurfaceVariant", "Outline", "OutlineVariant",
+        "InverseSurface", "InverseOnSurface", "InversePrimary",
+    ];
 
     private static IReadOnlyDictionary<string, string> GetTokens(ThemePalette palette)
         => palette switch

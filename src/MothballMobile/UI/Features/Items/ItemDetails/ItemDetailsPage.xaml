@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Features.Items.ItemDetails.ItemDetailsPage"
                 x:DataType="vm:ItemDetailsViewModel"
                 Title="Item"
-                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
@@ -16,7 +16,7 @@
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontAwesomeSolid"
                                  Glyph="&#xF1F8;"
-                                 Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                                 Color="{DynamicResource OnSurface}"
                                  Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
@@ -37,7 +37,7 @@
                     <Button.ImageSource>
                         <FontImageSource FontFamily="FontAwesomeSolid"
                                          Glyph="&#xF07B;"
-                                         Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                                         Color="{DynamicResource OnSecondaryContainer}"
                                          Size="16" />
                     </Button.ImageSource>
                 </Button>
@@ -48,7 +48,7 @@
                     <Button.ImageSource>
                         <FontImageSource FontFamily="FontAwesomeSolid"
                                          Glyph="&#xF0C1;"
-                                         Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                         Color="{DynamicResource Primary}"
                                          Size="16" />
                     </Button.ImageSource>
                 </Button>
@@ -74,7 +74,7 @@
                             <Button.ImageSource>
                                 <FontImageSource FontFamily="FontAwesomeSolid"
                                                  Glyph="&#xF030;"
-                                                 Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                                                 Color="{DynamicResource OnSecondaryContainer}"
                                                  Size="14" />
                             </Button.ImageSource>
                         </Button>
@@ -88,7 +88,7 @@
                             <Button.ImageSource>
                                 <FontImageSource FontFamily="FontAwesomeSolid"
                                                  Glyph="&#xF2ED;"
-                                                 Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                 Color="{DynamicResource Primary}"
                                                  Size="14" />
                             </Button.ImageSource>
                         </Button>
@@ -103,7 +103,7 @@
                         <Label Text="Description"
                                FontAttributes="Bold"
                                VerticalOptions="Center"
-                               TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"/>
+                               TextColor="{DynamicResource OnSurface}"/>
                         <Button Grid.Column="1"
                                 Text="Edit Description"
                                 Style="{StaticResource OutlinedButton}"
@@ -115,7 +115,7 @@
                             <Button.ImageSource>
                                 <FontImageSource FontFamily="FontAwesomeSolid"
                                                  Glyph="&#xF044;"
-                                                 Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                 Color="{DynamicResource Primary}"
                                                  Size="14" />
                             </Button.ImageSource>
                         </Button>
@@ -130,15 +130,15 @@
                             <Button.ImageSource>
                                 <FontImageSource FontFamily="FontAwesomeSolid"
                                                  Glyph="&#xF0C7;"
-                                                 Color="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                                                 Color="{DynamicResource OnSecondaryContainer}"
                                                  Size="14" />
                             </Button.ImageSource>
                         </Button>
                     </Grid>
                           <Label Text="{Binding DisplayDescription}"
                            IsVisible="{Binding IsViewingDescription}"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"/>
-                    <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                           TextColor="{DynamicResource OnSurfaceVariant}"/>
+                    <Border Stroke="{DynamicResource OutlineVariant}"
                             StrokeShape="RoundRectangle 8"
                             Padding="8"
                             IsVisible="{Binding IsEditingDescription}">
@@ -155,25 +155,25 @@
                   <VerticalStackLayout Spacing="8">
                       <Label Text="Inventory"
                           FontAttributes="Bold"
-                          TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                          TextColor="{DynamicResource OnSurface}" />
                       <Grid ColumnDefinitions="*,Auto"
                          RowDefinitions="Auto,Auto,Auto"
                          RowSpacing="6">
                        <Label Text="Total quantity"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
                        <Label Grid.Column="1"
                            Text="{Binding TotalQuantity}"
                            FontAttributes="Bold" />
                        <Label Grid.Row="1"
                            Text="Assigned quantity"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
                        <Label Grid.Row="1"
                            Grid.Column="1"
                            Text="{Binding AssignedQuantity}"
                            FontAttributes="Bold" />
                        <Label Grid.Row="2"
                            Text="Unassigned quantity"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
                        <Label Grid.Row="2"
                            Grid.Column="1"
                            Text="{Binding UnassignedQuantity}"
@@ -186,7 +186,7 @@
                           <Button.ImageSource>
                               <FontImageSource FontFamily="FontAwesomeSolid"
                                                Glyph="&#xF1EC;"
-                                               Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                               Color="{DynamicResource Primary}"
                                                Size="16" />
                           </Button.ImageSource>
                       </Button>

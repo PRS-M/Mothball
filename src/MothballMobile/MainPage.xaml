@@ -34,7 +34,7 @@
                 <Button.ImageSource>
                     <FontImageSource FontFamily="FontAwesomeSolid"
                                      Glyph="&#xF080;"
-                                     Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}"
+                                     Color="{DynamicResource OnPrimary}"
                                      Size="16" />
                 </Button.ImageSource>
             </Button>
@@ -47,7 +47,7 @@
                 <Button.ImageSource>
                     <FontImageSource FontFamily="FontAwesomeSolid"
                                      Glyph="&#xF02C;"
-                                     Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}"
+                                     Color="{DynamicResource OnPrimary}"
                                      Size="16" />
                 </Button.ImageSource>
             </Button>
@@ -60,7 +60,7 @@
                 <Button.ImageSource>
                     <FontImageSource FontFamily="FontAwesomeSolid"
                                      Glyph="&#xF013;"
-                                     Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}"
+                                     Color="{DynamicResource OnPrimary}"
                                      Size="16" />
                 </Button.ImageSource>
             </Button>

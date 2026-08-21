@@ -6,40 +6,40 @@
                 x:Class="MothballMobile.UI.Features.BackgroundOperations.BackgroundOperationsPage"
                 x:DataType="backgroundOperations:IPhotoBackgroundOperationTracker"
                 Title="Background Operations"
-                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{DynamicResource Surface}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
             <Label Text="Background photo operations"
                    Style="{StaticResource HeadlineSmall}"
-                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                   TextColor="{DynamicResource OnSurface}" />
 
-            <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+            <Border Stroke="{DynamicResource OutlineVariant}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 12"
                     Padding="12">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{Binding StatusText}"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
                     <ProgressBar Progress="{Binding OverallProgress}" />
                     <Label Text="{Binding ActiveOperationCount, StringFormat='Active operations: {0}'}"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                           TextColor="{DynamicResource OnSurface}" />
                 </VerticalStackLayout>
             </Border>
 
             <Label Text="Recent operations"
                    Style="{StaticResource TitleMedium}"
-                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                   TextColor="{DynamicResource OnSurface}" />
 
             <CollectionView ItemsSource="{Binding RecentOperations}"
                             SelectionMode="None">
                 <CollectionView.EmptyView>
-                    <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    <Border Stroke="{DynamicResource OutlineVariant}"
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 12"
                             Padding="12">
                         <Label Text="No background operations have completed yet."
-                               TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                               TextColor="{DynamicResource OnSurfaceVariant}" />
                     </Border>
                 </CollectionView.EmptyView>
                 <CollectionView.ItemsLayout>
@@ -47,7 +47,7 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="backgroundOperations:PhotoBackgroundOperationEntry">
-                        <Border Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                        <Border Stroke="{DynamicResource OutlineVariant}"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 12"
                                 Padding="12">
@@ -59,25 +59,25 @@
                                        Grid.Column="0"
                                        Text="{Binding Description}"
                                        Style="{StaticResource BodyMedium}"
-                                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                                       TextColor="{DynamicResource OnSurface}" />
 
                                 <Label Grid.Row="0"
                                        Grid.Column="1"
                                        Text="{Binding Succeeded, StringFormat='Success: {0}'}"
                                        Style="{StaticResource BodySmall}"
-                                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                                       TextColor="{DynamicResource OnSurfaceVariant}" />
 
                                 <Label Grid.Row="1"
                                        Grid.Column="0"
                                        Text="{Binding CompletedAt, StringFormat='Completed: {0:G}'}"
                                        Style="{StaticResource BodySmall}"
-                                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                                       TextColor="{DynamicResource OnSurfaceVariant}" />
 
                                 <Label Grid.Row="1"
                                        Grid.Column="1"
                                        Text="{Binding FinalProgress, StringFormat='Progress: {0:P0}'}"
                                        Style="{StaticResource BodySmall}"
-                                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                                       TextColor="{DynamicResource OnSurfaceVariant}" />
                             </Grid>
                         </Border>
                     </DataTemplate>

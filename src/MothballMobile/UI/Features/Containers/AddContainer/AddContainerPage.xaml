@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Features.Containers.AddContainer.AddContainerPage"
                 x:DataType="local:AddContainerViewModel"
                 Title="Add Container"
-                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{DynamicResource Surface}">
 
     <ScrollView>
         <Grid Padding="20"
@@ -48,7 +48,7 @@
                         <Button.ImageSource>
                             <FontImageSource FontFamily="FontAwesomeSolid"
                                              Glyph="&#xF030;"
-                                             Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                             Color="{DynamicResource Primary}"
                                              Size="16" />
                         </Button.ImageSource>
                     </Button>
@@ -97,7 +97,7 @@
                         <Button.ImageSource>
                             <FontImageSource FontFamily="FontAwesomeSolid"
                                              Glyph="&#xF0C7;"
-                                             Color="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource OnPrimaryDark}}"
+                                             Color="{DynamicResource OnPrimary}"
                                              Size="16" />
                         </Button.ImageSource>
                     </Button>

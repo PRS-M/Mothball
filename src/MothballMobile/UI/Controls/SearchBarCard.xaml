@@ -14,8 +14,8 @@
                    Background="Transparent"
                    Margin="0"
                    FontSize="14"
-                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
-                   PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
-                   CancelButtonColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                   TextColor="{DynamicResource OnSurface}"
+                   PlaceholderColor="{DynamicResource OnSurfaceVariant}"
+                   CancelButtonColor="{DynamicResource OnSurfaceVariant}" />
     </Border>
 </ContentView>

@@ -8,7 +8,7 @@
                 x:Name="ItemsPage"
                 x:DataType="vm:ItemsListViewModel"
                 Title="Items"
-                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem x:DataType="vm:ItemsListViewModel"
@@ -18,7 +18,7 @@
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="FontAwesomeSolid"
                                  Glyph="&#xF067;"
-                                 Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}"
+                                 Color="{DynamicResource OnSurface}"
                                  Size="22"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
@@ -42,8 +42,8 @@
                     HeightRequest="48"
                     MinimumWidthRequest="152"
                     VerticalOptions="Center"
-                    Background="{AppThemeBinding Light={StaticResource SecondaryContainer}, Dark={StaticResource SecondaryContainerDark}}"
-                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    Background="{DynamicResource SecondaryContainer}"
+                    Stroke="{DynamicResource OutlineVariant}"
                     StrokeThickness="1"
                                         StrokeShape="RoundRectangle 12">
                                 <Grid ColumnDefinitions="Auto,Auto,*"
@@ -53,11 +53,11 @@
                           FontFamily="FontAwesomeSolid"
                           FontSize="14"
                           VerticalOptions="Center"
-                          TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}" />
+                          TextColor="{DynamicResource OnSecondaryContainer}" />
                       <Label Text="Filter:"
                            VerticalOptions="Center"
                            FontSize="12"
-                              TextColor="{AppThemeBinding Light={StaticResource OnSecondaryContainer}, Dark={StaticResource OnSecondaryContainerDark}}"
+                              TextColor="{DynamicResource OnSecondaryContainer}"
                                                      Grid.Column="1" />
 
                                         <Picker Grid.Column="2"

@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Features.Items.ItemLocations.ItemLocationsPage"
                 x:DataType="vm:ItemLocationsViewModel"
                 Title="Item locations"
-                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{DynamicResource Surface}">
 
     <Grid Padding="16"
           RowDefinitions="Auto,*"

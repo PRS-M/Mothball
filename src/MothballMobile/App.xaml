@@ -7,7 +7,7 @@
             <ResourceDictionary xmlns:conv="clr-namespace:MothballMobile.UI.Converters">
                 <conv:StringNotNullOrEmptyConverter x:Key="StringNotNullOrEmptyConverter" />
                 <Style x:Key="InvalidWrapperStyle" TargetType="Border">
-                    <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}" />
+                    <Setter Property="Stroke" Value="{DynamicResource OutlineVariant}" />
                     <Setter Property="StrokeShape" Value="RoundRectangle 10" />
                 </Style>
             </ResourceDictionary>

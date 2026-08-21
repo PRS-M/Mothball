@@ -24,13 +24,13 @@
                 <Label x:Name="TitleLabel"
                        Style="{StaticResource HeadlineSmall}"
                        HorizontalTextAlignment="Center"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                       TextColor="{DynamicResource OnSurface}" />
 
                 <Label x:Name="MessageLabel"
                        IsVisible="False"
                        FontSize="13"
                        HorizontalTextAlignment="Center"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                       TextColor="{DynamicResource OnSurfaceVariant}" />
 
                   <Entry x:Name="QuantityEntry"
                       Text=""
@@ -38,8 +38,8 @@
                       ReturnType="Done"
                       Placeholder="Enter quantity"
                       Completed="OnEntryCompleted"
-                        Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"
-                      TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                        Background="{DynamicResource SurfaceVariant}"
+                      TextColor="{DynamicResource OnSurface}" />
 
                   <Label x:Name="ValidationLabel"
                       IsVisible="False"

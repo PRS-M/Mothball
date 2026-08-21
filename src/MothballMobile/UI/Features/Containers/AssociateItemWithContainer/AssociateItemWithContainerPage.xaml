@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Features.Containers.AssociateItemWithContainer.AssociateItemWithContainerPage"
                 x:DataType="vm:AssociateItemWithContainerViewModel"
                 Title="Select container"
-                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{DynamicResource Surface}">
 
         <Grid Padding="16"
             RowDefinitions="Auto,Auto,*"

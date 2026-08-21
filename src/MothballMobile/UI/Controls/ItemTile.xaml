@@ -52,7 +52,7 @@
                        Text="{Binding Source={x:Reference this}, Path=Name}"
                        FontAttributes="Bold"
                        LineBreakMode="TailTruncation"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                       TextColor="{DynamicResource OnSurface}" />
 
                 <Button Grid.Row="0"
                         Grid.Column="1"
@@ -70,7 +70,7 @@
                     <Button.ImageSource>
                         <FontImageSource FontFamily="FontAwesomeSolid"
                                          Glyph="&#xF00D;"
-                                         Color="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"
+                                         Color="{DynamicResource Error}"
                                          Size="16" />
                     </Button.ImageSource>
                 </Button>
@@ -79,14 +79,14 @@
                        Grid.ColumnSpan="2"
                        IsVisible="{Binding Source={x:Reference this}, Path=ShowQuantity}"
                        Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat='In this container: {0}'}"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                       TextColor="{DynamicResource OnSurfaceVariant}"
                        FontSize="11" />
 
                 <Label Grid.Row="2"
                       Grid.ColumnSpan="2"
                       IsVisible="{Binding Source={x:Reference this}, Path=ShowInventorySummary}"
                       Text="{Binding Source={x:Reference this}, Path=TotalQuantity, StringFormat='Total: {0}'}"
-                      TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                      TextColor="{DynamicResource OnSurfaceVariant}"
                       FontSize="11" />
 
                   <HorizontalStackLayout Grid.Row="3"
@@ -94,17 +94,17 @@
                                 IsVisible="{Binding Source={x:Reference this}, Path=ShowInventorySummary}"
                                 Spacing="12">
                       <Label Text="{Binding Source={x:Reference this}, Path=AssignedQuantity, StringFormat='Assigned: {0}'}"
-                          TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                          TextColor="{DynamicResource OnSurfaceVariant}"
                           FontSize="11" />
                       <Label Text="{Binding Source={x:Reference this}, Path=UnassignedQuantity, StringFormat='Unassigned: {0}'}"
-                          TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                          TextColor="{DynamicResource OnSurfaceVariant}"
                           FontSize="11" />
                   </HorizontalStackLayout>
 
                   <Label Grid.Row="4"
                        Grid.ColumnSpan="2"
                        Text="{Binding Source={x:Reference this}, Path=Description}"
-                       TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}"
+                       TextColor="{DynamicResource OnSurfaceVariant}"
                        FontSize="12"
                        LineBreakMode="TailTruncation" />
 

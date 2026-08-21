@@ -7,7 +7,7 @@
                 x:Class="MothballMobile.UI.Features.Containers.AddExistingItemToContainer.AddExistingItemToContainerPage"
                 x:DataType="vm:AddExistingItemToContainerViewModel"
                 Title="Add Existing Item"
-                Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                Background="{DynamicResource Surface}">
 
     <Grid Padding="20"
           RowDefinitions="Auto,*">

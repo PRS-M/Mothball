@@ -111,6 +111,11 @@ public partial class SettingsViewModel : BaseViewModel
         };
         set
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return;
+            }
+
             var palette = value switch
             {
                 "Blueprint Ledger" => ThemePalette.BlueprintLedger,

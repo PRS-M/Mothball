@@ -17,11 +17,11 @@
             <Border IsVisible="{Binding IsBannerVisible}"
                     HorizontalOptions="Center"
                     Margin="8,2"
-                    Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                    Stroke="{DynamicResource OutlineVariant}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 8"
                     Padding="10,6"
-                    Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                    Background="{DynamicResource Surface}">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnBackgroundOperationsBannerTapped" />
                 </Border.GestureRecognizers>
@@ -31,7 +31,7 @@
                     <Label Text="{Binding StatusText}"
                            FontSize="12"
                            LineBreakMode="TailTruncation"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                           TextColor="{DynamicResource OnSurface}" />
                     <ProgressBar Progress="{Binding OverallProgress}" />
                 </VerticalStackLayout>
             </Border>
@@ -44,14 +44,14 @@
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 8"
                     Padding="10,6"
-                    Background="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                    Background="{DynamicResource Surface}">
                 <Grid ColumnDefinitions="*,Auto"
                       WidthRequest="280">
                     <Label Text="{Binding Message}"
                            FontSize="12"
                            LineBreakMode="TailTruncation"
                            VerticalOptions="Center"
-                           TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                           TextColor="{DynamicResource OnSurface}" />
                     <Button Grid.Column="1"
                             Text="&#xf00d;"
                             FontFamily="FontAwesomeSolid"
@@ -66,7 +66,7 @@
 
     <FlyoutItem Title="Home" Route="Home">
         <FlyoutItem.Icon>
-            <FontImageSource Glyph="&#xf015;" FontFamily="FontAwesomeSolid" Size="26" Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+            <FontImageSource Glyph="&#xf015;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
         </FlyoutItem.Icon>
         <ShellContent
             Title="Home"
@@ -80,7 +80,7 @@
                 ContentTemplate="{DataTemplate containers:ContainersListPage}"
                 Route="ContainersList">
                 <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf080;" FontFamily="FontAwesomeSolid" Size="26" Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <FontImageSource Glyph="&#xf080;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
                 </ShellContent.Icon>
             </ShellContent>
         </Tab>
@@ -92,7 +92,7 @@
                 ContentTemplate="{DataTemplate items:ItemsListPage}"
                 Route="ItemsList">
                 <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf02c;" FontFamily="FontAwesomeSolid" Size="26" Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <FontImageSource Glyph="&#xf02c;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
                 </ShellContent.Icon>
             </ShellContent>
         </Tab>
@@ -104,7 +104,7 @@
                 ContentTemplate="{DataTemplate settings:SettingsPage}"
                 Route="SettingsPage">
                 <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf013;" FontFamily="FontAwesomeSolid" Size="26" Color="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <FontImageSource Glyph="&#xf013;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
                 </ShellContent.Icon>
             </ShellContent>
         </Tab>
