@@ -19,11 +19,21 @@ public partial class SettingsViewModel : BaseViewModel
     private readonly ILogger<SettingsViewModel> logger;
     private bool isZipBackupMode = true;
 
-    public IReadOnlyList<string> ThemeOptions { get; } =
+    public IReadOnlyList<string> ModeOptions { get; } =
     [
         "Auto (System)",
         "Light",
         "Dark",
+    ];
+
+    public IReadOnlyList<string> ThemeOptions { get; } =
+    [
+        "Olive Workshop",
+        "Blueprint Ledger",
+        "Terracotta Archive",
+        "Saffron Utility",
+        "Coastal Inventory",
+        "Berry Archive",
     ];
 
     public SettingsViewModel(
@@ -60,7 +70,7 @@ public partial class SettingsViewModel : BaseViewModel
 
     public bool IsJsonBackupMode => !IsZipBackupMode;
 
-    public string SelectedThemeOption
+    public string SelectedModeOption
     {
         get => applicationSettings.ThemeOverride switch
         {
@@ -84,6 +94,39 @@ public partial class SettingsViewModel : BaseViewModel
 
             applicationSettings.ThemeOverride = theme;
             Application.Current!.UserAppTheme = theme;
+            OnPropertyChanged();
+        }
+    }
+
+    public string SelectedThemeOption
+    {
+        get => applicationSettings.ThemePalette switch
+        {
+            ThemePalette.BlueprintLedger => "Blueprint Ledger",
+            ThemePalette.TerracottaArchive => "Terracotta Archive",
+            ThemePalette.SaffronUtility => "Saffron Utility",
+            ThemePalette.CoastalInventory => "Coastal Inventory",
+            ThemePalette.BerryArchive => "Berry Archive",
+            _ => "Olive Workshop",
+        };
+        set
+        {
+            var palette = value switch
+            {
+                "Blueprint Ledger" => ThemePalette.BlueprintLedger,
+                "Terracotta Archive" => ThemePalette.TerracottaArchive,
+                "Saffron Utility" => ThemePalette.SaffronUtility,
+                "Coastal Inventory" => ThemePalette.CoastalInventory,
+                "Berry Archive" => ThemePalette.BerryArchive,
+                _ => ThemePalette.OliveWorkshop,
+            };
+
+            if (applicationSettings.ThemePalette == palette)
+            {
+                return;
+            }
+
+            applicationSettings.ThemePalette = palette;
             OnPropertyChanged();
         }
     }

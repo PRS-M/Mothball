@@ -24,16 +24,35 @@
                                         StrokeShape="RoundRectangle 16"
                                         Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
                                 <VerticalStackLayout Spacing="10">
-                                        <Label Text="Theme"
+                                        <Label Text="Mode"
                                                    Style="{StaticResource HeadlineSmall}"
                                                    TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
 
+                                        <Picker Title="Mode"
+                                                        ItemsSource="{Binding ModeOptions}"
+                                                        SelectedItem="{Binding SelectedModeOption, Mode=TwoWay}"
+                                                        SemanticProperties.Hint="Choose automatic system theme, light theme, or dark theme" />
+
+                                        <Label Text="Choose whether Mothball follows the system appearance or always uses a light or dark mode."
+                                                   Style="{StaticResource BodyMedium}"
+                                                   TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                                </VerticalStackLayout>
+                        </Border>
+
+                        <Border Padding="14"
+                                        StrokeThickness="1"
+                                        Stroke="{AppThemeBinding Light={StaticResource OutlineVariant}, Dark={StaticResource OutlineVariantDark}}"
+                                        StrokeShape="RoundRectangle 16"
+                                        Background="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}">
+                                <VerticalStackLayout Spacing="10">
+                                        <Label Text="Theme"
+                                                   Style="{StaticResource HeadlineSmall}"
+                                                   TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
                                         <Picker Title="Theme"
                                                         ItemsSource="{Binding ThemeOptions}"
                                                         SelectedItem="{Binding SelectedThemeOption, Mode=TwoWay}"
-                                                        SemanticProperties.Hint="Choose automatic system theme, light theme, or dark theme" />
-
-                                        <Label Text="Choose whether Mothball follows the system appearance or always uses a light or dark theme."
+                                                        SemanticProperties.Hint="Choose the Mothball color theme" />
+                                        <Label Text="Choose the color palette used throughout Mothball."
                                                    Style="{StaticResource BodyMedium}"
                                                    TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariant}, Dark={StaticResource OnSurfaceVariantDark}}" />
                                 </VerticalStackLayout>
@@ -48,7 +67,7 @@
                     <Grid ColumnDefinitions="Auto,*"
                           ColumnSpacing="12">
                         <Label Grid.Column="0"
-                               Text="App Mode"
+                               Text="Inventory mode"
                                Style="{StaticResource HeadlineSmall}"
                                VerticalOptions="Center"
                                TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />

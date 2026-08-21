@@ -38,7 +38,12 @@ public partial class App : Application
 		UserAppTheme = applicationSettings.ThemeOverride;
 		this.logger = logger;
 		this.appShellLogger = appShellLogger;
+		ThemePaletteApplier.Apply(Resources, applicationSettings.ThemePalette);
+		applicationSettings.ThemePaletteChanged += OnThemePaletteChanged;
 	}
+
+	private void OnThemePaletteChanged(object? sender, EventArgs args)
+		=> ThemePaletteApplier.Apply(Resources, applicationSettings.ThemePalette);
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
