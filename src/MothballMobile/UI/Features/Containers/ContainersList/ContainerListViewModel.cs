@@ -14,19 +14,14 @@ public enum ContainerListFilter
     Empty,
 }
 
-public partial class ContainerListViewModel : PagedListViewModelBase<Container, ContainerViewModel>, IDisposable
+public partial class ContainerListViewModel : SearchablePagedListViewModelBase<Container, ContainerViewModel>
 {
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService nav;
     private readonly IContainerListQueryHandler containerListQueries;
     private readonly IApplicationSettings applicationSettings;
-    private readonly IDebouncer debouncer;
-    private readonly IBackgroundTaskObserver backgroundTasks;
 
     private readonly DemoDataSeeder? demoSeeder; // optional in debug
-
-    [ObservableProperty]
-    private string query = string.Empty;
 
     private ContainerListFilter selectedFilter = ContainerListFilter.All;
 
@@ -43,7 +38,7 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
             }
 
             MainThread.InvokeOnMainThreadAsync(SearchAsync)
-                .FireAndForget(backgroundTasks, "Search containers");
+                .FireAndForget(backgroundTasks, SearchOperationName);
         }
     }
 
@@ -55,40 +50,16 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
-        : base(pageSize: 10)
+        : base(backgroundTasks, debouncer, pageSize: 10)
     {
         this.imagePaths = imagePaths;
         this.containerListQueries = containerListQueries;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
-        this.backgroundTasks = backgroundTasks;
-        this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
     }
 
-    private bool disposed;
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        if (disposing && debouncer is IDisposable d)
-        {
-            d.Dispose();
-        }
-
-        disposed = true;
-    }
+    protected override string SearchOperationName => "Search containers";
 
     public ObservableCollection<ContainerViewModel> Containers => Items;
 
@@ -113,34 +84,9 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load container thumbnail");
 
     [RelayCommand]
-    private async Task SearchAsync()
-    {
-        await RunCommandAsync(async () =>
-        {
-            await LoadQuerySearchAsync(Query);
-        });
-    }
-
-    [RelayCommand]
-    private async Task ClearSearchAsync()
-    {
-        if (string.IsNullOrWhiteSpace(Query))
-        {
-            await SearchAsync();
-            return;
-        }
-
-        Query = string.Empty;
-        await SearchAsync();
-    }
-
-    [RelayCommand]
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
 
-    [RelayCommand]
-    private Task RefreshAsync() => InitializeAsync();
-
-    private async Task LoadQuerySearchAsync(string? searchQuery)
+    protected override async Task LoadQuerySearchAsync(string? searchQuery)
     {
         if (string.IsNullOrWhiteSpace(searchQuery))
         {
@@ -151,12 +97,6 @@ public partial class ContainerListViewModel : PagedListViewModelBase<Container, 
         var filtered = await containerListQueries.QueryAsync(IsEmptyFilterSelected(), searchQuery);
 
         ReplaceWithFullResultSet(filtered);
-    }
-
-    partial void OnQueryChanged(string value)
-    {
-        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync))
-            .FireAndForget(backgroundTasks, "Search containers");
     }
 
     private bool IsEmptyFilterSelected()

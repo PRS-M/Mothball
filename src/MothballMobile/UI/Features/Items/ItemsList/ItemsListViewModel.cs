@@ -18,18 +18,13 @@ public enum ItemsListFilter
     Assigned,
 }
 
-public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapshot, ItemViewModel>, IDisposable
+public partial class ItemsListViewModel : SearchablePagedListViewModelBase<InventorySnapshot, ItemViewModel>
 {
     private readonly IImagePathResolver paths;
     private readonly IItemsListQueryHandler itemListQueries;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
-    private readonly IDebouncer debouncer;
-    private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly DemoDataSeeder? demoSeeder;
-
-    [ObservableProperty]
-    private string query = string.Empty;
 
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
 
@@ -46,7 +41,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
             }
 
             MainThread.InvokeOnMainThreadAsync(SearchAsync)
-                .FireAndForget(backgroundTasks, "Search items");
+                .FireAndForget(backgroundTasks, SearchOperationName);
         }
     }
 
@@ -58,33 +53,16 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
+        : base(backgroundTasks, debouncer)
     {
         this.paths = paths;
         this.itemListQueries = itemListQueries;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
-        this.backgroundTasks = backgroundTasks;
-        this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
         this.demoSeeder = demoSeeder;
     }
 
-    private bool disposed;
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposed) return;
-        if (disposing && debouncer is IDisposable d)
-        {
-            d.Dispose();
-        }
-        disposed = true;
-    }
+    protected override string SearchOperationName => "Search items";
 
     /// <inheritdoc />
     protected override async Task EnsureDummyData()
@@ -101,31 +79,6 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
     }
 
     [RelayCommand]
-    private Task RefreshAsync() => InitializeAsync();
-
-    [RelayCommand]
-    private async Task SearchAsync()
-    {
-        await RunCommandAsync(async () =>
-        {
-            await LoadQuerySearchAsync(Query);
-        });
-    }
-
-    [RelayCommand]
-    private async Task ClearSearchAsync()
-    {
-        if (string.IsNullOrWhiteSpace(Query))
-        {
-            await SearchAsync();
-            return;
-        }
-
-        Query = string.Empty;
-        await SearchAsync();
-    }
-
-    [RelayCommand]
     private Task NavigateToItemDetailsAsync(Guid itemId)
     {
         return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemDetails,
@@ -138,7 +91,7 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
         return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
     }
 
-    private async Task LoadQuerySearchAsync(string? query)
+    protected override async Task LoadQuerySearchAsync(string? query)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -151,13 +104,6 @@ public partial class ItemsListViewModel : PagedListViewModelBase<InventorySnapsh
 
             ReplaceWithFullResultSet(items);
         }
-    }
-
-    partial void OnQueryChanged(string value)
-    {
-        // Debounce user typing to avoid flooding search
-        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync))
-            .FireAndForget(backgroundTasks, "Search items");
     }
 
     /// <inheritdoc />
