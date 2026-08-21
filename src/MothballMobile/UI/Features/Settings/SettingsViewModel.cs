@@ -70,6 +70,14 @@ public partial class SettingsViewModel : BaseViewModel
 
     public bool IsJsonBackupMode => !IsZipBackupMode;
 
+    [RelayCommand]
+    private void SelectJsonBackupMode()
+        => IsZipBackupMode = false;
+
+    [RelayCommand]
+    private void SelectZipBackupMode()
+        => IsZipBackupMode = true;
+
     public string SelectedModeOption
     {
         get => applicationSettings.ThemeOverride switch
