@@ -192,6 +192,8 @@ The identity check in cleanup prevents an older operation from clearing the canc
 
 View models wire the debounce the same way: a generated `partial void On<Property>Changed` hook (e.g. `OnQueryChanged`, `OnSearchQueryChanged`) calls `debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync)).FireAndForget(backgroundTasks, "...")`. Prefer that hook over manually subscribing to `PropertyChanged` in the constructor — it is what `ContainerListViewModel`, `ItemsListViewModel`, and `ContainerDetailsViewModel` all do.
 
+For a "confirm, then act" command (delete container/item/photo/backup, remove from container), use `IPopupService.ConfirmAndRunAsync(definition, action)` (`src/MothballMobile/Infrastructure/Presentation/Popups/PopupServiceExtensions.cs`) instead of hand-rolling `if (!await popup.ConfirmAsync(...)) return;`. It only fits when the action should run solely on confirmation; branches that run shared code regardless of the answer should keep using `ConfirmAsync` directly.
+
 Relevant code:
 
 - `src/MothballMobile/Infrastructure/Resilience/Debouncer.cs`

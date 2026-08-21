@@ -334,12 +334,7 @@ public partial class SettingsViewModel : BaseViewModel
             if (string.IsNullOrWhiteSpace(fileName))
                 return;
 
-            var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteBackup(fileName));
-
-            if (!confirmed)
-                return;
-
-            await TryWithAlertAsync(
+            await popup.ConfirmAndRunAsync(popupDefinitions.DeleteBackup(fileName), () => TryWithAlertAsync(
                 async () =>
                 {
                     await backupWorkflows.DeleteAsync(fileName);
@@ -347,7 +342,7 @@ public partial class SettingsViewModel : BaseViewModel
                 },
                 "Failed to delete inventory backup JSON file {FileName}.",
                 popupDefinitions.DeleteBackupFailed,
-                fileName);
+                fileName));
         });
     }
 
@@ -360,12 +355,7 @@ public partial class SettingsViewModel : BaseViewModel
             if (string.IsNullOrWhiteSpace(fileName))
                 return;
 
-            var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteBackup(fileName));
-
-            if (!confirmed)
-                return;
-
-            await TryWithAlertAsync(
+            await popup.ConfirmAndRunAsync(popupDefinitions.DeleteBackup(fileName), () => TryWithAlertAsync(
                 async () =>
                 {
                     await backupWorkflows.DeleteAsync(fileName);
@@ -373,7 +363,7 @@ public partial class SettingsViewModel : BaseViewModel
                 },
                 "Failed to delete inventory backup ZIP file {FileName}.",
                 popupDefinitions.DeleteBackupFailed,
-                fileName);
+                fileName));
         });
     }
 

@@ -250,19 +250,15 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         await RunWithdrawalWorkflowAsync(selectedQuantity, snapshot.Inventory);
     }
 
-    private async Task DeleteBySettingTotalToZeroAsync(Item item)
-    {
-        if (!await popup.ConfirmAsync(popupDefinitions.DeleteItemBySettingTotalToZero(Name)))
+    private Task DeleteBySettingTotalToZeroAsync(Item item)
+        => popup.ConfirmAndRunAsync(popupDefinitions.DeleteItemBySettingTotalToZero(Name), async () =>
         {
-            return;
-        }
-
-        var deletionResult = await itemDetailsCoordinator.DeleteBySettingTotalToZeroAsync(item);
-        if (deletionResult.ItemDeleted)
-        {
-            await nav.GoBackAsync();
-        }
-    }
+            var deletionResult = await itemDetailsCoordinator.DeleteBySettingTotalToZeroAsync(item);
+            if (deletionResult.ItemDeleted)
+            {
+                await nav.GoBackAsync();
+            }
+        });
 
     private async Task IncreaseTotalQuantityAsync(Item item, int selectedQuantity)
     {
@@ -371,11 +367,12 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private async Task DeleteItemAsync()
     {
         if (string.IsNullOrWhiteSpace(ItemId)) return;
-        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteItem());
-        if (!confirmed) return;
 
-        await itemDetailsCoordinator.DeleteItemAsync(ItemId);
-        await nav.GoBackAsync();
+        await popup.ConfirmAndRunAsync(popupDefinitions.DeleteItem(), async () =>
+        {
+            await itemDetailsCoordinator.DeleteItemAsync(ItemId);
+            await nav.GoBackAsync();
+        });
     }
 
     [RelayCommand]

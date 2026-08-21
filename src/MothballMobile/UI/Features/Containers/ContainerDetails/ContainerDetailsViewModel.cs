@@ -231,12 +231,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return;
 
-        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteContainer());
-
-        if (!confirmed) return;
-
-        await deleteContainerHandler.DeleteAsync(ContainerId);
-        await nav.GoBackAsync();
+        await popup.ConfirmAndRunAsync(popupDefinitions.DeleteContainer(), async () =>
+        {
+            await deleteContainerHandler.DeleteAsync(ContainerId);
+            await nav.GoBackAsync();
+        });
     }
 
     [RelayCommand]

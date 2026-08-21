@@ -162,18 +162,13 @@ public abstract class PhotoDetailsViewModelBase : BaseViewModel
             return;
         }
 
-        if (!await popup.ConfirmAsync(popupDefinitions.DeletePhoto()))
-        {
-            return;
-        }
-
-        await RunCommandAsync(async () =>
+        await popup.ConfirmAndRunAsync(popupDefinitions.DeletePhoto(), () => RunCommandAsync(async () =>
         {
             var deleted = await deleteAsync(selectedPhoto.ImageId);
             if (deleted)
             {
                 ReplaceWith(targetPaths, refreshedPaths());
             }
-        });
+        }));
     }
 }

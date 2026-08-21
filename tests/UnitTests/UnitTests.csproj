@@ -43,6 +43,7 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" Link="Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" Link="Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/IPopupService.cs" Link="Infrastructure/Presentation/Popups/IPopupService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/PopupServiceExtensions.cs" Link="Infrastructure/Presentation/Popups/PopupServiceExtensions.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/IPopupDefinitionService.cs" Link="Infrastructure/Presentation/Popups/IPopupDefinitionService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/PopupDefinitionService.cs" Link="Infrastructure/Presentation/Popups/PopupDefinitionService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/PopupDefinitions.cs" Link="Infrastructure/Presentation/Popups/PopupDefinitions.cs" />
