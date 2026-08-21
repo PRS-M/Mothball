@@ -22,7 +22,7 @@ public class ContainerItemQuantityServiceTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(result.Removed, Is.False);
+            Assert.That(result.Inventory.RemovedFromContainer, Is.False);
             Assert.That(result.TotalItemCount, Is.EqualTo(3));
             Assert.That(result.Inventory.TotalQuantity, Is.EqualTo(3));
             Assert.That(result.Inventory.AssignedQuantity, Is.EqualTo(3));
@@ -49,7 +49,7 @@ public class ContainerItemQuantityServiceTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(result.Removed, Is.True);
+            Assert.That(result.Inventory.RemovedFromContainer, Is.True);
             Assert.That(result.TotalItemCount, Is.EqualTo(0));
             Assert.That(result.Inventory.TotalQuantity, Is.EqualTo(2));
             Assert.That(result.Inventory.AssignedQuantity, Is.EqualTo(0));

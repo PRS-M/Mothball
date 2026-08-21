@@ -44,9 +44,6 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
         }
     }
 
-    [RelayCommand]
-    private Task RefreshAsync() => InitializeAsync();
-
     /// <inheritdoc />
     protected override Task EnsureDummyData() => Task.CompletedTask;
 

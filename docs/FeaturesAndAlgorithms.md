@@ -58,6 +58,8 @@ load next page:
 
 The final short page, or an empty page, marks the list as exhausted. Search paths can replace the collection with a complete filtered result set, disabling further paging. This keeps incremental scrolling simple while allowing responsive, debounced search.
 
+`ContainerListViewModel` and `ItemsListViewModel` both add debounced search on top of `PagedListViewModelBase` through a shared intermediate base, `SearchablePagedListViewModelBase<TSource, TViewModel>` (`src/MothballMobile/UI/Shared/SearchablePagedListViewModelBase.cs`). It owns the `Query` property and the debounce wiring (`OnQueryChanged`, `SearchCommand`), so a new searchable paged list only needs to implement `LoadQuerySearchAsync`, `SearchOperationName`, and the `PagedListViewModelBase` abstract members. `RefreshCommand` (`=> InitializeAsync()`) lives on `PagedListViewModelBase` itself, since every paged list — searchable or not — needs a pull-to-refresh reload. A filter change (e.g. `SelectedFilter`) should re-run the existing `SearchAsync`/`backgroundTasks` pair directly rather than duplicating the debounce logic.
+
 ## Items
 
 Items are catalogued things that may be stored in one or more containers. Their total inventory is derived from container allocations plus any unassigned quantity.
@@ -101,6 +103,8 @@ The inventory model keeps the invariant $\text{total quantity} = \text{assigned 
 - Quantity changes: `CoreApp.Application/Features/Inventory/Allocation`
 - Withdrawal planning: `CoreApp.Domain/Inventory/ItemInventoryWithdrawalPlanner.cs`
 - Interactive withdrawal workflow: `ItemInventoryWithdrawalCoordinator`
+
+Editing a container's item quantity touches counts at two levels, and both must be refreshed from the result of the save rather than the value the user entered: `ContainerItemQuantityService.SaveQuantityAsync` returns an `ItemInventoryUpdateResult` (nested as `Inventory` on `ContainerItemQuantityUpdateResult`/`ContainerDetailsQuantityUpdate`, rather than duplicating its fields) with the item's recalculated total/assigned/unassigned quantities and removal state. `ContainerDetailsItemsCoordinator.SaveQuantityAsync` applies it to the edited row via `ItemWithImagesViewModelBase.UpdateQuantities` and refreshes the container header's item-type and total-item counts from the accompanying `ContainerDetailsSummary`, through the `IContainerDetailsHeader` seam so the coordinator does not depend on the concrete `ContainerDetailsViewModel`. Skipping either update leaves the tile or the header showing stale numbers after an edit.
 
 ### Withdrawal planning algorithm
 
@@ -187,6 +191,10 @@ when complete:
 ```
 
 The identity check in cleanup prevents an older operation from clearing the cancellation token for a newer request. Disposal cancels any pending action. Use this for trailing search and delayed updates; do not use it for commands that must execute every time, such as a quantity adjustment.
+
+View models wire the debounce the same way: a generated `partial void On<Property>Changed` hook (e.g. `OnQueryChanged`, `OnSearchQueryChanged`) calls `debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(SearchAsync)).FireAndForget(backgroundTasks, "...")`. Prefer that hook over manually subscribing to `PropertyChanged` in the constructor — it is what `ContainerListViewModel`, `ItemsListViewModel`, and `ContainerDetailsViewModel` all do.
+
+For a "confirm, then act" command (delete container/item/photo/backup, remove from container), use `IPopupService.ConfirmAndRunAsync(definition, action)` (`src/MothballMobile/Infrastructure/Presentation/Popups/PopupServiceExtensions.cs`) instead of hand-rolling `if (!await popup.ConfirmAsync(...)) return;`. It only fits when the action should run solely on confirmation; branches that run shared code regardless of the answer should keep using `ConfirmAsync` directly.
 
 Relevant code:
 

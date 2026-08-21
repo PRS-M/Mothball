@@ -21,26 +21,7 @@ public sealed class JsonImageRepository : IImageRepository
         ArgumentNullException.ThrowIfNull(imageItem);
         if (ownerId == Guid.Empty) throw new ArgumentException("Owner ID cannot be empty.", nameof(ownerId));
 
-        return store.UpdateAsync(state =>
-        {
-            var existing = state.Images.FirstOrDefault(i => i.ImageId == imageItem.ImageId);
-            if (existing is null)
-            {
-                state.Images.Add(new JsonImageRow
-                {
-                    RowId = state.Metadata.NextImageRowId++,
-                    ImageId = imageItem.ImageId,
-                    OwnerUniqueId = ownerId,
-                    ImageDataBase64 = null,
-                });
-            }
-            else
-            {
-                existing.OwnerUniqueId = ownerId;
-            }
-
-            return Task.CompletedTask;
-        });
+        return UpsertAsync(imageItem.ImageId, ownerId);
     }
 
     /// <inheritdoc />
@@ -50,15 +31,19 @@ public sealed class JsonImageRepository : IImageRepository
         if (ownerId == Guid.Empty) throw new ArgumentException("Owner ID cannot be empty.", nameof(ownerId));
 
         // Current SQLite update effectively upserts by PK.
-        return store.UpdateAsync(state =>
+        return UpsertAsync(image.ImageId, ownerId);
+    }
+
+    private Task UpsertAsync(Guid imageId, Guid ownerId)
+        => store.UpdateAsync(state =>
         {
-            var existing = state.Images.FirstOrDefault(i => i.ImageId == image.ImageId);
+            var existing = state.Images.FirstOrDefault(i => i.ImageId == imageId);
             if (existing is null)
             {
                 state.Images.Add(new JsonImageRow
                 {
                     RowId = state.Metadata.NextImageRowId++,
-                    ImageId = image.ImageId,
+                    ImageId = imageId,
                     OwnerUniqueId = ownerId,
                     ImageDataBase64 = null,
                 });
@@ -70,7 +55,6 @@ public sealed class JsonImageRepository : IImageRepository
 
             return Task.CompletedTask;
         });
-    }
 
     /// <inheritdoc />
     public Task DeleteAsync(Guid imageId, Guid ownerId)

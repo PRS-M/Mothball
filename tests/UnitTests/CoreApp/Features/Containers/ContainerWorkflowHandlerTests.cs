@@ -48,7 +48,6 @@ public sealed class ContainerWorkflowHandlerTests
         var quantities = new Mock<IContainerItemQuantityService>();
         quantities.Setup(service => service.SaveQuantityAsync(container, itemId, 0))
             .ReturnsAsync(new ContainerItemQuantityUpdateResult(
-                Removed: true,
                 TotalItemCount: 3,
                 Inventory: new ItemInventoryUpdateResult(RemovedFromContainer: true, TotalQuantity: 0, AssignedQuantity: 0, UnassignedQuantity: 0)));
 
@@ -58,7 +57,7 @@ public sealed class ContainerWorkflowHandlerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(result.Removed, Is.True);
+            Assert.That(result.Inventory.RemovedFromContainer, Is.True);
             Assert.That(result.Summary.ItemTypesCount, Is.EqualTo(1));
             Assert.That(result.Summary.TotalItemCount, Is.EqualTo(3));
             Assert.That(result.Inventory.TotalQuantity, Is.EqualTo(0));

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
-public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
+public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable, IContainerDetailsHeader
 {
     private readonly IDeleteContainerCommandHandler deleteContainerHandler;
     private readonly IUpdateContainerNotesCommandHandler updateContainerNotesHandler;
@@ -87,16 +87,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
         itemCoordinator.Reset(this);
+    }
 
-        // Debounce search query changes
-        PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(SearchQuery))
-            {
-                this.debouncer?.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync))
-                    .FireAndForget(backgroundTasks, "Search container items");
-            }
-        };
+    partial void OnSearchQueryChanged(string value)
+    {
+        debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync))
+            .FireAndForget(backgroundTasks, "Search container items");
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -235,12 +231,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         if (string.IsNullOrWhiteSpace(ContainerId)) return;
 
-        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteContainer());
-
-        if (!confirmed) return;
-
-        await deleteContainerHandler.DeleteAsync(ContainerId);
-        await nav.GoBackAsync();
+        await popup.ConfirmAndRunAsync(popupDefinitions.DeleteContainer(), async () =>
+        {
+            await deleteContainerHandler.DeleteAsync(ContainerId);
+            await nav.GoBackAsync();
+        });
     }
 
     [RelayCommand]
@@ -265,36 +260,17 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     }
 
     [RelayCommand]
-    private async Task DeletePhotoAsync()
+    private Task DeletePhotoAsync()
     {
-        if (currentContainer is null) return;
-        if (currentContainer.Photos.Count == 0)
-        {
-            await popup.ShowAlertAsync(popupDefinitions.NoContainerPhotos());
-            return;
-        }
+        if (currentContainer is null) return Task.CompletedTask;
 
-        var selectedPhoto = await SelectPhotoAsync(popupDefinitions.ContainerPhotoDeletePicker(currentContainer.Photos));
-        if (selectedPhoto is null)
-        {
-            return;
-        }
-
-        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeletePhoto());
-
-        if (!confirmed)
-        {
-            return;
-        }
-
-        await RunCommandAsync(async () =>
-        {
-            var deleted = await imageService.DeleteContainerPhotoAsync(currentContainer, selectedPhoto.ImageId);
-            if (deleted)
-            {
-                ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(currentContainer));
-            }
-        });
+        return DeleteSelectedPhotoAsync(
+            hasPhotos: currentContainer.Photos.Count > 0,
+            noPhotosPopup: popupDefinitions.NoContainerPhotos(),
+            pickerDefinition: popupDefinitions.ContainerPhotoDeletePicker(currentContainer.Photos),
+            deleteAsync: imageId => imageService.DeleteContainerPhotoAsync(currentContainer, imageId),
+            targetPaths: ContainerImagePaths,
+            refreshedPaths: () => paths.GetContainerPhotoPaths(currentContainer));
     }
 
     [RelayCommand]

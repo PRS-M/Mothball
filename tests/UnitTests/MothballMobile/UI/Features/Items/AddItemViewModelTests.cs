@@ -39,6 +39,26 @@ public sealed class AddItemViewModelTests
         createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 1, null), Times.Once);
     }
 
+    [Test]
+    public void SaveCommand_WhenCreateThrows_RecordsErrorAndRethrows()
+    {
+        var createItem = new Mock<ICreateItemCommandHandler>();
+        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null))
+            .ThrowsAsync(new InvalidOperationException("disk full"));
+        var viewModel = CreateViewModel(createItem.Object, isAdvancedMode: false);
+        viewModel.Name = "Widget";
+
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await viewModel.SaveCommand.ExecuteAsync(null));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(exception!.Message, Is.EqualTo("disk full"));
+            Assert.That(viewModel.ErrorMessage, Is.EqualTo("disk full"));
+            Assert.That(viewModel.HasError, Is.True);
+        });
+    }
+
     private static AddItemViewModel CreateViewModel(
         ICreateItemCommandHandler createItem,
         bool isAdvancedMode)

@@ -1,6 +1,7 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using MothballMobile.Infrastructure;
@@ -26,6 +27,52 @@ public sealed class ItemDetailsViewModelTests
         viewModel.Description = "Stored in the workshop.";
 
         Assert.That(viewModel.DisplayDescription, Is.EqualTo("Stored in the workshop."));
+    }
+
+    [Test]
+    public async Task DeletePhotoCommand_WhenConfirmed_DeletesPhotoAndRefreshesPaths()
+    {
+        var image = new ImageItem(Guid.NewGuid());
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        item.AddImageItems([image]);
+        var details = new ItemDetailsResult(new InventorySnapshot(item, 1, 0, []));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+
+        var popup = new Mock<IPopupService>();
+        popup.Setup(p => p.SelectOptionAsync(It.IsAny<OptionPickerPopupDefinition<ImageItem>>()))
+            .ReturnsAsync(image);
+        popup.Setup(p => p.ConfirmAsync(It.IsAny<ConfirmationPopupDefinition>()))
+            .ReturnsAsync(true);
+
+        var photoDeletion = new Mock<IPhotoDeletionService>();
+        photoDeletion.Setup(d => d.DeleteItemPhotoAsync(item, image.ImageId)).ReturnsAsync(true);
+        var imageService = new ImageService(
+            Mock.Of<IPhotoSourceReader>(),
+            Mock.Of<IPhotoFilePersistenceService>(),
+            Mock.Of<ITemporaryPhotoService>(),
+            photoDeletion.Object,
+            Mock.Of<IInventoryCommandRepository>());
+
+        var paths = new Mock<IImagePathResolver>();
+        paths.Setup(p => p.GetItemPhotoPaths(item)).Returns(["updated.png"]);
+        paths.Setup(p => p.GetFallbackImagePath()).Returns("fallback.png");
+
+        var viewModel = new ItemDetailsViewModel(
+            CreateCoordinator(itemDetails.Object, Mock.Of<IItemInventoryCommandService>(), popup.Object),
+            Mock.Of<INavigationService>(),
+            Mock.Of<IApplicationSettings>(),
+            paths.Object,
+            popup.Object,
+            new PopupDefinitionService(),
+            imageService,
+            Mock.Of<IPhotoBackgroundOperationTracker>(),
+            Mock.Of<IBackgroundTaskObserver>());
+        await viewModel.InitializeAsync(item.ItemId.ToString());
+
+        await viewModel.DeletePhotoCommand.ExecuteAsync(null);
+
+        photoDeletion.Verify(d => d.DeleteItemPhotoAsync(item, image.ImageId), Times.Once);
+        Assert.That(viewModel.ImagePaths.Single(), Is.EqualTo("updated.png"));
     }
 
     [Test]

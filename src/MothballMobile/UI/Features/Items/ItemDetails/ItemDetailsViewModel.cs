@@ -154,9 +154,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             Description = item.Description;
             DescriptionDraft = item.Description;
             IsEditingDescription = false;
-            TotalQuantity = details.Inventory.TotalQuantity;
-            AssignedQuantity = details.Inventory.AssignedQuantity;
-            UnassignedQuantity = details.Inventory.UnassignedQuantity;
+            ApplyQuantities(details.Inventory);
             OnPropertyChanged(nameof(HasDescription));
 
             ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(item));
@@ -252,19 +250,15 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         await RunWithdrawalWorkflowAsync(selectedQuantity, snapshot.Inventory);
     }
 
-    private async Task DeleteBySettingTotalToZeroAsync(Item item)
-    {
-        if (!await popup.ConfirmAsync(popupDefinitions.DeleteItemBySettingTotalToZero(Name)))
+    private Task DeleteBySettingTotalToZeroAsync(Item item)
+        => popup.ConfirmAndRunAsync(popupDefinitions.DeleteItemBySettingTotalToZero(Name), async () =>
         {
-            return;
-        }
-
-        var deletionResult = await itemDetailsCoordinator.DeleteBySettingTotalToZeroAsync(item);
-        if (deletionResult.ItemDeleted)
-        {
-            await nav.GoBackAsync();
-        }
-    }
+            var deletionResult = await itemDetailsCoordinator.DeleteBySettingTotalToZeroAsync(item);
+            if (deletionResult.ItemDeleted)
+            {
+                await nav.GoBackAsync();
+            }
+        });
 
     private async Task IncreaseTotalQuantityAsync(Item item, int selectedQuantity)
     {
@@ -288,9 +282,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         currentItem = details.Inventory.Item;
         currentInventory = details.Inventory;
         currentAllocations = details.Inventory.Allocations;
-        TotalQuantity = details.Inventory.TotalQuantity;
-        AssignedQuantity = details.Inventory.AssignedQuantity;
-        UnassignedQuantity = details.Inventory.UnassignedQuantity;
+        ApplyQuantities(details.Inventory);
         ContainerId = details.Inventory.Allocations.FirstOrDefault()?.ContainerId.ToString();
         NotifyContainerRelationStateChanged();
         return true;
@@ -328,11 +320,16 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             result.TotalQuantity,
             result.AssignedQuantity,
             currentAllocations);
-        TotalQuantity = result.TotalQuantity;
-        AssignedQuantity = result.AssignedQuantity;
-        UnassignedQuantity = result.UnassignedQuantity;
+        ApplyQuantities(currentInventory);
         ContainerId = currentAllocations.FirstOrDefault()?.ContainerId.ToString();
         NotifyContainerRelationStateChanged();
+    }
+
+    private void ApplyQuantities(InventorySnapshot inventory)
+    {
+        TotalQuantity = inventory.TotalQuantity;
+        AssignedQuantity = inventory.AssignedQuantity;
+        UnassignedQuantity = inventory.UnassignedQuantity;
     }
 
     private sealed record QuantityEditSnapshot(Item Item, InventorySnapshot Inventory)
@@ -370,11 +367,12 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private async Task DeleteItemAsync()
     {
         if (string.IsNullOrWhiteSpace(ItemId)) return;
-        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeleteItem());
-        if (!confirmed) return;
 
-        await itemDetailsCoordinator.DeleteItemAsync(ItemId);
-        await nav.GoBackAsync();
+        await popup.ConfirmAndRunAsync(popupDefinitions.DeleteItem(), async () =>
+        {
+            await itemDetailsCoordinator.DeleteItemAsync(ItemId);
+            await nav.GoBackAsync();
+        });
     }
 
     [RelayCommand]
@@ -398,36 +396,17 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     }
 
     [RelayCommand]
-    private async Task DeletePhotoAsync()
+    private Task DeletePhotoAsync()
     {
-        if (currentItem is null) return;
-        if (currentItem.Photos.Count == 0)
-        {
-            await popup.ShowAlertAsync(popupDefinitions.NoItemPhotos());
-            return;
-        }
+        if (currentItem is null) return Task.CompletedTask;
 
-        var selectedPhoto = await SelectPhotoAsync(popupDefinitions.ItemPhotoDeletePicker(currentItem.Photos));
-        if (selectedPhoto is null)
-        {
-            return;
-        }
-
-        var confirmed = await popup.ConfirmAsync(popupDefinitions.DeletePhoto());
-
-        if (!confirmed)
-        {
-            return;
-        }
-
-        await RunCommandAsync(async () =>
-        {
-            var deleted = await imageService.DeleteItemPhotoAsync(currentItem, selectedPhoto.ImageId);
-            if (deleted)
-            {
-                ReplaceWith(ImagePaths, paths.GetItemPhotoPaths(currentItem));
-            }
-        });
+        return DeleteSelectedPhotoAsync(
+            hasPhotos: currentItem.Photos.Count > 0,
+            noPhotosPopup: popupDefinitions.NoItemPhotos(),
+            pickerDefinition: popupDefinitions.ItemPhotoDeletePicker(currentItem.Photos),
+            deleteAsync: imageId => imageService.DeleteItemPhotoAsync(currentItem, imageId),
+            targetPaths: ImagePaths,
+            refreshedPaths: () => paths.GetItemPhotoPaths(currentItem));
     }
 
 }

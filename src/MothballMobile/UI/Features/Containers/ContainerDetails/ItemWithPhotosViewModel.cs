@@ -98,22 +98,15 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     }
 
     [RelayCommand]
-    private async Task RemoveFromContainerAsync()
+    private Task RemoveFromContainerAsync()
     {
         if (ownerContainerId == Guid.Empty)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         skipNextInitialization();
-        var confirmed = await popup.ConfirmAsync(popupDefinitions.RemoveItemFromContainer(Name));
-
-        if (!confirmed)
-        {
-            return;
-        }
-
-        await SaveQuantityAsync(0);
+        return popup.ConfirmAndRunAsync(popupDefinitions.RemoveItemFromContainer(Name), () => SaveQuantityAsync(0));
     }
 
     private async Task SaveQuantityAsync(int selectedQuantity)
