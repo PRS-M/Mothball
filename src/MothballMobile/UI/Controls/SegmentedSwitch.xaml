@@ -5,52 +5,63 @@
              x:Class="MothballMobile.UI.Controls.SegmentedSwitch"
              x:Name="this"
              x:DataType="self:SegmentedSwitch">
-    <Border Padding="4,0"
+        <Border Padding="0"
+            HeightRequest="40"
             Background="{DynamicResource PickerSurface}"
             Stroke="Transparent"
             StrokeThickness="0"
             StrokeShape="RoundRectangle 20">
-        <Grid ColumnDefinitions="*,*">
-            <Button Grid.Column="0"
-                    Text="{Binding Source={x:Reference this}, Path=LeftText}"
-                    Command="{Binding Source={x:Reference this}, Path=LeftCommand}"
-                    Background="Transparent"
-                    TextColor="{DynamicResource OnSurfaceVariant}"
-                    BorderWidth="0"
-                    CornerRadius="18"
-                    Padding="8,0"
-                    HeightRequest="36"
-                    FontAttributes="Bold"
-                    SemanticProperties.Hint="{Binding Source={x:Reference this}, Path=LeftText}">
-                <Button.Triggers>
-                    <DataTrigger TargetType="Button"
-                                 Binding="{Binding Source={x:Reference this}, Path=IsRightSelected}"
-                                 Value="False">
-                        <Setter Property="Background" Value="{DynamicResource Surface}" />
-                        <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
-                    </DataTrigger>
-                </Button.Triggers>
-            </Button>
-            <Button Grid.Column="1"
-                    Text="{Binding Source={x:Reference this}, Path=RightText}"
-                    Command="{Binding Source={x:Reference this}, Path=RightCommand}"
-                    Background="Transparent"
-                    TextColor="{DynamicResource OnSurfaceVariant}"
-                    BorderWidth="0"
-                    CornerRadius="18"
-                    Padding="8,0"
-                    HeightRequest="36"
-                    FontAttributes="Bold"
-                    SemanticProperties.Hint="{Binding Source={x:Reference this}, Path=RightText}">
-                <Button.Triggers>
-                    <DataTrigger TargetType="Button"
-                                 Binding="{Binding Source={x:Reference this}, Path=IsRightSelected}"
-                                 Value="True">
-                        <Setter Property="Background" Value="{DynamicResource Surface}" />
-                        <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
-                    </DataTrigger>
-                </Button.Triggers>
-            </Button>
+          <Grid x:Name="segmentGrid"
+              ColumnDefinitions="*,*"
+              SizeChanged="OnSegmentGridSizeChanged">
+            <Border x:Name="selectionIndicator"
+                Grid.Column="0"
+                HeightRequest="40"
+                HorizontalOptions="Fill"
+                Background="{DynamicResource Surface}"
+                Stroke="Transparent"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 20"
+                InputTransparent="True"
+                ZIndex="0" />
+                <Label Grid.Column="0"
+                       Text="{Binding Source={x:Reference this}, Path=LeftText}"
+                       TextColor="{DynamicResource OnSurfaceVariant}"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       FontAttributes="Bold"
+                       ZIndex="1"
+                       SemanticProperties.Hint="{Binding Source={x:Reference this}, Path=LeftText}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding Source={x:Reference this}, Path=IsRightSelected}"
+                                     Value="False">
+                            <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLeftTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Grid.Column="1"
+                       Text="{Binding Source={x:Reference this}, Path=RightText}"
+                       TextColor="{DynamicResource OnSurfaceVariant}"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       FontAttributes="Bold"
+                       ZIndex="1"
+                       SemanticProperties.Hint="{Binding Source={x:Reference this}, Path=RightText}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding Source={x:Reference this}, Path=IsRightSelected}"
+                                     Value="True">
+                            <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRightTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
         </Grid>
     </Border>
 </ContentView>

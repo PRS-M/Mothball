@@ -160,6 +160,14 @@ public partial class SettingsViewModel : BaseViewModel
         }
     }
 
+    [RelayCommand]
+    private void SelectSimpleAppMode()
+        => IsAdvancedAppMode = false;
+
+    [RelayCommand]
+    private void SelectAdvancedAppMode()
+        => IsAdvancedAppMode = true;
+
     public bool IsBackupSigningKeyEnabled
     {
         get => applicationSettings.IsBackupSigningKeyEnabled;

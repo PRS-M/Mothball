@@ -64,38 +64,17 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="10">
-                    <Grid ColumnDefinitions="Auto,*"
-                          ColumnSpacing="12">
-                        <Label Grid.Column="0"
-                               Text="App mode"
-                               Style="{StaticResource HeadlineSmall}"
-                               VerticalOptions="Center"
-                               TextColor="{DynamicResource OnSurface}" />
+                      <Label Text="App mode"
+                              Style="{StaticResource HeadlineSmall}"
+                              TextColor="{DynamicResource OnSurface}" />
 
-                        <Grid Grid.Column="1"
-                              ColumnDefinitions="*,Auto,*"
-                              ColumnSpacing="8"
-                              HorizontalOptions="End"
-                              VerticalOptions="Center">
-                            <Label Grid.Column="0"
-                                   Text="Simple"
-                                   Style="{StaticResource LabelSmall}"
-                                   HorizontalTextAlignment="End"
-                                   VerticalOptions="Center"
-                                   TextColor="{DynamicResource OnSurfaceVariant}" />
-                            <Switch Grid.Column="1"
-                                    IsToggled="{Binding IsAdvancedAppMode, Mode=TwoWay}"
-                                    VerticalOptions="Center"
-                                    SemanticProperties.Hint="Switch between simple mode and advanced mode" />
-                            <Label Grid.Column="2"
-                                   Text="Advanced&#10;(Default)"
-                                   Style="{StaticResource LabelSmall}"
-                                   MaxLines="2"
-                                   LineBreakMode="WordWrap"
-                                   VerticalOptions="Center"
-                                   TextColor="{DynamicResource OnSurfaceVariant}" />
-                        </Grid>
-                    </Grid>
+                      <controls:SegmentedSwitch LeftText="Simple"
+                                                    RightText="Advanced"
+                                                    IsRightSelected="{Binding IsAdvancedAppMode, Mode=TwoWay}"
+                                                    LeftCommand="{Binding SelectSimpleAppModeCommand}"
+                                                    RightCommand="{Binding SelectAdvancedAppModeCommand}"
+                                                      HorizontalOptions="Fill"
+                                                    SemanticProperties.Hint="Switch between simple mode and advanced mode" />
 
                     <Label Text="Advanced mode shows quantity totals, assignments, and quantity editing. Simple mode hides quantity management."
                            Style="{StaticResource BodyMedium}"
@@ -153,25 +132,17 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="10">
-                    <Grid ColumnDefinitions="Auto,*"
-                          ColumnSpacing="12"
-                          RowDefinitions="Auto">
-                        <Label Grid.Column="0"
-                               Text="Backup"
-                               Style="{StaticResource HeadlineSmall}"
-                               VerticalOptions="Center"
-                               TextColor="{DynamicResource OnSurface}" />
+                      <Label Text="Backup"
+                              Style="{StaticResource HeadlineSmall}"
+                              TextColor="{DynamicResource OnSurface}" />
 
-                        <controls:SegmentedSwitch Grid.Column="1"
-                                                  WidthRequest="240"
-                                                  LeftText="JSON"
-                                                  RightText="ZIP"
-                                                  IsRightSelected="{Binding IsZipBackupMode, Mode=TwoWay}"
-                                                  LeftCommand="{Binding SelectJsonBackupModeCommand}"
-                                                  RightCommand="{Binding SelectZipBackupModeCommand}"
-                                                  HorizontalOptions="End"
-                                                  VerticalOptions="Center" />
-                    </Grid>
+                    <controls:SegmentedSwitch LeftText="JSON"
+                                                    RightText="ZIP"
+                                                    IsRightSelected="{Binding IsZipBackupMode, Mode=TwoWay}"
+                                                    LeftCommand="{Binding SelectJsonBackupModeCommand}"
+                                                    RightCommand="{Binding SelectZipBackupModeCommand}"
+                                                      HorizontalOptions="Fill"
+                                                    VerticalOptions="Center" />
 
                     <Label Text="Export inventory metadata as JSON, or create a ZIP backup that also includes photo files."
                            Style="{StaticResource BodyMedium}"
