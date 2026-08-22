@@ -168,7 +168,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
         CancellationToken cancellationToken)
     {
         var entry = archive.CreateEntry(InventoryBackupZipArchive.BackupJsonEntryName, CompressionLevel.Optimal);
-        await using var stream = entry.Open();
+        await using var stream = await entry.OpenAsync(cancellationToken).ConfigureAwait(false);
         await using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         await writer.WriteAsync(SerializeBackup(backup).AsMemory(), cancellationToken).ConfigureAwait(false);
     }
@@ -213,7 +213,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
             }
 
             var entry = archive.CreateEntry(entryPath, CompressionLevel.Optimal);
-            await using var stream = entry.Open();
+            await using var stream = await entry.OpenAsync(cancellationToken).ConfigureAwait(false);
             await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
         }
     }
