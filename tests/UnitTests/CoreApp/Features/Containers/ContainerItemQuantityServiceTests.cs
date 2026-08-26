@@ -7,7 +7,7 @@ namespace Mothball.Tests.Unit.Core.Features.Containers;
 public class ContainerItemQuantityServiceTests
 {
     [Test]
-    public async Task SaveQuantityAsync_WithPositiveQuantity_ReplacesRelationAndUpdatesAggregate()
+    public async Task SaveQuantityAsync_WithPositiveQuantity_UpdatesInventoryWithoutMutatingContainerProjection()
     {
         var containerId = Guid.NewGuid();
         var itemId = Guid.NewGuid();
@@ -22,19 +22,18 @@ public class ContainerItemQuantityServiceTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(result.Inventory.RemovedFromContainer, Is.False);
-            Assert.That(result.TotalItemCount, Is.EqualTo(3));
-            Assert.That(result.Inventory.TotalQuantity, Is.EqualTo(3));
-            Assert.That(result.Inventory.AssignedQuantity, Is.EqualTo(3));
-            Assert.That(result.Inventory.UnassignedQuantity, Is.EqualTo(0));
-            Assert.That(container.Items.Single(i => i.ItemId == itemId).Quantity, Is.EqualTo(3));
+            Assert.That(result.RemovedFromContainer, Is.False);
+            Assert.That(result.TotalQuantity, Is.EqualTo(3));
+            Assert.That(result.AssignedQuantity, Is.EqualTo(3));
+            Assert.That(result.UnassignedQuantity, Is.EqualTo(0));
+            Assert.That(container.Items.Single(i => i.ItemId == itemId).Quantity, Is.EqualTo(1));
         });
 
         commands.Verify(c => c.SetContainerAllocationAsync(itemId, containerId, 3), Times.Once);
     }
 
     [Test]
-    public async Task SaveQuantityAsync_WithZeroQuantity_DeletesRelationAndUpdatesAggregate()
+    public async Task SaveQuantityAsync_WithZeroQuantity_UpdatesInventoryWithoutMutatingContainerProjection()
     {
         var containerId = Guid.NewGuid();
         var itemId = Guid.NewGuid();
@@ -49,12 +48,11 @@ public class ContainerItemQuantityServiceTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(result.Inventory.RemovedFromContainer, Is.True);
-            Assert.That(result.TotalItemCount, Is.EqualTo(0));
-            Assert.That(result.Inventory.TotalQuantity, Is.EqualTo(2));
-            Assert.That(result.Inventory.AssignedQuantity, Is.EqualTo(0));
-            Assert.That(result.Inventory.UnassignedQuantity, Is.EqualTo(2));
-            Assert.That(container.Items, Is.Empty);
+            Assert.That(result.RemovedFromContainer, Is.True);
+            Assert.That(result.TotalQuantity, Is.EqualTo(2));
+            Assert.That(result.AssignedQuantity, Is.EqualTo(0));
+            Assert.That(result.UnassignedQuantity, Is.EqualTo(2));
+            Assert.That(container.Items.Single(i => i.ItemId == itemId).Quantity, Is.EqualTo(2));
         });
 
         commands.Verify(c => c.SetContainerAllocationAsync(itemId, containerId, 0), Times.Once);
