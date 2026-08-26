@@ -59,7 +59,7 @@ public sealed class ItemInventoryWithdrawalCoordinator
     {
         var selectedContainer = session.PreferredAllocation
             ?? await popup.SelectOptionAsync(
-                popupDefinitions.WithdrawalContainerPicker(session.RemainingAllocations));
+                popupDefinitions.WithdrawalContainerPicker(session.GetRemainingAllocations()));
         if (selectedContainer is null)
         {
             session.Cancel();

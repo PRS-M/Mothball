@@ -40,7 +40,7 @@ public sealed class ItemInventoryAdjustmentSessionTests
         {
             Assert.That(session.State, Is.EqualTo(ItemInventoryAdjustmentState.WithdrawAssigned));
             Assert.That(session.CarriedWithdrawal, Is.EqualTo(2));
-            Assert.That(session.RemainingAllocations.Select(a => a.ContainerId), Does.Not.Contain(BoxId));
+            Assert.That(session.GetRemainingAllocations().Select(a => a.ContainerId), Does.Not.Contain(BoxId));
             Assert.That(session.SuggestedAssignedWithdrawal, Is.EqualTo(2));
         });
 

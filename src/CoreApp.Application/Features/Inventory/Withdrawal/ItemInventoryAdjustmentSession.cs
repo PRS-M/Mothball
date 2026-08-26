@@ -52,7 +52,7 @@ public sealed class ItemInventoryAdjustmentSession
 
     public ItemInventoryAdjustmentState State { get; private set; }
 
-    public IReadOnlyList<ItemContainerAllocation> RemainingAllocations
+    public IReadOnlyList<ItemContainerAllocation> GetRemainingAllocations()
         => remainingAllocations.Values
             .Where(allocation => allocation.Quantity > 0)
             .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
@@ -61,7 +61,7 @@ public sealed class ItemInventoryAdjustmentSession
     public ItemContainerAllocation? PreferredAllocation
         => preferredAllocationUsed
             ? null
-            : ItemInventoryWithdrawalPlanner.GetPreferredAllocation(RemainingAllocations, sourceContainerId);
+            : ItemInventoryWithdrawalPlanner.GetPreferredAllocation(GetRemainingAllocations(), sourceContainerId);
 
     public int CarriedWithdrawal { get; private set; }
 
