@@ -64,6 +64,10 @@
 
   <ItemGroup>
     <Compile Include="../../src/MothballMobile/UI/Features/Settings/SettingsViewModel.cs" Link="UI/Features/Settings/SettingsViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Settings/SettingsSectionViewModelBase.cs" Link="UI/Features/Settings/SettingsSectionViewModelBase.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Settings/AppearanceSettingsViewModel.cs" Link="UI/Features/Settings/AppearanceSettingsViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Settings/BackupSettingsViewModel.cs" Link="UI/Features/Settings/BackupSettingsViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Settings/BackupSigningKeySettingsViewModel.cs" Link="UI/Features/Settings/BackupSigningKeySettingsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/BaseViewModel.cs" Link="UI/Shared/BaseViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/PagedListViewModelBase.cs" Link="UI/Shared/PagedListViewModelBase.cs" />
     <Compile Include="../../src/MothballMobile/UI/Shared/SearchablePagedListViewModelBase.cs" Link="UI/Shared/SearchablePagedListViewModelBase.cs" />

@@ -29,8 +29,8 @@
                                                    TextColor="{DynamicResource OnSurface}" />
 
                                         <Picker Title="Theme Mode"
-                                                        ItemsSource="{Binding ModeOptions}"
-                                                        SelectedItem="{Binding SelectedModeOption, Mode=TwoWay}"
+                                                        ItemsSource="{Binding Appearance.ModeOptions}"
+                                                        SelectedItem="{Binding Appearance.SelectedModeOption, Mode=TwoWay}"
                                                         SemanticProperties.Hint="Choose automatic system theme, light theme, or dark theme" />
 
                                         <Label Text="Choose whether Mothball follows the system appearance or always uses a light or dark mode."
@@ -49,8 +49,8 @@
                                                    Style="{StaticResource HeadlineSmall}"
                                                    TextColor="{DynamicResource OnSurface}" />
                                         <Picker Title="Theme"
-                                                        ItemsSource="{Binding ThemeOptions}"
-                                                        SelectedItem="{Binding SelectedThemeOption, Mode=TwoWay}"
+                                                        ItemsSource="{Binding Appearance.ThemeOptions}"
+                                                        SelectedItem="{Binding Appearance.SelectedThemeOption, Mode=TwoWay}"
                                                         SemanticProperties.Hint="Choose the Mothball color theme" />
                                         <Label Text="Choose the color palette used throughout Mothball."
                                                    Style="{StaticResource BodyMedium}"
@@ -70,9 +70,9 @@
 
                       <controls:SegmentedSwitch LeftText="Simple"
                                                     RightText="Advanced"
-                                                    IsRightSelected="{Binding IsAdvancedAppMode, Mode=TwoWay}"
-                                                    LeftCommand="{Binding SelectSimpleAppModeCommand}"
-                                                    RightCommand="{Binding SelectAdvancedAppModeCommand}"
+                                                    IsRightSelected="{Binding Appearance.IsAdvancedAppMode, Mode=TwoWay}"
+                                                    LeftCommand="{Binding Appearance.SelectSimpleAppModeCommand}"
+                                                    RightCommand="{Binding Appearance.SelectAdvancedAppModeCommand}"
                                                       HorizontalOptions="Fill"
                                                     SemanticProperties.Hint="Switch between simple mode and advanced mode" />
 
@@ -95,7 +95,7 @@
                                  VerticalOptions="Center"
                                  TextColor="{DynamicResource OnSurface}" />
                           <Switch Grid.Column="1"
-                                  IsToggled="{Binding IsBackupSigningKeyEnabled, Mode=TwoWay}"
+                                  IsToggled="{Binding SigningKey.IsBackupSigningKeyEnabled, Mode=TwoWay}"
                                   SemanticProperties.Hint="Enable or disable backup signing key use" />
                       </Grid>
 
@@ -104,8 +104,8 @@
                               TextColor="{DynamicResource OnSurfaceVariant}" />
 
                       <Button Text="Share signing key"
-                                IsEnabled="{Binding IsBackupSigningKeyEnabled}"
-                                Command="{Binding ShareBackupSigningKeyCommand}"
+                                IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
+                                Command="{Binding SigningKey.ShareBackupSigningKeyCommand}"
                                                                                                                                 SemanticProperties.Hint="Share the backup signing key using the system share sheet, including AirDrop">
                                                                                                 <Button.ImageSource>
                                                                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
@@ -115,8 +115,8 @@
 
                     <Button Text="Import signing key"
                             Style="{StaticResource OutlinedButton}"
-                            IsEnabled="{Binding IsBackupSigningKeyEnabled}"
-                            Command="{Binding ImportBackupSigningKeyCommand}"
+                            IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
+                            Command="{Binding SigningKey.ImportBackupSigningKeyCommand}"
                                                         SemanticProperties.Hint="Import a backup signing key file received from another device">
                                                 <Button.ImageSource>
                                                         <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
@@ -138,9 +138,9 @@
 
                     <controls:SegmentedSwitch LeftText="JSON"
                                                     RightText="ZIP"
-                                                    IsRightSelected="{Binding IsZipBackupMode, Mode=TwoWay}"
-                                                    LeftCommand="{Binding SelectJsonBackupModeCommand}"
-                                                    RightCommand="{Binding SelectZipBackupModeCommand}"
+                                                    IsRightSelected="{Binding Backup.IsZipBackupMode, Mode=TwoWay}"
+                                                    LeftCommand="{Binding Backup.SelectJsonBackupModeCommand}"
+                                                    RightCommand="{Binding Backup.SelectZipBackupModeCommand}"
                                                       HorizontalOptions="Fill"
                                                     VerticalOptions="Center" />
 
@@ -150,7 +150,7 @@
 
                     <Button Text="Documentation / Help"
                             Style="{StaticResource OutlinedButton}"
-                            Command="{Binding NavigateToImportDocumentationCommand}"
+                            Command="{Binding Backup.NavigateToImportDocumentationCommand}"
                                                         SemanticProperties.Hint="Open documentation that explains backup import modes">
                                                 <Button.ImageSource>
                                                         <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF02D;" Size="16"
@@ -159,9 +159,9 @@
                                         </Button>
 
                     <VerticalStackLayout Spacing="10"
-                                         IsVisible="{Binding IsJsonBackupMode}">
+                                         IsVisible="{Binding Backup.IsJsonBackupMode}">
                         <Button Text="Export to JSON"
-                                Command="{Binding ExportToJsonCommand}"
+                                Command="{Binding Backup.ExportToJsonCommand}"
                                                                 SemanticProperties.Hint="Create a local backup JSON file with full inventory data">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF019;" Size="16"
@@ -170,7 +170,7 @@
                                                 </Button>
 
                         <Button Text="Import from JSON"
-                                Command="{Binding ImportFromJsonCommand}"
+                                Command="{Binding Backup.ImportFromJsonCommand}"
                                                                 SemanticProperties.Hint="Choose restore mode and import a local backup JSON file">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
@@ -179,7 +179,7 @@
                                                 </Button>
 
                         <Button Text="Import from JSON from files"
-                                Command="{Binding ImportJsonFromFileSystemCommand}"
+                                Command="{Binding Backup.ImportJsonFromFileSystemCommand}"
                                                                 SemanticProperties.Hint="Choose restore mode and import a JSON backup from the file system">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF15B;" Size="16"
@@ -188,7 +188,7 @@
                                                 </Button>
 
                         <Button Text="Share backup JSON"
-                                Command="{Binding ShareJsonCommand}"
+                                Command="{Binding Backup.ShareJsonCommand}"
                                                                 SemanticProperties.Hint="Choose and share a local backup JSON file outside the app">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
@@ -197,7 +197,7 @@
                                                 </Button>
 
                         <Button Text="Delete backup JSON"
-                                Command="{Binding DeleteJsonCommand}"
+                                Command="{Binding Backup.DeleteJsonCommand}"
                                                                 SemanticProperties.Hint="Choose and delete a local backup JSON file">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF2ED;" Size="16"
@@ -207,9 +207,9 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="10"
-                                         IsVisible="{Binding IsZipBackupMode}">
+                                         IsVisible="{Binding Backup.IsZipBackupMode}">
                         <Button Text="Export with photos to ZIP"
-                                Command="{Binding ExportToZipCommand}"
+                                Command="{Binding Backup.ExportToZipCommand}"
                                                                 SemanticProperties.Hint="Create a local ZIP backup with inventory data and photo files">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF019;" Size="16"
@@ -218,7 +218,7 @@
                                                 </Button>
 
                         <Button Text="Import with photos from ZIP"
-                                Command="{Binding ImportFromZipCommand}"
+                                Command="{Binding Backup.ImportFromZipCommand}"
                                                                 SemanticProperties.Hint="Choose restore mode and import a local ZIP backup with photo files">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
@@ -227,7 +227,7 @@
                                                 </Button>
 
                         <Button Text="Import from ZIP from files"
-                                Command="{Binding ImportZipFromFileSystemCommand}"
+                                Command="{Binding Backup.ImportZipFromFileSystemCommand}"
                                                                 SemanticProperties.Hint="Choose restore mode and import a ZIP backup from the file system">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF15B;" Size="16"
@@ -236,7 +236,7 @@
                                                 </Button>
 
                         <Button Text="Share backup ZIP"
-                                Command="{Binding ShareZipCommand}"
+                                Command="{Binding Backup.ShareZipCommand}"
                                                                 SemanticProperties.Hint="Choose and share a local backup ZIP file outside the app">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
@@ -245,7 +245,7 @@
                                                 </Button>
 
                         <Button Text="Delete backup ZIP"
-                                Command="{Binding DeleteZipCommand}"
+                                Command="{Binding Backup.DeleteZipCommand}"
                                                                 SemanticProperties.Hint="Choose and delete a local backup ZIP file">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF2ED;" Size="16"
@@ -254,8 +254,8 @@
                                                 </Button>
                     </VerticalStackLayout>
 
-                    <ActivityIndicator IsRunning="{Binding IsBusy}"
-                                       IsVisible="{Binding IsBusy}"
+                    <ActivityIndicator IsRunning="{Binding Backup.IsBusy}"
+                                       IsVisible="{Binding Backup.IsBusy}"
                                        HorizontalOptions="Start"
                                        Color="{DynamicResource Primary}" />
                 </VerticalStackLayout>

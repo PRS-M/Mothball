@@ -152,6 +152,9 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AddItemViewModel>();
         services.AddTransient<AddExistingItemToContainerViewModel>();
         services.AddTransient<AssociateItemWithContainerViewModel>();
+        services.AddTransient<AppearanceSettingsViewModel>();
+        services.AddTransient<BackupSettingsViewModel>();
+        services.AddTransient<BackupSigningKeySettingsViewModel>();
         services.AddTransient<SettingsViewModel>();
 
         return services;

@@ -12,7 +12,7 @@ public sealed class SettingsViewModelTests
     [Test]
     public void Constructor_DefaultsBackupModeToZipWithPhotos()
     {
-        var viewModel = CreateViewModel();
+        var viewModel = CreateBackupViewModel();
 
         Assert.Multiple(() =>
         {
@@ -30,15 +30,13 @@ public sealed class SettingsViewModelTests
         popupDefinitions.Setup(p => p.BackupExportFailed("disk full"))
             .Returns(new AlertPopupDefinition("Export failed", "disk full"));
         var popup = new Mock<IPopupService>();
-        var viewModel = new SettingsViewModel(
+        var viewModel = new BackupSettingsViewModel(
             backupWorkflows.Object,
-            Mock.Of<IBackupSigningKeyTransferService>(),
-            Mock.Of<IFilePicker>(),
             Mock.Of<INavigationService>(),
-            Mock.Of<IApplicationSettings>(),
+            Mock.Of<IFilePicker>(),
             popup.Object,
             popupDefinitions.Object,
-            NullLogger<SettingsViewModel>.Instance);
+            NullLogger<BackupSettingsViewModel>.Instance);
 
         await viewModel.ExportToJsonCommand.ExecuteAsync(null);
 
@@ -47,14 +45,12 @@ public sealed class SettingsViewModelTests
             It.Is<AlertPopupDefinition>(d => d.Message == "disk full")), Times.Once);
     }
 
-    private static SettingsViewModel CreateViewModel()
+    private static BackupSettingsViewModel CreateBackupViewModel()
         => new(
             Mock.Of<IInventoryBackupWorkflowService>(),
-            Mock.Of<IBackupSigningKeyTransferService>(),
-            Mock.Of<IFilePicker>(),
             Mock.Of<INavigationService>(),
-            Mock.Of<IApplicationSettings>(),
+            Mock.Of<IFilePicker>(),
             Mock.Of<IPopupService>(),
             Mock.Of<IPopupDefinitionService>(),
-            NullLogger<SettingsViewModel>.Instance);
+            NullLogger<BackupSettingsViewModel>.Instance);
 }
