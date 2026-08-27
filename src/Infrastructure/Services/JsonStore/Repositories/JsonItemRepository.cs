@@ -276,6 +276,7 @@ public sealed class JsonItemRepository : IItemRepository
         int offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
 
         var state = await store.LoadAsync().ConfigureAwait(false);
+        var itemsById = state.Items.ToDictionary(i => i.ItemId);
 
         // Container-item search is allocation based: duplicate physical relation rows still produce one item row.
         var matches = state.Relations
@@ -283,9 +284,8 @@ public sealed class JsonItemRepository : IItemRepository
             .GroupBy(r => r.ItemId)
             .Select(group => group.OrderBy(r => r.Id).First())
             .OrderBy(r => r.Id)
-            .Select(r => state.Items.FirstOrDefault(i => i.ItemId == r.ItemId))
-            .Where(i => i is not null)
-            .Select(i => i!)
+            .Select(r => itemsById.GetValueOrDefault(r.ItemId))
+            .OfType<JsonItemRow>()
             .Where(i => i.Name.Contains(searchTerm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             .Skip(offset)
             .Take(pageSize)
