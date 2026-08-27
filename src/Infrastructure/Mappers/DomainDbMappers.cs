@@ -22,7 +22,7 @@ public static class ContainerMapper
     public static Container ToDomain(this DbContainer dbContainer, IEnumerable<DbItemContainerRelation>? relations = null)
     {
         Container result = CreateContainer(dbContainer);
-        ConvertAndAddRelations(relations, result);
+        ApplyItemSummary(relations, result);
 
         return result;
     }
@@ -31,7 +31,7 @@ public static class ContainerMapper
     {
         Container result = CreateContainer(dbContainer);
         ConvertAndAddPhotos(photos, result);
-        ConvertAndAddRelations(relations, result);
+        ApplyItemSummary(relations, result);
         return result;
     }
 
@@ -63,14 +63,14 @@ public static class ContainerMapper
         }
     }
 
-    private static void ConvertAndAddRelations(IEnumerable<DbItemContainerRelation>? relations, Container result)
+    private static void ApplyItemSummary(IEnumerable<DbItemContainerRelation>? relations, Container result)
     {
         if (relations is null) return;
 
-        foreach (var group in relations.Where(r => r.Quantity > 0).GroupBy(r => r.ItemId))
-        {
-            result.AddItem(group.Key, group.Sum(r => r.Quantity));
-        }
+        var positive = relations.Where(r => r.Quantity > 0).ToList();
+        result.SetItemSummary(
+            itemTypeCount: positive.Select(r => r.ItemId).Distinct().Count(),
+            totalItemQuantity: positive.Sum(r => r.Quantity));
     }
 }
 

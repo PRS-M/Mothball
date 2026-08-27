@@ -56,8 +56,7 @@ public sealed class ItemInventoryCommandServiceTests
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
         var container = new Container(Guid.NewGuid(), "Box", "");
-        container.AddItem(item.ItemId, 3);
-        var queries = CreateQueries(item, container, totalQuantity: 10, assignedQuantity: 7);
+        var queries = CreateQueries(item, container, containerQuantity: 3, totalQuantity: 10, assignedQuantity: 7);
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -80,8 +79,7 @@ public sealed class ItemInventoryCommandServiceTests
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
         var container = new Container(Guid.NewGuid(), "Box", "");
-        container.AddItem(item.ItemId, 3);
-        var queries = CreateQueries(item, container, totalQuantity: 7, assignedQuantity: 7);
+        var queries = CreateQueries(item, container, containerQuantity: 3, totalQuantity: 7, assignedQuantity: 7);
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -106,8 +104,7 @@ public sealed class ItemInventoryCommandServiceTests
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
         var container = new Container(Guid.NewGuid(), "Box", "");
-        container.AddItem(item.ItemId, 3);
-        var queries = CreateQueries(item, container, totalQuantity: 10, assignedQuantity: 7);
+        var queries = CreateQueries(item, container, containerQuantity: 3, totalQuantity: 10, assignedQuantity: 7);
         var commands = new Mock<IInventoryCommandRepository>();
         var service = new ItemInventoryCommandService(queries.Object, commands.Object);
 
@@ -210,6 +207,7 @@ public sealed class ItemInventoryCommandServiceTests
     private static Mock<IInventoryQueryRepository> CreateQueries(
         Item item,
         Container container,
+        int containerQuantity,
         int totalQuantity,
         int assignedQuantity)
     {
@@ -217,7 +215,7 @@ public sealed class ItemInventoryCommandServiceTests
         var allocation = new CoreApp.Domain.Entities.InventoryAggregate.ItemContainerAllocation(
             container.ContainerId,
             container.Name,
-            container.Items.First(itemInContainer => itemInContainer.ItemId == item.ItemId).Quantity);
+            containerQuantity);
         var allocations = new List<CoreApp.Domain.Entities.InventoryAggregate.ItemContainerAllocation> { allocation };
         int remainingAssigned = assignedQuantity - allocation.Quantity;
         if (remainingAssigned > 0)

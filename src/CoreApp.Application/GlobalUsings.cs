@@ -6,4 +6,3 @@ global using CoreApp.Application.Contracts.Backup;
 global using CoreApp.Application.Contracts.Containers;
 global using CoreApp.Application.Contracts.Inventory;
 global using CoreApp.Application.Contracts.Items;
-global using CoreApp.Application.Contracts.Serialization;

@@ -18,7 +18,7 @@ This guide maps Mothball's visible features to the code that implements them. It
 
 ## Containers
 
-Containers represent physical places such as boxes, shelves, drawers, or cabinets. A container has a name, notes, images, and item allocations.
+Containers represent physical places such as boxes, shelves, drawers, or cabinets. A container has a name, notes, and images. Item-to-container allocations are owned by the `ItemInventory` aggregate, not by `Container` itself; `Container` only exposes a read-only `ItemTypeCount`/`TotalItemQuantity` summary, hydrated by the repository layer from `ItemInventory` allocation data for display purposes.
 
 ### User workflows
 

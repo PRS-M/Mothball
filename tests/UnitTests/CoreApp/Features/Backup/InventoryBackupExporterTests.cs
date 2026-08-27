@@ -18,7 +18,6 @@ public class InventoryBackupExporterTests
         var container = new Container(Guid.NewGuid(), "Garage", "Shelf A");
         var item = new Item("Zip Ties", "Black 8 inch");
 
-        container.AddItem(item.ItemId, 5);
         container.AddImageItem(Guid.NewGuid());
         item.AddImageItem(Guid.NewGuid());
 

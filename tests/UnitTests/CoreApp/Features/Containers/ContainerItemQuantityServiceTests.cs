@@ -12,7 +12,6 @@ public class ContainerItemQuantityServiceTests
         var containerId = Guid.NewGuid();
         var itemId = Guid.NewGuid();
         var container = new Container(containerId, "Box", "Notes");
-        container.AddItem(itemId, 1);
         var commands = new Mock<IItemInventoryCommandService>();
         commands.Setup(c => c.SetContainerAllocationAsync(itemId, containerId, 3))
             .ReturnsAsync(new CoreApp.Application.Contracts.Inventory.ItemInventoryUpdateResult(false, 3, 3, 0));
@@ -26,7 +25,6 @@ public class ContainerItemQuantityServiceTests
             Assert.That(result.TotalQuantity, Is.EqualTo(3));
             Assert.That(result.AssignedQuantity, Is.EqualTo(3));
             Assert.That(result.UnassignedQuantity, Is.EqualTo(0));
-            Assert.That(container.Items.Single(i => i.ItemId == itemId).Quantity, Is.EqualTo(1));
         });
 
         commands.Verify(c => c.SetContainerAllocationAsync(itemId, containerId, 3), Times.Once);
@@ -38,7 +36,6 @@ public class ContainerItemQuantityServiceTests
         var containerId = Guid.NewGuid();
         var itemId = Guid.NewGuid();
         var container = new Container(containerId, "Box", "Notes");
-        container.AddItem(itemId, 2);
         var commands = new Mock<IItemInventoryCommandService>();
         commands.Setup(c => c.SetContainerAllocationAsync(itemId, containerId, 0))
             .ReturnsAsync(new CoreApp.Application.Contracts.Inventory.ItemInventoryUpdateResult(true, 2, 0, 2));
@@ -52,7 +49,6 @@ public class ContainerItemQuantityServiceTests
             Assert.That(result.TotalQuantity, Is.EqualTo(2));
             Assert.That(result.AssignedQuantity, Is.EqualTo(0));
             Assert.That(result.UnassignedQuantity, Is.EqualTo(2));
-            Assert.That(container.Items.Single(i => i.ItemId == itemId).Quantity, Is.EqualTo(2));
         });
 
         commands.Verify(c => c.SetContainerAllocationAsync(itemId, containerId, 0), Times.Once);
