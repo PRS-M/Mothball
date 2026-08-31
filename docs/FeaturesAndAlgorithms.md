@@ -18,7 +18,7 @@ This guide maps Mothball's visible features to the code that implements them. It
 
 ## Containers
 
-Containers represent physical places such as boxes, shelves, drawers, or cabinets. A container has a name, notes, images, and item allocations.
+Containers represent physical places such as boxes, shelves, drawers, or cabinets. A container has a name, notes, and images. Item-to-container allocations are owned by the `ItemInventory` aggregate, not by `Container` itself; `Container` only exposes a read-only `ItemTypeCount`/`TotalItemQuantity` summary, hydrated by the repository layer from `ItemInventory` allocation data for display purposes.
 
 ### User workflows
 
@@ -110,6 +110,39 @@ Editing a container's item quantity touches counts at two levels, and both must 
 
 `ItemInventoryWithdrawalPlanner` is a pure domain planner. It does not persist anything or display prompts. It validates inputs and returns the target inventory state that the coordinator can commit.
 
+#### Simple explanation
+
+The withdrawal process answers two questions: which stock should be removed, and how should the user confirm that removal?
+
+An item has a total quantity, quantities assigned to containers, and any remaining unassigned quantity. The inventory invariant is:
+
+```text
+total quantity = assigned quantity + unassigned quantity
+```
+
+The process then follows these rules:
+
+1. Remove assigned stock first.
+2. Remove it from the specific containers selected by the user.
+3. If a container runs out, carry the leftover amount to the next selected container.
+4. Use unassigned stock only when it is needed or the user accepts the unassigned-stock prompt.
+5. Return the remaining quantities.
+6. Mark the item for deletion if nothing remains.
+
+The adjustment session guides the user through these steps. The planner checks the choices and calculates the final result. The inventory aggregate applies that result.
+
+In short:
+
+```text
+remove assigned stock
+track leftovers when a container runs out
+use unassigned stock separately
+validate the final quantities
+save or delete the item
+```
+
+#### Detailed algorithm
+
 ```text
 validate total, target total, allocations, and requested withdrawals
 copy allocations into mutable remaining allocations
@@ -131,6 +164,60 @@ return remaining allocations, assigned quantity, unassigned quantity,
 ```
 
 The carried remainder is important: a requested withdrawal may span multiple locations, but it must be explicitly allocated across them. This avoids silently subtracting stock from an arbitrary container. Invalid allocations, negative quantities, and plans that cannot reach the requested total are rejected before persistence.
+
+The planner first calculates the minimum assigned withdrawal:
+
+```text
+required assigned withdrawal =
+  min(current total - requested total, assigned quantity)
+```
+
+This gives assigned stock priority. For example, if the current total is 10, the requested total is 8, and five units are assigned to containers, two assigned units must be withdrawn. If the requested reduction is larger than all assigned stock, all assigned stock is withdrawn and the remainder comes from unassigned stock.
+
+When a selected container does not contain enough stock, the planner removes what is available and carries the remainder forward:
+
+```text
+Box contains:       3
+Requested from Box: 5
+Removed from Box:   3
+Carried amount:     2
+```
+
+The next assigned withdrawal must be at least two. This is an interactive sequencing rule: the system does not silently choose another container to satisfy the remainder.
+
+After assigned withdrawals, the session builds a temporary target total:
+
+```text
+staged total = max(requested total, current total - assigned withdrawn)
+```
+
+This prevents the planner from claiming that the item has reached a lower total than the assigned withdrawals justify. Any difference between the staged total and the remaining assigned quantity is represented as unassigned quantity.
+
+The planner then applies each unassigned withdrawal to the available unassigned quantity. It caps each withdrawal at what is available and stops when the total reaches zero. A zero final total produces a deletion plan rather than an item with zero quantity.
+
+#### Graph interpretation
+
+The same calculation can be viewed as a capacity-flow problem. Each container is a source node whose capacity is its available quantity, and unassigned stock is another source node. A withdrawal is the demand that must be supplied by those sources.
+
+```mermaid
+flowchart LR
+  W[Withdrawal demand] --> A[Assigned stock]
+  W --> U[Unassigned stock]
+  A --> C1[Container A]
+  A --> C2[Container B]
+  A --> C3[Container C]
+```
+
+This graph view is useful if the application later needs to optimize choices, such as preferring the fewest containers, the nearest containers, or containers with the earliest expiration dates. A min-cost flow algorithm could then select the cheapest valid distribution.
+
+For the current workflow, however, a graph does not simplify the main interaction. The user explicitly selects containers, and an over-sized selection creates a carried remainder that the user must assign next. A normal flow algorithm would distribute the withdrawal automatically and would remove that confirmation step. The current design therefore remains intentionally split:
+
+- `ItemInventory` stores inventory invariants and applies the completed plan.
+- `ItemInventoryWithdrawalPlanner` validates capacities and calculates the result.
+- `ItemInventoryAdjustmentSession` manages user choices and carried remainders.
+- `ItemInventoryWithdrawalCoordinator` displays prompts and passes answers to the session.
+
+This is best understood as an ordered capacity-allocation algorithm with an interactive state machine, rather than as a general graph algorithm.
 
 For new withdrawal rules, change or extend the planner first and add scenario tests in `ItemInventoryWithdrawalPlannerTests`. The UI coordinator should only collect selections and commit the resulting plan.
 

@@ -27,7 +27,6 @@ public class InventoryBackupRestoreServiceTests
         var newItemPhoto = Guid.NewGuid();
 
         var existingContainer = new Container(container1Id, "Existing container", "notes");
-        existingContainer.AddItem(item1Id, 2);
         existingContainer.AddImageItem(existingContainerPhoto);
 
         var existingItem = new Item(item1Id, "Existing item", "desc");
@@ -310,8 +309,6 @@ public class InventoryBackupRestoreServiceTests
         var item2Id = Guid.NewGuid();
 
         var existingContainer = new Container(containerId, "Container", "Notes");
-        existingContainer.AddItem(item1Id, 5);
-        existingContainer.AddItem(item2Id, 1);
 
         var keepImageId = Guid.NewGuid();
         var deleteImageId = Guid.NewGuid();

@@ -38,9 +38,11 @@ public sealed class ContainerDetailsHandler : IContainerDetailsHandler
         ArgumentNullException.ThrowIfNull(container);
 
         var quantityUpdate = await quantityService.SaveQuantityAsync(container, itemId, quantity);
+        var details = await containerDetailsQueries.GetDetailsAsync(container.ContainerId.ToString())
+            ?? throw new KeyNotFoundException($"Container '{container.ContainerId}' was not found.");
         var itemTypesCount = await containerDetailsQueries.GetDistinctItemCountAsync(container.ContainerId.ToString());
         return new ContainerDetailsQuantityUpdate(
-            new ContainerDetailsSummary(container, itemTypesCount, quantityUpdate.TotalItemCount),
-            quantityUpdate.Inventory);
+            new ContainerDetailsSummary(details.Container, itemTypesCount, details.TotalItemCount),
+            quantityUpdate);
     }
 }

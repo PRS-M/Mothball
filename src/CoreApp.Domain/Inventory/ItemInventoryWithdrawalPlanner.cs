@@ -49,14 +49,40 @@ public static class ItemInventoryWithdrawalPlanner
         IReadOnlyCollection<int> unassignedWithdrawals,
         int? requestedTotal = null)
     {
+        ArgumentNullException.ThrowIfNull(allocations);
+        ArgumentNullException.ThrowIfNull(assignedWithdrawals);
+        ArgumentNullException.ThrowIfNull(unassignedWithdrawals);
+
+        int targetTotal = ValidateTotals(currentTotal, requestedTotal);
+        var remainingAllocations = NormalizeAllocations(allocations);
+
+        ApplyAssignedWithdrawals(remainingAllocations, assignedWithdrawals);
+
+        int assignedQuantity = remainingAllocations.Sum(allocation => allocation.Quantity);
+        if (assignedQuantity > targetTotal)
+        {
+            throw new InvalidOperationException("Assigned withdrawals do not reduce inventory to the requested total.");
+        }
+
+        var (totalQuantity, unassignedQuantity) = ApplyUnassignedWithdrawals(
+            targetTotal,
+            targetTotal - assignedQuantity,
+            unassignedWithdrawals);
+
+        return new ItemInventoryWithdrawalPlan(
+            totalQuantity,
+            assignedQuantity,
+            unassignedQuantity,
+            remainingAllocations.AsReadOnly(),
+            DeleteItem: totalQuantity == 0);
+    }
+
+    private static int ValidateTotals(int currentTotal, int? requestedTotal)
+    {
         if (currentTotal < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(currentTotal));
         }
-
-        ArgumentNullException.ThrowIfNull(allocations);
-        ArgumentNullException.ThrowIfNull(assignedWithdrawals);
-        ArgumentNullException.ThrowIfNull(unassignedWithdrawals);
 
         int targetTotal = requestedTotal ?? currentTotal;
         if (targetTotal < 0 || targetTotal > currentTotal)
@@ -64,18 +90,27 @@ public static class ItemInventoryWithdrawalPlanner
             throw new ArgumentOutOfRangeException(nameof(requestedTotal));
         }
 
-        var remainingAllocations = allocations
-            .Select(allocation =>
+        return targetTotal;
+    }
+
+    private static List<ItemContainerAllocation> NormalizeAllocations(
+        IReadOnlyCollection<ItemContainerAllocation> allocations)
+    {
+        foreach (var allocation in allocations)
+        {
+            if (allocation.ContainerId == Guid.Empty || allocation.Quantity <= 0)
             {
-                if (allocation.ContainerId == Guid.Empty || allocation.Quantity <= 0)
-                {
-                    throw new ArgumentException("Allocations require a container and positive quantity.", nameof(allocations));
-                }
+                throw new ArgumentException("Allocations require a container and positive quantity.", nameof(allocations));
+            }
+        }
 
-                return allocation;
-            })
-            .ToList();
+        return allocations.ToList();
+    }
 
+    private static void ApplyAssignedWithdrawals(
+        List<ItemContainerAllocation> remainingAllocations,
+        IReadOnlyCollection<ItemAllocationWithdrawal> assignedWithdrawals)
+    {
         int carriedWithdrawal = 0;
         foreach (var withdrawal in assignedWithdrawals)
         {
@@ -116,15 +151,13 @@ public static class ItemInventoryWithdrawalPlanner
             throw new InvalidOperationException(
                 $"A remaining withdrawal of {carriedWithdrawal} must be assigned to another container.");
         }
+    }
 
-        int assignedQuantity = remainingAllocations.Sum(allocation => allocation.Quantity);
-        if (assignedQuantity > targetTotal)
-        {
-            throw new InvalidOperationException("Assigned withdrawals do not reduce inventory to the requested total.");
-        }
-
-        int totalQuantity = targetTotal;
-        int unassignedQuantity = totalQuantity - assignedQuantity;
+    private static (int TotalQuantity, int UnassignedQuantity) ApplyUnassignedWithdrawals(
+        int totalQuantity,
+        int unassignedQuantity,
+        IReadOnlyCollection<int> unassignedWithdrawals)
+    {
         foreach (int requestedWithdrawal in unassignedWithdrawals)
         {
             if (requestedWithdrawal < 0)
@@ -147,11 +180,6 @@ public static class ItemInventoryWithdrawalPlanner
             }
         }
 
-        return new ItemInventoryWithdrawalPlan(
-            totalQuantity,
-            assignedQuantity,
-            unassignedQuantity,
-            remainingAllocations.AsReadOnly(),
-            DeleteItem: totalQuantity == 0);
+        return (totalQuantity, unassignedQuantity);
     }
 }

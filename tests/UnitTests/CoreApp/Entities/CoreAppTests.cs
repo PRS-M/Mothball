@@ -86,41 +86,26 @@ public class CoreAppTests
     }
 
     [Test]
-    public void Container_AddItem_AddsQuantity()
+    public void Container_SetItemSummary_UpdatesCounts()
     {
         var container = new Container();
-        var itemId = Guid.NewGuid();
-        container.AddItem(itemId, 2);
+
+        container.SetItemSummary(itemTypeCount: 2, totalItemQuantity: 5);
 
         Assert.Multiple(() =>
         {
-            Assert.That(container.Items.Count, Is.EqualTo(1));
-            Assert.That(container.ItemCount, Is.EqualTo(2));
+            Assert.That(container.ItemTypeCount, Is.EqualTo(2));
+            Assert.That(container.TotalItemQuantity, Is.EqualTo(5));
         });
     }
 
     [Test]
-    public void Container_AddItem_SameItemTwice_SumsQuantity_WithoutNewRow()
+    public void Container_SetItemSummary_WithNegativeValues_Throws()
     {
         var container = new Container();
-        var itemId = Guid.NewGuid();
 
-        container.AddItem(itemId, 2);
-        container.AddItem(itemId, 3);
-
-        Assert.That(container.Items.Count, Is.EqualTo(1));
-        Assert.That(container.Items[0].Quantity, Is.EqualTo(5));
-        Assert.That(container.ItemCount, Is.EqualTo(5));
-    }
-
-    [Test]
-    public void Container_AddItem_WithNonPositiveQuantity_Throws()
-    {
-        var container = new Container();
-        var itemId = Guid.NewGuid();
-
-        Assert.That(() => container.AddItem(itemId, 0), Throws.TypeOf<ArgumentOutOfRangeException>());
-        Assert.That(() => container.AddItem(itemId, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
+        Assert.That(() => container.SetItemSummary(-1, 0), Throws.TypeOf<ArgumentOutOfRangeException>());
+        Assert.That(() => container.SetItemSummary(0, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
     }
 
     [Test]
@@ -177,54 +162,11 @@ public class CoreAppTests
     }
 
     [Test]
-    public void Container_RemoveItem_RemovesAllMatchingRows_AndKeepsOthers()
-    {
-        var container = new Container();
-        var removeId = Guid.NewGuid();
-        var keepId = Guid.NewGuid();
-
-        container.AddItem(removeId, 1);
-        container.AddItem(removeId, 2);
-        container.AddItem(keepId, 3);
-
-        container.RemoveItem(removeId);
-
-        Assert.That(container.Items.Select(i => i.ItemId), Is.EquivalentTo(new[] { keepId }));
-        Assert.That(container.ItemCount, Is.EqualTo(3));
-    }
-
-    [Test]
     public void Container_Collections_CannotBeMutatedDirectly()
     {
         var container = new Container();
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(((ICollection<StoredItem>)container.Items).IsReadOnly, Is.True);
-            Assert.That(((ICollection<CoreApp.Domain.Entities.Shared.ImageItem>)container.Photos).IsReadOnly, Is.True);
-        });
-    }
-
-    [Test]
-    public void StoredItem_Requires_Valid_ItemId_And_Quantity()
-    {
-        Assert.That(() => new StoredItem(Guid.Empty, 1), Throws.ArgumentException);
-        Assert.That(() => new StoredItem(Guid.NewGuid(), 0), Throws.TypeOf<ArgumentOutOfRangeException>());
-        Assert.That(() => new StoredItem(Guid.NewGuid(), -1), Throws.TypeOf<ArgumentOutOfRangeException>());
-
-        var stored = new StoredItem(Guid.NewGuid(), 1);
-        stored.AddQuantity(2);
-        Assert.That(stored.Quantity, Is.EqualTo(3));
-
-    }
-
-    [Test]
-    public void StoredItem_AddQuantity_WithNonPositiveValue_Throws()
-    {
-        var stored = new StoredItem(Guid.NewGuid(), 1);
-
-        Assert.That(() => stored.AddQuantity(0), Throws.TypeOf<ArgumentOutOfRangeException>());
-        Assert.That(() => stored.AddQuantity(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
+        Assert.That(((ICollection<CoreApp.Domain.Entities.Shared.ImageItem>)container.Photos).IsReadOnly, Is.True);
     }
 
     [Test]

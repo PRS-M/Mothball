@@ -14,5 +14,5 @@ public interface IContainerItemQuantityService
     /// <param name="container">The value used by the operation.</param>
     /// <param name="itemId">The identifier used by the operation.</param>
     /// <param name="quantity">The quantity used by the operation.</param>
-    Task<ContainerItemQuantityUpdateResult> SaveQuantityAsync(Container container, Guid itemId, int quantity);
+    Task<ItemInventoryUpdateResult> SaveQuantityAsync(Container container, Guid itemId, int quantity);
 }

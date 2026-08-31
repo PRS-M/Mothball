@@ -33,7 +33,7 @@ public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestor
             ?? throw new InvalidOperationException("The ZIP backup does not contain backup.json.");
 
         string backupJson;
-        await using (var entryStream = backupJsonEntry.Open())
+        await using (var entryStream = await backupJsonEntry.OpenAsync(cancellationToken).ConfigureAwait(false))
         using (var reader = new StreamReader(entryStream))
         {
             backupJson = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
@@ -87,7 +87,7 @@ public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestor
                 continue;
             }
 
-            await using var entryStream = entry.Open();
+            await using var entryStream = await entry.OpenAsync(cancellationToken).ConfigureAwait(false);
             await using var photoStream = new MemoryStream();
             await entryStream.CopyToAsync(photoStream, cancellationToken).ConfigureAwait(false);
             await fileHandler

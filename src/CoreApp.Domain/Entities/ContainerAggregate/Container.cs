@@ -6,7 +6,6 @@ namespace CoreApp.Domain.Entities.ContainerAggregate;
 public class Container : BaseEntity, IAggregateRoot
 {
     private readonly List<ImageItem> photos = new();
-    private readonly List<StoredItem> items = new();
 
     public Container()
     {
@@ -28,8 +27,31 @@ public class Container : BaseEntity, IAggregateRoot
     public string Name { get; private set; } = string.Empty;
     public string Notes { get; private set; } = string.Empty;
     public IReadOnlyList<ImageItem> Photos => photos.AsReadOnly();
-    public IReadOnlyList<StoredItem> Items => items.AsReadOnly();
-    public int ItemCount => items.Sum(i => i.Quantity);
+
+    // Read-only counts sourced from the ItemInventory aggregate; not owned or persisted by Container itself.
+    public int ItemTypeCount { get; private set; }
+    public int TotalItemQuantity { get; private set; }
+
+    /// <summary>
+    /// Hydrates the item allocation summary for display, sourced from ItemInventory allocations.
+    /// </summary>
+    /// <param name="itemTypeCount">The number of distinct item types allocated to this container.</param>
+    /// <param name="totalItemQuantity">The total allocated item quantity in this container.</param>
+    public void SetItemSummary(int itemTypeCount, int totalItemQuantity)
+    {
+        if (itemTypeCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(itemTypeCount), "Item type count cannot be negative.");
+        }
+
+        if (totalItemQuantity < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(totalItemQuantity), "Total item quantity cannot be negative.");
+        }
+
+        ItemTypeCount = itemTypeCount;
+        TotalItemQuantity = totalItemQuantity;
+    }
 
     /// <summary>
     /// Updates the container's name and notes.
@@ -40,29 +62,6 @@ public class Container : BaseEntity, IAggregateRoot
     {
         Name = name ?? string.Empty;
         Notes = notes ?? string.Empty;
-    }
-
-    /// <summary>
-    /// Adds quantity for an item to the container.
-    /// </summary>
-    /// <param name="itemId">The identifier of the item to add.</param>
-    /// <param name="quantity">The positive quantity to add.</param>
-    public void AddItem(Guid itemId, int quantity)
-    {
-        if (quantity <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be greater than zero.");
-        }
-
-        var existingItem = items.Find(i => i.ItemId == itemId);
-        if (existingItem != null)
-        {
-            existingItem.AddQuantity(quantity);
-        }
-        else
-        {
-            items.Add(new StoredItem(itemId, quantity));
-        }
     }
 
     /// <summary>
@@ -105,14 +104,5 @@ public class Container : BaseEntity, IAggregateRoot
     public void RemoveImageItem(Guid imageId)
     {
         photos.RemoveAll(p => p.ImageId == imageId);
-    }
-
-    /// <summary>
-    /// Removes an item and its stored quantity from the container.
-    /// </summary>
-    /// <param name="itemId">The identifier of the item to remove.</param>
-    public void RemoveItem(Guid itemId)
-    {
-        items.RemoveAll(i => i.ItemId == itemId);
     }
 }

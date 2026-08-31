@@ -70,25 +70,33 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
         }
 
         var existingIndex = allocations.FindIndex(allocation => allocation.ContainerId == containerId);
-        var previousQuantity = existingIndex < 0 ? 0 : allocations[existingIndex].Quantity;
+        var previousQuantity = existingIndex >= 0 ? allocations[existingIndex].Quantity : 0;
         var resultingAssignedQuantity = AssignedQuantity - previousQuantity + quantity;
 
-        if (resultingAssignedQuantity > TotalQuantity)
+        IncreaseTotalQuantity(resultingAssignedQuantity);
+
+        if (quantity == 0)
         {
-            TotalQuantity = resultingAssignedQuantity;
+            if (existingIndex >= 0)
+            {
+                allocations.RemoveAt(existingIndex);
+            }
+
+            return;
         }
 
+        var allocation = new ItemContainerAllocation(containerId, containerName, quantity);
         if (existingIndex >= 0)
         {
-            allocations.RemoveAt(existingIndex);
+            allocations[existingIndex] = allocation;
+        }
+        else
+        {
+            allocations.Add(allocation);
         }
 
-        if (quantity > 0)
-        {
-            allocations.Add(new ItemContainerAllocation(containerId, containerName, quantity));
-            allocations.Sort((left, right) =>
-                string.Compare(left.ContainerName, right.ContainerName, StringComparison.OrdinalIgnoreCase));
-        }
+        allocations.Sort((left, right) =>
+            string.Compare(left.ContainerName, right.ContainerName, StringComparison.OrdinalIgnoreCase));
     }
 
     public void ApplyWithdrawal(ItemInventoryWithdrawalPlan plan)

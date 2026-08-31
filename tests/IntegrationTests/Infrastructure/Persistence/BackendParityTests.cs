@@ -290,8 +290,8 @@ public class BackendParityTests
         {
             Assert.That(sqliteContainer, Is.Not.Null);
             Assert.That(jsonContainer, Is.Not.Null);
-            Assert.That(sqliteContainer!.Items.Single().Quantity, Is.EqualTo(5));
-            Assert.That(jsonContainer!.Items.Single().Quantity, Is.EqualTo(5));
+            Assert.That(sqliteContainer!.TotalItemQuantity, Is.EqualTo(5));
+            Assert.That(jsonContainer!.TotalItemQuantity, Is.EqualTo(5));
             Assert.That(sqliteContainer.Photos.Select(p => p.ImageId), Is.EqualTo(new[] { photoId }));
             Assert.That(jsonContainer.Photos.Select(p => p.ImageId), Is.EqualTo(new[] { photoId }));
         });

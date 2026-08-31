@@ -20,9 +20,9 @@ public partial class ContainerViewModel : ContainerWithImagesViewModelBase
 
     public bool ShowQuantityManagement { get; }
 
-    public string ItemTypesStoredText => $"Item types stored: {Container.Items.Count}";
+    public string ItemTypesStoredText => $"Item types stored: {Container.ItemTypeCount}";
 
-    public string ItemsStoredText => $"Items stored (Total): {(ShowQuantityManagement ? Container.ItemCount : Container.Items.Count)}";
+    public string ItemsStoredText => $"Items stored (Total): {(ShowQuantityManagement ? Container.TotalItemQuantity : Container.ItemTypeCount)}";
 
     public Task LoadImageAsync()
     {

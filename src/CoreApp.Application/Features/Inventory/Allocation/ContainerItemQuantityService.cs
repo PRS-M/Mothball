@@ -13,20 +13,13 @@ public sealed class ContainerItemQuantityService : IContainerItemQuantityService
     }
 
     /// <inheritdoc />
-    public async Task<ContainerItemQuantityUpdateResult> SaveQuantityAsync(Container container, Guid itemId, int quantity)
+    public async Task<ItemInventoryUpdateResult> SaveQuantityAsync(Container container, Guid itemId, int quantity)
     {
         ArgumentNullException.ThrowIfNull(container);
 
-        var inventoryResult = await inventoryCommands.SetContainerAllocationAsync(
+        return await inventoryCommands.SetContainerAllocationAsync(
             itemId,
             container.ContainerId,
             Math.Max(quantity, 0));
-        container.RemoveItem(itemId);
-        if (!inventoryResult.RemovedFromContainer)
-        {
-            container.AddItem(itemId, quantity);
-        }
-
-        return new ContainerItemQuantityUpdateResult(container.ItemCount, inventoryResult);
     }
 }

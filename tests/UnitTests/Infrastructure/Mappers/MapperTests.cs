@@ -40,9 +40,8 @@ public class MapperTests
         var domain = db.ToDomain(relations);
 
         Assert.That(domain.ContainerId, Is.EqualTo(containerId));
-        Assert.That(domain.Items.Count, Is.EqualTo(1));
-        Assert.That(domain.Items[0].ItemId, Is.EqualTo(itemId));
-        Assert.That(domain.Items[0].Quantity, Is.EqualTo(5));
+        Assert.That(domain.ItemTypeCount, Is.EqualTo(1));
+        Assert.That(domain.TotalItemQuantity, Is.EqualTo(5));
     }
 
     [Test]

@@ -32,7 +32,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddTransient<IDebouncer>(sp => new Debouncer(300, sp.GetRequiredService<ILogger<Debouncer>>()));
         services.AddSingleton<JsonHandler>();
-        services.AddSingleton<InventoryJsonHandler>();
         services.AddSingleton<IPhotoSourceReader, PhotoSourceReader>();
         services.AddSingleton<IPhotoFilePersistenceService, PhotoFilePersistenceService>();
         services.AddSingleton<ITemporaryPhotoService, TemporaryPhotoService>();
@@ -152,6 +151,9 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AddItemViewModel>();
         services.AddTransient<AddExistingItemToContainerViewModel>();
         services.AddTransient<AssociateItemWithContainerViewModel>();
+        services.AddTransient<AppearanceSettingsViewModel>();
+        services.AddTransient<BackupSettingsViewModel>();
+        services.AddTransient<BackupSigningKeySettingsViewModel>();
         services.AddTransient<SettingsViewModel>();
 
         return services;
