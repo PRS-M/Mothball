@@ -126,6 +126,33 @@ public class InventoryBackupRestorePlannerTests
     }
 
     [Test]
+    public void BuildPlan_WithDuplicateContainerId_ThrowsInvalidDataException()
+    {
+        var containerId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers =
+                [
+                    new InventoryBackupContainer { ContainerId = containerId, Name = "Container 1", Notes = "" },
+                    new InventoryBackupContainer { ContainerId = containerId, Name = "Container 2", Notes = "" },
+                ],
+                Items = [],
+                Relations = [],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
     public void BuildPlan_WithBlankItemName_ThrowsInvalidDataException()
     {
         var backup = new InventoryBackupEnvelope
@@ -134,6 +161,33 @@ public class InventoryBackupRestorePlannerTests
             {
                 Containers = [],
                 Items = [new InventoryBackupItem { ItemId = Guid.NewGuid(), Name = " ", Description = "", TotalQuantity = 1 }],
+                Relations = [],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithDuplicateItemId_ThrowsInvalidDataException()
+    {
+        var itemId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [],
+                Items =
+                [
+                    new InventoryBackupItem { ItemId = itemId, Name = "Item 1", Description = "", TotalQuantity = 1 },
+                    new InventoryBackupItem { ItemId = itemId, Name = "Item 2", Description = "", TotalQuantity = 1 },
+                ],
                 Relations = [],
                 Images = [],
             },
@@ -216,6 +270,46 @@ public class InventoryBackupRestorePlannerTests
                         OwnerId = ownerId,
                         OwnerType = InventoryBackupOwnerType.Container,
                         FileName = "photo.jpg",
+                    },
+                ],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithDuplicateImageOwnership_ThrowsInvalidDataException()
+    {
+        var ownerId = Guid.NewGuid();
+        var imageId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = ownerId, Name = "Container", Notes = "" }],
+                Items = [],
+                Relations = [],
+                Images =
+                [
+                    new InventoryBackupImageRef
+                    {
+                        ImageId = imageId,
+                        OwnerId = ownerId,
+                        OwnerType = InventoryBackupOwnerType.Container,
+                        FileName = "photo-1.jpg",
+                    },
+                    new InventoryBackupImageRef
+                    {
+                        ImageId = imageId,
+                        OwnerId = ownerId,
+                        OwnerType = InventoryBackupOwnerType.Container,
+                        FileName = "photo-2.jpg",
                     },
                 ],
             },
