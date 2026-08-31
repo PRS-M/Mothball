@@ -21,6 +21,7 @@ internal static class InventoryBackupPayloadParser
         InventoryBackupEnvelope? backup;
         try
         {
+            ValidateRequiredTopLevelProperties(backupJson);
             backup = JsonSerializer.Deserialize<InventoryBackupEnvelope>(backupJson, BackupJsonOptions);
         }
         catch (JsonException ex)
@@ -34,5 +35,30 @@ internal static class InventoryBackupPayloadParser
         }
 
         return backup;
+    }
+
+    private static void ValidateRequiredTopLevelProperties(string backupJson)
+    {
+        using var document = JsonDocument.Parse(backupJson);
+        if (document.RootElement.ValueKind != JsonValueKind.Object)
+        {
+            throw new JsonException("Backup JSON root must be an object.");
+        }
+
+        RequireProperty(document.RootElement, "payloadVersion");
+        RequireProperty(document.RootElement, "schemaVersion");
+        RequireProperty(document.RootElement, "createdUtc");
+        RequireProperty(document.RootElement, "source");
+        RequireProperty(document.RootElement, "integrity");
+        RequireProperty(document.RootElement, "data");
+    }
+
+    private static void RequireProperty(JsonElement element, string propertyName)
+    {
+        if (!element.EnumerateObject().Any(property =>
+            string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new JsonException($"Backup JSON payload is missing required property '{propertyName}'.");
+        }
     }
 }
