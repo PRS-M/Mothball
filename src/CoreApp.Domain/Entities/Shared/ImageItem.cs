@@ -9,6 +9,11 @@ public record ImageItem // Value Object
 
     public ImageItem(Guid imageId)
     {
+        if (imageId == Guid.Empty)
+        {
+            throw new ArgumentException("Image ID cannot be empty.", nameof(imageId));
+        }
+
         ImageId = imageId;
     }
 

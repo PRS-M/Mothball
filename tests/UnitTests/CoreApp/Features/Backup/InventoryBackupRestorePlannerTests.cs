@@ -104,6 +104,257 @@ public class InventoryBackupRestorePlannerTests
     }
 
     [Test]
+    public void BuildPlan_WithEmptyContainerId_ThrowsInvalidDataException()
+    {
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = Guid.Empty, Name = "Container", Notes = "" }],
+                Items = [],
+                Relations = [],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithDuplicateContainerId_ThrowsInvalidDataException()
+    {
+        var containerId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers =
+                [
+                    new InventoryBackupContainer { ContainerId = containerId, Name = "Container 1", Notes = "" },
+                    new InventoryBackupContainer { ContainerId = containerId, Name = "Container 2", Notes = "" },
+                ],
+                Items = [],
+                Relations = [],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithBlankItemName_ThrowsInvalidDataException()
+    {
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [],
+                Items = [new InventoryBackupItem { ItemId = Guid.NewGuid(), Name = " ", Description = "", TotalQuantity = 1 }],
+                Relations = [],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithDuplicateItemId_ThrowsInvalidDataException()
+    {
+        var itemId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [],
+                Items =
+                [
+                    new InventoryBackupItem { ItemId = itemId, Name = "Item 1", Description = "", TotalQuantity = 1 },
+                    new InventoryBackupItem { ItemId = itemId, Name = "Item 2", Description = "", TotalQuantity = 1 },
+                ],
+                Relations = [],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithInvalidRelationShape_ThrowsInvalidDataException()
+    {
+        var itemId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [],
+                Items = [new InventoryBackupItem { ItemId = itemId, Name = "Item", Description = "", TotalQuantity = 1 }],
+                Relations = [new InventoryBackupRelation { ContainerId = Guid.Empty, ItemId = itemId, Quantity = 1 }],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithMissingRelationOwner_StillSkipsRelation()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = containerId, Name = "Container", Notes = "" }],
+                Items = [],
+                Relations = [new InventoryBackupRelation { ContainerId = containerId, ItemId = itemId, Quantity = 1 }],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existing, InventoryBackupConflictPolicy.AddOnly);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.RelationsToInsert, Is.Empty);
+            Assert.That(plan.Result.SkippedInvalidRelations, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public void BuildPlan_WithInvalidImageShape_ThrowsInvalidDataException()
+    {
+        var ownerId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = ownerId, Name = "Container", Notes = "" }],
+                Items = [],
+                Relations = [],
+                Images =
+                [
+                    new InventoryBackupImageRef
+                    {
+                        ImageId = Guid.Empty,
+                        OwnerId = ownerId,
+                        OwnerType = InventoryBackupOwnerType.Container,
+                        FileName = "photo.jpg",
+                    },
+                ],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithDuplicateImageOwnership_ThrowsInvalidDataException()
+    {
+        var ownerId = Guid.NewGuid();
+        var imageId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = ownerId, Name = "Container", Notes = "" }],
+                Items = [],
+                Relations = [],
+                Images =
+                [
+                    new InventoryBackupImageRef
+                    {
+                        ImageId = imageId,
+                        OwnerId = ownerId,
+                        OwnerType = InventoryBackupOwnerType.Container,
+                        FileName = "photo-1.jpg",
+                    },
+                    new InventoryBackupImageRef
+                    {
+                        ImageId = imageId,
+                        OwnerId = ownerId,
+                        OwnerType = InventoryBackupOwnerType.Container,
+                        FileName = "photo-2.jpg",
+                    },
+                ],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithMissingImageOwnerType_ThrowsInvalidDataException()
+    {
+        var ownerId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = ownerId, Name = "Container", Notes = "" }],
+                Items = [],
+                Relations = [],
+                Images =
+                [
+                    new InventoryBackupImageRef
+                    {
+                        ImageId = Guid.NewGuid(),
+                        OwnerId = ownerId,
+                        FileName = "photo.jpg",
+                    },
+                ],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
     public void BuildPlan_AddAndUpsertMetadata_UpdatesExistingMetadata()
     {
         var containerId = Guid.NewGuid();
