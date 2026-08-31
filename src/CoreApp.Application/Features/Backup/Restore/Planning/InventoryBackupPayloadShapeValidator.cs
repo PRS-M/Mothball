@@ -52,6 +52,11 @@ internal static class InventoryBackupPayloadShapeValidator
                 throw new InvalidDataException("Backup image owner ID cannot be empty.");
             }
 
+            if (image.OwnerType == InventoryBackupOwnerType.Unknown || !Enum.IsDefined(image.OwnerType))
+            {
+                throw new InvalidDataException("Backup image owner type is invalid.");
+            }
+
             if (string.IsNullOrWhiteSpace(image.FileName))
             {
                 throw new InvalidDataException("Backup image file name cannot be empty.");

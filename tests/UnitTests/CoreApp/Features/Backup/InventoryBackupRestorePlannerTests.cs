@@ -180,6 +180,37 @@ public class InventoryBackupRestorePlannerTests
     }
 
     [Test]
+    public void BuildPlan_WithMissingImageOwnerType_ThrowsInvalidDataException()
+    {
+        var ownerId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = ownerId, Name = "Container", Notes = "" }],
+                Items = [],
+                Relations = [],
+                Images =
+                [
+                    new InventoryBackupImageRef
+                    {
+                        ImageId = Guid.NewGuid(),
+                        OwnerId = ownerId,
+                        FileName = "photo.jpg",
+                    },
+                ],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
     public void BuildPlan_AddAndUpsertMetadata_UpdatesExistingMetadata()
     {
         var containerId = Guid.NewGuid();
