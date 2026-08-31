@@ -1,4 +1,5 @@
 using SQLite;
+using Infrastructure.Services.DatabaseModels;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -25,6 +26,7 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
     /// <inheritdoc />
     public async Task<int> InsertAsync(T entity)
     {
+        Validate(entity);
         await EnsureInitializedAsync();
         return await Connection.InsertAsync(entity);
     }
@@ -32,13 +34,20 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
     /// <inheritdoc />
     public async Task<int> InsertAllAsync(IEnumerable<T> entities)
     {
+        var entityList = entities?.ToList() ?? throw new ArgumentNullException(nameof(entities));
+        foreach (var entity in entityList)
+        {
+            Validate(entity);
+        }
+
         await EnsureInitializedAsync();
-        return await Connection.InsertAllAsync(entities);
+        return await Connection.InsertAllAsync(entityList);
     }
 
     /// <inheritdoc />
     public async Task<int> UpdateAsync(T entity)
     {
+        Validate(entity);
         await EnsureInitializedAsync();
         return await Connection.UpdateAsync(entity);
     }
@@ -53,6 +62,7 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
     /// <inheritdoc />
     public async Task<int> UpsertAsync(T entity)
     {
+        Validate(entity);
         await EnsureInitializedAsync();
         // sqlite-net InsertOrReplaceAsync is convenient for simple PK entities
         return await Connection.InsertOrReplaceAsync(entity);
@@ -162,5 +172,15 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
         }
 
         return typeof(T).Name;
+    }
+
+    private static void Validate(T entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+
+        if (entity is IValidatableDbModel validatable)
+        {
+            validatable.Validate();
+        }
     }
 }

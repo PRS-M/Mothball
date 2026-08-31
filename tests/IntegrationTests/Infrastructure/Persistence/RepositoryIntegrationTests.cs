@@ -94,6 +94,59 @@ public class RepositoryIntegrationTests
     }
 
     [Test]
+    public void InsertAsync_WithInvalidDbItem_ThrowsBeforePersisting()
+    {
+        Assert.ThrowsAsync<InvalidOperationException>(() => items.InsertAsync(new DbItem
+        {
+            ItemId = Guid.Empty,
+            Name = "Item",
+            Description = "",
+        }));
+    }
+
+    [Test]
+    public void InsertAsync_WithInvalidDbContainer_ThrowsBeforePersisting()
+    {
+        Assert.ThrowsAsync<InvalidOperationException>(() => containers.InsertAsync(new DbContainer
+        {
+            ContainerId = Guid.NewGuid(),
+            Name = " ",
+            Notes = "",
+        }));
+    }
+
+    [Test]
+    public void InsertAsync_WithInvalidDbImage_ThrowsBeforePersisting()
+    {
+        Assert.ThrowsAsync<InvalidOperationException>(() => photos.InsertAsync(new DbImage
+        {
+            ImageId = Guid.NewGuid(),
+            OwnerUniqueId = Guid.Empty,
+        }));
+    }
+
+    [Test]
+    public void InsertAsync_WithInvalidDbInventory_ThrowsBeforePersisting()
+    {
+        Assert.ThrowsAsync<InvalidOperationException>(() => inventories.InsertAsync(new DbItemInventory
+        {
+            ItemId = Guid.NewGuid(),
+            TotalQuantity = 0,
+        }));
+    }
+
+    [Test]
+    public void InsertAsync_WithInvalidDbRelation_ThrowsBeforePersisting()
+    {
+        Assert.ThrowsAsync<InvalidOperationException>(() => relations.InsertAsync(new DbItemContainerRelation
+        {
+            ItemId = Guid.NewGuid(),
+            ContainerId = Guid.NewGuid(),
+            Quantity = 0,
+        }));
+    }
+
+    [Test]
     public async Task Can_Relate_Item_To_Container_And_Load_ItemsForContainer()
     {
         var c = new Container(Guid.NewGuid(), "C1", "");
