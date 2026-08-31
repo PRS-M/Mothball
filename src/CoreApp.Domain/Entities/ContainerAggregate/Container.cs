@@ -16,10 +16,12 @@ public class Container : BaseEntity, IAggregateRoot
 
     public Container(Guid containerId, string name, string notes)
     {
-        ContainerId = containerId == Guid.Empty ?
-            Guid.NewGuid() :
-            containerId;
+        if (containerId == Guid.Empty)
+        {
+            throw new ArgumentException("Container ID cannot be empty.", nameof(containerId));
+        }
 
+        ContainerId = containerId;
         UpdateDetails(name, notes);
     }
 
@@ -60,7 +62,12 @@ public class Container : BaseEntity, IAggregateRoot
     /// <param name="notes">The new container notes.</param>
     public void UpdateDetails(string name, string notes)
     {
-        Name = name ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Container name cannot be empty.", nameof(name));
+        }
+
+        Name = name;
         Notes = notes ?? string.Empty;
     }
 

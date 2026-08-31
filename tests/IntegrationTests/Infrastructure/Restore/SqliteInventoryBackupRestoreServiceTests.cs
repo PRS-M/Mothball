@@ -52,7 +52,7 @@ public class SqliteInventoryBackupRestoreServiceTests
     }
 
     [Test]
-    public async Task RestoreAsync_RollsBackWholeRestore_WhenAnyInsertFails()
+    public async Task RestoreAsync_RejectsInvalidPayload_BeforeInsertingRows()
     {
         var service = new SqliteInventoryBackupRestoreService(db);
 
@@ -82,7 +82,7 @@ public class SqliteInventoryBackupRestoreServiceTests
             },
         });
 
-        Assert.ThrowsAsync<SQLite.NotNullConstraintViolationException>(() => service.RestoreAsync(backup));
+        Assert.ThrowsAsync<InvalidDataException>(() => service.RestoreAsync(backup));
 
         var containersRepo = new Repository<DbContainer>(db);
         var rows = await containersRepo.GetAllAsync();

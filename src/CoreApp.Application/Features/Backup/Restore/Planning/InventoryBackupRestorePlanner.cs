@@ -18,6 +18,11 @@ public static class InventoryBackupRestorePlanner
         InventoryBackupPayloadVersionValidator.ValidatePayloadVersion(backup);
     }
 
+    public static void ValidatePayloadShape(InventoryBackupEnvelope backup)
+    {
+        InventoryBackupPayloadShapeValidator.ValidatePayloadShape(backup);
+    }
+
     public static InventoryBackupEnvelope AttachIntegrity(
         InventoryBackupEnvelope backup,
         string? signatureSecret = null,
@@ -39,6 +44,7 @@ public static class InventoryBackupRestorePlanner
         InventoryBackupExistingState existingState,
         InventoryBackupConflictPolicy conflictPolicy)
     {
+        ValidatePayloadShape(backup);
         return PlanBuilder.BuildPlan(backup, existingState, conflictPolicy);
     }
 
@@ -50,6 +56,7 @@ public static class InventoryBackupRestorePlanner
         InventoryBackupExistingState existingState,
         InventoryMergePolicy mergePolicy)
     {
+        ValidatePayloadShape(backup);
         return PlanBuilder.BuildPlan(backup, existingState, mergePolicy);
     }
 }
