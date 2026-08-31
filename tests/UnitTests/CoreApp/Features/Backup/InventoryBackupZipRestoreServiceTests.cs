@@ -164,6 +164,7 @@ public class InventoryBackupZipRestoreServiceTests
 
         return InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
         {
+            CreatedUtc = DateTimeOffset.UtcNow,
             Data = new InventoryBackupData
             {
                 Containers =
@@ -184,6 +185,7 @@ public class InventoryBackupZipRestoreServiceTests
                         Description = "Black 8 inch",
                     },
                 ],
+                Relations = [],
                 Images = images,
             },
         });
