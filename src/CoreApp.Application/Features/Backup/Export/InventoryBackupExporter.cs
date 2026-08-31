@@ -190,7 +190,8 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
                 continue;
             }
 
-            var entryPath = InventoryBackupZipArchive.GetPhotoEntryPath(image.OwnerType, fileName);
+            var ownerType = image.OwnerType;
+            var entryPath = InventoryBackupZipArchive.GetPhotoEntryPath(ownerType, fileName);
             if (!addedEntries.Add(entryPath))
             {
                 continue;
@@ -200,7 +201,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
             try
             {
                 bytes = await fileHandler
-                    .ReadFileAsync(fileName, InventoryBackupZipArchive.GetPhotoFolder(image.OwnerType))
+                    .ReadFileAsync(fileName, InventoryBackupZipArchive.GetPhotoFolder(ownerType))
                     .ConfigureAwait(false);
             }
             catch (FileNotFoundException)

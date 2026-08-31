@@ -43,6 +43,18 @@ public class CoreAppTests
     }
 
     [Test]
+    public void Item_Ctor_WithEmptyGuid_Throws()
+    {
+        Assert.That(() => new Item(Guid.Empty, "Name", "Description"), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void Item_Ctor_WithBlankName_Throws()
+    {
+        Assert.That(() => new Item(Guid.NewGuid(), " ", "Description"), Throws.ArgumentException);
+    }
+
+    [Test]
     public void Item_UpdateDetails_ReplacesCoreFields()
     {
         var item = new Item("Old", "Old description");
@@ -54,6 +66,24 @@ public class CoreAppTests
             Assert.That(item.Name, Is.EqualTo("New"));
             Assert.That(item.Description, Is.EqualTo("New description"));
         });
+    }
+
+    [Test]
+    public void Item_UpdateDetails_WithNullDescription_NormalizesToEmpty()
+    {
+        var item = new Item("Name", "Description");
+
+        item.UpdateDetails("Name", null!);
+
+        Assert.That(item.Description, Is.Empty);
+    }
+
+    [Test]
+    public void Item_UpdateDetails_WithBlankName_Throws()
+    {
+        var item = new Item("Name", "Description");
+
+        Assert.That(() => item.UpdateDetails("", "Description"), Throws.ArgumentException);
     }
 
     [Test]
@@ -109,10 +139,9 @@ public class CoreAppTests
     }
 
     [Test]
-    public void Container_Ctor_WithEmptyGuid_GeneratesNewGuid()
+    public void Container_Ctor_WithEmptyGuid_Throws()
     {
-        var c = new Container(Guid.Empty, "Name", "Notes");
-        Assert.That(c.ContainerId, Is.Not.EqualTo(Guid.Empty));
+        Assert.That(() => new Container(Guid.Empty, "Name", "Notes"), Throws.ArgumentException);
     }
 
     [Test]
@@ -135,6 +164,30 @@ public class CoreAppTests
     }
 
     [Test]
+    public void Container_Ctor_WithBlankName_Throws()
+    {
+        Assert.That(() => new Container(Guid.NewGuid(), " ", "Notes"), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void Container_UpdateDetails_WithNullNotes_NormalizesToEmpty()
+    {
+        var container = new Container(Guid.NewGuid(), "Name", "Notes");
+
+        container.UpdateDetails("Name", null!);
+
+        Assert.That(container.Notes, Is.Empty);
+    }
+
+    [Test]
+    public void Container_UpdateDetails_WithBlankName_Throws()
+    {
+        var container = new Container(Guid.NewGuid(), "Name", "Notes");
+
+        Assert.That(() => container.UpdateDetails("", "Notes"), Throws.ArgumentException);
+    }
+
+    [Test]
     public void Container_AddImageItem_WithExplicitImageId_AddsPhotoWithGivenId()
     {
         var container = new Container();
@@ -143,6 +196,14 @@ public class CoreAppTests
         container.AddImageItem(imageId);
 
         Assert.That(container.Photos.Select(p => p.ImageId), Is.EquivalentTo(new[] { imageId }));
+    }
+
+    [Test]
+    public void Container_AddImageItem_WithEmptyImageId_Throws()
+    {
+        var container = new Container();
+
+        Assert.That(() => container.AddImageItem(Guid.Empty), Throws.ArgumentException);
     }
 
     [Test]

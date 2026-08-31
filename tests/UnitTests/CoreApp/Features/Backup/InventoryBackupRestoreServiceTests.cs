@@ -141,10 +141,149 @@ public class InventoryBackupRestoreServiceTests
     }
 
     [Test]
+    public void RestoreFromJsonAsync_ThrowsArgumentException_WhenDataPropertyIsMissing()
+    {
+        var queries = new Mock<IInventoryQueryRepository>();
+        var commands = new Mock<IInventoryCommandRepository>();
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+
+        var json = """
+            {
+                "payloadVersion": 1,
+                "schemaVersion": 1,
+                "createdUtc": "2026-01-01T00:00:00+00:00",
+                "source": "MothballMobile",
+                "integrity": {
+                    "checksumAlgorithm": "SHA256",
+                    "payloadChecksum": ""
+                }
+            }
+            """;
+
+        Assert.ThrowsAsync<ArgumentException>(() => sut.RestoreFromJsonAsync(
+            json,
+            new InventoryBackupRestoreOptions { RequireIntegrityValidation = false }));
+    }
+
+    [Test]
+    public void RestoreFromJsonAsync_ThrowsArgumentException_WhenCreatedUtcPropertyIsMissing()
+    {
+        var queries = new Mock<IInventoryQueryRepository>();
+        var commands = new Mock<IInventoryCommandRepository>();
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+
+        var json = """
+            {
+                "payloadVersion": 1,
+                "schemaVersion": 1,
+                "source": "MothballMobile",
+                "integrity": {
+                    "checksumAlgorithm": "SHA256",
+                    "payloadChecksum": ""
+                },
+                "data": {
+                    "containers": [],
+                    "items": [],
+                    "relations": [],
+                    "images": []
+                }
+            }
+            """;
+
+        Assert.ThrowsAsync<ArgumentException>(() => sut.RestoreFromJsonAsync(
+            json,
+            new InventoryBackupRestoreOptions { RequireIntegrityValidation = false }));
+    }
+
+    [Test]
+    public void RestoreFromJsonAsync_ThrowsArgumentException_WhenCreatedUtcIsDefault()
+    {
+        var queries = new Mock<IInventoryQueryRepository>();
+        var commands = new Mock<IInventoryCommandRepository>();
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
+        {
+            CreatedUtc = default,
+            Data = new InventoryBackupData(),
+        });
+
+        var json = JsonSerializer.Serialize(backup, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        });
+
+        Assert.ThrowsAsync<ArgumentException>(() => sut.RestoreFromJsonAsync(
+            json,
+            new InventoryBackupRestoreOptions { RequireIntegrityValidation = false }));
+    }
+
+    [Test]
+    public void RestoreFromJsonAsync_ThrowsArgumentException_WhenIntegrityChecksumAlgorithmIsMissing()
+    {
+        var queries = new Mock<IInventoryQueryRepository>();
+        var commands = new Mock<IInventoryCommandRepository>();
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+
+        var json = """
+            {
+                "payloadVersion": 1,
+                "schemaVersion": 1,
+                "createdUtc": "2026-01-01T00:00:00+00:00",
+                "source": "MothballMobile",
+                "integrity": {
+                    "payloadChecksum": ""
+                },
+                "data": {
+                    "containers": [],
+                    "items": [],
+                    "relations": [],
+                    "images": []
+                }
+            }
+            """;
+
+        Assert.ThrowsAsync<ArgumentException>(() => sut.RestoreFromJsonAsync(
+            json,
+            new InventoryBackupRestoreOptions { RequireIntegrityValidation = false }));
+    }
+
+    [Test]
+    public void RestoreFromJsonAsync_ThrowsArgumentException_WhenDataImagesPropertyIsMissing()
+    {
+        var queries = new Mock<IInventoryQueryRepository>();
+        var commands = new Mock<IInventoryCommandRepository>();
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+
+        var json = """
+            {
+                "payloadVersion": 1,
+                "schemaVersion": 1,
+                "createdUtc": "2026-01-01T00:00:00+00:00",
+                "source": "MothballMobile",
+                "integrity": {
+                    "checksumAlgorithm": "SHA256",
+                    "payloadChecksum": ""
+                },
+                "data": {
+                    "containers": [],
+                    "items": [],
+                    "relations": []
+                }
+            }
+            """;
+
+        Assert.ThrowsAsync<ArgumentException>(() => sut.RestoreFromJsonAsync(
+            json,
+            new InventoryBackupRestoreOptions { RequireIntegrityValidation = false }));
+    }
+
+    [Test]
     public async Task RestoreFromJsonAsync_WithValidJson_ParsesAndRestores()
     {
         var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
         {
+            CreatedUtc = DateTimeOffset.UtcNow,
             Data = new InventoryBackupData
             {
                 Containers = [],

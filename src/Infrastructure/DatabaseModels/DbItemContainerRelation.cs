@@ -4,7 +4,7 @@ using SQLite;
 
 namespace Infrastructure.Services.DatabaseModels;
 
-public class DbItemContainerRelation
+public class DbItemContainerRelation : IValidatableDbModel
 {
     [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
@@ -19,4 +19,22 @@ public class DbItemContainerRelation
 
     [NotNull]
     public int Quantity { get; set; } = 1;
+
+    public void Validate()
+    {
+        if (ItemId == Guid.Empty)
+        {
+            throw new InvalidOperationException("Relation item ID cannot be empty.");
+        }
+
+        if (ContainerId == Guid.Empty)
+        {
+            throw new InvalidOperationException("Relation container ID cannot be empty.");
+        }
+
+        if (Quantity <= 0)
+        {
+            throw new InvalidOperationException("Relation quantity must be positive.");
+        }
+    }
 }

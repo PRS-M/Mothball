@@ -75,7 +75,8 @@ public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestor
                 continue;
             }
 
-            var entryPath = InventoryBackupZipArchive.GetPhotoEntryPath(image.OwnerType, fileName);
+            var ownerType = image.OwnerType;
+            var entryPath = InventoryBackupZipArchive.GetPhotoEntryPath(ownerType, fileName);
             if (!restoredEntryPaths.Add(entryPath))
             {
                 continue;
@@ -91,7 +92,7 @@ public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestor
             await using var photoStream = new MemoryStream();
             await entryStream.CopyToAsync(photoStream, cancellationToken).ConfigureAwait(false);
             await fileHandler
-                .SaveFileAsync(fileName, InventoryBackupZipArchive.GetPhotoFolder(image.OwnerType), photoStream.ToArray())
+                .SaveFileAsync(fileName, InventoryBackupZipArchive.GetPhotoFolder(ownerType), photoStream.ToArray())
                 .ConfigureAwait(false);
 
             restored++;

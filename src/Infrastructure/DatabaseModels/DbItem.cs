@@ -3,7 +3,7 @@ using SQLite;
 
 namespace Infrastructure.Services.DatabaseModels;
 
-public class DbItem
+public class DbItem : IValidatableDbModel
 {
 	[PrimaryKey, NotNull]
 	public Guid ItemId { get; set; } = Guid.NewGuid();
@@ -13,4 +13,17 @@ public class DbItem
 
 	[NotNull]
 	public string Description { get; set; } = string.Empty;
+
+    public void Validate()
+    {
+        if (ItemId == Guid.Empty)
+        {
+            throw new InvalidOperationException("Item ID cannot be empty.");
+        }
+
+        if (string.IsNullOrWhiteSpace(Name))
+        {
+            throw new InvalidOperationException("Item name cannot be empty.");
+        }
+    }
 }

@@ -59,6 +59,22 @@ public class MapperTests
     }
 
     [Test]
+    public void ContainerMapper_ToDomain_WithEmptyContainerId_Throws()
+    {
+        var db = new DbContainer { ContainerId = Guid.Empty, Name = "C", Notes = "N" };
+
+        Assert.That(() => db.ToDomain(photos: null), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void ContainerMapper_ToDomain_WithBlankName_Throws()
+    {
+        var db = new DbContainer { ContainerId = Guid.NewGuid(), Name = " ", Notes = "N" };
+
+        Assert.That(() => db.ToDomain(photos: null), Throws.ArgumentException);
+    }
+
+    [Test]
     public void ItemMapper_ToDb_MapsCoreFields()
     {
         var id = Guid.NewGuid();
@@ -86,6 +102,22 @@ public class MapperTests
     }
 
     [Test]
+    public void ItemMapper_ToDomain_WithEmptyItemId_Throws()
+    {
+        var db = new DbItem { ItemId = Guid.Empty, Name = "Hat", Description = "Desc" };
+
+        Assert.That(() => db.ToDomain(), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void ItemMapper_ToDomain_WithBlankName_Throws()
+    {
+        var db = new DbItem { ItemId = Guid.NewGuid(), Name = " ", Description = "Desc" };
+
+        Assert.That(() => db.ToDomain(), Throws.ArgumentException);
+    }
+
+    [Test]
     public void ImageMapper_ToDb_Throws_OnEmptyOwnerId()
     {
         var img = new ImageItem(Guid.NewGuid());
@@ -101,5 +133,13 @@ public class MapperTests
         var domain = db.ToDomain();
 
         Assert.That(domain.ImageId, Is.EqualTo(id));
+    }
+
+    [Test]
+    public void ImageMapper_ToDomain_WithEmptyImageId_Throws()
+    {
+        var db = new DbImage { ImageId = Guid.Empty, OwnerUniqueId = Guid.NewGuid() };
+
+        Assert.That(() => db.ToDomain(), Throws.ArgumentException);
     }
 }
