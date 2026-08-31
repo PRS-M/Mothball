@@ -40,6 +40,24 @@ internal static class InventoryBackupPayloadShapeValidator
             }
         }
 
+        foreach (var relation in backup.Data.Relations)
+        {
+            if (relation.ContainerId == Guid.Empty)
+            {
+                throw new InvalidDataException("Backup relation container ID cannot be empty.");
+            }
+
+            if (relation.ItemId == Guid.Empty)
+            {
+                throw new InvalidDataException("Backup relation item ID cannot be empty.");
+            }
+
+            if (relation.Quantity <= 0)
+            {
+                throw new InvalidDataException("Backup relation quantity must be positive.");
+            }
+        }
+
         foreach (var image in backup.Data.Images)
         {
             if (image.ImageId == Guid.Empty)

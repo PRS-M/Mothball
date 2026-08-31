@@ -148,6 +148,56 @@ public class InventoryBackupRestorePlannerTests
     }
 
     [Test]
+    public void BuildPlan_WithInvalidRelationShape_ThrowsInvalidDataException()
+    {
+        var itemId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [],
+                Items = [new InventoryBackupItem { ItemId = itemId, Name = "Item", Description = "", TotalQuantity = 1 }],
+                Relations = [new InventoryBackupRelation { ContainerId = Guid.Empty, ItemId = itemId, Quantity = 1 }],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly));
+    }
+
+    [Test]
+    public void BuildPlan_WithMissingRelationOwner_StillSkipsRelation()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = containerId, Name = "Container", Notes = "" }],
+                Items = [],
+                Relations = [new InventoryBackupRelation { ContainerId = containerId, ItemId = itemId, Quantity = 1 }],
+                Images = [],
+            },
+        };
+
+        var existing = new InventoryBackupExistingState([], [], [], [], []);
+
+        var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existing, InventoryBackupConflictPolicy.AddOnly);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.RelationsToInsert, Is.Empty);
+            Assert.That(plan.Result.SkippedInvalidRelations, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
     public void BuildPlan_WithInvalidImageShape_ThrowsInvalidDataException()
     {
         var ownerId = Guid.NewGuid();
