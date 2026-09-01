@@ -4,13 +4,14 @@
                 xmlns:backgroundOperations="clr-namespace:MothballMobile.Infrastructure.BackgroundOperations.Photos"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.BackgroundOperations.BackgroundOperationsPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="backgroundOperations:IPhotoBackgroundOperationTracker"
-                Title="Background Operations"
+                Title="{x:Static strings:AppResources.BackgroundOperations}"
                 Background="{DynamicResource Surface}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
-            <Label Text="Background photo operations"
+            <Label Text="{x:Static strings:AppResources.BackgroundPhotoOperations}"
                    Style="{StaticResource HeadlineSmall}"
                    TextColor="{DynamicResource OnSurface}" />
 
@@ -22,12 +23,12 @@
                     <Label Text="{Binding StatusText}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                     <ProgressBar Progress="{Binding OverallProgress}" />
-                    <Label Text="{Binding ActiveOperationCount, StringFormat='Active operations: {0}'}"
+                    <Label Text="{Binding ActiveOperationCount, StringFormat={x:Static strings:AppResources.ActiveOperationsFormat}}"
                            TextColor="{DynamicResource OnSurface}" />
                 </VerticalStackLayout>
             </Border>
 
-            <Label Text="Recent operations"
+            <Label Text="{x:Static strings:AppResources.RecentOperations}"
                    Style="{StaticResource TitleMedium}"
                    TextColor="{DynamicResource OnSurface}" />
 
@@ -38,7 +39,7 @@
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 12"
                             Padding="12">
-                        <Label Text="No background operations have completed yet."
+                        <Label Text="{x:Static strings:AppResources.NoBackgroundOperationsHaveCompletedYet}"
                                TextColor="{DynamicResource OnSurfaceVariant}" />
                     </Border>
                 </CollectionView.EmptyView>
@@ -63,19 +64,19 @@
 
                                 <Label Grid.Row="0"
                                        Grid.Column="1"
-                                       Text="{Binding Succeeded, StringFormat='Success: {0}'}"
+                                       Text="{Binding Succeeded, StringFormat={x:Static strings:AppResources.SuccessFormat}}"
                                        Style="{StaticResource BodySmall}"
                                        TextColor="{DynamicResource OnSurfaceVariant}" />
 
                                 <Label Grid.Row="1"
                                        Grid.Column="0"
-                                       Text="{Binding CompletedAt, StringFormat='Completed: {0:G}'}"
+                                       Text="{Binding CompletedAt, StringFormat={x:Static strings:AppResources.CompletedFormat}}"
                                        Style="{StaticResource BodySmall}"
                                        TextColor="{DynamicResource OnSurfaceVariant}" />
 
                                 <Label Grid.Row="1"
                                        Grid.Column="1"
-                                       Text="{Binding FinalProgress, StringFormat='Progress: {0:P0}'}"
+                                       Text="{Binding FinalProgress, StringFormat={x:Static strings:AppResources.ProgressFormat}}"
                                        Style="{StaticResource BodySmall}"
                                        TextColor="{DynamicResource OnSurfaceVariant}" />
                             </Grid>

@@ -5,8 +5,9 @@
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Items.ItemDetails.ItemDetailsPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ItemDetailsViewModel"
-                Title="Item"
+                Title="{x:Static strings:AppResources.Item}"
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
@@ -30,7 +31,7 @@
                          TitleFontAttributes="Bold">
             <controls:TitleActionRow.Actions>
                 <VerticalStackLayout Spacing="8">
-                <Button Text="Go to the container"
+                <Button Text="{x:Static strings:AppResources.GoToTheContainer}"
                     Style="{StaticResource TonalButton}"
                     IsVisible="{Binding ShowGoToContainerButton}"
                     Command="{Binding NavigateToContainerCommand}">
@@ -41,7 +42,7 @@
                                          Size="16" />
                     </Button.ImageSource>
                 </Button>
-                <Button Text="Associate with a container"
+                <Button Text="{x:Static strings:AppResources.AssociateWithAContainer}"
                     Style="{StaticResource OutlinedButton}"
                     IsVisible="{Binding HasUnassignedQuantity}"
                     Command="{Binding NavigateToAssociateWithContainerCommand}">
@@ -64,10 +65,12 @@
                                             UseDynamicAspectRatio="True"
                                             ImagePaths="{Binding ImagePaths}" />
 
-                    <HorizontalStackLayout Spacing="8">
-                        <Button Text="Add photo"
+                    <Grid ColumnDefinitions="*,*"
+                          ColumnSpacing="8">
+                        <Button Grid.Column="0"
+                                Text="{x:Static strings:AppResources.AddPhoto}"
                                 Style="{StaticResource TonalButton}"
-                                HeightRequest="34"
+                                MinimumHeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
                                 Command="{Binding AddPhotoCommand}">
@@ -79,9 +82,10 @@
                             </Button.ImageSource>
                         </Button>
 
-                        <Button Text="Delete photo"
+                        <Button Grid.Column="1"
+                                Text="{x:Static strings:AppResources.DeletePhoto}"
                                 Style="{StaticResource OutlinedButton}"
-                                HeightRequest="34"
+                                MinimumHeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
                                 Command="{Binding DeletePhotoCommand}">
@@ -92,7 +96,7 @@
                                                  Size="14" />
                             </Button.ImageSource>
                         </Button>
-                    </HorizontalStackLayout>
+                    </Grid>
 
                 </VerticalStackLayout>
             </Border>
@@ -100,14 +104,14 @@
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="Description"
+                        <Label Text="{x:Static strings:AppResources.Description}"
                                FontAttributes="Bold"
                                VerticalOptions="Center"
                                TextColor="{DynamicResource OnSurface}"/>
                         <Button Grid.Column="1"
-                                Text="Edit Description"
+                                Text="{x:Static strings:AppResources.EditDescription}"
                                 Style="{StaticResource OutlinedButton}"
-                                HeightRequest="34"
+                                MinimumHeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
                                 IsVisible="{Binding IsViewingDescription}"
@@ -120,9 +124,9 @@
                             </Button.ImageSource>
                         </Button>
                         <Button Grid.Column="1"
-                                Text="Save"
+                                Text="{x:Static strings:AppResources.Save}"
                                 Style="{StaticResource TonalButton}"
-                                HeightRequest="34"
+                                MinimumHeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
                                 IsVisible="{Binding IsEditingDescription}"
@@ -145,7 +149,7 @@
                         <Editor Text="{Binding DescriptionDraft}"
                                 AutoSize="TextChanges"
                                 MinimumHeightRequest="96"
-                                Placeholder="Description" />
+                                Placeholder="{x:Static strings:AppResources.Description}" />
                     </Border>
                 </VerticalStackLayout>
             </Border>
@@ -153,26 +157,26 @@
                  <Border Style="{StaticResource Card}"
                          IsVisible="{Binding ShowQuantityManagement}">
                   <VerticalStackLayout Spacing="8">
-                      <Label Text="Inventory"
+                      <Label Text="{x:Static strings:AppResources.Inventory}"
                           FontAttributes="Bold"
                           TextColor="{DynamicResource OnSurface}" />
                       <Grid ColumnDefinitions="*,Auto"
                          RowDefinitions="Auto,Auto,Auto"
                          RowSpacing="6">
-                       <Label Text="Total quantity"
+                       <Label Text="{x:Static strings:AppResources.TotalQuantity}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                        <Label Grid.Column="1"
                            Text="{Binding TotalQuantity}"
                            FontAttributes="Bold" />
                        <Label Grid.Row="1"
-                           Text="Assigned quantity"
+                           Text="{x:Static strings:AppResources.AssignedQuantity}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                        <Label Grid.Row="1"
                            Grid.Column="1"
                            Text="{Binding AssignedQuantity}"
                            FontAttributes="Bold" />
                        <Label Grid.Row="2"
-                           Text="Unassigned quantity"
+                           Text="{x:Static strings:AppResources.UnassignedQuantity}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                        <Label Grid.Row="2"
                            Grid.Column="1"
@@ -181,7 +185,7 @@
                       </Grid>
                       <HorizontalStackLayout Spacing="8"
                                              HorizontalOptions="End">
-                          <Button Text="Edit quantity"
+                          <Button Text="{x:Static strings:AppResources.EditQuantity}"
                                   Style="{StaticResource OutlinedButton}"
                                   Command="{Binding EditQuantityCommand}">
                               <Button.ImageSource>
@@ -191,7 +195,7 @@
                                                    Size="16" />
                               </Button.ImageSource>
                           </Button>
-                          <Button Text="Use"
+                          <Button Text="{x:Static strings:AppResources.Use}"
                                   Style="{StaticResource OutlinedButton}"
                                   Command="{Binding UseCommand}">
                               <Button.ImageSource>

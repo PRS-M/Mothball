@@ -12,6 +12,7 @@ public partial class App : Application
 	private readonly IAppStartupOrchestrator startupOrchestrator;
 	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 	private readonly IApplicationSettings applicationSettings;
+	private readonly ILocalizationService localization;
 	private readonly IBackupSignatureSecretProvider backupSignatureSecretProvider;
 	private readonly IAppErrorPresenter appErrorPresenter;
 	private readonly AdMobSettings adMobSettings;
@@ -22,16 +23,20 @@ public partial class App : Application
 		IAppStartupOrchestrator startupOrchestrator,
 		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
 		IApplicationSettings applicationSettings,
+		ILocalizationService localization,
 		IBackupSignatureSecretProvider backupSignatureSecretProvider,
 		IAppErrorPresenter appErrorPresenter,
 		AdMobSettings adMobSettings,
 		ILogger<App> logger,
 		ILogger<AppShell> appShellLogger)
 	{
-		InitializeComponent();
 		this.startupOrchestrator = startupOrchestrator;
 		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
 		this.applicationSettings = applicationSettings;
+		this.localization = localization;
+		LocalizationManager.Configure(localization);
+		localization.SetLanguage(applicationSettings.Language);
+		InitializeComponent();
 		this.backupSignatureSecretProvider = backupSignatureSecretProvider;
 		this.appErrorPresenter = appErrorPresenter;
 		this.adMobSettings = adMobSettings;
@@ -131,7 +136,7 @@ public partial class App : Application
 	{
 		var retryButton = new Button
 		{
-			Text = "Retry startup"
+			Text = LocalizationManager.Current.Get("Retry startup")
 		};
 
 		retryButton.Clicked += async (_, _) =>
@@ -161,7 +166,7 @@ public partial class App : Application
 				{
 					new Label
 					{
-						Text = "Startup failed",
+						Text = LocalizationManager.Current.Get("Startup failed"),
 						HorizontalTextAlignment = TextAlignment.Center,
 						FontAttributes = FontAttributes.Bold
 					},
@@ -198,7 +203,7 @@ public partial class App : Application
 					},
 					new Label
 					{
-						Text = "Starting Mothball...",
+						Text = LocalizationManager.Current.Get("Starting Mothball..."),
 						HorizontalTextAlignment = TextAlignment.Center
 					}
 				}

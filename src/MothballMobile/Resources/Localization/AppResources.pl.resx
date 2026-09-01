@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AddUpsertMetadata" xml:space="preserve"><value>Dodaj + aktualizuj metadane</value></data>
+  <data name="AddContainer" xml:space="preserve"><value>Dodaj pojemnik</value></data>
+  <data name="AddExistingItem" xml:space="preserve"><value>Dodaj istniejący przedmiot</value></data>
+  <data name="AddItem" xml:space="preserve"><value>Dodaj przedmiot</value></data>
+  <data name="AddANewItem" xml:space="preserve"><value>Dodaj nowy przedmiot</value></data>
+  <data name="AddAnExistingItem" xml:space="preserve"><value>Dodaj istniejący przedmiot</value></data>
+  <data name="AddOnly" xml:space="preserve"><value>Tylko dodaj</value></data>
+  <data name="AddPhoto" xml:space="preserve"><value>Dodaj zdjęcie</value></data>
+  <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Dodaje pojemniki, przedmioty, różnice ilości powiązań i obrazy obecne w kopii, ale brakujące w aplikacji.</value></data>
+  <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Dodaje brakujące rekordy tak jak tryb Tylko dodaj.</value></data>
+  <data name="Advanced" xml:space="preserve"><value>Zaawansowany</value></data>
+  <data name="AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement" xml:space="preserve"><value>Tryb zaawansowany pokazuje sumy ilości, przypisania i edycję ilości. Tryb prosty ukrywa zarządzanie ilością.</value></data>
+  <data name="AppMode" xml:space="preserve"><value>Tryb aplikacji</value></data>
+  <data name="AreYouSureYouWantToDeleteThisItemThisCannotBeUndone" xml:space="preserve"><value>Czy na pewno chcesz usunąć ten przedmiot? Tej operacji nie można cofnąć.</value></data>
+  <data name="AssignToContainer" xml:space="preserve"><value>Przypisz do pojemnika</value></data>
+  <data name="AssignedQuantity" xml:space="preserve"><value>Przypisana ilość</value></data>
+  <data name="AssignedWithdrawalsAreCompleteContinuingWillWithdrawFrom0UnassignedItemsAndReduceTheTotalQuantityFurther" xml:space="preserve"><value>Pobieranie przypisanych przedmiotów zakończone. Kontynuowanie pobierze {0} nieprzypisanych przedmiotów i dodatkowo zmniejszy łączną ilość.</value></data>
+  <data name="AssociateWithAContainer" xml:space="preserve"><value>Powiąż z pojemnikiem</value></data>
+  <data name="AutoSystem" xml:space="preserve"><value>Automatycznie (systemowy)</value></data>
+  <data name="BackgroundOperations" xml:space="preserve"><value>Operacje w tle</value></data>
+  <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Operacje zdjęć w tle</value></data>
+  <data name="Backup" xml:space="preserve"><value>Kopia zapasowa</value></data>
+  <data name="BackupExported" xml:space="preserve"><value>Wyeksportowano kopię zapasową</value></data>
+  <data name="BackupDeleted" xml:space="preserve"><value>Usunięto kopię zapasową</value></data>
+  <data name="BackupSavedTo0" xml:space="preserve"><value>Kopia zapasowa zapisana w:
+{0}</value></data>
+  <data name="BackupSigningKey" xml:space="preserve"><value>Klucz podpisu kopii zapasowej</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Anuluj</value></data>
+  <data name="CapturePhoto" xml:space="preserve"><value>Zrób zdjęcie</value></data>
+  <data name="ChoosePhoto" xml:space="preserve"><value>Wybierz zdjęcie</value></data>
+  <data name="ChooseAContainer" xml:space="preserve"><value>Wybierz pojemnik</value></data>
+  <data name="ChooseAndDeleteALocalBackupJSONFile" xml:space="preserve"><value>Wybierz i usuń lokalny plik kopii JSON</value></data>
+  <data name="ChooseAndDeleteALocalBackupZIPFile" xml:space="preserve"><value>Wybierz i usuń lokalny plik kopii ZIP</value></data>
+  <data name="ChooseAndShareALocalBackupJSONFileOutsideTheApp" xml:space="preserve"><value>Wybierz i udostępnij lokalny plik kopii JSON poza aplikacją</value></data>
+  <data name="ChooseAndShareALocalBackupZIPFileOutsideTheApp" xml:space="preserve"><value>Wybierz i udostępnij lokalny plik kopii ZIP poza aplikacją</value></data>
+  <data name="ChooseAnotherSource" xml:space="preserve"><value>Wybierz inne źródło</value></data>
+  <data name="ChooseApplicationLanguage" xml:space="preserve"><value>Wybierz język aplikacji</value></data>
+  <data name="ChooseAutomaticSystemThemeLightThemeOrDarkTheme" xml:space="preserve"><value>Wybierz automatyczny motyw systemowy, jasny lub ciemny</value></data>
+  <data name="ChooseBackupFile" xml:space="preserve"><value>Wybierz plik kopii zapasowej</value></data>
+  <data name="ChooseContainerPhotoToDelete" xml:space="preserve"><value>Wybierz zdjęcie pojemnika do usunięcia</value></data>
+  <data name="ChooseItemPhotoToDelete" xml:space="preserve"><value>Wybierz zdjęcie przedmiotu do usunięcia</value></data>
+  <data name="ChooseRestoreModeAndImportAJSONBackupFromTheFileSystem" xml:space="preserve"><value>Wybierz tryb przywracania i zaimportuj kopię JSON z systemu plików</value></data>
+  <data name="ChooseRestoreModeAndImportAZIPBackupFromTheFileSystem" xml:space="preserve"><value>Wybierz tryb przywracania i zaimportuj kopię ZIP z systemu plików</value></data>
+  <data name="ChooseRestoreModeAndImportALocalZIPBackupWithPhotoFiles" xml:space="preserve"><value>Wybierz tryb przywracania i zaimportuj lokalną kopię ZIP ze zdjęciami</value></data>
+  <data name="ChooseRestoreModeAndImportALocalBackupJSONFile" xml:space="preserve"><value>Wybierz tryb przywracania i zaimportuj lokalny plik kopii JSON</value></data>
+  <data name="ChooseSigningKey" xml:space="preserve"><value>Wybierz klucz podpisu</value></data>
+  <data name="ChooseTheMothballColorTheme" xml:space="preserve"><value>Wybierz motyw kolorystyczny Mothball</value></data>
+  <data name="ChooseTheColorPaletteUsedThroughoutMothball" xml:space="preserve"><value>Wybierz paletę kolorów używaną w Mothball.</value></data>
+  <data name="ChooseWhereYouWantToGo" xml:space="preserve"><value>Wybierz miejsce, do którego chcesz przejść</value></data>
+  <data name="ChooseWhetherMothballFollowsTheSystemAppearanceOrAlwaysUsesALightOrDarkMode" xml:space="preserve"><value>Wybierz, czy Mothball ma używać wyglądu systemu, czy zawsze trybu jasnego lub ciemnego.</value></data>
+  <data name="ChoosingAnImportMode" xml:space="preserve"><value>Wybór trybu importu</value></data>
+  <data name="Container" xml:space="preserve"><value>Pojemnik</value></data>
+  <data name="Containers" xml:space="preserve"><value>Pojemniki</value></data>
+  <data name="ContainersList" xml:space="preserve"><value>Lista pojemników</value></data>
+  <data name="Continue" xml:space="preserve"><value>Kontynuuj</value></data>
+  <data name="CouldNotDeleteBackup0" xml:space="preserve"><value>Nie można usunąć kopii zapasowej.
+
+{0}</value></data>
+  <data name="CouldNotExportBackup0" xml:space="preserve"><value>Nie można wyeksportować kopii zapasowej.
+
+{0}</value></data>
+  <data name="CouldNotImportBackup0" xml:space="preserve"><value>Nie można zaimportować kopii zapasowej.
+
+{0}</value></data>
+  <data name="CouldNotImportTheBackupSigningKey0" xml:space="preserve"><value>Nie można zaimportować klucza podpisu kopii zapasowej.
+
+{0}</value></data>
+  <data name="CouldNotShareBackup0" xml:space="preserve"><value>Nie można udostępnić kopii zapasowej.
+
+{0}</value></data>
+  <data name="CouldNotShareTheBackupSigningKey0" xml:space="preserve"><value>Nie można udostępnić klucza podpisu kopii zapasowej.
+
+{0}</value></data>
+  <data name="CreateALocalZIPBackupWithInventoryDataAndPhotoFiles" xml:space="preserve"><value>Utwórz lokalną kopię ZIP z danymi magazynu i zdjęciami</value></data>
+  <data name="CreateALocalBackupJSONFileWithFullInventoryData" xml:space="preserve"><value>Utwórz lokalny plik JSON z pełnymi danymi magazynu</value></data>
+  <data name="CreateANewContainer" xml:space="preserve"><value>Utwórz nowy pojemnik</value></data>
+  <data name="Dark" xml:space="preserve"><value>Ciemny</value></data>
+  <data name="Delete" xml:space="preserve"><value>Usuń</value></data>
+  <data name="Delete0FromLocalBackupStorage" xml:space="preserve"><value>Usunąć „{0}” z lokalnego magazynu kopii zapasowych?</value></data>
+  <data name="DeleteBackup" xml:space="preserve"><value>Usuń kopię zapasową</value></data>
+  <data name="DeleteBackupJSON" xml:space="preserve"><value>Usuń kopię JSON</value></data>
+  <data name="DeleteBackupZIP" xml:space="preserve"><value>Usuń kopię ZIP</value></data>
+  <data name="DeleteContainer" xml:space="preserve"><value>Usuń pojemnik</value></data>
+  <data name="DeleteFailed" xml:space="preserve"><value>Usuwanie nie powiodło się</value></data>
+  <data name="DeleteItem" xml:space="preserve"><value>Usuń przedmiot</value></data>
+  <data name="DeletePhoto" xml:space="preserve"><value>Usuń zdjęcie</value></data>
+  <data name="DeleteTheSelectedPhoto" xml:space="preserve"><value>Usunąć wybrane zdjęcie?</value></data>
+  <data name="DeleteThisContainerItemsInsideWillNotBeDeletedOnlyTheRelation" xml:space="preserve"><value>Usunąć ten pojemnik? Przedmioty w środku nie zostaną usunięte, tylko powiązanie.</value></data>
+  <data name="Deleted0" xml:space="preserve"><value>Usunięto: {0}</value></data>
+  <data name="DeletesContainersAndItemsThatExistInTheAppButAreNotPresentInTheBackupThisMakesTheTopLevelInventoryMatchTheBackup" xml:space="preserve"><value>Deletes containers and items that exist in the app but are not present in the backup. This makes the top-level inventory match the backup.</value></data>
+  <data name="Description" xml:space="preserve"><value>Opis</value></data>
+  <data name="DismissError" xml:space="preserve"><value>Zamknij błąd</value></data>
+  <data name="DocumentationHelp" xml:space="preserve"><value>Dokumentacja / Pomoc</value></data>
+  <data name="EditDescription" xml:space="preserve"><value>Edytuj opis</value></data>
+  <data name="EditQuantity" xml:space="preserve"><value>Edytuj ilość</value></data>
+  <data name="EnableOrDisableBackupSigningKeyUse" xml:space="preserve"><value>Włącz lub wyłącz używanie klucza podpisu kopii zapasowej</value></data>
+  <data name="English" xml:space="preserve"><value>Angielski</value></data>
+  <data name="Enter0ToCancelOrWithdrawAtLeastTheRemaining0Items" xml:space="preserve"><value>Wpisz 0, aby anulować, albo pobierz co najmniej pozostałe {0} przedmiotów.</value></data>
+  <data name="Enter0ToFinish" xml:space="preserve"><value>Wpisz 0, aby zakończyć</value></data>
+  <data name="Enter0ToStop" xml:space="preserve"><value>Wpisz 0, aby zakończyć</value></data>
+  <data name="EnterADescriptionOrNotes" xml:space="preserve"><value>Wpisz opis lub notatki.</value></data>
+  <data name="EnterANumberBetween0And1" xml:space="preserve"><value>Wpisz liczbę od {0} do {1}.</value></data>
+  <data name="EnterContainerName" xml:space="preserve"><value>Wpisz nazwę pojemnika</value></data>
+  <data name="EnterHowManyItemsToUsePermanently" xml:space="preserve"><value>Wpisz, ile przedmiotów zużyć bezpowrotnie.</value></data>
+  <data name="EnterHowManyItemsToWithdrawFromThisContainer" xml:space="preserve"><value>Wpisz, ile przedmiotów pobrać z tego pojemnika.</value></data>
+  <data name="EnterHowManyUnassignedItemsToPlaceInThisContainer" xml:space="preserve"><value>Wpisz, ile nieprzypisanych przedmiotów umieścić w tym pojemniku.</value></data>
+  <data name="EnterHowManyUnassignedItemsToUsePermanently" xml:space="preserve"><value>Wpisz, ile nieprzypisanych przedmiotów zużyć bezpowrotnie.</value></data>
+  <data name="EnterHowManyUnassignedItemsToWithdraw" xml:space="preserve"><value>Wpisz, ile nieprzypisanych przedmiotów pobrać.</value></data>
+  <data name="EnterQuantity" xml:space="preserve"><value>Wpisz ilość</value></data>
+  <data name="ExistingContainersItemsRelationsAndImagesAreLeftUnchangedThisIsTheSafestChoiceWhenYouWantToMergeABackupWithoutModifyingCurrentData" xml:space="preserve"><value>Existing containers, items, relations, and images are left unchanged. This is the safest choice when you want to merge a backup without modifying current data.</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>Eksport nie powiódł się</value></data>
+  <data name="ExportInventoryMetadataAsJSONOrCreateAZIPBackupThatAlsoIncludesPhotoFiles" xml:space="preserve"><value>Eksportuj metadane magazynu jako JSON lub utwórz kopię ZIP zawierającą także zdjęcia.</value></data>
+  <data name="ExportToJSON" xml:space="preserve"><value>Eksportuj do JSON</value></data>
+  <data name="ExportWithPhotosToZIP" xml:space="preserve"><value>Eksportuj ze zdjęciami do ZIP</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtr:</value></data>
+  <data name="ForExistingContainersItUpdatesNameAndNotesWhenTheBackupDiffersForExistingItemsItUpdatesNameAndDescriptionWhenTheBackupDiffers" xml:space="preserve"><value>For existing containers, it updates name and notes when the backup differs. For existing items, it updates name and description when the backup differs.</value></data>
+  <data name="ForSurvivingContainersAndItemsRelationAndImageRestoreRemainsAdditiveMissingRelationQuantitiesAndImageReferencesAreAddedButOmittedRelationPairsAndImageReferencesAreNotRemoved" xml:space="preserve"><value>For surviving containers and items, relation and image restore remains additive. Missing relation quantities and image references are added, but omitted relation pairs and image references are not removed.</value></data>
+  <data name="ForSurvivingImageReferencesMissingOwnerImageReferencesAreInsertedAndExtraOwnerImageReferencesAreDeleted" xml:space="preserve"><value>For surviving image references, missing owner-image references are inserted and extra owner-image references are deleted.</value></data>
+  <data name="ForSurvivingRelationPairsTheAppIsReconciledToTheBackupExactlyMissingPairsAreInsertedExtraPairsAreDeletedAndExistingPairQuantitiesAreSetToTheBackupQuantity" xml:space="preserve"><value>For surviving relation pairs, the app is reconciled to the backup exactly. Missing pairs are inserted, extra pairs are deleted, and existing pair quantities are set to the backup quantity.</value></data>
+  <data name="FullSyncRoots" xml:space="preserve"><value>Pełna synchronizacja (główne rekordy)</value></data>
+  <data name="GoToTheContainer" xml:space="preserve"><value>Przejdź do pojemnika</value></data>
+  <data name="Home" xml:space="preserve"><value>Start</value></data>
+  <data name="ImageProcessing" xml:space="preserve"><value>Przetwarzanie obrazów</value></data>
+  <data name="Import" xml:space="preserve"><value>Importuj</value></data>
+  <data name="ImportFailed" xml:space="preserve"><value>Import nie powiódł się</value></data>
+  <data name="ImportABackupSigningKeyFileReceivedFromAnotherDevice" xml:space="preserve"><value>Importuj plik klucza podpisu kopii zapasowej otrzymany z innego urządzenia</value></data>
+  <data name="ImportFromJSON" xml:space="preserve"><value>Importuj z JSON</value></data>
+  <data name="ImportFromJSONFromFiles" xml:space="preserve"><value>Importuj JSON z plików</value></data>
+  <data name="ImportFromZIPFromFiles" xml:space="preserve"><value>Importuj ZIP z plików</value></data>
+  <data name="ImportModesControlHowRecordsAlreadyInTheAppAreHandledWhenABackupJSONFileIsRestoredChooseTheLeastDestructiveModeThatMatchesWhatYouNeed" xml:space="preserve"><value>Tryby importu określają sposób obsługi rekordów już obecnych w aplikacji podczas przywracania kopii JSON. Wybierz najmniej destrukcyjny tryb odpowiedni do potrzeb.</value></data>
+  <data name="ImportSigningKey" xml:space="preserve"><value>Importuj klucz podpisu</value></data>
+  <data name="ImportWithPhotosFromZIP" xml:space="preserve"><value>Importuj zdjęcia z ZIP</value></data>
+  <data name="IncludesAddUpsertMetadataBehavior" xml:space="preserve"><value>Obejmuje działanie trybu Dodaj + aktualizuj metadane.</value></data>
+  <data name="IncludesFullSyncRootBehaviorIncludingDeletionOfContainersAndItemsThatAreNotInTheBackup" xml:space="preserve"><value>Obejmuje działanie pełnej synchronizacji głównych rekordów, w tym usuwanie pojemników i przedmiotów nieobecnych w kopii.</value></data>
+  <data name="Inventory" xml:space="preserve"><value>Stan magazynowy</value></data>
+  <data name="Item" xml:space="preserve"><value>Przedmiot</value></data>
+  <data name="ItemLocations" xml:space="preserve"><value>Lokalizacje przedmiotu</value></data>
+  <data name="ItemName" xml:space="preserve"><value>Nazwa przedmiotu</value></data>
+  <data name="Items" xml:space="preserve"><value>Przedmioty</value></data>
+  <data name="ItemsList" xml:space="preserve"><value>Lista przedmiotów</value></data>
+  <data name="JSON" xml:space="preserve"><value>JSON</value></data>
+  <data name="ItemsInThisContainer" xml:space="preserve"><value>Przedmioty w tym pojemniku</value></data>
+  <data name="Language" xml:space="preserve"><value>Język</value></data>
+  <data name="Light" xml:space="preserve"><value>Jasny</value></data>
+  <data name="MoreItemsMustBeWithdrawn" xml:space="preserve"><value>Należy pobrać więcej przedmiotów</value></data>
+  <data name="Mothball" xml:space="preserve"><value>Mothball</value></data>
+  <data name="NameIsRequired" xml:space="preserve"><value>Nazwa jest wymagana.</value></data>
+  <data name="NoBackgroundOperationsHaveCompletedYet" xml:space="preserve"><value>Nie ukończono jeszcze żadnych operacji w tle.</value></data>
+  <data name="NoBackupFilesWereFoundInLocalBackupStorage" xml:space="preserve"><value>W lokalnym magazynie nie znaleziono plików kopii zapasowych.</value></data>
+  <data name="NoBackupsFound" xml:space="preserve"><value>Nie znaleziono kopii zapasowych</value></data>
+  <data name="NoContainersFound" xml:space="preserve"><value>Nie znaleziono pojemników</value></data>
+  <data name="NoContainersYet" xml:space="preserve"><value>Nie ma jeszcze pojemników</value></data>
+  <data name="NoItemsInThisContainer" xml:space="preserve"><value>Brak przedmiotów w tym pojemniku</value></data>
+  <data name="NoItemsYet" xml:space="preserve"><value>Nie ma jeszcze przedmiotów</value></data>
+  <data name="NoPhotoSelected" xml:space="preserve"><value>Nie wybrano zdjęcia.</value></data>
+  <data name="NoPhotos" xml:space="preserve"><value>Brak zdjęć</value></data>
+  <data name="NoUnassignedItems" xml:space="preserve"><value>Brak nieprzypisanych przedmiotów</value></data>
+  <data name="OK" xml:space="preserve"><value>OK</value></data>
+  <data name="OpenDocumentationThatExplainsBackupImportModes" xml:space="preserve"><value>Otwórz dokumentację wyjaśniającą tryby importu kopii zapasowych</value></data>
+  <data name="OpenTheBackgroundPhotoOperationsPage" xml:space="preserve"><value>Otwórz stronę operacji zdjęć w tle</value></data>
+  <data name="OpenTheContainersView" xml:space="preserve"><value>Otwórz widok pojemników</value></data>
+  <data name="OpenTheItemsView" xml:space="preserve"><value>Otwórz widok przedmiotów</value></data>
+  <data name="OpenTheSettingsView" xml:space="preserve"><value>Otwórz ustawienia</value></data>
+  <data name="PhotoSelected" xml:space="preserve"><value>Wybrano zdjęcie</value></data>
+  <data name="PhotoSelectedItWillBeSavedWhenYouTapSave" xml:space="preserve"><value>Wybrano zdjęcie. Zostanie zapisane po dotknięciu przycisku Zapisz.</value></data>
+  <data name="Photo0" xml:space="preserve"><value>Zdjęcie {0}</value></data>
+  <data name="Polish" xml:space="preserve"><value>Polski</value></data>
+  <data name="ProcessingPhoto" xml:space="preserve"><value>Przetwarzanie zdjęcia...</value></data>
+  <data name="QuantityMustBeAPositiveNumber" xml:space="preserve"><value>Ilość musi być liczbą dodatnią.</value></data>
+  <data name="QuantityNotUpdated" xml:space="preserve"><value>Ilość nie została zaktualizowana</value></data>
+  <data name="RecentOperations" xml:space="preserve"><value>Ostatnie operacje</value></data>
+  <data name="RelationsAndImageReferencesRemainAdditiveForExistingRecords" xml:space="preserve"><value>Relations and image references remain additive for existing records.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Remove0FromThisContainerTheItemItselfWillNotBeDeleted" xml:space="preserve"><value>Usunąć „{0}” z tego pojemnika? Sam przedmiot nie zostanie usunięty.</value></data>
+  <data name="RemoveItem" xml:space="preserve"><value>Usuń przedmiot</value></data>
+  <data name="ResizingPhoto" xml:space="preserve"><value>Zmienianie rozmiaru zdjęcia...</value></data>
+  <data name="RestoreCompleted" xml:space="preserve"><value>Przywracanie zakończone</value></data>
+  <data name="RestoreFailed" xml:space="preserve"><value>Przywracanie nie powiodło się</value></data>
+  <data name="RestoreMode" xml:space="preserve"><value>Tryb przywracania</value></data>
+  <data name="RetryStartup" xml:space="preserve"><value>Ponów uruchamianie</value></data>
+  <data name="Save" xml:space="preserve"><value>Zapisz</value></data>
+  <data name="SaveContainer" xml:space="preserve"><value>Zapisz pojemnik</value></data>
+  <data name="SaveItem" xml:space="preserve"><value>Zapisz przedmiot</value></data>
+  <data name="SearchContainers" xml:space="preserve"><value>Szukaj pojemników...</value></data>
+  <data name="SearchItems" xml:space="preserve"><value>Szukaj przedmiotów...</value></data>
+  <data name="SearchWithinContainer" xml:space="preserve"><value>Szukaj w pojemniku...</value></data>
+  <data name="SelectPhoto" xml:space="preserve"><value>Wybierz zdjęcie</value></data>
+  <data name="SelectAnItem" xml:space="preserve"><value>Wybierz przedmiot</value></data>
+  <data name="SelectContainer" xml:space="preserve"><value>Wybierz pojemnik</value></data>
+  <data name="Set" xml:space="preserve"><value>Ustaw</value></data>
+  <data name="SetQuantity" xml:space="preserve"><value>Ustaw ilość</value></data>
+  <data name="SetTotalQuantity" xml:space="preserve"><value>Ustaw łączną ilość</value></data>
+  <data name="Settings" xml:space="preserve"><value>Ustawienia</value></data>
+  <data name="ShareFailed" xml:space="preserve"><value>Udostępnianie nie powiodło się</value></data>
+  <data name="ShareBackupJSON" xml:space="preserve"><value>Udostępnij kopię JSON</value></data>
+  <data name="ShareBackupZIP" xml:space="preserve"><value>Udostępnij kopię ZIP</value></data>
+  <data name="ShareSigningKey" xml:space="preserve"><value>Udostępnij klucz podpisu</value></data>
+  <data name="ShareTheBackupSigningKeyUsingTheSystemShareSheetIncludingAirDrop" xml:space="preserve"><value>Udostępnij klucz podpisu kopii zapasowej za pomocą systemowego panelu udostępniania, w tym AirDrop</value></data>
+  <data name="ShortDescription" xml:space="preserve"><value>Krótki opis</value></data>
+  <data name="SigningKeyImported" xml:space="preserve"><value>Zaimportowano klucz podpisu</value></data>
+  <data name="Simple" xml:space="preserve"><value>Prosty</value></data>
+  <data name="ZIP" xml:space="preserve"><value>ZIP</value></data>
+  <data name="StartingMothball" xml:space="preserve"><value>Uruchamianie Mothball...</value></data>
+  <data name="StartupFailed" xml:space="preserve"><value>Uruchamianie nie powiodło się</value></data>
+  <data name="StrictFullSync" xml:space="preserve"><value>Ścisła pełna synchronizacja</value></data>
+  <data name="SwitchBetweenSimpleModeAndAdvancedMode" xml:space="preserve"><value>Przełącz między trybem prostym i zaawansowanym</value></data>
+  <data name="System" xml:space="preserve"><value>Systemowy</value></data>
+  <data name="Theme" xml:space="preserve"><value>Motyw</value></data>
+  <data name="ThemeMode" xml:space="preserve"><value>Tryb motywu</value></data>
+  <data name="ThisContainerDoesNotHaveAnyPhotosToDelete" xml:space="preserve"><value>Ten pojemnik nie ma zdjęć do usunięcia.</value></data>
+  <data name="ThisDeviceCanNowVerifyBackupsSignedByTheImportedKey" xml:space="preserve"><value>To urządzenie może teraz weryfikować kopie zapasowe podpisane zaimportowanym kluczem.</value></data>
+  <data name="ThisItemDoesNotHaveAnyPhotosToDelete" xml:space="preserve"><value>Ten przedmiot nie ma zdjęć do usunięcia.</value></data>
+  <data name="ThisReplacesTheCurrentBackupSigningKeyOnThisDeviceBackupsSignedByTheCurrentKeyWillNoLongerVerifyHere" xml:space="preserve"><value>Zastąpi to bieżący klucz podpisu kopii zapasowej na tym urządzeniu. Kopii podpisanych bieżącym kluczem nie będzie można tutaj zweryfikować.</value></data>
+  <data name="ThisWillPermanentlyRemove0AllAssignmentsAndItsPhotosContinue" xml:space="preserve"><value>Spowoduje to bezpowrotne usunięcie „{0}”, wszystkich przypisań i zdjęć. Kontynuować?</value></data>
+  <data name="TotalQuantity" xml:space="preserve"><value>Łączna ilość</value></data>
+  <data name="UnassignedQuantity" xml:space="preserve"><value>Nieprzypisana ilość</value></data>
+  <data name="UnassignedStock0" xml:space="preserve"><value>Nieprzypisany zapas ({0})</value></data>
+  <data name="Use" xml:space="preserve"><value>Użyj</value></data>
+  <data name="Use0Stock1Available" xml:space="preserve"><value>Użyć zapasu „{0}” ({1} dostępnych)?</value></data>
+  <data name="UseAndRemove" xml:space="preserve"><value>Użyj i usuń</value></data>
+  <data name="UseFinalItem" xml:space="preserve"><value>Użyć ostatniego przedmiotu?</value></data>
+  <data name="UseFrom" xml:space="preserve"><value>Użyj z</value></data>
+  <data name="UseFromThisContainer" xml:space="preserve"><value>Użyć z tego pojemnika?</value></data>
+  <data name="UseFrom0" xml:space="preserve"><value>Użyj z {0}</value></data>
+  <data name="UseHere" xml:space="preserve"><value>Użyj tutaj</value></data>
+  <data name="UseUnassignedStock" xml:space="preserve"><value>Użyj nieprzypisanego zapasu</value></data>
+  <data name="ValueMustBeBetween0And1" xml:space="preserve"><value>Wartość musi być od {0} do {1}.</value></data>
+  <data name="ViewActiveAndRecentBackgroundPhotoOperations" xml:space="preserve"><value>Wyświetl aktywne i ostatnie operacje zdjęć w tle.</value></data>
+  <data name="ViewImageProcessing" xml:space="preserve"><value>Wyświetl przetwarzanie obrazów</value></data>
+  <data name="WhenEnabledBackupsAreSignedWithThisDeviceKeyShareOrImportItToVerifyBackupsAcrossDevices" xml:space="preserve"><value>When enabled, backups are signed with this device key. Share or import it to verify backups across devices.</value></data>
+  <data name="WithdrawFrom0" xml:space="preserve"><value>Pobierz z {0}</value></data>
+  <data name="WithdrawUnassignedItems" xml:space="preserve"><value>Pobierz nieprzypisane przedmioty</value></data>
+  <data name="WithdrawUnassignedItems_c6a982" xml:space="preserve"><value>Pobrać nieprzypisane przedmioty?</value></data>
+  <data name="DotNetBotInAHovercraftNumberNine" xml:space="preserve"><value>dot net bot in a hovercraft number nine</value></data>
+  <data name="EG1" xml:space="preserve"><value>np. 1</value></data>
+  <data name="Text01" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="SettingItemToZero" xml:space="preserve"><value>Ustawienie „{0}” na zero bezpowrotnie usunie przedmiot, wszystkie przypisania i jego zdjęcia. Kontynuować?</value></data>
+  <data name="LoadingItems" xml:space="preserve"><value>Ładowanie przedmiotów...</value></data>
+  <data name="LoadingContainers" xml:space="preserve"><value>Ładowanie pojemników...</value></data>
+  <data name="LoadingContainerItems" xml:space="preserve"><value>Ładowanie przedmiotów w pojemniku...</value></data>
+  <data name="ActiveOperationsFormat" xml:space="preserve"><value>Aktywne operacje: {0}</value></data>
+  <data name="SuccessFormat" xml:space="preserve"><value>Sukces: {0}</value></data>
+  <data name="CompletedFormat" xml:space="preserve"><value>Ukończono: {0:G}</value></data>
+  <data name="ProgressFormat" xml:space="preserve"><value>Postęp: {0:P0}</value></data>
+  <data name="InThisContainerFormat" xml:space="preserve"><value>W tym pojemniku: {0}</value></data>
+  <data name="TotalFormat" xml:space="preserve"><value>Łącznie: {0}</value></data>
+  <data name="AssignedFormat" xml:space="preserve"><value>Przypisane: {0}</value></data>
+  <data name="UnassignedFormat" xml:space="preserve"><value>Nieprzypisane: {0}</value></data>
+  <data name="PhotoOperationsRunning" xml:space="preserve"><value>Operacje zdjęć w tle: {0}</value></data>
+  <data name="ItemsStoredFormat" xml:space="preserve"><value>Przechowywane przedmioty: {0}</value></data>
+  <data name="QuantityHereFormat" xml:space="preserve"><value>Ilość tutaj: {0}</value></data>
+  <data name="ItemsStoredTotalFormat" xml:space="preserve"><value>Przechowywane przedmioty (łącznie): {0}</value></data>
+  <data name="ItemTypesStoredFormat" xml:space="preserve"><value>Typy przechowywanych przedmiotów: {0}</value></data>
+  <data name="TestAd" xml:space="preserve"><value>Reklama testowa</value></data>
+  <data name="GermanAITranslated" xml:space="preserve"><value>Niemiecki (AI-Translated)</value></data>
+  <data name="SpanishAITranslated" xml:space="preserve"><value>Hiszpański (AI-Translated)</value></data>
+  <data name="All" xml:space="preserve"><value>Wszystkie</value></data>
+  <data name="Empty" xml:space="preserve"><value>Puste</value></data>
+  <data name="Assigned" xml:space="preserve"><value>Przypisane</value></data>
+  <data name="Unassigned" xml:space="preserve"><value>Nieprzypisane</value></data>
+  <data name="BrowseYourStorage" xml:space="preserve"><value>Przeglądaj swoje miejsca przechowywania</value></data>
+  <data name="AllItemsAcrossContainers" xml:space="preserve"><value>Wszystkie przedmioty we wszystkich pojemnikach</value></data>
+  <data name="RestartMothballToApplyTheNewLanguage" xml:space="preserve"><value>Uruchom ponownie Mothball, aby zastosować nowy język.</value></data>
+</root>

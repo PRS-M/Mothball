@@ -4,6 +4,7 @@ using CoreApp.Domain.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.Shared;
 
+
 public abstract class ContainerWithImagesViewModelBase : ObservableObject
 {
     private readonly IImagePathResolver paths;
@@ -18,7 +19,7 @@ public abstract class ContainerWithImagesViewModelBase : ObservableObject
 
     public string Name => Container.Name;
     public string Notes => Container.Notes;
-    public string ItemCount => $"Items stored: {Container.TotalItemQuantity}";
+    public string ItemCount => LocalizationManager.Current.Format("Items stored: {0}", Container.TotalItemQuantity);
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 

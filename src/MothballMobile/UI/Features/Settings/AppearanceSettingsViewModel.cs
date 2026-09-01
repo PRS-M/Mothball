@@ -15,6 +15,14 @@ public partial class AppearanceSettingsViewModel : ObservableObject
     public AppearanceSettingsViewModel(IApplicationSettings applicationSettings)
     {
         this.applicationSettings = applicationSettings;
+        LanguageOptions =
+        [
+            L("System"),
+            L("English"),
+            L("Polish"),
+            L("German (AI-Translated)"),
+            L("Spanish (AI-Translated)"),
+        ];
     }
 
     public IReadOnlyList<string> ModeOptions { get; } =
@@ -33,6 +41,47 @@ public partial class AppearanceSettingsViewModel : ObservableObject
         "Coastal Inventory",
         "Berry Archive",
     ];
+
+    public IReadOnlyList<string> LanguageOptions { get; }
+
+    public string SelectedLanguageOption
+    {
+        get => applicationSettings.Language switch
+        {
+            LanguagePreference.English => L("English"),
+            LanguagePreference.Polish => L("Polish"),
+            LanguagePreference.German => L("German (AI-Translated)"),
+            LanguagePreference.Spanish => L("Spanish (AI-Translated)"),
+            _ => L("System"),
+        };
+        set
+        {
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				return;
+			}
+
+            var language = value == L("English")
+                ? LanguagePreference.English
+                : value == L("Polish")
+                    ? LanguagePreference.Polish
+                    : value == L("German (AI-Translated)")
+                        ? LanguagePreference.German
+                        : value == L("Spanish (AI-Translated)")
+                            ? LanguagePreference.Spanish
+                            : LanguagePreference.System;
+
+            if (applicationSettings.Language == language)
+            {
+                return;
+            }
+
+            applicationSettings.Language = language;
+            OnPropertyChanged();
+        }
+    }
+
+    private static string L(string key) => LocalizationManager.Current.Get(key);
 
     public string SelectedModeOption
     {

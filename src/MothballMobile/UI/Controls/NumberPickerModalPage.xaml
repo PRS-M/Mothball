@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MothballMobile.UI.Controls.NumberPickerModalPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
              Background="Transparent"
              Shell.NavBarIsVisible="False">
 
@@ -36,7 +37,7 @@
                       Text=""
                       Keyboard="Numeric"
                       ReturnType="Done"
-                      Placeholder="Enter quantity"
+                      Placeholder="{x:Static strings:AppResources.EnterQuantity}"
                       Completed="OnEntryCompleted"
                         Background="{DynamicResource SurfaceVariant}"
                       TextColor="{DynamicResource OnSurface}" />

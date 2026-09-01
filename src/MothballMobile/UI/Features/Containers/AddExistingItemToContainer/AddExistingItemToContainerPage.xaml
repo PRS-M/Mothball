@@ -5,14 +5,15 @@
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Containers.AddExistingItemToContainer.AddExistingItemToContainerPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:AddExistingItemToContainerViewModel"
-                Title="Add Existing Item"
+                Title="{x:Static strings:AppResources.AddExistingItem}"
                 Background="{DynamicResource Surface}">
 
     <Grid Padding="20"
           RowDefinitions="Auto,*">
                 <controls:PageHeader Grid.Row="0"
-                                                         Title="Select an item"
+                                                         Title="{x:Static strings:AppResources.SelectAnItem}"
                                                          Subtitle="Only items not assigned to any container are shown"
                                                          TitleFontSize="24" />
 
@@ -24,7 +25,7 @@
                             RemainingItemsThreshold="4"
                             RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
                 <CollectionView.EmptyView>
-                    <controls:EmptyStateView Title="No unassigned items" />
+                    <controls:EmptyStateView Title="{x:Static strings:AppResources.NoUnassignedItems}" />
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:UnassignedItemViewModel">

@@ -4,19 +4,39 @@
                 xmlns:vm="clr-namespace:MothballMobile.UI.Features.Settings"
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:Class="MothballMobile.UI.Features.Settings.SettingsPage"
                 x:DataType="vm:SettingsViewModel"
-                Title="Settings"
+                Title="{x:Static strings:AppResources.Settings}"
                 Background="{DynamicResource Surface}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
-            <controls:PageHeader Title="Settings"
+            <controls:PageHeader Title="{x:Static strings:AppResources.Settings}"
                                  Subtitle="Maintenance and backup"
                                  TitleFontSize="22"
                                  SubtitleFontSize="12"
                                  Spacing="2"
                                  HeaderMargin="0,0,0,6" />
+
+            <Border Padding="14"
+                    StrokeThickness="1"
+                    Stroke="{DynamicResource OutlineVariant}"
+                    StrokeShape="RoundRectangle 16"
+                    Background="{DynamicResource SurfaceVariant}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{x:Static strings:AppResources.Language}"
+                           Style="{StaticResource HeadlineSmall}"
+                           TextColor="{DynamicResource OnSurface}" />
+                    <Picker Title="{x:Static strings:AppResources.Language}"
+                            ItemsSource="{Binding Appearance.LanguageOptions}"
+                            SelectedItem="{Binding Appearance.SelectedLanguageOption, Mode=TwoWay}"
+                            SemanticProperties.Hint="{x:Static strings:AppResources.ChooseApplicationLanguage}" />
+                    <Label Text="{x:Static strings:AppResources.RestartMothballToApplyTheNewLanguage}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+                </VerticalStackLayout>
+            </Border>
 
                         <Border Padding="14"
                                         StrokeThickness="1"
@@ -24,16 +44,16 @@
                                         StrokeShape="RoundRectangle 16"
                                         Background="{DynamicResource SurfaceVariant}">
                                 <VerticalStackLayout Spacing="10">
-                                        <Label Text="Theme Mode"
+                                        <Label Text="{x:Static strings:AppResources.ThemeMode}"
                                                    Style="{StaticResource HeadlineSmall}"
                                                    TextColor="{DynamicResource OnSurface}" />
 
-                                        <Picker Title="Theme Mode"
+                                        <Picker Title="{x:Static strings:AppResources.ThemeMode}"
                                                         ItemsSource="{Binding Appearance.ModeOptions}"
                                                         SelectedItem="{Binding Appearance.SelectedModeOption, Mode=TwoWay}"
-                                                        SemanticProperties.Hint="Choose automatic system theme, light theme, or dark theme" />
+                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ChooseAutomaticSystemThemeLightThemeOrDarkTheme}" />
 
-                                        <Label Text="Choose whether Mothball follows the system appearance or always uses a light or dark mode."
+                                        <Label Text="{x:Static strings:AppResources.ChooseWhetherMothballFollowsTheSystemAppearanceOrAlwaysUsesALightOrDarkMode}"
                                                    Style="{StaticResource BodyMedium}"
                                                    TextColor="{DynamicResource OnSurfaceVariant}" />
                                 </VerticalStackLayout>
@@ -45,14 +65,14 @@
                                         StrokeShape="RoundRectangle 16"
                                         Background="{DynamicResource SurfaceVariant}">
                                 <VerticalStackLayout Spacing="10">
-                                        <Label Text="Theme"
+                                        <Label Text="{x:Static strings:AppResources.Theme}"
                                                    Style="{StaticResource HeadlineSmall}"
                                                    TextColor="{DynamicResource OnSurface}" />
-                                        <Picker Title="Theme"
+                                        <Picker Title="{x:Static strings:AppResources.Theme}"
                                                         ItemsSource="{Binding Appearance.ThemeOptions}"
                                                         SelectedItem="{Binding Appearance.SelectedThemeOption, Mode=TwoWay}"
-                                                        SemanticProperties.Hint="Choose the Mothball color theme" />
-                                        <Label Text="Choose the color palette used throughout Mothball."
+                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ChooseTheMothballColorTheme}" />
+                                        <Label Text="{x:Static strings:AppResources.ChooseTheColorPaletteUsedThroughoutMothball}"
                                                    Style="{StaticResource BodyMedium}"
                                                    TextColor="{DynamicResource OnSurfaceVariant}" />
                                 </VerticalStackLayout>
@@ -64,19 +84,19 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="10">
-                      <Label Text="App mode"
+                      <Label Text="{x:Static strings:AppResources.AppMode}"
                               Style="{StaticResource HeadlineSmall}"
                               TextColor="{DynamicResource OnSurface}" />
 
-                      <controls:SegmentedSwitch LeftText="Simple"
-                                                    RightText="Advanced"
+                      <controls:SegmentedSwitch LeftText="{x:Static strings:AppResources.Simple}"
+                                                    RightText="{x:Static strings:AppResources.Advanced}"
                                                     IsRightSelected="{Binding Appearance.IsAdvancedAppMode, Mode=TwoWay}"
                                                     LeftCommand="{Binding Appearance.SelectSimpleAppModeCommand}"
                                                     RightCommand="{Binding Appearance.SelectAdvancedAppModeCommand}"
                                                       HorizontalOptions="Fill"
-                                                    SemanticProperties.Hint="Switch between simple mode and advanced mode" />
+                                                    SemanticProperties.Hint="{x:Static strings:AppResources.SwitchBetweenSimpleModeAndAdvancedMode}" />
 
-                    <Label Text="Advanced mode shows quantity totals, assignments, and quantity editing. Simple mode hides quantity management."
+                    <Label Text="{x:Static strings:AppResources.AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                 </VerticalStackLayout>
@@ -90,34 +110,34 @@
                   <VerticalStackLayout Spacing="10">
                       <Grid ColumnDefinitions="*,Auto"
                             ColumnSpacing="12">
-                          <Label Text="Backup signing key"
+                          <Label Text="{x:Static strings:AppResources.BackupSigningKey}"
                                  Style="{StaticResource HeadlineSmall}"
                                  VerticalOptions="Center"
                                  TextColor="{DynamicResource OnSurface}" />
                           <Switch Grid.Column="1"
                                   IsToggled="{Binding SigningKey.IsBackupSigningKeyEnabled, Mode=TwoWay}"
-                                  SemanticProperties.Hint="Enable or disable backup signing key use" />
+                                  SemanticProperties.Hint="{x:Static strings:AppResources.EnableOrDisableBackupSigningKeyUse}" />
                       </Grid>
 
-                    <Label Text="When enabled, backups are signed with this device key. Share or import it to verify backups across devices."
+                    <Label Text="{x:Static strings:AppResources.WhenEnabledBackupsAreSignedWithThisDeviceKeyShareOrImportItToVerifyBackupsAcrossDevices}"
                               Style="{StaticResource BodyMedium}"
                               TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                      <Button Text="Share signing key"
+                      <Button Text="{x:Static strings:AppResources.ShareSigningKey}"
                                 IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
                                 Command="{Binding SigningKey.ShareBackupSigningKeyCommand}"
-                                                                                                                                SemanticProperties.Hint="Share the backup signing key using the system share sheet, including AirDrop">
+                                                                                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ShareTheBackupSigningKeyUsingTheSystemShareSheetIncludingAirDrop}">
                                                                                                 <Button.ImageSource>
                                                                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
                                                                                                                                                                                  Color="{DynamicResource OnPrimary}" />
                                                                                                 </Button.ImageSource>
                                                                                         </Button>
 
-                    <Button Text="Import signing key"
+                    <Button Text="{x:Static strings:AppResources.ImportSigningKey}"
                             Style="{StaticResource OutlinedButton}"
                             IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
                             Command="{Binding SigningKey.ImportBackupSigningKeyCommand}"
-                                                        SemanticProperties.Hint="Import a backup signing key file received from another device">
+                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ImportABackupSigningKeyFileReceivedFromAnotherDevice}">
                                                 <Button.ImageSource>
                                                         <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
                                                                                          Color="{DynamicResource Primary}" />
@@ -132,26 +152,26 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="10">
-                      <Label Text="Backup"
+                      <Label Text="{x:Static strings:AppResources.Backup}"
                               Style="{StaticResource HeadlineSmall}"
                               TextColor="{DynamicResource OnSurface}" />
 
-                    <controls:SegmentedSwitch LeftText="JSON"
-                                                    RightText="ZIP"
+                    <controls:SegmentedSwitch LeftText="{x:Static strings:AppResources.JSON}"
+                                                    RightText="{x:Static strings:AppResources.ZIP}"
                                                     IsRightSelected="{Binding Backup.IsZipBackupMode, Mode=TwoWay}"
                                                     LeftCommand="{Binding Backup.SelectJsonBackupModeCommand}"
                                                     RightCommand="{Binding Backup.SelectZipBackupModeCommand}"
                                                       HorizontalOptions="Fill"
                                                     VerticalOptions="Center" />
 
-                    <Label Text="Export inventory metadata as JSON, or create a ZIP backup that also includes photo files."
+                    <Label Text="{x:Static strings:AppResources.ExportInventoryMetadataAsJSONOrCreateAZIPBackupThatAlsoIncludesPhotoFiles}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                    <Button Text="Documentation / Help"
+                    <Button Text="{x:Static strings:AppResources.DocumentationHelp}"
                             Style="{StaticResource OutlinedButton}"
                             Command="{Binding Backup.NavigateToImportDocumentationCommand}"
-                                                        SemanticProperties.Hint="Open documentation that explains backup import modes">
+                                                        SemanticProperties.Hint="{x:Static strings:AppResources.OpenDocumentationThatExplainsBackupImportModes}">
                                                 <Button.ImageSource>
                                                         <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF02D;" Size="16"
                                                                                          Color="{DynamicResource Primary}" />
@@ -160,45 +180,45 @@
 
                     <VerticalStackLayout Spacing="10"
                                          IsVisible="{Binding Backup.IsJsonBackupMode}">
-                        <Button Text="Export to JSON"
+                        <Button Text="{x:Static strings:AppResources.ExportToJSON}"
                                 Command="{Binding Backup.ExportToJsonCommand}"
-                                                                SemanticProperties.Hint="Create a local backup JSON file with full inventory data">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.CreateALocalBackupJSONFileWithFullInventoryData}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF019;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
                                                         </Button.ImageSource>
                                                 </Button>
 
-                        <Button Text="Import from JSON"
+                        <Button Text="{x:Static strings:AppResources.ImportFromJSON}"
                                 Command="{Binding Backup.ImportFromJsonCommand}"
-                                                                SemanticProperties.Hint="Choose restore mode and import a local backup JSON file">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ChooseRestoreModeAndImportALocalBackupJSONFile}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
                                                         </Button.ImageSource>
                                                 </Button>
 
-                        <Button Text="Import from JSON from files"
+                        <Button Text="{x:Static strings:AppResources.ImportFromJSONFromFiles}"
                                 Command="{Binding Backup.ImportJsonFromFileSystemCommand}"
-                                                                SemanticProperties.Hint="Choose restore mode and import a JSON backup from the file system">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ChooseRestoreModeAndImportAJSONBackupFromTheFileSystem}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF15B;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
                                                         </Button.ImageSource>
                                                 </Button>
 
-                        <Button Text="Share backup JSON"
+                        <Button Text="{x:Static strings:AppResources.ShareBackupJSON}"
                                 Command="{Binding Backup.ShareJsonCommand}"
-                                                                SemanticProperties.Hint="Choose and share a local backup JSON file outside the app">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ChooseAndShareALocalBackupJSONFileOutsideTheApp}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
                                                         </Button.ImageSource>
                                                 </Button>
 
-                        <Button Text="Delete backup JSON"
+                        <Button Text="{x:Static strings:AppResources.DeleteBackupJSON}"
                                 Command="{Binding Backup.DeleteJsonCommand}"
-                                                                SemanticProperties.Hint="Choose and delete a local backup JSON file">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ChooseAndDeleteALocalBackupJSONFile}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF2ED;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
@@ -208,45 +228,45 @@
 
                     <VerticalStackLayout Spacing="10"
                                          IsVisible="{Binding Backup.IsZipBackupMode}">
-                        <Button Text="Export with photos to ZIP"
+                        <Button Text="{x:Static strings:AppResources.ExportWithPhotosToZIP}"
                                 Command="{Binding Backup.ExportToZipCommand}"
-                                                                SemanticProperties.Hint="Create a local ZIP backup with inventory data and photo files">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.CreateALocalZIPBackupWithInventoryDataAndPhotoFiles}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF019;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
                                                         </Button.ImageSource>
                                                 </Button>
 
-                        <Button Text="Import with photos from ZIP"
+                        <Button Text="{x:Static strings:AppResources.ImportWithPhotosFromZIP}"
                                 Command="{Binding Backup.ImportFromZipCommand}"
-                                                                SemanticProperties.Hint="Choose restore mode and import a local ZIP backup with photo files">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ChooseRestoreModeAndImportALocalZIPBackupWithPhotoFiles}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
                                                         </Button.ImageSource>
                                                 </Button>
 
-                        <Button Text="Import from ZIP from files"
+                        <Button Text="{x:Static strings:AppResources.ImportFromZIPFromFiles}"
                                 Command="{Binding Backup.ImportZipFromFileSystemCommand}"
-                                                                SemanticProperties.Hint="Choose restore mode and import a ZIP backup from the file system">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ChooseRestoreModeAndImportAZIPBackupFromTheFileSystem}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF15B;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
                                                         </Button.ImageSource>
                                                 </Button>
 
-                        <Button Text="Share backup ZIP"
+                        <Button Text="{x:Static strings:AppResources.ShareBackupZIP}"
                                 Command="{Binding Backup.ShareZipCommand}"
-                                                                SemanticProperties.Hint="Choose and share a local backup ZIP file outside the app">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ChooseAndShareALocalBackupZIPFileOutsideTheApp}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
                                                         </Button.ImageSource>
                                                 </Button>
 
-                        <Button Text="Delete backup ZIP"
+                        <Button Text="{x:Static strings:AppResources.DeleteBackupZIP}"
                                 Command="{Binding Backup.DeleteZipCommand}"
-                                                                SemanticProperties.Hint="Choose and delete a local backup ZIP file">
+                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ChooseAndDeleteALocalBackupZIPFile}">
                                                         <Button.ImageSource>
                                                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF2ED;" Size="16"
                                                                                                  Color="{DynamicResource OnPrimary}" />
@@ -267,17 +287,17 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Image processing"
+                    <Label Text="{x:Static strings:AppResources.ImageProcessing}"
                            Style="{StaticResource HeadlineSmall}"
                            TextColor="{DynamicResource OnSurface}" />
 
-                    <Label Text="View active and recent background photo operations."
+                    <Label Text="{x:Static strings:AppResources.ViewActiveAndRecentBackgroundPhotoOperations}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                    <Button Text="View image processing"
+                    <Button Text="{x:Static strings:AppResources.ViewImageProcessing}"
                             Command="{Binding NavigateToBackgroundOperationsCommand}"
-                                                        SemanticProperties.Hint="Open the background photo operations page">
+                                                        SemanticProperties.Hint="{x:Static strings:AppResources.OpenTheBackgroundPhotoOperationsPage}">
                                                 <Button.ImageSource>
                                                         <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1C5;" Size="16"
                                                                                          Color="{DynamicResource OnPrimary}" />

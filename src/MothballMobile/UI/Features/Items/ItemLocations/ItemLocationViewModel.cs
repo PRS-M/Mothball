@@ -5,6 +5,7 @@ using CoreApp.Domain.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.Features.Items.ItemLocations;
 
+
 public partial class ItemLocationViewModel : ContainerWithImagesViewModelBase
 {
     private readonly INavigationService nav;
@@ -25,7 +26,7 @@ public partial class ItemLocationViewModel : ContainerWithImagesViewModelBase
     public ItemContainerAllocation Allocation { get; }
     public bool ShowQuantityManagement { get; }
 
-    public new string ItemCount => $"Quantity here: {Allocation.Quantity}";
+    public new string ItemCount => LocalizationManager.Current.Format("Quantity here: {0}", Allocation.Quantity);
 
     public Task LoadImagesAsync()
         => LoadContainerImagesAsync(clearFirst: true);

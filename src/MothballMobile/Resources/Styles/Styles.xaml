@@ -2,7 +2,8 @@
 <?xaml-comp compile="true" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:behaviors="clr-namespace:MothballMobile.UI.Behaviors">
 
     <Style TargetType="ActivityIndicator">
         <Setter Property="Color" Value="{DynamicResource OnSurface}" />
@@ -31,6 +32,8 @@
         <Setter Property="BorderWidth" Value="0"/>
         <Setter Property="CornerRadius" Value="20"/>
         <Setter Property="Padding" Value="24,10"/>
+        <Setter Property="behaviors:ButtonPill.IsEnabled" Value="True"/>
+        <Setter Property="LineBreakMode" Value="WordWrap"/>
         <Setter Property="MinimumHeightRequest" Value="40"/>
         <Setter Property="MinimumWidthRequest" Value="64"/>
         <Setter Property="Shadow">

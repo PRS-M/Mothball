@@ -5,8 +5,9 @@
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Containers.AddContainer.AddContainerPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="local:AddContainerViewModel"
-                Title="Add Container"
+                Title="{x:Static strings:AppResources.AddContainer}"
                 Background="{DynamicResource Surface}">
 
     <ScrollView>
@@ -14,7 +15,7 @@
               RowDefinitions="Auto,Auto"
               ColumnDefinitions="*">
             <controls:PageHeader Grid.Row="0"
-                                 Title="Create a new container"
+                                 Title="{x:Static strings:AppResources.CreateANewContainer}"
                                  Subtitle="Enter the details below"
                                  TitleFontSize="24"
                                  HeaderMargin="0,6,0,14" />
@@ -26,7 +27,7 @@
                     <!-- Name -->
                     <controls:ValidatedTextField Label="Name"
                                                  WidthRequest="{StaticResource WidthM}"
-                                                 Placeholder="Enter container name"
+                                                 Placeholder="{x:Static strings:AppResources.EnterContainerName}"
                                                  Text="{Binding Name}"
                                                  ReturnType="Done"
                                                  ReturnCommand="{Binding SaveContainerCommand}"
@@ -37,11 +38,11 @@
                                                LabelMargin="4,8,4,0"
                                                FieldWidthRequest="{StaticResource WidthM}"
                                                UseWrapper="False"
-                                               Placeholder="Enter a description or notes."
+                                               Placeholder="{x:Static strings:AppResources.EnterADescriptionOrNotes}"
                                                Text="{Binding Notes}" />
 
                     <!-- Temporary photo selection -->
-                    <Button Text="Choose Photo"
+                    <Button Text="{x:Static strings:AppResources.ChoosePhoto}"
                             Style="{StaticResource OutlinedButton}"
                             WidthRequest="{StaticResource WidthM}"
                             Command="{Binding ChoosePhotoCommand}">
@@ -64,7 +65,7 @@
                                          WidthRequest="32"
                                          HeightRequest="32"
                                          HorizontalOptions="Center" />
-                            <Label Text="Resizing photo..."
+                            <Label Text="{x:Static strings:AppResources.ResizingPhoto}"
                                 Style="{StaticResource LabelSmall}"
                                 HorizontalTextAlignment="Center" />
                            </VerticalStackLayout>
@@ -79,7 +80,7 @@
                                 HeightRequest="120"
                                 WidthRequest="120"
                                 Aspect="AspectFill" />
-                            <Label Text="Photo selected"
+                            <Label Text="{x:Static strings:AppResources.PhotoSelected}"
                                 Style="{StaticResource LabelSmall}"
                                 HorizontalTextAlignment="Center" />
                            </VerticalStackLayout>
@@ -90,7 +91,7 @@
                            WidthRequest="{StaticResource WidthM}" />
 
                     <!-- Final entity save -->
-                    <Button Text="Save Container"
+                    <Button Text="{x:Static strings:AppResources.SaveContainer}"
                             Style="{StaticResource PrimaryButton}"
                             WidthRequest="{StaticResource WidthM}"
                             Command="{Binding SaveContainerCommand}">

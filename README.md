@@ -93,6 +93,8 @@ Use shelves, bins, cabinets, or zones as containers and treat products, spare pa
   - Explains export format, restore strategies, conflict policies, integrity checks, and usage examples.
 - [Debouncer](docs/Debouncer.md)
   - Describes the concurrency utility used for trailing-edge debounce behavior in UI workflows.
+- [Localization](docs/Localization.md)
+  - Documents English/Polish resources, language preference lifecycle, platform declarations, and the restart-after-selection behavior.
 - [JSON Operational Store](docs/JsonStore.md)
   - Details the JSON backend layout, commit algorithm, slot/manifest strategy, and recovery logic.
 - [Seeding](docs/Seeding.md)

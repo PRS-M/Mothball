@@ -3,7 +3,8 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.MainPage"
-                Title="Home">
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
+                Title="{x:Static strings:AppResources.Home}">
 
     <ScrollView>
         <VerticalStackLayout
@@ -13,22 +14,22 @@
                 Source="mothball_logo.png"
                 HeightRequest="185"
                 Aspect="AspectFit"
-                SemanticProperties.Description="dot net bot in a hovercraft number nine" />
+                SemanticProperties.Description="{x:Static strings:AppResources.DotNetBotInAHovercraftNumberNine}" />
 
             <Label
-                Text="Mothball"
+                Text="{x:Static strings:AppResources.Mothball}"
                 Style="{StaticResource Headline}"
                 SemanticProperties.HeadingLevel="Level1" />
 
             <Label
-                Text="Choose where you want to go"
+                Text="{x:Static strings:AppResources.ChooseWhereYouWantToGo}"
                 Style="{StaticResource SubHeadline}"
                 SemanticProperties.HeadingLevel="Level2"
-                SemanticProperties.Description="Choose where you want to go" />
+                SemanticProperties.Description="{x:Static strings:AppResources.ChooseWhereYouWantToGo}" />
 
             <Button
-                Text="Containers"
-                SemanticProperties.Hint="Open the containers view"
+                Text="{x:Static strings:AppResources.Containers}"
+                SemanticProperties.Hint="{x:Static strings:AppResources.OpenTheContainersView}"
                 Clicked="OnContainersClicked"
                 HorizontalOptions="Fill">
                 <Button.ImageSource>
@@ -40,8 +41,8 @@
             </Button>
 
             <Button
-                Text="Items"
-                SemanticProperties.Hint="Open the items view"
+                Text="{x:Static strings:AppResources.Items}"
+                SemanticProperties.Hint="{x:Static strings:AppResources.OpenTheItemsView}"
                 Clicked="OnItemsClicked"
                 HorizontalOptions="Fill">
                 <Button.ImageSource>
@@ -53,8 +54,8 @@
             </Button>
 
             <Button
-                Text="Settings"
-                SemanticProperties.Hint="Open the settings view"
+                Text="{x:Static strings:AppResources.Settings}"
+                SemanticProperties.Hint="{x:Static strings:AppResources.OpenTheSettingsView}"
                 Clicked="OnSettingsClicked"
                 HorizontalOptions="Fill">
                 <Button.ImageSource>

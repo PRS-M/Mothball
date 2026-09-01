@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="MothballMobile.AppShell"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MothballMobile"
@@ -58,25 +59,25 @@
                             FontSize="14"
                             BackgroundColor="Transparent"
                             Clicked="OnErrorBannerDismissed"
-                            SemanticProperties.Description="Dismiss error" />
+                            SemanticProperties.Description="{x:Static strings:AppResources.DismissError}" />
                 </Grid>
             </Border>
         </VerticalStackLayout>
     </Shell.TitleView>
 
-    <FlyoutItem Title="Home" Route="Home">
+    <FlyoutItem Title="{x:Static strings:AppResources.Home}" Route="Home">
         <FlyoutItem.Icon>
             <FontImageSource Glyph="&#xf015;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
         </FlyoutItem.Icon>
         <ShellContent
-            Title="Home"
+            Title="{x:Static strings:AppResources.Home}"
             ContentTemplate="{DataTemplate local:MainPage}"
             Route="MainPage" />
     </FlyoutItem>
-    <FlyoutItem Title="Containers" Route="Containers">
-        <Tab Title="Containers List">
+    <FlyoutItem Title="{x:Static strings:AppResources.Containers}" Route="Containers">
+        <Tab Title="{x:Static strings:AppResources.ContainersList}">
             <ShellContent
-                Title="Containers List"
+                Title="{x:Static strings:AppResources.ContainersList}"
                 ContentTemplate="{DataTemplate containers:ContainersListPage}"
                 Route="ContainersList">
                 <ShellContent.Icon>
@@ -85,10 +86,10 @@
             </ShellContent>
         </Tab>
     </FlyoutItem>
-    <FlyoutItem Title="Items" Route="Items">
-        <Tab Title="Items List">
+    <FlyoutItem Title="{x:Static strings:AppResources.Items}" Route="Items">
+        <Tab Title="{x:Static strings:AppResources.ItemsList}">
             <ShellContent
-                Title="Items"
+                Title="{x:Static strings:AppResources.Items}"
                 ContentTemplate="{DataTemplate items:ItemsListPage}"
                 Route="ItemsList">
                 <ShellContent.Icon>
@@ -97,10 +98,10 @@
             </ShellContent>
         </Tab>
     </FlyoutItem>
-    <FlyoutItem Title="Settings" Route="Settings">
-        <Tab Title="Settings">
+    <FlyoutItem Title="{x:Static strings:AppResources.Settings}" Route="Settings">
+        <Tab Title="{x:Static strings:AppResources.Settings}">
             <ShellContent
-                Title="Settings"
+                Title="{x:Static strings:AppResources.Settings}"
                 ContentTemplate="{DataTemplate settings:SettingsPage}"
                 Route="SettingsPage">
                 <ShellContent.Icon>

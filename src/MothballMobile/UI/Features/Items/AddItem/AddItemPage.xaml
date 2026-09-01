@@ -5,8 +5,9 @@
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Items.AddItem.AddItemPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:AddItemViewModel"
-                Title="Add Item"
+                Title="{x:Static strings:AppResources.AddItem}"
                 Background="{DynamicResource Surface}">
 
     <ScrollView>
@@ -14,7 +15,7 @@
               RowDefinitions="Auto,Auto"
               ColumnDefinitions="*">
             <controls:PageHeader Grid.Row="0"
-                                 Title="Add a new item"
+                                 Title="{x:Static strings:AppResources.AddANewItem}"
                                  Subtitle="Fill in the fields below"
                                  TitleFontSize="24"
                                  HeaderMargin="0,6,0,14" />
@@ -25,7 +26,7 @@
                                      HorizontalOptions="Center">
                     <controls:ValidatedTextField Label="Name"
                                                  WidthRequest="{StaticResource WidthM}"
-                                                 Placeholder="Item name"
+                                                 Placeholder="{x:Static strings:AppResources.ItemName}"
                                                  Text="{Binding Name}"
                                                  ReturnType="Done"
                                                  ReturnCommand="{Binding SaveCommand}"
@@ -35,7 +36,7 @@
                                                LabelMargin="4,8,4,0"
                                                FieldWidthRequest="{StaticResource WidthM}"
                                                WrapperStyle="{StaticResource InputWrapper}"
-                                               Placeholder="Short description"
+                                               Placeholder="{x:Static strings:AppResources.ShortDescription}"
                                                Text="{Binding Description}" />
 
                     <controls:LabeledEntryField Label="Quantity"
@@ -43,11 +44,11 @@
                                                FieldWidthRequest="{StaticResource WidthM}"
                                                WrapperStyle="{StaticResource InputWrapper}"
                                                Keyboard="Numeric"
-                                               Placeholder="e.g. 1"
+                                               Placeholder="{x:Static strings:AppResources.EG1}"
                                                Text="{Binding Quantity}"
                                                IsVisible="{Binding ShowQuantityField}" />
 
-                    <Button Text="Choose Photo"
+                    <Button Text="{x:Static strings:AppResources.ChoosePhoto}"
                             Style="{StaticResource OutlinedButton}"
                             WidthRequest="{StaticResource WidthM}"
                             Command="{Binding ChoosePhotoCommand}">
@@ -70,7 +71,7 @@
                                          WidthRequest="32"
                                          HeightRequest="32"
                                          HorizontalOptions="Center" />
-                            <Label Text="Resizing photo..."
+                            <Label Text="{x:Static strings:AppResources.ResizingPhoto}"
                                 Style="{StaticResource LabelSmall}"
                                 HorizontalTextAlignment="Center" />
                            </VerticalStackLayout>
@@ -85,7 +86,7 @@
                                 HeightRequest="120"
                                 WidthRequest="120"
                                 Aspect="AspectFill" />
-                            <Label Text="Photo selected"
+                            <Label Text="{x:Static strings:AppResources.PhotoSelected}"
                                 Style="{StaticResource LabelSmall}"
                                 HorizontalTextAlignment="Center" />
                            </VerticalStackLayout>
@@ -95,7 +96,7 @@
                            Style="{StaticResource BodySmall}"
                            WidthRequest="{StaticResource WidthM}" />
 
-                    <Button Text="Save Item"
+                    <Button Text="{x:Static strings:AppResources.SaveItem}"
                             Style="{StaticResource PrimaryButton}"
                             WidthRequest="{StaticResource WidthM}"
                             Command="{Binding SaveCommand}">

@@ -14,6 +14,7 @@ using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using MothballMobile.Infrastructure.Presentation.Errors;
+using MothballMobile.Infrastructure.Localization;
 using MothballMobile.UI.Features.Containers.AddContainer;
 using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
@@ -50,6 +51,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryChangeTracker, InventoryChangeTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();
+        services.AddSingleton<ILocalizationService, LocalizationService>();
         services.AddSingleton<IBackupSignatureSecretProvider, BackupSignatureSecretProvider>();
         services.AddSingleton<IInventoryBackupWorkflowService, InventoryBackupWorkflowService>();
         services.AddSingleton<IBackupSigningKeyTransferService, BackupSigningKeyTransferService>();

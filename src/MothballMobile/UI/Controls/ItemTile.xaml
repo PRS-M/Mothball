@@ -4,6 +4,7 @@
              xmlns:self="clr-namespace:MothballMobile.UI.Controls"
              xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
              x:Class="MothballMobile.UI.Controls.ItemTile"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
              x:Name="this"
              x:DataType="self:ItemTile">
 
@@ -78,14 +79,14 @@
                 <Label Grid.Row="1"
                        Grid.ColumnSpan="2"
                        IsVisible="{Binding Source={x:Reference this}, Path=ShowQuantity}"
-                       Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat='In this container: {0}'}"
+                       Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat={x:Static strings:AppResources.InThisContainerFormat}}"
                        TextColor="{DynamicResource OnSurfaceVariant}"
                        FontSize="11" />
 
                 <Label Grid.Row="2"
                       Grid.ColumnSpan="2"
                       IsVisible="{Binding Source={x:Reference this}, Path=ShowInventorySummary}"
-                      Text="{Binding Source={x:Reference this}, Path=TotalQuantity, StringFormat='Total: {0}'}"
+                       Text="{Binding Source={x:Reference this}, Path=TotalQuantity, StringFormat={x:Static strings:AppResources.TotalFormat}}"
                       TextColor="{DynamicResource OnSurfaceVariant}"
                       FontSize="11" />
 
@@ -93,10 +94,10 @@
                                 Grid.ColumnSpan="2"
                                 IsVisible="{Binding Source={x:Reference this}, Path=ShowInventorySummary}"
                                 Spacing="12">
-                      <Label Text="{Binding Source={x:Reference this}, Path=AssignedQuantity, StringFormat='Assigned: {0}'}"
+                      <Label Text="{Binding Source={x:Reference this}, Path=AssignedQuantity, StringFormat={x:Static strings:AppResources.AssignedFormat}}"
                           TextColor="{DynamicResource OnSurfaceVariant}"
                           FontSize="11" />
-                      <Label Text="{Binding Source={x:Reference this}, Path=UnassignedQuantity, StringFormat='Unassigned: {0}'}"
+                      <Label Text="{Binding Source={x:Reference this}, Path=UnassignedQuantity, StringFormat={x:Static strings:AppResources.UnassignedFormat}}"
                           TextColor="{DynamicResource OnSurfaceVariant}"
                           FontSize="11" />
                   </HorizontalStackLayout>
@@ -108,15 +109,16 @@
                        FontSize="12"
                        LineBreakMode="TailTruncation" />
 
-                <HorizontalStackLayout Grid.Row="5"
-                                       Grid.ColumnSpan="2"
-                                       Spacing="6"
-                                       HorizontalOptions="End">
-                    <Button Text="Edit quantity"
+                <Grid Grid.Row="5"
+                      Grid.ColumnSpan="2"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="6">
+                    <Button Grid.Column="0"
+                            Text="{x:Static strings:AppResources.EditQuantity}"
                             IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"
                             Command="{Binding Source={x:Reference this}, Path=EditQuantityCommand}"
                             Style="{StaticResource OutlinedButton}"
-                            HeightRequest="30"
+                            MinimumHeightRequest="30"
                             FontSize="11"
                             Padding="8,0">
                         <Button.ImageSource>
@@ -126,11 +128,12 @@
                                              Size="14" />
                         </Button.ImageSource>
                     </Button>
-                    <Button Text="Use"
+                    <Button Grid.Column="1"
+                            Text="{x:Static strings:AppResources.Use}"
                             IsVisible="{Binding Source={x:Reference this}, Path=ShowUse}"
                             Command="{Binding Source={x:Reference this}, Path=UseCommand}"
                             Style="{StaticResource OutlinedButton}"
-                            HeightRequest="30"
+                            MinimumHeightRequest="30"
                             FontSize="11"
                             Padding="8,0">
                         <Button.ImageSource>
@@ -140,7 +143,7 @@
                                              Size="14" />
                         </Button.ImageSource>
                     </Button>
-                </HorizontalStackLayout>
+                </Grid>
             </Grid>
         </Grid>
     </Border>

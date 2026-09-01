@@ -1,3 +1,5 @@
+using MothballMobile.Infrastructure.Localization;
+
 namespace MothballMobile.Infrastructure.Settings;
 
 /// <summary>
@@ -18,4 +20,6 @@ public interface IApplicationSettings
     bool IsAdvancedMode { get; set; }
 
     bool IsBackupSigningKeyEnabled { get; set; }
+
+    LanguagePreference Language { get; set; }
 }
