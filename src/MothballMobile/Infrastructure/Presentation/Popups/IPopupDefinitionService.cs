@@ -195,6 +195,32 @@ public interface IPopupDefinitionService
     NumberPickerPopupDefinition WithdrawUnassignedQuantity(int availableQuantity);
 
     /// <summary>
+    /// Creates a picker for the single inventory source to consume from.
+    /// </summary>
+    OptionPickerPopupDefinition<ItemInventoryConsumptionSource> ConsumptionSourcePicker(
+        InventorySnapshot inventory);
+
+    /// <summary>
+    /// Confirms whether consumption should use the container from which the workflow was opened.
+    /// </summary>
+    ConfirmationPopupDefinition ConfirmPreferredConsumptionSource(ItemContainerAllocation allocation);
+
+    /// <summary>
+    /// Creates a number picker for consuming stock from a container.
+    /// </summary>
+    NumberPickerPopupDefinition ConsumeFromContainer(ItemContainerAllocation allocation);
+
+    /// <summary>
+    /// Creates a number picker for consuming unassigned stock.
+    /// </summary>
+    NumberPickerPopupDefinition ConsumeUnassignedQuantity(int availableQuantity);
+
+    /// <summary>
+    /// Confirms deletion when consumption would exhaust all stock for an item.
+    /// </summary>
+    ConfirmationPopupDefinition ConfirmFinalStockConsumption(string itemName);
+
+    /// <summary>
     /// Creates a confirmation prompt for removing an item from a container.
     /// </summary>
     /// <param name="itemName">The value used by the operation.</param>
