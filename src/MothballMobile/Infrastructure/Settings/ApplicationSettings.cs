@@ -13,7 +13,6 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
 
     public event EventHandler? AppModeChanged;
     public event EventHandler? ThemePaletteChanged;
-    public event EventHandler? LanguageChanged;
 
     public LanguagePreference Language
     {
@@ -32,7 +31,6 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
             }
 
             preferences.Set(LanguageKey, value.ToString());
-            LanguageChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 

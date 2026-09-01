@@ -32,6 +32,9 @@
                             ItemsSource="{Binding Appearance.LanguageOptions}"
                             SelectedItem="{Binding Appearance.SelectedLanguageOption, Mode=TwoWay}"
                             SemanticProperties.Hint="{x:Static strings:AppResources.ChooseApplicationLanguage}" />
+                    <Label Text="{x:Static strings:AppResources.RestartMothballToApplyTheNewLanguage}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
                 </VerticalStackLayout>
             </Border>
 

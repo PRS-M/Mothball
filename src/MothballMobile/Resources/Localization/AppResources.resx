@@ -258,4 +258,5 @@
   <data name="ItemsStoredTotalFormat" xml:space="preserve"><value>Items stored (Total): {0}</value></data>
   <data name="ItemTypesStoredFormat" xml:space="preserve"><value>Item types stored: {0}</value></data>
   <data name="TestAd" xml:space="preserve"><value>Test Ad</value></data>
+  <data name="RestartMothballToApplyTheNewLanguage" xml:space="preserve"><value>Restart Mothball to apply the new language.</value></data>
 </root>

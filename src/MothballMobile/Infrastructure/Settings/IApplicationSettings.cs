@@ -9,8 +9,6 @@ public interface IApplicationSettings
 
     event EventHandler? ThemePaletteChanged;
 
-    event EventHandler? LanguageChanged;
-
     AppTheme ThemeOverride { get; set; }
 
     ThemePalette ThemePalette { get; set; }

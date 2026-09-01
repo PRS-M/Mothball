@@ -29,11 +29,16 @@ public sealed class LocalizationService : ILocalizationService
             LanguagePreference.English => English,
             _ => ResolveSystemCulture(),
         };
-        if (Equals(culture, next)) return;
+        var changed = !Equals(culture, next);
         culture = next;
+        CultureInfo.DefaultThreadCurrentUICulture = next;
+        CultureInfo.DefaultThreadCurrentCulture = next;
         CultureInfo.CurrentUICulture = next;
         CultureInfo.CurrentCulture = next;
-        LanguageChanged?.Invoke(this, EventArgs.Empty);
+        if (changed)
+        {
+            LanguageChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private static CultureInfo ResolveSystemCulture()

@@ -37,7 +37,6 @@ public partial class App : Application
 		LocalizationManager.Configure(localization);
 		localization.SetLanguage(applicationSettings.Language);
 		InitializeComponent();
-		applicationSettings.LanguageChanged += OnLanguageChanged;
 		this.backupSignatureSecretProvider = backupSignatureSecretProvider;
 		this.appErrorPresenter = appErrorPresenter;
 		this.adMobSettings = adMobSettings;
@@ -47,18 +46,6 @@ public partial class App : Application
 		ThemePaletteApplier.Apply(Resources, applicationSettings.ThemePalette, UserAppTheme == AppTheme.Unspecified ? RequestedTheme : UserAppTheme);
 		applicationSettings.ThemePaletteChanged += OnThemePaletteChanged;
 		RequestedThemeChanged += OnRequestedThemeChanged;
-	}
-
-	private void OnLanguageChanged(object? sender, EventArgs args)
-	{
-		localization.SetLanguage(applicationSettings.Language);
-		foreach (var window in Windows)
-		{
-			if (window.Page is AppShell)
-			{
-				window.Page = new AppShell(photoBackgroundOperationTracker, appErrorPresenter, appShellLogger);
-			}
-		}
 	}
 
 	private void OnThemePaletteChanged(object? sender, EventArgs args)

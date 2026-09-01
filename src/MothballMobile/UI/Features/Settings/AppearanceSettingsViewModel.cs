@@ -15,6 +15,12 @@ public partial class AppearanceSettingsViewModel : ObservableObject
     public AppearanceSettingsViewModel(IApplicationSettings applicationSettings)
     {
         this.applicationSettings = applicationSettings;
+        LanguageOptions =
+        [
+            L("System"),
+            L("English"),
+            L("Polish"),
+        ];
     }
 
     public IReadOnlyList<string> ModeOptions { get; } =
@@ -34,12 +40,7 @@ public partial class AppearanceSettingsViewModel : ObservableObject
         "Berry Archive",
     ];
 
-    public IReadOnlyList<string> LanguageOptions =>
-    [
-        L("System"),
-        L("English"),
-        L("Polish"),
-    ];
+    public IReadOnlyList<string> LanguageOptions { get; }
 
     public string SelectedLanguageOption
     {
@@ -51,6 +52,11 @@ public partial class AppearanceSettingsViewModel : ObservableObject
         };
         set
         {
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				return;
+			}
+
             var language = value == L("English")
                 ? LanguagePreference.English
                 : value == L("Polish")
