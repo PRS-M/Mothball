@@ -77,8 +77,6 @@ public sealed class PagedListViewModelBaseTests
 
         public void ReleaseLoad() => releaseLoad.TrySetResult();
 
-        protected override Task EnsureDummyData() => Task.CompletedTask;
-
         protected override async Task<List<int>> LoadAsync(int pageNumber, int pageSize)
         {
             LoadCallCount++;
@@ -98,8 +96,6 @@ public sealed class PagedListViewModelBaseTests
         protected override long DataRevision => revision;
 
         public void MarkDataChanged() => revision++;
-
-        protected override Task EnsureDummyData() => Task.CompletedTask;
 
         protected override Task<List<int>> LoadAsync(int pageNumber, int pageSize)
         {

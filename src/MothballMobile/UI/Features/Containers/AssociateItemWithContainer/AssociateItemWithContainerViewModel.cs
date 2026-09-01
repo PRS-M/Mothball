@@ -58,9 +58,6 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     }
 
     /// <inheritdoc />
-    protected override Task EnsureDummyData() => Task.CompletedTask;
-
-    /// <inheritdoc />
     protected override Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
         => coordinator.LoadPageAsync(pageNumber, pageSize);
 

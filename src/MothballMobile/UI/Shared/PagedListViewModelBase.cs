@@ -36,7 +36,6 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
         var revisionAtStart = DataRevision;
         await RunCommandAsync(async () =>
         {
-            await EnsureDummyData();
             ResetPaging();
             await LoadNextPageCore();
             loadedRevision = revisionAtStart;
@@ -76,11 +75,6 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     /// </summary>
     /// <param name="vm">The view model that was added.</param>
     protected virtual void OnViewModelAdded(TViewModel vm) { }
-
-    /// <summary>
-    /// Ensures any data required to populate the list is available.
-    /// </summary>
-    protected abstract Task EnsureDummyData();
 
     /// <summary>
     /// Loads a page of source items.

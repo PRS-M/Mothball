@@ -62,9 +62,6 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
 
     public ObservableCollection<ContainerViewModel> Containers => Items;
 
-    /// <inheritdoc />
-    protected override Task EnsureDummyData() => Task.CompletedTask;
-
     protected override Task<List<Container>> LoadPageAsync(string? query, int pageNumber, int pageSize)
         => containerListQueries.QueryAsync(
             IsEmptyFilterSelected(),

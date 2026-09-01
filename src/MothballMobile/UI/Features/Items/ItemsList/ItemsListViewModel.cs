@@ -80,9 +80,6 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     protected override string SearchOperationName => "Search items";
     protected override long DataRevision => inventoryChanges.Revision;
 
-    /// <inheritdoc />
-    protected override Task EnsureDummyData() => Task.CompletedTask;
-
     protected override ItemViewModel MapToViewModel(InventorySnapshot source)
     {
         return new ItemViewModel(
