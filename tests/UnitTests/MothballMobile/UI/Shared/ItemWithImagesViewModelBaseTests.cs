@@ -15,7 +15,14 @@ public sealed class ItemWithImagesViewModelBaseTests
         var item = new Item(Guid.NewGuid(), "Widget", "");
         var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 3);
         var inventory = new InventorySnapshot(item, 5, 3, [allocation]);
-        var viewModel = new ItemViewModel(inventory, Mock.Of<IImagePathResolver>(), Mock.Of<INavigationService>(), showQuantityManagement: true);
+        var viewModel = new ItemViewModel(
+            inventory,
+            Mock.Of<IImagePathResolver>(),
+            Mock.Of<INavigationService>(),
+            showQuantityManagement: true,
+            _ => Task.CompletedTask,
+            _ => Task.CompletedTask,
+            _ => Task.CompletedTask);
 
         var raisedProperties = new List<string?>();
         viewModel.PropertyChanged += (_, e) => raisedProperties.Add(e.PropertyName);
