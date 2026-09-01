@@ -4,6 +4,29 @@ namespace Mothball.Tests.Unit.Mobile.UI.Shared;
 public sealed class PagedListViewModelBaseTests
 {
     [Test]
+    public async Task InitializeAsync_AfterSuccessfulInitialization_DoesNotReloadUntilRefresh()
+    {
+        var viewModel = new CountingPagedListViewModel();
+
+        await viewModel.InitializeAsync();
+        await viewModel.InitializeAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.LoadCallCount, Is.EqualTo(1));
+            Assert.That(viewModel.Items, Is.EqualTo(new[] { 1 }));
+        });
+
+        await viewModel.RefreshCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.LoadCallCount, Is.EqualTo(2));
+            Assert.That(viewModel.Items, Is.EqualTo(new[] { 2 }));
+        });
+    }
+
+    [Test]
     public async Task LoadNextPage_WhenAnotherPageIsLoading_DoesNotStartAnOverlappingRequest()
     {
         var viewModel = new BlockingPagedListViewModel();
@@ -46,6 +69,21 @@ public sealed class PagedListViewModelBaseTests
             loadStarted.TrySetResult();
             await releaseLoad.Task;
             return [1];
+        }
+
+        protected override int MapToViewModel(int source) => source;
+    }
+
+    private sealed class CountingPagedListViewModel : PagedListViewModelBase<int, int>
+    {
+        public int LoadCallCount { get; private set; }
+
+        protected override Task EnsureDummyData() => Task.CompletedTask;
+
+        protected override Task<List<int>> LoadAsync(int pageNumber, int pageSize)
+        {
+            LoadCallCount++;
+            return Task.FromResult<List<int>>([LoadCallCount]);
         }
 
         protected override int MapToViewModel(int source) => source;

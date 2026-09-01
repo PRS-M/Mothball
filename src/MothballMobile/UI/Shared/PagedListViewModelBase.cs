@@ -11,6 +11,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     protected int currentPage = 0;
     protected readonly int pageSize;
     private bool hasMorePages = true;
+    private bool initialized;
 
     protected PagedListViewModelBase(int pageSize = 10)
     {
@@ -23,13 +24,17 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     /// <summary>
     /// Initializes the list by ensuring source data exists and loading its first page.
     /// </summary>
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
+        => initialized ? Task.CompletedTask : ReloadAsync();
+
+    private async Task ReloadAsync()
     {
         await RunCommandAsync(async () =>
         {
             await EnsureDummyData();
             ResetPaging();
             await LoadNextPageCore();
+            initialized = true;
         }, showRefreshing: true);
     }
 
@@ -48,7 +53,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     /// Reinitializes the list from scratch.
     /// </summary>
     [RelayCommand]
-    private Task Refresh() => InitializeAsync();
+    private Task Refresh() => ReloadAsync();
 
     /// <summary>
     /// Resets paging state and removes all current items.
