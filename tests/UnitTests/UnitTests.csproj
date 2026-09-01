@@ -82,6 +82,7 @@
     <Compile Include="../../src/MothballMobile/UI/Features/Items/AddItem/AddItemViewModel.cs" Link="UI/Features/Items/AddItem/AddItemViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemDetails/ItemInventoryWithdrawalCoordinator.cs" Link="UI/Features/Items/ItemDetails/ItemInventoryWithdrawalCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/Consumption/ItemConsumptionCoordinator.cs" Link="UI/Features/Items/Consumption/ItemConsumptionCoordinator.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Items/Quantity/ItemQuantityEditCoordinator.cs" Link="UI/Features/Items/Quantity/ItemQuantityEditCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemDetails/ItemDetailsCoordinator.cs" Link="UI/Features/Items/ItemDetails/ItemDetailsCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemDetails/ItemDetailsViewModel.cs" Link="UI/Features/Items/ItemDetails/ItemDetailsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemLocations/ItemLocationViewModel.cs" Link="UI/Features/Items/ItemLocations/ItemLocationViewModel.cs" />
