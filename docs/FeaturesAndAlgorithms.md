@@ -40,25 +40,30 @@ Containers represent physical places such as boxes, shelves, drawers, or cabinet
 
 ### Search and paging algorithm
 
-Container and item lists use `PagedListViewModelBase<TSource, TViewModel>`. A search creates a filtered result through a specification; normal browsing loads fixed-size pages.
+Container and item lists use `PagedListViewModelBase<TSource, TViewModel>`. Browsing and filtered search both load fixed-size pages.
 
 ```text
 initialize:
-  ensure development data when applicable
+  return immediately when the cached list matches the inventory revision
   clear displayed items
   request page 0
 
 load next page:
+  stop when another load is already running
   stop when the previous result was shorter than page size
-  request current page
+  request the current browse or search page
   map each source result to a row view model
   append mapped rows
   increment page number
 ```
 
-The final short page, or an empty page, marks the list as exhausted. Search paths can replace the collection with a complete filtered result set, disabling further paging. This keeps incremental scrolling simple while allowing responsive, debounced search.
+The final short page, or an empty page, marks the list as exhausted. Search text is trimmed, debounced, and retained as the active query while subsequent pages load. Clearing the query resets the collection and returns to paged browsing. The busy guard prevents overlapping requests from appending the same page twice.
 
-`ContainerListViewModel` and `ItemsListViewModel` both add debounced search on top of `PagedListViewModelBase` through a shared intermediate base, `SearchablePagedListViewModelBase<TSource, TViewModel>` (`src/MothballMobile/UI/Shared/SearchablePagedListViewModelBase.cs`). It owns the `Query` property and the debounce wiring (`OnQueryChanged`, `SearchCommand`), so a new searchable paged list only needs to implement `LoadQuerySearchAsync`, `SearchOperationName`, and the `PagedListViewModelBase` abstract members. `RefreshCommand` (`=> InitializeAsync()`) lives on `PagedListViewModelBase` itself, since every paged list — searchable or not — needs a pull-to-refresh reload. A filter change (e.g. `SelectedFilter`) should re-run the existing `SearchAsync`/`backgroundTasks` pair directly rather than duplicating the debounce logic.
+`ContainerListViewModel` and `ItemsListViewModel` both add debounced search on top of `PagedListViewModelBase` through `SearchablePagedListViewModelBase<TSource, TViewModel>` (`src/MothballMobile/UI/Shared/SearchablePagedListViewModelBase.cs`). It owns the `Query` property, active query, and debounce wiring. A searchable list implements `LoadPageAsync`, `SearchOperationName`, and the normal mapping members. Filter changes re-run the shared search path so the active query and paging state remain consistent.
+
+List contents survive ordinary page appearances. `IInventoryChangeTracker` advances a process-local revision after successful inventory mutations and restores; a list reloads when its cached revision is stale. Pull-to-refresh always forces a reload regardless of the revision.
+
+Each page load emits a structured `PagedListLoadMeasurement` through `IPagedListLoadDiagnostics`. The log separates repository query time, synchronous row-population time, and total time, and identifies the list, filter/browse variant, page, page size, and result count. Query text is deliberately excluded. Thumbnail loading starts after each row is added and is asynchronous, so it is not included in the population measurement. Use these measurements to decide whether further work belongs in persistence, view-model population, or MAUI rendering.
 
 ## Items
 

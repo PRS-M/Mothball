@@ -204,6 +204,8 @@ For a change that affects items, containers, images, or relations:
 
 Do not reference MAUI APIs from the persistence project. Conversely, do not make the UI depend on SQLite table models; use application entities, contracts, or view models instead.
 
+The current SQLite schema is defined directly by the classes in `Infrastructure/DatabaseModels`. Mothball is still in development and does not maintain SQLite migration compatibility: after a schema-breaking model change, reset the local application database before testing. Do not add startup backfills or repair scans unless upgrade compatibility becomes an explicit product requirement. Constraints and indexes that belong to the current schema should be declared on the SQLite models and covered by integration tests.
+
 ## Dependency Injection and Backend Selection
 
 `MauiProgram.CreateMauiApp()` is the composition root. It configures the app, then calls these registration methods:
