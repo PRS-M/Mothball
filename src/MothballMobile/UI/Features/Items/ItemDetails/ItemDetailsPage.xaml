@@ -179,17 +179,29 @@
                            Text="{Binding UnassignedQuantity}"
                            FontAttributes="Bold" />
                       </Grid>
-                      <Button Text="Set total quantity"
-                              Style="{StaticResource OutlinedButton}"
-                              HorizontalOptions="End"
-                              Command="{Binding SetTotalQuantityCommand}">
-                          <Button.ImageSource>
-                              <FontImageSource FontFamily="FontAwesomeSolid"
-                                               Glyph="&#xF1EC;"
-                                               Color="{DynamicResource Primary}"
-                                               Size="16" />
-                          </Button.ImageSource>
-                      </Button>
+                      <HorizontalStackLayout Spacing="8"
+                                             HorizontalOptions="End">
+                          <Button Text="Edit quantity"
+                                  Style="{StaticResource OutlinedButton}"
+                                  Command="{Binding EditQuantityCommand}">
+                              <Button.ImageSource>
+                                  <FontImageSource FontFamily="FontAwesomeSolid"
+                                                   Glyph="&#xF1EC;"
+                                                   Color="{DynamicResource Primary}"
+                                                   Size="16" />
+                              </Button.ImageSource>
+                          </Button>
+                          <Button Text="Use"
+                                  Style="{StaticResource OutlinedButton}"
+                                  Command="{Binding UseCommand}">
+                              <Button.ImageSource>
+                                  <FontImageSource FontFamily="FontAwesomeSolid"
+                                                   Glyph="&#xF2ED;"
+                                                   Color="{DynamicResource Primary}"
+                                                   Size="16" />
+                              </Button.ImageSource>
+                          </Button>
+                      </HorizontalStackLayout>
                   </VerticalStackLayout>
                  </Border>
 
