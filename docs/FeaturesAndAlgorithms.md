@@ -181,14 +181,16 @@ return remaining allocations, assigned quantity, unassigned quantity,
 
 The carried remainder is important: a requested withdrawal may span multiple locations, but it must be explicitly allocated across them. This avoids silently subtracting stock from an arbitrary container. Invalid allocations, negative quantities, and plans that cannot reach the requested total are rejected before persistence.
 
-The planner first calculates the minimum assigned withdrawal:
+Decrease priority depends on where the edit starts. The general item list consumes available unassigned stock first because no container is in context. If the requested decrease exceeds unassigned stock, the remaining amount enters the interactive container-withdrawal workflow. Item details retains the container-aware assigned-first workflow described below, including its preferred container when one is present in navigation context.
+
+The assigned-first planner calculates the minimum assigned withdrawal:
 
 ```text
 required assigned withdrawal =
   min(current total - requested total, assigned quantity)
 ```
 
-This gives assigned stock priority. For example, if the current total is 10, the requested total is 8, and five units are assigned to containers, two assigned units must be withdrawn. If the requested reduction is larger than all assigned stock, all assigned stock is withdrawn and the remainder comes from unassigned stock.
+For example, if the current total is 10, the requested total is 8, and five units are assigned to containers, an assigned-first edit withdraws two assigned units. If the requested reduction is larger than all assigned stock, all assigned stock is withdrawn and the remainder comes from unassigned stock.
 
 When a selected container does not contain enough stock, the planner removes what is available and carries the remainder forward:
 

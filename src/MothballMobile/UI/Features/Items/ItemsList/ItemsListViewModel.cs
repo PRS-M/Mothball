@@ -126,7 +126,9 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     {
         try
         {
-            var execution = await quantityEditCoordinator.ExecuteAsync(item.Item.ItemId);
+            var execution = await quantityEditCoordinator.ExecuteAsync(
+                item.Item.ItemId,
+                decreasePreference: ItemQuantityDecreasePreference.UnassignedFirst);
             ApplyInventoryUpdate(item, execution?.Update, execution?.Inventory);
         }
         catch (Exception ex)
