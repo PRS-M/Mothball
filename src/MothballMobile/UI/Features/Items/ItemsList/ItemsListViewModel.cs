@@ -30,6 +30,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private readonly IDeleteItemCommandHandler deleteItemHandler;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
+    private readonly IInventoryChangeTracker inventoryChanges;
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
 
     public static ReadOnlyCollection<ItemsListFilter> AvailableFilters { get; } = EnumValues.CreateReadOnly<ItemsListFilter>();
@@ -59,6 +60,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         IDeleteItemCommandHandler deleteItemHandler,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
+        IInventoryChangeTracker inventoryChanges,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null)
         : base(backgroundTasks, debouncer)
@@ -72,9 +74,11 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         this.deleteItemHandler = deleteItemHandler;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
+        this.inventoryChanges = inventoryChanges;
     }
 
     protected override string SearchOperationName => "Search items";
+    protected override long DataRevision => inventoryChanges.Revision;
 
     /// <inheritdoc />
     protected override Task EnsureDummyData() => Task.CompletedTask;

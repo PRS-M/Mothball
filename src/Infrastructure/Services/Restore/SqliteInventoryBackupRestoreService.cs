@@ -7,10 +7,14 @@ namespace Infrastructure.Services.Restore;
 public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestoreService
 {
     private readonly MothballDatabase database;
+    private readonly IInventoryChangeTracker? inventoryChanges;
 
-    public SqliteInventoryBackupRestoreService(MothballDatabase database)
+    public SqliteInventoryBackupRestoreService(
+        MothballDatabase database,
+        IInventoryChangeTracker? inventoryChanges = null)
     {
         this.database = database;
+        this.inventoryChanges = inventoryChanges;
     }
 
     /// <inheritdoc />
@@ -213,6 +217,7 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
             result = plan.Result;
         }).ConfigureAwait(false);
 
+        inventoryChanges?.MarkChanged();
         return result;
     }
 

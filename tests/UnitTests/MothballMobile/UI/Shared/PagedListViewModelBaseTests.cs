@@ -27,6 +27,22 @@ public sealed class PagedListViewModelBaseTests
     }
 
     [Test]
+    public async Task InitializeAsync_AfterDataRevisionChanges_ReloadsCachedList()
+    {
+        var viewModel = new CountingPagedListViewModel();
+        await viewModel.InitializeAsync();
+
+        viewModel.MarkDataChanged();
+        await viewModel.InitializeAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.LoadCallCount, Is.EqualTo(2));
+            Assert.That(viewModel.Items, Is.EqualTo(new[] { 2 }));
+        });
+    }
+
+    [Test]
     public async Task LoadNextPage_WhenAnotherPageIsLoading_DoesNotStartAnOverlappingRequest()
     {
         var viewModel = new BlockingPagedListViewModel();
@@ -76,7 +92,12 @@ public sealed class PagedListViewModelBaseTests
 
     private sealed class CountingPagedListViewModel : PagedListViewModelBase<int, int>
     {
+        private long revision;
+
         public int LoadCallCount { get; private set; }
+        protected override long DataRevision => revision;
+
+        public void MarkDataChanged() => revision++;
 
         protected override Task EnsureDummyData() => Task.CompletedTask;
 

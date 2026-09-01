@@ -83,6 +83,7 @@ public sealed class ContainerListViewModelTests
             queries,
             Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(),
+            Mock.Of<IInventoryChangeTracker>(),
             Mock.Of<IBackgroundTaskObserver>());
     }
 }

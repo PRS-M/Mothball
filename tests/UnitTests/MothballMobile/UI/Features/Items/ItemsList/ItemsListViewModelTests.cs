@@ -131,6 +131,7 @@ public sealed class ItemsListViewModelTests
             deleteHandler ?? Mock.Of<IDeleteItemCommandHandler>(),
             popup,
             definitions,
+            Mock.Of<IInventoryChangeTracker>(),
             Mock.Of<IBackgroundTaskObserver>());
     }
 }

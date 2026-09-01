@@ -12,6 +12,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     protected readonly int pageSize;
     private bool hasMorePages = true;
     private bool initialized;
+    private long loadedRevision;
 
     protected PagedListViewModelBase(int pageSize = 10)
     {
@@ -20,20 +21,25 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
 
     public ObservableCollection<TViewModel> Items { get; } = new();
     protected virtual bool CanLoadNextPage => hasMorePages;
+    protected virtual long DataRevision => 0;
 
     /// <summary>
     /// Initializes the list by ensuring source data exists and loading its first page.
     /// </summary>
     public Task InitializeAsync()
-        => initialized ? Task.CompletedTask : ReloadAsync();
+        => initialized && loadedRevision == DataRevision
+            ? Task.CompletedTask
+            : ReloadAsync();
 
     private async Task ReloadAsync()
     {
+        var revisionAtStart = DataRevision;
         await RunCommandAsync(async () =>
         {
             await EnsureDummyData();
             ResetPaging();
             await LoadNextPageCore();
+            loadedRevision = revisionAtStart;
             initialized = true;
         }, showRefreshing: true);
     }

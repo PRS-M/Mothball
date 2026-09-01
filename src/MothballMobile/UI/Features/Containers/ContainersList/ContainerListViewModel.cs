@@ -19,6 +19,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     private readonly INavigationService nav;
     private readonly IContainerListQueryHandler containerListQueries;
     private readonly IApplicationSettings applicationSettings;
+    private readonly IInventoryChangeTracker inventoryChanges;
 
     private ContainerListFilter selectedFilter = ContainerListFilter.All;
 
@@ -44,6 +45,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
         IContainerListQueryHandler containerListQueries,
         INavigationService nav,
         IApplicationSettings applicationSettings,
+        IInventoryChangeTracker inventoryChanges,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null)
         : base(backgroundTasks, debouncer, pageSize: 10)
@@ -52,9 +54,11 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
         this.containerListQueries = containerListQueries;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
+        this.inventoryChanges = inventoryChanges;
     }
 
     protected override string SearchOperationName => "Search containers";
+    protected override long DataRevision => inventoryChanges.Revision;
 
     public ObservableCollection<ContainerViewModel> Containers => Items;
 
