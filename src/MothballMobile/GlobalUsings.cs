@@ -24,6 +24,7 @@ global using MothballMobile.Infrastructure.BackgroundOperations.Observability;
 global using MothballMobile.Infrastructure.BackgroundOperations.Photos;
 global using MothballMobile.Infrastructure.Diagnostics;
 global using MothballMobile.Infrastructure.Navigation;
+global using MothballMobile.Infrastructure.Localization;
 global using MothballMobile.Infrastructure.Presentation.Popups;
 global using MothballMobile.Infrastructure.Resilience;
 global using MothballMobile.Infrastructure.Settings;
