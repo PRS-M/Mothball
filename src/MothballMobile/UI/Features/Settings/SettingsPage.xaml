@@ -25,10 +25,10 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="{loc:Translate Key=Language}"
+                    <Label Text="{x:Static strings:AppResources.Language}"
                            Style="{StaticResource HeadlineSmall}"
                            TextColor="{DynamicResource OnSurface}" />
-                    <Picker Title="{loc:Translate Key=Language}"
+                    <Picker Title="{x:Static strings:AppResources.Language}"
                             ItemsSource="{Binding Appearance.LanguageOptions}"
                             SelectedItem="{Binding Appearance.SelectedLanguageOption, Mode=TwoWay}"
                             SemanticProperties.Hint="{x:Static strings:AppResources.ChooseApplicationLanguage}" />
@@ -85,8 +85,8 @@
                               Style="{StaticResource HeadlineSmall}"
                               TextColor="{DynamicResource OnSurface}" />
 
-                      <controls:SegmentedSwitch LeftText="Simple"
-                                                    RightText="Advanced"
+                      <controls:SegmentedSwitch LeftText="{x:Static strings:AppResources.Simple}"
+                                                    RightText="{x:Static strings:AppResources.Advanced}"
                                                     IsRightSelected="{Binding Appearance.IsAdvancedAppMode, Mode=TwoWay}"
                                                     LeftCommand="{Binding Appearance.SelectSimpleAppModeCommand}"
                                                     RightCommand="{Binding Appearance.SelectAdvancedAppModeCommand}"
@@ -153,8 +153,8 @@
                               Style="{StaticResource HeadlineSmall}"
                               TextColor="{DynamicResource OnSurface}" />
 
-                    <controls:SegmentedSwitch LeftText="JSON"
-                                                    RightText="ZIP"
+                    <controls:SegmentedSwitch LeftText="{x:Static strings:AppResources.JSON}"
+                                                    RightText="{x:Static strings:AppResources.ZIP}"
                                                     IsRightSelected="{Binding Backup.IsZipBackupMode, Mode=TwoWay}"
                                                     LeftCommand="{Binding Backup.SelectJsonBackupModeCommand}"
                                                     RightCommand="{Binding Backup.SelectZipBackupModeCommand}"

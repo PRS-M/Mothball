@@ -4,6 +4,7 @@
              xmlns:self="clr-namespace:MothballMobile.UI.Controls"
              xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
              x:Class="MothballMobile.UI.Controls.ItemTile"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
              x:Name="this"
              x:DataType="self:ItemTile">
 
@@ -112,7 +113,7 @@
                                        Grid.ColumnSpan="2"
                                        Spacing="6"
                                        HorizontalOptions="End">
-                    <Button Text="Edit quantity"
+                    <Button Text="{x:Static strings:AppResources.EditQuantity}"
                             IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"
                             Command="{Binding Source={x:Reference this}, Path=EditQuantityCommand}"
                             Style="{StaticResource OutlinedButton}"
@@ -126,7 +127,7 @@
                                              Size="14" />
                         </Button.ImageSource>
                     </Button>
-                    <Button Text="Use"
+                    <Button Text="{x:Static strings:AppResources.Use}"
                             IsVisible="{Binding Source={x:Reference this}, Path=ShowUse}"
                             Command="{Binding Source={x:Reference this}, Path=UseCommand}"
                             Style="{StaticResource OutlinedButton}"

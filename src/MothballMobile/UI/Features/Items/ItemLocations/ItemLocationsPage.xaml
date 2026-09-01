@@ -5,8 +5,9 @@
                 xmlns:vm="clr-namespace:MothballMobile.UI.Features.Items.ItemLocations"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Items.ItemLocations.ItemLocationsPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ItemLocationsViewModel"
-                Title="Item locations"
+                Title="{x:Static strings:AppResources.ItemLocations}"
                 Background="{DynamicResource Surface}">
 
     <Grid Padding="16"
@@ -32,7 +33,7 @@
             </CollectionView.ItemsLayout>
 
             <CollectionView.EmptyView>
-                <controls:EmptyStateView Title="No containers found" />
+                <controls:EmptyStateView Title="{x:Static strings:AppResources.NoContainersFound}" />
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>

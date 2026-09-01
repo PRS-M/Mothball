@@ -5,8 +5,9 @@
                 xmlns:vm="clr-namespace:MothballMobile.UI.Features.Containers.AssociateItemWithContainer"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Containers.AssociateItemWithContainer.AssociateItemWithContainerPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:AssociateItemWithContainerViewModel"
-                Title="Select container"
+                Title="{x:Static strings:AppResources.SelectContainer}"
                 Background="{DynamicResource Surface}">
 
         <Grid Padding="16"
@@ -14,7 +15,7 @@
           ColumnDefinitions="*">
 
           <controls:PageHeader Grid.Row="0"
-                         Title="Select container"
+                         Title="{x:Static strings:AppResources.SelectContainer}"
                          Subtitle="Tap a container to associate this item"
                          TitleFontSize="28"
                          SubtitleFontSize="14"
@@ -22,7 +23,7 @@
                          HeaderMargin="0,0,0,10" />
 
           <controls:SearchBarCard Grid.Row="1"
-                          Placeholder="Search containers..."
+                          Placeholder="{x:Static strings:AppResources.SearchContainers}"
                           Text="{Binding SearchQuery}"
                           SearchCommand="{Binding ApplySearchCommand}" />
 
@@ -39,7 +40,7 @@
             </CollectionView.ItemsLayout>
 
             <CollectionView.EmptyView>
-                <controls:EmptyStateView Title="No containers yet" />
+                <controls:EmptyStateView Title="{x:Static strings:AppResources.NoContainersYet}" />
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>

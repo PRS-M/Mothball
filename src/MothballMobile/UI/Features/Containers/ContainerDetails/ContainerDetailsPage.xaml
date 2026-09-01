@@ -5,8 +5,9 @@
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Containers.ContainerDetails.ContainerDetailsPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ContainerDetailsViewModel"
-                Title="Container"
+                Title="{x:Static strings:AppResources.Container}"
                 Background="{DynamicResource Surface}">
 
     <ContentPage.Resources>
@@ -22,7 +23,7 @@
                                                 ImagePaths="{Binding ContainerImagePaths}" />
 
                         <HorizontalStackLayout Spacing="8">
-                            <Button Text="Add photo"
+                            <Button Text="{x:Static strings:AppResources.AddPhoto}"
                                     Style="{StaticResource TonalButton}"
                                     HeightRequest="34"
                                     FontSize="12"
@@ -36,7 +37,7 @@
                                 </Button.ImageSource>
                             </Button>
 
-                            <Button Text="Delete photo"
+                            <Button Text="{x:Static strings:AppResources.DeletePhoto}"
                                     Style="{StaticResource OutlinedButton}"
                                     HeightRequest="34"
                                     FontSize="12"
@@ -67,12 +68,12 @@
                 <Border Style="{StaticResource Card}">
                     <VerticalStackLayout Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="Description"
+                            <Label Text="{x:Static strings:AppResources.Description}"
                                    FontAttributes="Bold"
                                    VerticalOptions="Center"
                                    TextColor="{DynamicResource OnSurface}"/>
                             <Button Grid.Column="1"
-                                    Text="Edit Description"
+                                    Text="{x:Static strings:AppResources.EditDescription}"
                                     Style="{StaticResource OutlinedButton}"
                                     HeightRequest="34"
                                     FontSize="12"
@@ -87,7 +88,7 @@
                                 </Button.ImageSource>
                             </Button>
                             <Button Grid.Column="1"
-                                    Text="Save"
+                                    Text="{x:Static strings:AppResources.Save}"
                                     Style="{StaticResource TonalButton}"
                                     HeightRequest="34"
                                     FontSize="12"
@@ -112,13 +113,13 @@
                             <Editor Text="{Binding NotesDraft}"
                                     AutoSize="TextChanges"
                                     MinimumHeightRequest="96"
-                                    Placeholder="Description" />
+                                    Placeholder="{x:Static strings:AppResources.Description}" />
                         </Border>
                     </VerticalStackLayout>
                 </Border>
 
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Items in this container"
+                    <Label Text="{x:Static strings:AppResources.ItemsInThisContainer}"
                            FontSize="18"
                            FontAttributes="Bold"
                            LineBreakMode="NoWrap"
@@ -127,7 +128,7 @@
                     <HorizontalStackLayout Spacing="8"
                                            HorizontalOptions="Start"
                                            VerticalOptions="Center">
-                        <Button Text="Add a new item"
+                        <Button Text="{x:Static strings:AppResources.AddANewItem}"
                                 Style="{StaticResource TonalButton}"
                                 HeightRequest="36"
                                 FontSize="12"
@@ -140,7 +141,7 @@
                                                  Size="16"/>
                             </Button.ImageSource>
                         </Button>
-                        <Button Text="Add an existing item"
+                        <Button Text="{x:Static strings:AppResources.AddAnExistingItem}"
                                 Style="{StaticResource OutlinedButton}"
                                 HeightRequest="36"
                                 FontSize="12"
@@ -156,7 +157,7 @@
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
 
-                <controls:SearchBarCard Placeholder="Search within container..."
+                <controls:SearchBarCard Placeholder="{x:Static strings:AppResources.SearchWithinContainer}"
                                         Text="{Binding SearchQuery}"
                                         SearchCommand="{Binding ApplySearchCommand}" />
             </VerticalStackLayout>
@@ -219,7 +220,7 @@
                 <controls:ListLoadingView IsVisible="{Binding IsLoadingItems}"
                                           IsLoading="{Binding IsLoadingItems}"
                                           LoadingText="Loading container items..." />
-                <controls:EmptyStateView Title="No items in this container"
+                <controls:EmptyStateView Title="{x:Static strings:AppResources.NoItemsInThisContainer}"
                                          IsVisible="{Binding IsItemListEmpty}" />
             </Grid>
         </CollectionView.Footer>

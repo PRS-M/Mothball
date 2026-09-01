@@ -5,8 +5,9 @@
                 xmlns:vm="clr-namespace:MothballMobile.UI.Features.Containers.ContainersList"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Containers.ContainersList.ContainersListPage"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ContainerListViewModel"
-                Title="Containers"
+                Title="{x:Static strings:AppResources.Containers}"
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
@@ -28,7 +29,7 @@
               ColumnDefinitions="*,Auto"
               ColumnSpacing="12">
             <controls:PageHeader Grid.Column="0"
-                                 Title="Containers"
+                                 Title="{x:Static strings:AppResources.Containers}"
                                  Subtitle="Browse your storage"
                                  TitleFontSize="22"
                                  SubtitleFontSize="12"
@@ -52,7 +53,7 @@
                           FontSize="14"
                           VerticalOptions="Center"
                           TextColor="{DynamicResource OnSecondaryContainer}" />
-                      <Label Text="Filter:"
+                      <Label Text="{x:Static strings:AppResources.Filter}"
                            VerticalOptions="Center"
                            FontSize="12"
                               TextColor="{DynamicResource OnSecondaryContainer}"
@@ -69,7 +70,7 @@
 
         <controls:SearchBarCard Grid.Row="1"
                      Margin="0"
-                     Placeholder="Search containers..."
+                     Placeholder="{x:Static strings:AppResources.SearchContainers}"
                      Text="{Binding Query}"
                      SearchCommand="{Binding SearchCommand}" />
 
@@ -97,7 +98,7 @@
                                          HorizontalItemSpacing="16"/>
                     </CollectionView.ItemsLayout>
                     <CollectionView.EmptyView>
-                        <controls:EmptyStateView Title="No containers yet"
+                        <controls:EmptyStateView Title="{x:Static strings:AppResources.NoContainersYet}"
                                      Subtitle="Tap + to add your first container"
                                      SubtitleFontSize="12" />
                     </CollectionView.EmptyView>

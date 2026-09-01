@@ -4,12 +4,13 @@
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Settings.ImportDocumentationPage"
-                Title="Documentation / Help"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
+                Title="{x:Static strings:AppResources.DocumentationHelp}"
                 Background="{DynamicResource Surface}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
-            <controls:PageHeader Title="Documentation / Help"
+            <controls:PageHeader Title="{x:Static strings:AppResources.DocumentationHelp}"
                                  Subtitle="Backup import modes"
                                  TitleFontSize="22"
                                  SubtitleFontSize="12"
@@ -22,11 +23,11 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Choosing an import mode"
+                    <Label Text="{x:Static strings:AppResources.ChoosingAnImportMode}"
                            Style="{StaticResource HeadlineSmall}"
                            TextColor="{DynamicResource OnSurface}" />
 
-                    <Label Text="Import modes control how records already in the app are handled when a backup JSON file is restored. Choose the least destructive mode that matches what you need."
+                    <Label Text="{x:Static strings:AppResources.ImportModesControlHowRecordsAlreadyInTheAppAreHandledWhenABackupJSONFileIsRestoredChooseTheLeastDestructiveModeThatMatchesWhatYouNeed}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                 </VerticalStackLayout>
@@ -38,15 +39,15 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Add only"
+                    <Label Text="{x:Static strings:AppResources.AddOnly}"
                            Style="{StaticResource TitleMedium}"
                            TextColor="{DynamicResource OnSurface}" />
 
-                    <Label Text="Adds containers, items, relation quantity deltas, and images that are present in the backup but missing from the app."
+                    <Label Text="{x:Static strings:AppResources.AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                    <Label Text="Existing containers, items, relations, and images are left unchanged. This is the safest choice when you want to merge a backup without modifying current data."
+                    <Label Text="{x:Static strings:AppResources.ExistingContainersItemsRelationsAndImagesAreLeftUnchangedThisIsTheSafestChoiceWhenYouWantToMergeABackupWithoutModifyingCurrentData}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                 </VerticalStackLayout>
@@ -58,19 +59,19 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Add + upsert metadata"
+                    <Label Text="{x:Static strings:AppResources.AddUpsertMetadata}"
                            Style="{StaticResource TitleMedium}"
                            TextColor="{DynamicResource OnSurface}" />
 
-                    <Label Text="Adds missing records just like Add only."
+                    <Label Text="{x:Static strings:AppResources.AddsMissingRecordsJustLikeAddOnly}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                    <Label Text="For existing containers, it updates name and notes when the backup differs. For existing items, it updates name and description when the backup differs."
+                    <Label Text="{x:Static strings:AppResources.ForExistingContainersItUpdatesNameAndNotesWhenTheBackupDiffersForExistingItemsItUpdatesNameAndDescriptionWhenTheBackupDiffers}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                    <Label Text="Relations and image references remain additive for existing records."
+                    <Label Text="{x:Static strings:AppResources.RelationsAndImageReferencesRemainAdditiveForExistingRecords}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                 </VerticalStackLayout>
@@ -82,19 +83,19 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Full sync (roots)"
+                    <Label Text="{x:Static strings:AppResources.FullSyncRoots}"
                            Style="{StaticResource TitleMedium}"
                            TextColor="{DynamicResource OnSurface}" />
 
-                    <Label Text="Includes Add + upsert metadata behavior."
+                    <Label Text="{x:Static strings:AppResources.IncludesAddUpsertMetadataBehavior}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                    <Label Text="Deletes containers and items that exist in the app but are not present in the backup. This makes the top-level inventory match the backup."
+                    <Label Text="{x:Static strings:AppResources.DeletesContainersAndItemsThatExistInTheAppButAreNotPresentInTheBackupThisMakesTheTopLevelInventoryMatchTheBackup}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                    <Label Text="For surviving containers and items, relation and image restore remains additive. Missing relation quantities and image references are added, but omitted relation pairs and image references are not removed."
+                    <Label Text="{x:Static strings:AppResources.ForSurvivingContainersAndItemsRelationAndImageRestoreRemainsAdditiveMissingRelationQuantitiesAndImageReferencesAreAddedButOmittedRelationPairsAndImageReferencesAreNotRemoved}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                 </VerticalStackLayout>
@@ -106,19 +107,19 @@
                     StrokeShape="RoundRectangle 16"
                     Background="{DynamicResource SurfaceVariant}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Strict full sync"
+                    <Label Text="{x:Static strings:AppResources.StrictFullSync}"
                            Style="{StaticResource TitleMedium}"
                            TextColor="{DynamicResource OnSurface}" />
 
-                    <Label Text="Includes Full sync root behavior, including deletion of containers and items that are not in the backup."
+                    <Label Text="{x:Static strings:AppResources.IncludesFullSyncRootBehaviorIncludingDeletionOfContainersAndItemsThatAreNotInTheBackup}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                    <Label Text="For surviving relation pairs, the app is reconciled to the backup exactly. Missing pairs are inserted, extra pairs are deleted, and existing pair quantities are set to the backup quantity."
+                    <Label Text="{x:Static strings:AppResources.ForSurvivingRelationPairsTheAppIsReconciledToTheBackupExactlyMissingPairsAreInsertedExtraPairsAreDeletedAndExistingPairQuantitiesAreSetToTheBackupQuantity}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
 
-                    <Label Text="For surviving image references, missing owner-image references are inserted and extra owner-image references are deleted."
+                    <Label Text="{x:Static strings:AppResources.ForSurvivingImageReferencesMissingOwnerImageReferencesAreInsertedAndExtraOwnerImageReferencesAreDeleted}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                 </VerticalStackLayout>
