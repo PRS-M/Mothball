@@ -722,6 +722,49 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task ConsumeAsync_ConsumesSelectedContainerAndUnassignedStockAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var box = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(box);
+            await command.InsertItemAsync(item);
+            await command.InsertItemInventoryAsync(new ItemInventory(item.ItemId, 7));
+            await command.InsertItemContainerRelation(item.ItemId, box.ContainerId, 4);
+        }
+
+        foreach (var service in new[]
+                 {
+                     new ItemInventoryCommandService(sqlite.Query, sqlite.Command),
+                     new ItemInventoryCommandService(json.Query, json.Command),
+                 })
+        {
+            await service.ConsumeAsync(
+                item.ItemId,
+                ItemInventoryConsumptionSource.FromContainer(box.ContainerId),
+                2);
+            await service.ConsumeAsync(item.ItemId, ItemInventoryConsumptionSource.FromUnassigned(), 1);
+        }
+
+        var sqliteItem = await sqlite.Query.GetInventorySnapshotAsync(item.ItemId);
+        var jsonItem = await json.Query.GetInventorySnapshotAsync(item.ItemId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sqliteItem!.TotalQuantity, Is.EqualTo(4));
+            Assert.That(sqliteItem.AssignedQuantity, Is.EqualTo(2));
+            Assert.That(sqliteItem.UnassignedQuantity, Is.EqualTo(2));
+            Assert.That(jsonItem!.TotalQuantity, Is.EqualTo(4));
+            Assert.That(jsonItem.AssignedQuantity, Is.EqualTo(2));
+            Assert.That(jsonItem.UnassignedQuantity, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
     public async Task GetItemContainerAllocationsAsync_BulkLookupGroupsAndOrdersAllocationsAcrossBackends()
     {
         await using var sqlite = await BuildSqliteAsync();

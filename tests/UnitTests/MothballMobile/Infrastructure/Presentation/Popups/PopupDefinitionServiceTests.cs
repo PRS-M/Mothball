@@ -159,6 +159,39 @@ public class PopupDefinitionServiceTests
     }
 
     [Test]
+    public void ConsumptionSourcePicker_ListsContainersAndUnassignedStock()
+    {
+        var item = new CoreApp.Domain.Entities.ItemAggregate.Item(Guid.NewGuid(), "Widget", "");
+        var allocation = new ItemContainerAllocation(Guid.NewGuid(), "Box", 3);
+        var inventory = new InventorySnapshot(item, 5, 3, [allocation]);
+
+        var definition = service.ConsumptionSourcePicker(inventory);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(definition.Options.Select(option => option.Label),
+                Is.EqualTo(new[] { "Box (3)", "Unassigned stock (2)" }));
+            Assert.That(definition.Options[0].Value.ContainerId, Is.EqualTo(allocation.ContainerId));
+            Assert.That(definition.Options[1].Value.Kind,
+                Is.EqualTo(ItemInventoryConsumptionSourceKind.Unassigned));
+        });
+    }
+
+    [Test]
+    public void ConsumeFromContainer_CapsQuantityAtSelectedSource()
+    {
+        var definition = service.ConsumeFromContainer(
+            new ItemContainerAllocation(Guid.NewGuid(), "Box", 4));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(definition.Min, Is.EqualTo(1));
+            Assert.That(definition.Max, Is.EqualTo(4));
+            Assert.That(definition.InitialValue, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
     public void DeleteItemBySettingTotalToZero_ExplainsPermanentRemoval()
     {
         var definition = service.DeleteItemBySettingTotalToZero("Widget");
