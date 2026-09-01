@@ -81,6 +81,12 @@
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainersList/ContainerViewModel.cs" Link="UI/Features/Containers/ContainersList/ContainerViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainersList/ContainerListViewModel.cs" Link="UI/Features/Containers/ContainersList/ContainerListViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ItemWithPhotosViewModel.cs" Link="UI/Features/Containers/ContainerDetails/ItemWithPhotosViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/IContainerDetailsHeader.cs" Link="UI/Features/Containers/ContainerDetails/IContainerDetailsHeader.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ContainerItemPageLoad.cs" Link="UI/Features/Containers/ContainerDetails/ContainerItemPageLoad.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ContainerItemPagingController.cs" Link="UI/Features/Containers/ContainerDetails/ContainerItemPagingController.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ContainerDetailsItemRowsViewModel.cs" Link="UI/Features/Containers/ContainerDetails/ContainerDetailsItemRowsViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ContainerDetailsItemsCoordinator.cs" Link="UI/Features/Containers/ContainerDetails/ContainerDetailsItemsCoordinator.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ContainerDetailsViewModel.cs" Link="UI/Features/Containers/ContainerDetails/ContainerDetailsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/AddItem/AddItemViewModel.cs" Link="UI/Features/Items/AddItem/AddItemViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemDetails/ItemInventoryWithdrawalCoordinator.cs" Link="UI/Features/Items/ItemDetails/ItemInventoryWithdrawalCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/Consumption/ItemConsumptionCoordinator.cs" Link="UI/Features/Items/Consumption/ItemConsumptionCoordinator.cs" />

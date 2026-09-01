@@ -49,6 +49,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     [ObservableProperty]
     private bool isItemListEmpty = true;
 
+    [ObservableProperty]
+    private bool isLoadingItems;
+
     public bool IsViewingNotes => !IsEditingNotes;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public string DisplayNotes => string.IsNullOrWhiteSpace(Notes) ? "No description." : Notes;
@@ -129,9 +132,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         SearchQuery = string.Empty;
 
         IsItemListEmpty = true;
+        IsLoadingItems = false;
         ContainerImagePaths.Clear();
 
-        var summary = await itemCoordinator.InitializeAsync(containerId, this, ShowQuantityManagement);
+        var summary = await itemCoordinator.LoadSummaryAsync(containerId, this);
         if (summary is null)
         {
             currentContainer = null;
@@ -156,12 +160,36 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         // Load container photos (all, as a small carousel)
         ReplaceWith(ContainerImagePaths, paths.GetContainerPhotoPaths(currentContainer));
-        IsItemListEmpty = itemCoordinator.IsEmpty;
+
+        // Publish the header and image paths before starting the item query. Once the
+        // query yields, MAUI can render and size the container carousel independently.
+        IsItemListEmpty = false;
+        IsLoadingItems = true;
+        try
+        {
+            if (await itemCoordinator.ReloadAsync(
+                    ContainerId,
+                    currentContainer,
+                    searchTerm: null,
+                    ShowQuantityManagement))
+            {
+                IsItemListEmpty = itemCoordinator.IsEmpty;
+            }
+        }
+        finally
+        {
+            IsLoadingItems = false;
+        }
     }
 
     [RelayCommand]
     private async Task LoadMoreItemsAsync()
     {
+        if (IsLoadingItems)
+        {
+            return;
+        }
+
         // Use RunCommandAsync to prevent concurrent loads and manage busy state
         await RunCommandAsync(async () =>
         {
@@ -181,14 +209,22 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         var searchTerm = string.IsNullOrWhiteSpace(SearchQuery) ? null : SearchQuery;
         IsItemListEmpty = false;
+        IsLoadingItems = true;
 
-        if (currentContainer is not null && await itemCoordinator.ReloadAsync(
-                ContainerId,
-                currentContainer,
-                searchTerm,
-                ShowQuantityManagement))
+        try
         {
-            IsItemListEmpty = itemCoordinator.IsEmpty;
+            if (currentContainer is not null && await itemCoordinator.ReloadAsync(
+                    ContainerId,
+                    currentContainer,
+                    searchTerm,
+                    ShowQuantityManagement))
+            {
+                IsItemListEmpty = itemCoordinator.IsEmpty;
+            }
+        }
+        finally
+        {
+            IsLoadingItems = false;
         }
     }
 

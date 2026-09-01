@@ -65,6 +65,8 @@ List contents survive ordinary page appearances. `IInventoryChangeTracker` advan
 
 Each page load emits a structured `PagedListLoadMeasurement` through `IPagedListLoadDiagnostics`. The log separates repository query time, synchronous row-population time, and total time, and identifies the list, filter/browse variant, page, page size, and result count. Query text is deliberately excluded. Image paths are resolved while each row view model is constructed, before the row is added, and are included in population time. MAUI image decoding and rendering happen later and are not included. Use these measurements to decide whether further work belongs in persistence, view-model population, or MAUI rendering.
 
+Container details uses two-phase initialization. It publishes the container summary and photo paths first, allowing the dynamic-aspect-ratio carousel to render and size itself while the initial five-item query is in flight. Item rows are appended only after that query completes; a footer indicates that they are still loading. This keeps item-row creation and thumbnail rendering from blocking the first useful container header.
+
 ## Items
 
 Items are catalogued things that may be stored in one or more containers. Their total inventory is derived from container allocations plus any unassigned quantity.
