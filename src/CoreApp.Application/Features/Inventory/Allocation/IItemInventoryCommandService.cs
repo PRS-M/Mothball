@@ -24,6 +24,14 @@ public interface IItemInventoryCommandService
     Task<ItemInventoryUpdateResult> SetContainerAllocationAsync(Guid itemId, Guid containerId, int quantity);
 
     /// <summary>
+    /// Permanently consumes a quantity from exactly one inventory source.
+    /// </summary>
+    Task<ItemInventoryUpdateResult> ConsumeAsync(
+        Guid itemId,
+        ItemInventoryConsumptionSource source,
+        int quantity);
+
+    /// <summary>
     /// Applies a planned inventory withdrawal to an item.
     /// </summary>
     /// <param name="itemId">The identifier used by the operation.</param>
