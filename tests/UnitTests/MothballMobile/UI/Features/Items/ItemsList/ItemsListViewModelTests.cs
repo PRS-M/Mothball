@@ -3,6 +3,9 @@ using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Application.Specifications;
 using Moq;
 using MothballMobile.UI.Features.Items.ItemsList;
+using MothballMobile.UI.Features.Items.Consumption;
+using MothballMobile.UI.Features.Items.ItemDetails;
+using MothballMobile.UI.Features.Items.Quantity;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Items.ItemsList;
 
@@ -56,16 +59,48 @@ public sealed class ItemsListViewModelTests
         Assert.That(viewModel.Items, Has.Count.EqualTo(1));
     }
 
-    private static ItemsListViewModel CreateViewModel(IItemsListQueryHandler queries)
+    [Test]
+    public async Task DeleteCommand_WhenConfirmed_DeletesWholeItemAndRemovesRow()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var queries = new Mock<IItemsListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, null, 0, 10))
+            .ReturnsAsync([new InventorySnapshot(item, 1, 0, [])]);
+        var popup = new Mock<IPopupService>();
+        popup.Setup(p => p.ConfirmAsync(It.IsAny<ConfirmationPopupDefinition>())).ReturnsAsync(true);
+        var deleteHandler = new Mock<IDeleteItemCommandHandler>();
+        var viewModel = CreateViewModel(queries.Object, popup.Object, deleteHandler.Object);
+        await viewModel.InitializeAsync();
+
+        await viewModel.Items.Single().DeleteCommand.ExecuteAsync(null);
+
+        Assert.That(viewModel.Items, Is.Empty);
+        deleteHandler.Verify(h => h.DeleteAsync(item.ItemId.ToString()), Times.Once);
+    }
+
+    private static ItemsListViewModel CreateViewModel(
+        IItemsListQueryHandler queries,
+        IPopupService? popup = null,
+        IDeleteItemCommandHandler? deleteHandler = null)
     {
         var paths = new Mock<IImagePathResolver>();
         paths.Setup(p => p.GetItemPhotoPaths(It.IsAny<Item>())).Returns(Array.Empty<string>());
+        popup ??= Mock.Of<IPopupService>();
+        var details = Mock.Of<IItemDetailsQueryHandler>();
+        var inventoryCommands = Mock.Of<IItemInventoryCommandService>();
+        var definitions = new PopupDefinitionService();
+        var withdrawal = new ItemInventoryWithdrawalCoordinator(inventoryCommands, popup, definitions);
 
         return new ItemsListViewModel(
             paths.Object,
             queries,
             Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(),
+            new ItemQuantityEditCoordinator(details, inventoryCommands, withdrawal, popup, definitions),
+            new ItemConsumptionCoordinator(details, inventoryCommands, popup, definitions),
+            deleteHandler ?? Mock.Of<IDeleteItemCommandHandler>(),
+            popup,
+            definitions,
             Mock.Of<IBackgroundTaskObserver>());
     }
 }

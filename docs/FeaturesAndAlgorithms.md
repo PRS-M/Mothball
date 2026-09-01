@@ -95,6 +95,7 @@ The inventory model keeps the invariant $\text{total quantity} = \text{assigned 
 - Associate an item with a selected container from item details.
 - Increase or decrease a container allocation.
 - Change an item total, withdrawing from assigned and then unassigned stock as needed.
+- Consume an exact quantity from one explicitly selected container or from unassigned stock.
 - View all locations and quantities for an item.
 
 ### Developer map
@@ -103,6 +104,16 @@ The inventory model keeps the invariant $\text{total quantity} = \text{assigned 
 - Quantity changes: `CoreApp.Application/Features/Inventory/Allocation`
 - Withdrawal planning: `CoreApp.Domain/Inventory/ItemInventoryWithdrawalPlanner.cs`
 - Interactive withdrawal workflow: `ItemInventoryWithdrawalCoordinator`
+- Source-specific consumption workflow: `ItemConsumptionCoordinator`
+
+Editing and consumption are deliberately separate operations. Editing the total retains the target-total
+workflow below, while editing a container allocation can move stock between assigned and unassigned states.
+Consumption permanently reduces both the selected source and the total. It never converts consumed assigned
+stock into unassigned stock and never carries a request into another source automatically.
+
+In a general item context, consumption begins with a source picker. In a container context, the current
+container is offered first but must still be confirmed; declining that prompt opens the same general source
+picker, even when there is only one container allocation.
 
 Editing a container's item quantity touches counts at two levels, and both must be refreshed from the result of the save rather than the value the user entered: `ContainerItemQuantityService.SaveQuantityAsync` returns an `ItemInventoryUpdateResult` (nested as `Inventory` on `ContainerItemQuantityUpdateResult`/`ContainerDetailsQuantityUpdate`, rather than duplicating its fields) with the item's recalculated total/assigned/unassigned quantities and removal state. `ContainerDetailsItemsCoordinator.SaveQuantityAsync` applies it to the edited row via `ItemWithImagesViewModelBase.UpdateQuantities` and refreshes the container header's item-type and total-item counts from the accompanying `ContainerDetailsSummary`, through the `IContainerDetailsHeader` seam so the coordinator does not depend on the concrete `ContainerDetailsViewModel`. Skipping either update leaves the tile or the header showing stale numbers after an edit.
 

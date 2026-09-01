@@ -231,6 +231,63 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             Message: "Enter how many unassigned items to withdraw.");
 
     /// <inheritdoc />
+    public OptionPickerPopupDefinition<ItemInventoryConsumptionSource> ConsumptionSourcePicker(
+        InventorySnapshot inventory)
+    {
+        var options = inventory.Allocations
+            .Where(allocation => allocation.Quantity > 0)
+            .Select(allocation => new PopupOption<ItemInventoryConsumptionSource>(
+                $"{allocation.ContainerName} ({allocation.Quantity})",
+                ItemInventoryConsumptionSource.FromContainer(allocation.ContainerId)))
+            .ToList();
+
+        if (inventory.UnassignedQuantity > 0)
+        {
+            options.Add(new PopupOption<ItemInventoryConsumptionSource>(
+                $"Unassigned stock ({inventory.UnassignedQuantity})",
+                ItemInventoryConsumptionSource.FromUnassigned()));
+        }
+
+        return new OptionPickerPopupDefinition<ItemInventoryConsumptionSource>(
+            "Use from",
+            "Cancel",
+            options);
+    }
+
+    /// <inheritdoc />
+    public ConfirmationPopupDefinition ConfirmPreferredConsumptionSource(ItemContainerAllocation allocation)
+        => new(
+            "Use from this container?",
+            $"Use '{allocation.ContainerName}' stock ({allocation.Quantity} available)?",
+            "Use here",
+            "Choose another source");
+
+    /// <inheritdoc />
+    public NumberPickerPopupDefinition ConsumeFromContainer(ItemContainerAllocation allocation)
+        => new(
+            $"Use from {allocation.ContainerName}",
+            Min: 1,
+            Max: allocation.Quantity,
+            InitialValue: 1,
+            Message: "Enter how many items to use permanently.");
+
+    /// <inheritdoc />
+    public NumberPickerPopupDefinition ConsumeUnassignedQuantity(int availableQuantity)
+        => new(
+            "Use unassigned stock",
+            Min: 1,
+            Max: availableQuantity,
+            InitialValue: 1,
+            Message: "Enter how many unassigned items to use permanently.");
+
+    /// <inheritdoc />
+    public ConfirmationPopupDefinition ConfirmFinalStockConsumption(string itemName)
+        => new(
+            "Use final item?",
+            $"This will permanently remove '{itemName}', all assignments, and its photos. Continue?",
+            "Use and remove");
+
+    /// <inheritdoc />
     public ConfirmationPopupDefinition RemoveItemFromContainer(string itemName)
         => new(
             "Remove item",

@@ -44,11 +44,17 @@ public partial class ItemTile : ContentView
 	public static readonly BindableProperty RemoveCommandProperty =
 		BindableProperty.Create(nameof(RemoveCommand), typeof(ICommand), typeof(ItemTile), null);
 
+	public static readonly BindableProperty UseCommandProperty =
+		BindableProperty.Create(nameof(UseCommand), typeof(ICommand), typeof(ItemTile), null);
+
 	public static readonly BindableProperty ShowEditQuantityProperty =
 		BindableProperty.Create(nameof(ShowEditQuantity), typeof(bool), typeof(ItemTile), false);
 
 	public static readonly BindableProperty ShowRemoveProperty =
 		BindableProperty.Create(nameof(ShowRemove), typeof(bool), typeof(ItemTile), false);
+
+	public static readonly BindableProperty ShowUseProperty =
+		BindableProperty.Create(nameof(ShowUse), typeof(bool), typeof(ItemTile), false);
 
 	public static readonly BindableProperty ImagePathsProperty =
 		BindableProperty.Create(nameof(ImagePaths), typeof(IEnumerable), typeof(ItemTile), default(IEnumerable));
@@ -125,6 +131,12 @@ public partial class ItemTile : ContentView
 		set => SetValue(RemoveCommandProperty, value);
 	}
 
+	public ICommand? UseCommand
+	{
+		get => (ICommand?)GetValue(UseCommandProperty);
+		set => SetValue(UseCommandProperty, value);
+	}
+
 	public bool ShowEditQuantity
 	{
 		get => (bool)GetValue(ShowEditQuantityProperty);
@@ -135,6 +147,12 @@ public partial class ItemTile : ContentView
 	{
 		get => (bool)GetValue(ShowRemoveProperty);
 		set => SetValue(ShowRemoveProperty, value);
+	}
+
+	public bool ShowUse
+	{
+		get => (bool)GetValue(ShowUseProperty);
+		set => SetValue(ShowUseProperty, value);
 	}
 
 	public IEnumerable? ImagePaths

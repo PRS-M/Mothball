@@ -8,6 +8,8 @@ using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Specifications;
+using MothballMobile.UI.Features.Items.Consumption;
+using MothballMobile.UI.Features.Items.Quantity;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
 
@@ -24,6 +26,11 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private readonly IItemsListQueryHandler itemListQueries;
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
+    private readonly ItemQuantityEditCoordinator quantityEditCoordinator;
+    private readonly ItemConsumptionCoordinator consumptionCoordinator;
+    private readonly IDeleteItemCommandHandler deleteItemHandler;
+    private readonly IPopupService popup;
+    private readonly IPopupDefinitionService popupDefinitions;
     private readonly DemoDataSeeder? demoSeeder;
 
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
@@ -50,6 +57,11 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         IItemsListQueryHandler itemListQueries,
         INavigationService nav,
         IApplicationSettings applicationSettings,
+        ItemQuantityEditCoordinator quantityEditCoordinator,
+        ItemConsumptionCoordinator consumptionCoordinator,
+        IDeleteItemCommandHandler deleteItemHandler,
+        IPopupService popup,
+        IPopupDefinitionService popupDefinitions,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         DemoDataSeeder? demoSeeder = null)
@@ -59,6 +71,11 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         this.itemListQueries = itemListQueries;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
+        this.quantityEditCoordinator = quantityEditCoordinator;
+        this.consumptionCoordinator = consumptionCoordinator;
+        this.deleteItemHandler = deleteItemHandler;
+        this.popup = popup;
+        this.popupDefinitions = popupDefinitions;
         this.demoSeeder = demoSeeder;
     }
 
@@ -75,7 +92,14 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
 
     protected override ItemViewModel MapToViewModel(InventorySnapshot source)
     {
-        return new ItemViewModel(source, paths, nav, applicationSettings.IsAdvancedMode);
+        return new ItemViewModel(
+            source,
+            paths,
+            nav,
+            applicationSettings.IsAdvancedMode,
+            EditQuantityAsync,
+            UseAsync,
+            DeleteAsync);
     }
 
     [RelayCommand]
@@ -120,5 +144,67 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
             ItemsListFilter.Unassigned => ItemQueryFilter.Unassigned,
             _ => ItemQueryFilter.All,
         };
+
+    private async Task EditQuantityAsync(ItemViewModel item)
+    {
+        try
+        {
+            var execution = await quantityEditCoordinator.ExecuteAsync(item.Item.ItemId);
+            ApplyInventoryUpdate(item, execution?.Update, execution?.Inventory);
+        }
+        catch (Exception ex)
+        {
+            await popup.ShowAlertAsync(popupDefinitions.InventoryQuantityUpdateFailed(ex.Message));
+        }
+    }
+
+    private async Task UseAsync(ItemViewModel item)
+    {
+        try
+        {
+            var execution = await consumptionCoordinator.ExecuteAsync(item.Item.ItemId);
+            ApplyInventoryUpdate(item, execution?.Update, execution?.Inventory);
+        }
+        catch (Exception ex)
+        {
+            await popup.ShowAlertAsync(popupDefinitions.InventoryQuantityUpdateFailed(ex.Message));
+        }
+    }
+
+    private Task DeleteAsync(ItemViewModel item)
+        => popup.ConfirmAndRunAsync(popupDefinitions.DeleteItem(), async () =>
+        {
+            await deleteItemHandler.DeleteAsync(item.Item.ItemId.ToString());
+            Items.Remove(item);
+        });
+
+    private void ApplyInventoryUpdate(
+        ItemViewModel item,
+        ItemInventoryUpdateResult? update,
+        InventorySnapshot? inventory)
+    {
+        if (update is null)
+        {
+            return;
+        }
+
+        if (update.ItemDeleted || inventory is null)
+        {
+            Items.Remove(item);
+            return;
+        }
+
+        item.UpdateQuantities(update.TotalQuantity, update.AssignedQuantity, update.UnassignedQuantity);
+        bool stillMatches = SelectedFilter switch
+        {
+            ItemsListFilter.Assigned => update.AssignedQuantity > 0,
+            ItemsListFilter.Unassigned => update.UnassignedQuantity > 0,
+            _ => true,
+        };
+        if (!stillMatches)
+        {
+            Items.Remove(item);
+        }
+    }
 
 }

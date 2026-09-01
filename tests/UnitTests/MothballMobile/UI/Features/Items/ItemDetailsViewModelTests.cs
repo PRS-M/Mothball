@@ -3,6 +3,8 @@ using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.Entities.Shared;
 using Microsoft.Extensions.Logging.Abstractions;
+using MothballMobile.UI.Features.Items.Consumption;
+using MothballMobile.UI.Features.Items.Quantity;
 using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Presentation.Popups;
@@ -226,7 +228,7 @@ public sealed class ItemDetailsViewModelTests
     }
 
     [Test]
-    public async Task SetTotalQuantityCommand_WhenPickerReturnReappearsPageAndTotalWasReset_UsesPrePickerSnapshotForDecrease()
+    public async Task EditQuantityCommand_WhenPickerReturnReappearsPageAndTotalWasReset_UsesPrePickerSnapshotForDecrease()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
         var sourceContainerId = Guid.NewGuid();
@@ -277,7 +279,7 @@ public sealed class ItemDetailsViewModelTests
         });
         await viewModel.InitializeAsync();
 
-        await viewModel.SetTotalQuantityCommand.ExecuteAsync(null);
+        await viewModel.EditQuantityCommand.ExecuteAsync(null);
 
         inventoryCommands.Verify(c => c.ApplyWithdrawalAsync(item.ItemId, It.IsAny<ItemInventoryWithdrawalPlan>()), Times.Once);
         inventoryCommands.Verify(c => c.IncreaseTotalQuantityAsync(It.IsAny<Guid>(), It.IsAny<int>()), Times.Never);
@@ -286,6 +288,53 @@ public sealed class ItemDetailsViewModelTests
             Assert.That(viewModel.TotalQuantity, Is.EqualTo(5));
             Assert.That(viewModel.AssignedQuantity, Is.EqualTo(2));
             Assert.That(viewModel.UnassignedQuantity, Is.EqualTo(3));
+        });
+    }
+
+    [Test]
+    public async Task UseCommand_FromContainerContext_ConsumesAndRefreshesQuantities()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var containerId = Guid.NewGuid();
+        var before = new InventorySnapshot(
+            item,
+            3,
+            2,
+            [new ItemContainerAllocation(containerId, "Box", 2)]);
+        var after = new InventorySnapshot(
+            item,
+            2,
+            1,
+            [new ItemContainerAllocation(containerId, "Box", 1)]);
+        var itemDetails = new Mock<IItemDetailsQueryHandler>();
+        itemDetails.SetupSequence(q => q.GetDetailsAsync(item.ItemId.ToString()))
+            .ReturnsAsync(new ItemDetailsResult(before))
+            .ReturnsAsync(new ItemDetailsResult(before))
+            .ReturnsAsync(new ItemDetailsResult(after));
+        var commands = new Mock<IItemInventoryCommandService>();
+        commands.Setup(c => c.ConsumeAsync(
+                item.ItemId,
+                ItemInventoryConsumptionSource.FromContainer(containerId),
+                1))
+            .ReturnsAsync(new ItemInventoryUpdateResult(false, 2, 1, 1));
+        var popup = new Mock<IPopupService>();
+        popup.Setup(p => p.ConfirmAsync(It.IsAny<ConfirmationPopupDefinition>())).ReturnsAsync(true);
+        popup.Setup(p => p.PickNumberAsync(It.IsAny<NumberPickerPopupDefinition>())).ReturnsAsync(1);
+        var viewModel = CreateViewModel(itemDetails.Object, commands.Object, popup.Object);
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object>
+        {
+            [NavigationParams.ItemId] = item.ItemId.ToString(),
+            [NavigationParams.ContainerId] = containerId.ToString(),
+        });
+        await viewModel.InitializeAsync();
+
+        await viewModel.UseCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.TotalQuantity, Is.EqualTo(2));
+            Assert.That(viewModel.AssignedQuantity, Is.EqualTo(1));
+            Assert.That(viewModel.UnassignedQuantity, Is.EqualTo(1));
         });
     }
 
@@ -311,10 +360,15 @@ public sealed class ItemDetailsViewModelTests
         IPopupService popup)
         => new(
             itemDetails,
-            inventoryCommands,
             Mock.Of<IDeleteItemCommandHandler>(),
             Mock.Of<IUpdateItemDescriptionCommandHandler>(),
-            new ItemInventoryWithdrawalCoordinator(inventoryCommands, popup, new PopupDefinitionService()),
+            new ItemConsumptionCoordinator(itemDetails, inventoryCommands, popup, new PopupDefinitionService()),
+            new ItemQuantityEditCoordinator(
+                itemDetails,
+                inventoryCommands,
+                new ItemInventoryWithdrawalCoordinator(inventoryCommands, popup, new PopupDefinitionService()),
+                popup,
+                new PopupDefinitionService()),
             NullLogger<ItemDetailsCoordinator>.Instance);
 
     private static Mock<IItemDetailsQueryHandler> CreateItemDetailsQuery(Guid itemId, ItemDetailsResult details)

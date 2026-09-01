@@ -2,6 +2,7 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Application.Features.Photos;
+using CoreApp.Domain.Inventory;
 
 namespace CoreApp.Application.Features.Inventory.Allocation;
 
@@ -59,12 +60,30 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
     }
 
     /// <inheritdoc />
+    public async Task<ItemInventoryUpdateResult> ConsumeAsync(
+        Guid itemId,
+        ItemInventoryConsumptionSource source,
+        int quantity)
+    {
+        var summary = await GetSummaryAsync(itemId);
+        var plan = ItemInventoryConsumptionPlanner.Plan(summary, source, quantity);
+        return await ApplyWithdrawalAsync(summary, plan);
+    }
+
+    /// <inheritdoc />
     public async Task<ItemInventoryUpdateResult> ApplyWithdrawalAsync(
         Guid itemId,
         ItemInventoryWithdrawalPlan plan)
     {
         ArgumentNullException.ThrowIfNull(plan);
         var summary = await GetSummaryAsync(itemId);
+        return await ApplyWithdrawalAsync(summary, plan);
+    }
+
+    private async Task<ItemInventoryUpdateResult> ApplyWithdrawalAsync(
+        InventorySnapshot summary,
+        ItemInventoryWithdrawalPlan plan)
+    {
         var inventory = ToInventory(summary);
 
         if (plan.DeleteItem)

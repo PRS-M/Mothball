@@ -108,24 +108,39 @@
                        FontSize="12"
                        LineBreakMode="TailTruncation" />
 
-                <Button Grid.Row="5"
-                        Grid.Column="1"
-                        Text="Edit quantity"
-                        IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"
-                        Command="{Binding Source={x:Reference this}, Path=EditQuantityCommand}"
-                        Style="{StaticResource OutlinedButton}"
-                        HeightRequest="30"
-                        FontSize="11"
-                        Padding="8,0"
-                        HorizontalOptions="End"
-                        VerticalOptions="End">
-                    <Button.ImageSource>
-                        <FontImageSource FontFamily="FontAwesomeSolid"
-                                         Glyph="&#xF044;"
-                                         Color="{DynamicResource Primary}"
-                                         Size="14" />
-                    </Button.ImageSource>
-                </Button>
+                <HorizontalStackLayout Grid.Row="5"
+                                       Grid.ColumnSpan="2"
+                                       Spacing="6"
+                                       HorizontalOptions="End">
+                    <Button Text="Edit quantity"
+                            IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"
+                            Command="{Binding Source={x:Reference this}, Path=EditQuantityCommand}"
+                            Style="{StaticResource OutlinedButton}"
+                            HeightRequest="30"
+                            FontSize="11"
+                            Padding="8,0">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF044;"
+                                             Color="{DynamicResource Primary}"
+                                             Size="14" />
+                        </Button.ImageSource>
+                    </Button>
+                    <Button Text="Use"
+                            IsVisible="{Binding Source={x:Reference this}, Path=ShowUse}"
+                            Command="{Binding Source={x:Reference this}, Path=UseCommand}"
+                            Style="{StaticResource OutlinedButton}"
+                            HeightRequest="30"
+                            FontSize="11"
+                            Padding="8,0">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF2ED;"
+                                             Color="{DynamicResource Primary}"
+                                             Size="14" />
+                        </Button.ImageSource>
+                    </Button>
+                </HorizontalStackLayout>
             </Grid>
         </Grid>
     </Border>

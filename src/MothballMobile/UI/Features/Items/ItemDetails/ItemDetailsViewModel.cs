@@ -15,7 +15,6 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
     private Item? currentItem;
-    private InventorySnapshot? currentInventory;
     private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
 
@@ -148,7 +147,6 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
             var item = details.Inventory.Item;
             currentItem = item;
-            currentInventory = details.Inventory;
             currentAllocations = details.Inventory.Allocations;
             Name = item.Name;
             Description = item.Description;
@@ -201,31 +199,31 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     }
 
     [RelayCommand]
-    private async Task SetTotalQuantityAsync()
+    private async Task EditQuantityAsync()
     {
-        if (!ShowQuantityManagement)
-        {
-            return;
-        }
-
-        if (!await RefreshInventoryForQuantityEditAsync())
-        {
-            return;
-        }
-
-        var snapshot = new QuantityEditSnapshot(currentItem!, currentInventory!);
-
-        var selectedQuantity = await popup.PickNumberAsync(
-            popupDefinitions.SetTotalQuantity(snapshot.TotalQuantity, snapshot.AssignedQuantity));
-
-        if (selectedQuantity is null || selectedQuantity.Value == snapshot.TotalQuantity)
+        if (!ShowQuantityManagement || !Guid.TryParse(ItemId, out var parsedItemId))
         {
             return;
         }
 
         try
         {
-            await ApplyTotalQuantitySelectionAsync(snapshot, selectedQuantity.Value);
+            Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
+                ? parsedSourceContainerId
+                : null;
+            var execution = await itemDetailsCoordinator.EditQuantityAsync(parsedItemId, preferredContainerId);
+            if (execution is null)
+            {
+                return;
+            }
+
+            if (execution.Update.ItemDeleted)
+            {
+                await nav.GoBackAsync();
+                return;
+            }
+
+            ApplyInventorySnapshot(execution.Inventory!);
         }
         catch (Exception ex)
         {
@@ -233,96 +231,38 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         }
     }
 
-    private async Task ApplyTotalQuantitySelectionAsync(QuantityEditSnapshot snapshot, int selectedQuantity)
+    [RelayCommand]
+    private async Task UseAsync()
     {
-        if (selectedQuantity == 0)
+        if (!ShowQuantityManagement || !Guid.TryParse(ItemId, out var parsedItemId))
         {
-            await DeleteBySettingTotalToZeroAsync(snapshot.Item);
             return;
         }
 
-        if (selectedQuantity > snapshot.TotalQuantity)
-        {
-            await IncreaseTotalQuantityAsync(snapshot.Item, selectedQuantity);
-            return;
-        }
-
-        await RunWithdrawalWorkflowAsync(selectedQuantity, snapshot.Inventory);
-    }
-
-    private Task DeleteBySettingTotalToZeroAsync(Item item)
-        => popup.ConfirmAndRunAsync(popupDefinitions.DeleteItemBySettingTotalToZero(Name), async () =>
-        {
-            var deletionResult = await itemDetailsCoordinator.DeleteBySettingTotalToZeroAsync(item);
-            if (deletionResult.ItemDeleted)
-            {
-                await nav.GoBackAsync();
-            }
-        });
-
-    private async Task IncreaseTotalQuantityAsync(Item item, int selectedQuantity)
-    {
-        var result = await itemDetailsCoordinator.IncreaseTotalQuantityAsync(item, selectedQuantity);
-        ApplyInventoryResult(result);
-    }
-
-    private async Task<bool> RefreshInventoryForQuantityEditAsync()
-    {
-        if (string.IsNullOrWhiteSpace(ItemId))
-        {
-            return false;
-        }
-
-        var details = await itemDetailsCoordinator.GetDetailsAsync(ItemId);
-        if (details is null)
-        {
-            return false;
-        }
-
-        currentItem = details.Inventory.Item;
-        currentInventory = details.Inventory;
-        currentAllocations = details.Inventory.Allocations;
-        ApplyQuantities(details.Inventory);
-        ContainerId = details.Inventory.Allocations.FirstOrDefault()?.ContainerId.ToString();
-        NotifyContainerRelationStateChanged();
-        return true;
-    }
-
-    private async Task RunWithdrawalWorkflowAsync(int requestedTotal, InventorySnapshot inventorySnapshot)
-    {
         Guid? preferredContainerId = Guid.TryParse(sourceContainerId, out var parsedSourceContainerId)
             ? parsedSourceContainerId
             : null;
 
-        var execution = await itemDetailsCoordinator.WithdrawAsync(
-            inventorySnapshot,
-            requestedTotal,
-            preferredContainerId);
-        if (execution is null)
+        try
         {
-            return;
-        }
+            var execution = await itemDetailsCoordinator.ConsumeAsync(parsedItemId, preferredContainerId);
+            if (execution is null)
+            {
+                return;
+            }
 
-        if (execution.Update.ItemDeleted)
+            if (execution.Update.ItemDeleted)
+            {
+                await nav.GoBackAsync();
+                return;
+            }
+
+            ApplyInventorySnapshot(execution.Inventory!);
+        }
+        catch (Exception ex)
         {
-            await nav.GoBackAsync();
-            return;
+            await popup.ShowAlertAsync(popupDefinitions.InventoryQuantityUpdateFailed(ex.Message));
         }
-
-        currentAllocations = execution.Plan.Allocations;
-        ApplyInventoryResult(execution.Update);
-    }
-
-    private void ApplyInventoryResult(ItemInventoryUpdateResult result)
-    {
-        currentInventory = new InventorySnapshot(
-            currentItem!,
-            result.TotalQuantity,
-            result.AssignedQuantity,
-            currentAllocations);
-        ApplyQuantities(currentInventory);
-        ContainerId = currentAllocations.FirstOrDefault()?.ContainerId.ToString();
-        NotifyContainerRelationStateChanged();
     }
 
     private void ApplyQuantities(InventorySnapshot inventory)
@@ -332,10 +272,13 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         UnassignedQuantity = inventory.UnassignedQuantity;
     }
 
-    private sealed record QuantityEditSnapshot(Item Item, InventorySnapshot Inventory)
+    private void ApplyInventorySnapshot(InventorySnapshot inventory)
     {
-        public int TotalQuantity => Inventory.TotalQuantity;
-        public int AssignedQuantity => Inventory.AssignedQuantity;
+        currentItem = inventory.Item;
+        currentAllocations = inventory.Allocations;
+        ApplyQuantities(inventory);
+        ContainerId = inventory.Allocations.FirstOrDefault()?.ContainerId.ToString();
+        NotifyContainerRelationStateChanged();
     }
 
     [RelayCommand]

@@ -110,6 +110,12 @@
                                                AssignedQuantity="{Binding AssignedQuantity}"
                                                UnassignedQuantity="{Binding UnassignedQuantity}"
                                                ShowInventorySummary="{Binding ShowQuantityManagement}"
+                                               ShowEditQuantity="{Binding ShowQuantityManagement}"
+                                               EditQuantityCommand="{Binding EditQuantityCommand}"
+                                               ShowUse="{Binding ShowQuantityManagement}"
+                                               UseCommand="{Binding UseCommand}"
+                                               ShowRemove="True"
+                                               RemoveCommand="{Binding DeleteCommand}"
                                                ImagePaths="{Binding ImagePaths}"
                                                ImageSize="125" />
                         </DataTemplate>

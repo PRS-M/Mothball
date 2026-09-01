@@ -2,31 +2,33 @@ using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using Microsoft.Extensions.Logging;
+using MothballMobile.UI.Features.Items.Consumption;
+using MothballMobile.UI.Features.Items.Quantity;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;
 
 public sealed class ItemDetailsCoordinator
 {
     private readonly IItemDetailsQueryHandler itemDetailsQueries;
-    private readonly IItemInventoryCommandService inventoryCommands;
     private readonly IDeleteItemCommandHandler deleteItemHandler;
     private readonly IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler;
-    private readonly ItemInventoryWithdrawalCoordinator withdrawalCoordinator;
+    private readonly ItemConsumptionCoordinator consumptionCoordinator;
+    private readonly ItemQuantityEditCoordinator quantityEditCoordinator;
     private readonly ILogger<ItemDetailsCoordinator> logger;
 
     public ItemDetailsCoordinator(
         IItemDetailsQueryHandler itemDetailsQueries,
-        IItemInventoryCommandService inventoryCommands,
         IDeleteItemCommandHandler deleteItemHandler,
         IUpdateItemDescriptionCommandHandler updateItemDescriptionHandler,
-        ItemInventoryWithdrawalCoordinator withdrawalCoordinator,
+        ItemConsumptionCoordinator consumptionCoordinator,
+        ItemQuantityEditCoordinator quantityEditCoordinator,
         ILogger<ItemDetailsCoordinator> logger)
     {
         this.itemDetailsQueries = itemDetailsQueries;
-        this.inventoryCommands = inventoryCommands;
         this.deleteItemHandler = deleteItemHandler;
         this.updateItemDescriptionHandler = updateItemDescriptionHandler;
-        this.withdrawalCoordinator = withdrawalCoordinator;
+        this.consumptionCoordinator = consumptionCoordinator;
+        this.quantityEditCoordinator = quantityEditCoordinator;
         this.logger = logger;
     }
 
@@ -39,23 +41,15 @@ public sealed class ItemDetailsCoordinator
     public Task DeleteItemAsync(string itemId)
         => deleteItemHandler.DeleteAsync(itemId);
 
-    public Task<ItemInventoryUpdateResult> DeleteBySettingTotalToZeroAsync(Item item)
-        => inventoryCommands.ApplyWithdrawalAsync(
-            item.ItemId,
-            new ItemInventoryWithdrawalPlan(0, 0, 0, [], true));
-
-    public async Task<ItemInventoryUpdateResult> IncreaseTotalQuantityAsync(Item item, int selectedQuantity)
+    public Task<ItemConsumptionExecutionResult?> ConsumeAsync(Guid itemId, Guid? preferredContainerId)
     {
-        logger.LogDebug("Routing item total request to increase command.");
-        return await inventoryCommands.IncreaseTotalQuantityAsync(item.ItemId, selectedQuantity);
+        logger.LogDebug("Routing item use request to source-specific consumption workflow.");
+        return consumptionCoordinator.ExecuteAsync(itemId, preferredContainerId);
     }
 
-    public Task<ItemInventoryWithdrawalExecutionResult?> WithdrawAsync(
-        InventorySnapshot inventory,
-        int requestedTotal,
-        Guid? preferredContainerId)
+    public Task<ItemQuantityEditExecutionResult?> EditQuantityAsync(Guid itemId, Guid? preferredContainerId)
     {
-        logger.LogDebug("Routing item total request to withdrawal workflow.");
-        return withdrawalCoordinator.ExecuteAsync(inventory, requestedTotal, preferredContainerId);
+        logger.LogDebug("Routing item quantity request to target-total workflow.");
+        return quantityEditCoordinator.ExecuteAsync(itemId, preferredContainerId);
     }
 }

@@ -14,6 +14,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly Func<Guid, int, Task> saveQuantity;
+    private readonly Func<Guid, Guid, Task> consume;
     private readonly Action skipNextInitialization;
 
     public ItemWithPhotosViewModel(
@@ -26,6 +27,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         string? sourceContainerId,
         bool showQuantityManagement,
         Func<Guid, int, Task> saveQuantity,
+        Func<Guid, Guid, Task> consume,
         Action skipNextInitialization)
         : base(entry.Inventory, paths)
     {
@@ -36,6 +38,7 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
         this.popupDefinitions = popupDefinitions;
         this.sourceContainerId = sourceContainerId;
         this.saveQuantity = saveQuantity;
+        this.consume = consume;
         this.skipNextInitialization = skipNextInitialization;
         ShowQuantityManagement = showQuantityManagement;
     }
@@ -107,6 +110,25 @@ public partial class ItemWithPhotosViewModel : ItemWithImagesViewModelBase
 
         skipNextInitialization();
         return popup.ConfirmAndRunAsync(popupDefinitions.RemoveItemFromContainer(Name), () => SaveQuantityAsync(0));
+    }
+
+    [RelayCommand]
+    private async Task UseAsync()
+    {
+        if (!ShowQuantityManagement || ownerContainerId == Guid.Empty)
+        {
+            return;
+        }
+
+        skipNextInitialization();
+        try
+        {
+            await consume(Item.ItemId, ownerContainerId);
+        }
+        catch (Exception ex)
+        {
+            await popup.ShowAlertAsync(popupDefinitions.InventoryQuantityUpdateFailed(ex.Message));
+        }
     }
 
     private async Task SaveQuantityAsync(int selectedQuantity)

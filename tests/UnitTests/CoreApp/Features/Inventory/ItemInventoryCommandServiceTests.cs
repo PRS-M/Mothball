@@ -125,6 +125,32 @@ public sealed class ItemInventoryCommandServiceTests
     }
 
     [Test]
+    public async Task ConsumeAsync_UsesFreshSnapshotAndPersistsSelectedSourceConsumption()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var queries = CreateQueries(item, container, containerQuantity: 4, totalQuantity: 7, assignedQuantity: 4);
+        var commands = new Mock<IInventoryCommandRepository>();
+        var service = new ItemInventoryCommandService(queries.Object, commands.Object);
+
+        var result = await service.ConsumeAsync(
+            item.ItemId,
+            ItemInventoryConsumptionSource.FromContainer(container.ContainerId),
+            2);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.TotalQuantity, Is.EqualTo(5));
+            Assert.That(result.AssignedQuantity, Is.EqualTo(2));
+            Assert.That(result.UnassignedQuantity, Is.EqualTo(3));
+        });
+        commands.Verify(c => c.SaveItemInventoryAsync(It.Is<ItemInventory>(inventory =>
+            inventory.TotalQuantity == 5
+            && inventory.Allocations.Single().ContainerId == container.ContainerId
+            && inventory.Allocations.Single().Quantity == 2)), Times.Once);
+    }
+
+    [Test]
     public async Task ApplyWithdrawalAsync_WithRemainingStock_CommitsPlanAtomically()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");

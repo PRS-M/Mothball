@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.InventoryAggregate;
+using MothballMobile.UI.Features.Items.Consumption;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -13,6 +14,7 @@ public sealed class ContainerDetailsItemsCoordinator
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly IBackgroundTaskObserver backgroundTasks;
+    private readonly ItemConsumptionCoordinator consumptionCoordinator;
     private readonly ContainerItemPagingController itemPaging;
     private ContainerDetailsItemRowsViewModel? itemRows;
     private IContainerDetailsHeader? header;
@@ -25,6 +27,7 @@ public sealed class ContainerDetailsItemsCoordinator
         INavigationService navigation,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
+        ItemConsumptionCoordinator consumptionCoordinator,
         IBackgroundTaskObserver backgroundTasks)
     {
         this.containerDetailsHandler = containerDetailsHandler;
@@ -33,6 +36,7 @@ public sealed class ContainerDetailsItemsCoordinator
         this.navigation = navigation;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
+        this.consumptionCoordinator = consumptionCoordinator;
         this.backgroundTasks = backgroundTasks;
     }
 
@@ -130,6 +134,42 @@ public sealed class ContainerDetailsItemsCoordinator
         return update.Summary;
     }
 
+    public async Task ConsumeAsync(
+        Container container,
+        Guid itemId,
+        Guid preferredContainerId,
+        bool showQuantityManagement)
+    {
+        var execution = await consumptionCoordinator.ExecuteAsync(itemId, preferredContainerId);
+        if (execution is null)
+        {
+            return;
+        }
+
+        var rows = GetRows();
+        var allocation = execution.Inventory?.Allocations.FirstOrDefault(candidate =>
+            candidate.ContainerId == container.ContainerId);
+        if (execution.Update.ItemDeleted || allocation is null)
+        {
+            rows.Remove(itemId);
+        }
+        else if (rows.Find(itemId) is { } item)
+        {
+            item.Quantity = allocation.Quantity;
+            item.UpdateQuantities(
+                execution.Update.TotalQuantity,
+                execution.Update.AssignedQuantity,
+                execution.Update.UnassignedQuantity);
+        }
+
+        var summary = await containerDetailsHandler.GetSummaryAsync(container.ContainerId.ToString());
+        if (summary is not null && header is not null)
+        {
+            header.ItemTypesCount = summary.ItemTypesCount;
+            header.TotalItemCount = showQuantityManagement ? summary.TotalItemCount : summary.ItemTypesCount;
+        }
+    }
+
     public bool TryConsumeSkipNextInitialization()
     {
         if (!skipNextInitialization)
@@ -162,6 +202,11 @@ public sealed class ContainerDetailsItemsCoordinator
             container.ContainerId.ToString(),
             showQuantityManagement,
             async (itemId, quantity) => await SaveQuantityAsync(container, itemId, quantity, showQuantityManagement),
+            async (itemId, preferredContainerId) => await ConsumeAsync(
+                container,
+                itemId,
+                preferredContainerId,
+                showQuantityManagement),
             SkipNextInitialization);
         itemViewModel.LoadImagesAsync().FireAndForget(backgroundTasks, "Load container item images");
         return itemViewModel;
