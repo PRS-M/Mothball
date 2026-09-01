@@ -76,6 +76,39 @@ public class BackendParityTests
     }
 
     [Test]
+    public async Task QueryContainersAsync_SearchWithPaging_ReturnsRequestedPageAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+
+        var containers = new[]
+        {
+            new Container(Guid.NewGuid(), "Storage C", ""),
+            new Container(Guid.NewGuid(), "Storage A", ""),
+            new Container(Guid.NewGuid(), "Storage B", ""),
+        };
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            foreach (var container in containers)
+            {
+                await command.InsertContainerAsync(container);
+            }
+        }
+
+        var specification = new ContainerListSpecification(
+            ContainerQueryFilter.All,
+            SearchTerm: "Storage",
+            PageNumber: 1,
+            PageSize: 1);
+
+        var sqliteContainers = await sqlite.Query.QueryContainersAsync(specification);
+        var jsonContainers = await json.Query.QueryContainersAsync(specification);
+
+        Assert.That(sqliteContainers.Select(container => container.Name), Is.EqualTo(new[] { "Storage B" }));
+        Assert.That(jsonContainers.Select(container => container.Name), Is.EqualTo(new[] { "Storage B" }));
+    }
+
+    [Test]
     public async Task QueryItemsWithPhotosAsync_SearchKeepsInsertionOrderAndPhotoOwnership()
     {
         await using var sqlite = await BuildSqliteAsync();

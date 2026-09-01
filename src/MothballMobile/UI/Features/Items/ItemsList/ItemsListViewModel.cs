@@ -104,27 +104,16 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
     }
 
-    protected override async Task LoadQuerySearchAsync(string? query)
-    {
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            // restore normal paging
-            await ReplaceWithFirstPagedAsync();
-        }
-        else
-        {
-            var items = await itemListQueries.QueryAsync(GetItemQueryFilter(), query);
-
-            ReplaceWithFullResultSet(items);
-        }
-    }
-
     /// <inheritdoc />
     protected override void OnViewModelAdded(ItemViewModel vm)
         => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
 
-    protected override Task<List<InventorySnapshot>> LoadAsync(int pageNumber, int pageSize)
-        => itemListQueries.QueryAsync(GetItemQueryFilter(), pageNumber: pageNumber, pageSize: pageSize);
+    protected override Task<List<InventorySnapshot>> LoadPageAsync(string? query, int pageNumber, int pageSize)
+        => itemListQueries.QueryAsync(
+            GetItemQueryFilter(),
+            query,
+            pageNumber,
+            pageSize);
 
     private ItemQueryFilter GetItemQueryFilter()
         => SelectedFilter switch

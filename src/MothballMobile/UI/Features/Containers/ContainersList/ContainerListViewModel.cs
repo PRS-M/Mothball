@@ -61,8 +61,12 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     /// <inheritdoc />
     protected override Task EnsureDummyData() => Task.CompletedTask;
 
-    protected override async Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => await containerListQueries.QueryAsync(IsEmptyFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);
+    protected override Task<List<Container>> LoadPageAsync(string? query, int pageNumber, int pageSize)
+        => containerListQueries.QueryAsync(
+            IsEmptyFilterSelected(),
+            query,
+            pageNumber,
+            pageSize);
 
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav, applicationSettings.IsAdvancedMode);
@@ -73,19 +77,6 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
 
     [RelayCommand]
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
-
-    protected override async Task LoadQuerySearchAsync(string? searchQuery)
-    {
-        if (string.IsNullOrWhiteSpace(searchQuery))
-        {
-            await ReplaceWithFirstPagedAsync();
-            return;
-        }
-
-        var filtered = await containerListQueries.QueryAsync(IsEmptyFilterSelected(), searchQuery);
-
-        ReplaceWithFullResultSet(filtered);
-    }
 
     private bool IsEmptyFilterSelected()
         => SelectedFilter == ContainerListFilter.Empty;

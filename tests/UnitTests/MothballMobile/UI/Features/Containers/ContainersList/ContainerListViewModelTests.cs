@@ -25,7 +25,7 @@ public sealed class ContainerListViewModelTests
     {
         var queries = new Mock<IContainerListQueryHandler>();
         queries.Setup(q => q.QueryAsync(false, null, 0, 10)).ReturnsAsync([]);
-        queries.Setup(q => q.QueryAsync(false, "Box", null, null))
+        queries.Setup(q => q.QueryAsync(false, "Box", 0, 10))
             .ReturnsAsync([new Container(Guid.NewGuid(), "Box", "Notes")]);
         var viewModel = CreateViewModel(queries.Object);
         await viewModel.InitializeAsync();
@@ -34,6 +34,28 @@ public sealed class ContainerListViewModelTests
         await viewModel.SearchCommand.ExecuteAsync(null);
 
         Assert.That(viewModel.Containers, Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public async Task LoadNextPageCommand_DuringSearch_AppendsNextFilteredPage()
+    {
+        var firstPage = Enumerable.Range(1, 10)
+            .Select(index => new Container(Guid.NewGuid(), $"Box {index}", "Notes"))
+            .ToList();
+        var lastContainer = new Container(Guid.NewGuid(), "Box 11", "Notes");
+        var queries = new Mock<IContainerListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(false, null, 0, 10)).ReturnsAsync([]);
+        queries.Setup(q => q.QueryAsync(false, "Box", 0, 10)).ReturnsAsync(firstPage);
+        queries.Setup(q => q.QueryAsync(false, "Box", 1, 10)).ReturnsAsync([lastContainer]);
+        var viewModel = CreateViewModel(queries.Object);
+        await viewModel.InitializeAsync();
+
+        viewModel.Query = "Box";
+        await viewModel.SearchCommand.ExecuteAsync(null);
+        await viewModel.LoadNextPageCommand.ExecuteAsync(null);
+
+        Assert.That(viewModel.Containers.Select(container => container.Name),
+            Is.EqualTo(firstPage.Select(container => container.Name).Append(lastContainer.Name)));
     }
 
     [Test]
