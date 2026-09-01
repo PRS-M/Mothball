@@ -8,6 +8,8 @@
 	<array>
 		<string>en</string>
 		<string>pl</string>
+		<string>de</string>
+		<string>es</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>

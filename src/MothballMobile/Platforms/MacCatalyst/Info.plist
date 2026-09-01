@@ -8,6 +8,8 @@
 	<array>
 		<string>en</string>
 		<string>pl</string>
+		<string>de</string>
+		<string>es</string>
 	</array>
     <!-- The Mac App Store requires you specify if the app uses encryption. -->
     <!-- Please consult https://developer.apple.com/documentation/bundleresources/information_property_list/itsappusesnonexemptencryption -->

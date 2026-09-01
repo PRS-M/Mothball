@@ -20,6 +20,8 @@ public partial class AppearanceSettingsViewModel : ObservableObject
             L("System"),
             L("English"),
             L("Polish"),
+            L("German (AI-Translated)"),
+            L("Spanish (AI-Translated)"),
         ];
     }
 
@@ -48,6 +50,8 @@ public partial class AppearanceSettingsViewModel : ObservableObject
         {
             LanguagePreference.English => L("English"),
             LanguagePreference.Polish => L("Polish"),
+            LanguagePreference.German => L("German (AI-Translated)"),
+            LanguagePreference.Spanish => L("Spanish (AI-Translated)"),
             _ => L("System"),
         };
         set
@@ -61,7 +65,11 @@ public partial class AppearanceSettingsViewModel : ObservableObject
                 ? LanguagePreference.English
                 : value == L("Polish")
                     ? LanguagePreference.Polish
-                    : LanguagePreference.System;
+                    : value == L("German (AI-Translated)")
+                        ? LanguagePreference.German
+                        : value == L("Spanish (AI-Translated)")
+                            ? LanguagePreference.Spanish
+                            : LanguagePreference.System;
 
             if (applicationSettings.Language == language)
             {

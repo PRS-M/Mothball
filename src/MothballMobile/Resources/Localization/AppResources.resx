@@ -258,6 +258,8 @@
   <data name="ItemsStoredTotalFormat" xml:space="preserve"><value>Items stored (Total): {0}</value></data>
   <data name="ItemTypesStoredFormat" xml:space="preserve"><value>Item types stored: {0}</value></data>
   <data name="TestAd" xml:space="preserve"><value>Test Ad</value></data>
+  <data name="GermanAITranslated" xml:space="preserve"><value>German (AI-Translated)</value></data>
+  <data name="SpanishAITranslated" xml:space="preserve"><value>Spanish (AI-Translated)</value></data>
   <data name="All" xml:space="preserve"><value>All</value></data>
   <data name="Empty" xml:space="preserve"><value>Empty</value></data>
   <data name="Assigned" xml:space="preserve"><value>Assigned</value></data>

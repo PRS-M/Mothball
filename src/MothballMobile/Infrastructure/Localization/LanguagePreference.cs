@@ -5,4 +5,6 @@ public enum LanguagePreference
     System,
     English,
     Polish,
+    German,
+    Spanish,
 }

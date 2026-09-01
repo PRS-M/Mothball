@@ -7,6 +7,8 @@ public sealed class LocalizationService : ILocalizationService
 {
     private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en");
     private static readonly CultureInfo Polish = CultureInfo.GetCultureInfo("pl");
+    private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de");
+    private static readonly CultureInfo Spanish = CultureInfo.GetCultureInfo("es");
     private CultureInfo culture = ResolveSystemCulture();
 
     public event EventHandler? LanguageChanged;
@@ -27,6 +29,8 @@ public sealed class LocalizationService : ILocalizationService
         {
             LanguagePreference.Polish => Polish,
             LanguagePreference.English => English,
+            LanguagePreference.German => German,
+            LanguagePreference.Spanish => Spanish,
             _ => ResolveSystemCulture(),
         };
         var changed = !Equals(culture, next);
@@ -42,7 +46,11 @@ public sealed class LocalizationService : ILocalizationService
     }
 
     private static CultureInfo ResolveSystemCulture()
-        => CultureInfo.InstalledUICulture.TwoLetterISOLanguageName.Equals("pl", StringComparison.OrdinalIgnoreCase)
-            ? Polish
-            : English;
+        => CultureInfo.InstalledUICulture.TwoLetterISOLanguageName.ToLowerInvariant() switch
+        {
+            "pl" => Polish,
+            "de" => German,
+            "es" => Spanish,
+            _ => English,
+        };
 }

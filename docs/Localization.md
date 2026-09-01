@@ -1,6 +1,6 @@
 # Localization
 
-Mothball supports English and Polish. English is the neutral/fallback language; Polish is supplied by a satellite resource assembly.
+Mothball supports English, Polish, German, and Spanish. English is the neutral/fallback language; Polish is reviewed, while German and Spanish are explicitly marked `(AI-Translated)` in the language selector and resource files until they receive native-speaker review.
 
 The implementation follows the [.NET MAUI localization guidance](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/localization?view=net-maui-10.0): UI text is stored in `.resx` files and XAML reads generated `AppResources` properties through `x:Static`.
 
