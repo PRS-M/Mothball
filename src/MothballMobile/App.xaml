@@ -7,6 +7,7 @@
         <ResourceDictionary>
             <ResourceDictionary xmlns:conv="clr-namespace:MothballMobile.UI.Converters">
                 <conv:StringNotNullOrEmptyConverter x:Key="StringNotNullOrEmptyConverter" />
+                <conv:LocalizedEnumConverter x:Key="LocalizedEnumConverter" />
                 <Style x:Key="InvalidWrapperStyle" TargetType="Border">
                     <Setter Property="Stroke" Value="{DynamicResource OutlineVariant}" />
                     <Setter Property="StrokeShape" Value="RoundRectangle 10" />

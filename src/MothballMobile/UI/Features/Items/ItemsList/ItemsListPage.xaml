@@ -32,7 +32,7 @@
               ColumnSpacing="12">
             <controls:PageHeader Grid.Column="0"
                                  Title="{x:Static strings:AppResources.Items}"
-                                 Subtitle="All items across containers"
+                                 Subtitle="{x:Static strings:AppResources.AllItemsAcrossContainers}"
                                  TitleFontSize="22"
                                  SubtitleFontSize="12"
                                  Spacing="2"
@@ -64,6 +64,7 @@
                                         <Picker Grid.Column="2"
                             AutomationId="ItemsFilterPicker"
                             ItemsSource="{x:Static Member=vm:ItemsListViewModel.AvailableFilters}"
+                            ItemDisplayBinding="{Binding ., Converter={StaticResource LocalizedEnumConverter}}"
                             SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
                             Style="{StaticResource CompactFilterPicker}" />
                 </Grid>

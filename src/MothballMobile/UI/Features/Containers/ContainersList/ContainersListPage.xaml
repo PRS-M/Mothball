@@ -30,7 +30,7 @@
               ColumnSpacing="12">
             <controls:PageHeader Grid.Column="0"
                                  Title="{x:Static strings:AppResources.Containers}"
-                                 Subtitle="Browse your storage"
+                                 Subtitle="{x:Static strings:AppResources.BrowseYourStorage}"
                                  TitleFontSize="22"
                                  SubtitleFontSize="12"
                                  Spacing="2"
@@ -62,6 +62,7 @@
                                         <Picker Grid.Column="2"
                             AutomationId="ContainersFilterPicker"
                             ItemsSource="{x:Static Member=vm:ContainerListViewModel.AvailableFilters}"
+                            ItemDisplayBinding="{Binding ., Converter={StaticResource LocalizedEnumConverter}}"
                             SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
                             Style="{StaticResource CompactFilterPicker}" />
                 </Grid>

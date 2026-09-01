@@ -258,5 +258,11 @@
   <data name="ItemsStoredTotalFormat" xml:space="preserve"><value>Przechowywane przedmioty (łącznie): {0}</value></data>
   <data name="ItemTypesStoredFormat" xml:space="preserve"><value>Typy przechowywanych przedmiotów: {0}</value></data>
   <data name="TestAd" xml:space="preserve"><value>Reklama testowa</value></data>
+  <data name="All" xml:space="preserve"><value>Wszystkie</value></data>
+  <data name="Empty" xml:space="preserve"><value>Puste</value></data>
+  <data name="Assigned" xml:space="preserve"><value>Przypisane</value></data>
+  <data name="Unassigned" xml:space="preserve"><value>Nieprzypisane</value></data>
+  <data name="BrowseYourStorage" xml:space="preserve"><value>Przeglądaj swoje miejsca przechowywania</value></data>
+  <data name="AllItemsAcrossContainers" xml:space="preserve"><value>Wszystkie przedmioty we wszystkich pojemnikach</value></data>
   <data name="RestartMothballToApplyTheNewLanguage" xml:space="preserve"><value>Uruchom ponownie Mothball, aby zastosować nowy język.</value></data>
 </root>
