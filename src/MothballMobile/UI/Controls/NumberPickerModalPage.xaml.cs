@@ -45,7 +45,7 @@ public partial class NumberPickerModalPage : ContentPage
         MessageLabel.Text = message;
         MessageLabel.IsVisible = !string.IsNullOrWhiteSpace(message);
 
-        QuantityEntry.Text = Math.Clamp(initialValue, min, max).ToString(Localization.Current.Culture);
+        QuantityEntry.Text = Math.Clamp(initialValue, min, max).ToString(LocalizationManager.Current.Culture);
         QuantityEntry.CursorPosition = QuantityEntry.Text.Length;
         QuantityEntry.SelectionLength = 0;
     }

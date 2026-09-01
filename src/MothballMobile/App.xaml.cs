@@ -34,8 +34,9 @@ public partial class App : Application
 		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
 		this.applicationSettings = applicationSettings;
 		this.localization = localization;
-		Localization.Configure(localization);
+		LocalizationManager.Configure(localization);
 		localization.SetLanguage(applicationSettings.Language);
+		InitializeComponent();
 		applicationSettings.LanguageChanged += OnLanguageChanged;
 		this.backupSignatureSecretProvider = backupSignatureSecretProvider;
 		this.appErrorPresenter = appErrorPresenter;
@@ -148,7 +149,7 @@ public partial class App : Application
 	{
 		var retryButton = new Button
 		{
-			Text = Localization.Current.Get("Retry startup")
+			Text = LocalizationManager.Current.Get("Retry startup")
 		};
 
 		retryButton.Clicked += async (_, _) =>
@@ -178,7 +179,7 @@ public partial class App : Application
 				{
 					new Label
 					{
-						Text = Localization.Current.Get("Startup failed"),
+						Text = LocalizationManager.Current.Get("Startup failed"),
 						HorizontalTextAlignment = TextAlignment.Center,
 						FontAttributes = FontAttributes.Bold
 					},
@@ -215,7 +216,7 @@ public partial class App : Application
 					},
 					new Label
 					{
-						Text = Localization.Current.Get("Starting Mothball..."),
+						Text = LocalizationManager.Current.Get("Starting Mothball..."),
 						HorizontalTextAlignment = TextAlignment.Center
 					}
 				}

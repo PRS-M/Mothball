@@ -151,10 +151,10 @@ public sealed class MauiPopupService : IPopupService
             initialValue,
             accept,
             cancel,
-            Localization.Current.Get("Enter quantity"),
+            LocalizationManager.Current.Get("Enter quantity"),
             string.Empty,
-            Localization.Current.Format("Enter a number between {0} and {1}.", min, max),
-            Localization.Current.Format("Value must be between {0} and {1}.", min, max));
+            LocalizationManager.Current.Format("Enter a number between {0} and {1}.", min, max),
+            LocalizationManager.Current.Format("Value must be between {0} and {1}.", min, max));
 
     private async Task<int?> PickNumberAsync(
         string title,

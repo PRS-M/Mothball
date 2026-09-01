@@ -6,6 +6,7 @@ using Microsoft.Maui.Storage;
 
 namespace MothballMobile.UI.Features.Settings;
 
+
 /// <summary>
 /// Handles sharing and importing the device's backup signing key.
 /// </summary>
@@ -60,7 +61,7 @@ public partial class BackupSigningKeySettingsViewModel : SettingsSectionViewMode
         {
             var file = await filePicker.PickAsync(new PickOptions
             {
-                PickerTitle = Localization.Current.Get("Choose signing key"),
+                PickerTitle = LocalizationManager.Current.Get("Choose signing key"),
                 FileTypes = JsonBackupFileType,
             });
             if (file is null)
@@ -73,10 +74,10 @@ public partial class BackupSigningKeySettingsViewModel : SettingsSectionViewMode
                 {
                     await using var stream = await file.OpenReadAsync();
                     var confirmed = await Popup.ConfirmAsync(
-                        Localization.Current.Get("Import signing key"),
-                        Localization.Current.Get("This replaces the current backup signing key on this device. Backups signed by the current key will no longer verify here."),
-                        Localization.Current.Get("Import"),
-                        Localization.Current.Get("Cancel"));
+                        LocalizationManager.Current.Get("Import signing key"),
+                        LocalizationManager.Current.Get("This replaces the current backup signing key on this device. Backups signed by the current key will no longer verify here."),
+                        LocalizationManager.Current.Get("Import"),
+                        LocalizationManager.Current.Get("Cancel"));
                     if (!confirmed)
                     {
                         return;
@@ -84,8 +85,8 @@ public partial class BackupSigningKeySettingsViewModel : SettingsSectionViewMode
 
                     await signingKeyTransfer.ImportAsync(stream);
                     await Popup.ShowAlertAsync(new AlertPopupDefinition(
-                        Localization.Current.Get("Signing key imported"),
-                        Localization.Current.Get("This device can now verify backups signed by the imported key.")));
+                        LocalizationManager.Current.Get("Signing key imported"),
+                        LocalizationManager.Current.Get("This device can now verify backups signed by the imported key.")));
                 },
                 "Failed to import the Mothball backup signing key from {FileName}.",
                 PopupDefinitions.BackupSigningKeyImportFailed,

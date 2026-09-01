@@ -69,11 +69,6 @@
 			<StronglyTypedFileName>$(IntermediateOutputPath)Resource.Designer.cs</StronglyTypedFileName>
 			<StronglyTypedClassName>AppResources</StronglyTypedClassName>
 		</EmbeddedResource>
-		<Compile Include="$(IntermediateOutputPath)Resource.Designer.cs"
-				 AutoGen="True"
-				 DesignTime="false"
-				 DependentUpon="Resources\Localization\AppResources.resx" />
-
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\mothball_icon.png" />
 

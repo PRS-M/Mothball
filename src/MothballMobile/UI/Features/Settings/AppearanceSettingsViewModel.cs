@@ -67,7 +67,7 @@ public partial class AppearanceSettingsViewModel : ObservableObject
         }
     }
 
-    private static string L(string key) => Localization.Current.Get(key);
+    private static string L(string key) => LocalizationManager.Current.Get(key);
 
     public string SelectedModeOption
     {

@@ -7,6 +7,7 @@ using Plugin.AdMob;
 
 namespace MothballMobile.UI.Shared;
 
+
 public class BasePage : ContentPage
 {
     private IDisposable? previousDisposable;
@@ -185,7 +186,7 @@ public class BasePage : ContentPage
             Padding = new Thickness(12, 0),
             Content = new Label
             {
-                Text = Localization.Current.Get("Test Ad"),
+                Text = LocalizationManager.Current.Get("Test Ad"),
                 FontSize = 12,
                 TextColor = Colors.DimGray,
                 HorizontalOptions = LayoutOptions.Center,

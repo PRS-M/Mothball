@@ -6,6 +6,7 @@ using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Items.AddItem;
 
+
 public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly ICreateItemCommandHandler createItem;
@@ -84,10 +85,10 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
     public string PhotoSelectionStatus =>
         IsPhotoProcessing
-            ? Localization.Current.Get("Processing photo...")
+            ? LocalizationManager.Current.Get("Processing photo...")
             : HasTemporaryPhoto
-            ? Localization.Current.Get("Photo selected. It will be saved when you tap Save.")
-            : Localization.Current.Get("No photo selected.");
+            ? LocalizationManager.Current.Get("Photo selected. It will be saved when you tap Save.")
+            : LocalizationManager.Current.Get("No photo selected.");
 
     partial void OnPhotoThumbnailPathChanged(string? value)
     {
@@ -148,7 +149,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         var trimmed = Name?.Trim();
         if (string.IsNullOrWhiteSpace(trimmed))
         {
-            ValidationMessage = Localization.Current.Get("Name is required.");
+            ValidationMessage = LocalizationManager.Current.Get("Name is required.");
             return;
         }
 
@@ -157,7 +158,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         if (ShowQuantityManagement &&
             (!int.TryParse(Quantity?.Trim(), out parsedQuantity) || parsedQuantity <= 0))
         {
-            ValidationMessage = Localization.Current.Get("Quantity must be a positive number.");
+            ValidationMessage = LocalizationManager.Current.Get("Quantity must be a positive number.");
             return;
         }
 

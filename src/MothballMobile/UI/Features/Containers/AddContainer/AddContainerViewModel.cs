@@ -5,6 +5,7 @@ using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;
 
+
 public partial class AddContainerViewModel : BaseViewModel
 {
     private readonly ICreateContainerCommandHandler createContainer;
@@ -121,7 +122,7 @@ public partial class AddContainerViewModel : BaseViewModel
         var trimmedName = Name?.Trim();
         if (string.IsNullOrWhiteSpace(trimmedName))
         {
-            ValidationMessage = Localization.Current.Get("Name is required.");
+            ValidationMessage = LocalizationManager.Current.Get("Name is required.");
             return;
         }
 
