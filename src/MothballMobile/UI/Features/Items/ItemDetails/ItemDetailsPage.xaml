@@ -65,10 +65,12 @@
                                             UseDynamicAspectRatio="True"
                                             ImagePaths="{Binding ImagePaths}" />
 
-                    <HorizontalStackLayout Spacing="8">
-                        <Button Text="{x:Static strings:AppResources.AddPhoto}"
+                    <Grid ColumnDefinitions="*,*"
+                          ColumnSpacing="8">
+                        <Button Grid.Column="0"
+                                Text="{x:Static strings:AppResources.AddPhoto}"
                                 Style="{StaticResource TonalButton}"
-                                HeightRequest="34"
+                                MinimumHeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
                                 Command="{Binding AddPhotoCommand}">
@@ -80,9 +82,10 @@
                             </Button.ImageSource>
                         </Button>
 
-                        <Button Text="{x:Static strings:AppResources.DeletePhoto}"
+                        <Button Grid.Column="1"
+                                Text="{x:Static strings:AppResources.DeletePhoto}"
                                 Style="{StaticResource OutlinedButton}"
-                                HeightRequest="34"
+                                MinimumHeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
                                 Command="{Binding DeletePhotoCommand}">
@@ -93,7 +96,7 @@
                                                  Size="14" />
                             </Button.ImageSource>
                         </Button>
-                    </HorizontalStackLayout>
+                    </Grid>
 
                 </VerticalStackLayout>
             </Border>
@@ -108,7 +111,7 @@
                         <Button Grid.Column="1"
                                 Text="{x:Static strings:AppResources.EditDescription}"
                                 Style="{StaticResource OutlinedButton}"
-                                HeightRequest="34"
+                                MinimumHeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
                                 IsVisible="{Binding IsViewingDescription}"
@@ -123,7 +126,7 @@
                         <Button Grid.Column="1"
                                 Text="{x:Static strings:AppResources.Save}"
                                 Style="{StaticResource TonalButton}"
-                                HeightRequest="34"
+                                MinimumHeightRequest="34"
                                 FontSize="12"
                                 Padding="10,0"
                                 IsVisible="{Binding IsEditingDescription}"

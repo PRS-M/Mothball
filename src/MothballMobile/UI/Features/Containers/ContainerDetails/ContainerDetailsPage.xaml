@@ -22,10 +22,12 @@
                                                 UseDynamicAspectRatio="True"
                                                 ImagePaths="{Binding ContainerImagePaths}" />
 
-                        <HorizontalStackLayout Spacing="8">
-                            <Button Text="{x:Static strings:AppResources.AddPhoto}"
+                        <Grid ColumnDefinitions="*,*"
+                              ColumnSpacing="8">
+                            <Button Grid.Column="0"
+                                    Text="{x:Static strings:AppResources.AddPhoto}"
                                     Style="{StaticResource TonalButton}"
-                                    HeightRequest="34"
+                                    MinimumHeightRequest="34"
                                     FontSize="12"
                                     Padding="10,0"
                                     Command="{Binding AddPhotoCommand}">
@@ -37,9 +39,10 @@
                                 </Button.ImageSource>
                             </Button>
 
-                            <Button Text="{x:Static strings:AppResources.DeletePhoto}"
+                            <Button Grid.Column="1"
+                                    Text="{x:Static strings:AppResources.DeletePhoto}"
                                     Style="{StaticResource OutlinedButton}"
-                                    HeightRequest="34"
+                                    MinimumHeightRequest="34"
                                     FontSize="12"
                                     Padding="10,0"
                                     Command="{Binding DeletePhotoCommand}">
@@ -50,7 +53,7 @@
                                                      Size="14" />
                                 </Button.ImageSource>
                             </Button>
-                        </HorizontalStackLayout>
+                        </Grid>
 
                         <VerticalStackLayout Spacing="8">
                             <Label Text="{Binding Name}"
@@ -75,7 +78,7 @@
                             <Button Grid.Column="1"
                                     Text="{x:Static strings:AppResources.EditDescription}"
                                     Style="{StaticResource OutlinedButton}"
-                                    HeightRequest="34"
+                                    MinimumHeightRequest="34"
                                     FontSize="12"
                                     Padding="10,0"
                                     IsVisible="{Binding IsViewingNotes}"
@@ -90,7 +93,7 @@
                             <Button Grid.Column="1"
                                     Text="{x:Static strings:AppResources.Save}"
                                     Style="{StaticResource TonalButton}"
-                                    HeightRequest="34"
+                                    MinimumHeightRequest="34"
                                     FontSize="12"
                                     Padding="10,0"
                                     IsVisible="{Binding IsEditingNotes}"
@@ -125,12 +128,13 @@
                            LineBreakMode="NoWrap"
                            TextColor="{DynamicResource OnSurface}" />
 
-                    <HorizontalStackLayout Spacing="8"
-                                           HorizontalOptions="Start"
-                                           VerticalOptions="Center">
-                        <Button Text="{x:Static strings:AppResources.AddANewItem}"
+                    <Grid ColumnDefinitions="*,*"
+                          ColumnSpacing="8"
+                          VerticalOptions="Center">
+                        <Button Grid.Column="0"
+                                Text="{x:Static strings:AppResources.AddANewItem}"
                                 Style="{StaticResource TonalButton}"
-                                HeightRequest="36"
+                                MinimumHeightRequest="36"
                                 FontSize="12"
                                 Padding="12,0"
                                 Command="{Binding NavigateToAddNewItemCommand}">
@@ -141,9 +145,10 @@
                                                  Size="16"/>
                             </Button.ImageSource>
                         </Button>
-                        <Button Text="{x:Static strings:AppResources.AddAnExistingItem}"
+                        <Button Grid.Column="1"
+                                Text="{x:Static strings:AppResources.AddAnExistingItem}"
                                 Style="{StaticResource OutlinedButton}"
-                                HeightRequest="36"
+                                MinimumHeightRequest="36"
                                 FontSize="12"
                                 Padding="12,0"
                                 Command="{Binding NavigateToAddExistingItemCommand}">
@@ -154,7 +159,7 @@
                                                  Size="16"/>
                             </Button.ImageSource>
                         </Button>
-                    </HorizontalStackLayout>
+                    </Grid>
                 </VerticalStackLayout>
 
                 <controls:SearchBarCard Placeholder="{x:Static strings:AppResources.SearchWithinContainer}"

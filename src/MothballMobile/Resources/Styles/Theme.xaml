@@ -2,7 +2,8 @@
 <?xaml-comp compile="true" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:behaviors="clr-namespace:MothballMobile.UI.Behaviors">
 
     <!-- Material Design 3 Design Tokens -->
 
@@ -106,10 +107,12 @@
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
         <Setter Property="TextColor" Value="{DynamicResource OnPrimary}"/>
         <Setter Property="CornerRadius" Value="20"/>
-        <Setter Property="HeightRequest" Value="40"/>
+        <Setter Property="MinimumHeightRequest" Value="40"/>
         <Setter Property="Padding" Value="24,8"/>
+        <Setter Property="behaviors:ButtonPill.IsEnabled" Value="True"/>
         <Setter Property="FontAttributes" Value="Bold"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="LineBreakMode" Value="WordWrap"/>
     </Style>
 
     <Style TargetType="Button" x:Key="FilledButton" BasedOn="{StaticResource PrimaryButton}">

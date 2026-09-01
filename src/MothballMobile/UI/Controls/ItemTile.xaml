@@ -109,15 +109,16 @@
                        FontSize="12"
                        LineBreakMode="TailTruncation" />
 
-                <HorizontalStackLayout Grid.Row="5"
-                                       Grid.ColumnSpan="2"
-                                       Spacing="6"
-                                       HorizontalOptions="End">
-                    <Button Text="{x:Static strings:AppResources.EditQuantity}"
+                <Grid Grid.Row="5"
+                      Grid.ColumnSpan="2"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="6">
+                    <Button Grid.Column="0"
+                            Text="{x:Static strings:AppResources.EditQuantity}"
                             IsVisible="{Binding Source={x:Reference this}, Path=ShowEditQuantity}"
                             Command="{Binding Source={x:Reference this}, Path=EditQuantityCommand}"
                             Style="{StaticResource OutlinedButton}"
-                            HeightRequest="30"
+                            MinimumHeightRequest="30"
                             FontSize="11"
                             Padding="8,0">
                         <Button.ImageSource>
@@ -127,11 +128,12 @@
                                              Size="14" />
                         </Button.ImageSource>
                     </Button>
-                    <Button Text="{x:Static strings:AppResources.Use}"
+                    <Button Grid.Column="1"
+                            Text="{x:Static strings:AppResources.Use}"
                             IsVisible="{Binding Source={x:Reference this}, Path=ShowUse}"
                             Command="{Binding Source={x:Reference this}, Path=UseCommand}"
                             Style="{StaticResource OutlinedButton}"
-                            HeightRequest="30"
+                            MinimumHeightRequest="30"
                             FontSize="11"
                             Padding="8,0">
                         <Button.ImageSource>
@@ -141,7 +143,7 @@
                                              Size="14" />
                         </Button.ImageSource>
                     </Button>
-                </HorizontalStackLayout>
+                </Grid>
             </Grid>
         </Grid>
     </Border>
