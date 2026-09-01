@@ -26,7 +26,7 @@ public abstract class ContainerWithImagesViewModelBase : ObservableObject
     /// Loads this container's photo paths into <see cref="ImagePaths"/>.
     /// </summary>
     /// <param name="clearFirst">Whether to clear existing paths before loading.</param>
-    protected Task LoadContainerImagesAsync(bool clearFirst = true)
+    protected void LoadContainerImages(bool clearFirst = true)
     {
         if (clearFirst)
         {
@@ -37,7 +37,11 @@ public abstract class ContainerWithImagesViewModelBase : ObservableObject
         {
             ImagePaths.Add(path);
         }
+    }
 
+    protected Task LoadContainerImagesAsync(bool clearFirst = true)
+    {
+        LoadContainerImages(clearFirst);
         return Task.CompletedTask;
     }
 }

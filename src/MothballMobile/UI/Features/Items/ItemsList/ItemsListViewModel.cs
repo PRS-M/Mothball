@@ -107,10 +107,6 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
     }
 
-    /// <inheritdoc />
-    protected override void OnViewModelAdded(ItemViewModel vm)
-        => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
-
     protected override Task<List<InventorySnapshot>> LoadPageAsync(string? query, int pageNumber, int pageSize)
         => itemListQueries.QueryAsync(
             GetItemQueryFilter(),

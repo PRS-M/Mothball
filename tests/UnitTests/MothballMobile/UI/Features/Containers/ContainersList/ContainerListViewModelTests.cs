@@ -21,6 +21,26 @@ public sealed class ContainerListViewModelTests
     }
 
     [Test]
+    public async Task InitializeAsync_PublishesRowsWithImagePathsAlreadyPopulated()
+    {
+        var container = new Container(Guid.NewGuid(), "Box", "Notes");
+        container.AddImageItem();
+        var queries = new Mock<IContainerListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(false, null, 0, 10)).ReturnsAsync([container]);
+        var paths = new Mock<IImagePathResolver>();
+        paths.Setup(p => p.GetContainerPhotoPaths(container)).Returns(["box.jpg"]);
+        var viewModel = CreateViewModel(queries.Object, paths.Object);
+        var publishedWithImage = false;
+        viewModel.Containers.CollectionChanged += (_, args) =>
+            publishedWithImage = args.NewItems?[0] is ContainerViewModel row
+                && row.ImagePaths.SequenceEqual(["box.jpg"]);
+
+        await viewModel.InitializeAsync();
+
+        Assert.That(publishedWithImage, Is.True);
+    }
+
+    [Test]
     public async Task SearchCommand_WithQuery_ReplacesListWithFilteredResults()
     {
         var queries = new Mock<IContainerListQueryHandler>();
@@ -73,13 +93,20 @@ public sealed class ContainerListViewModelTests
         Assert.That(viewModel.Containers, Has.Count.EqualTo(1));
     }
 
-    private static ContainerListViewModel CreateViewModel(IContainerListQueryHandler queries)
+    private static ContainerListViewModel CreateViewModel(
+        IContainerListQueryHandler queries,
+        IImagePathResolver? paths = null)
     {
-        var paths = new Mock<IImagePathResolver>();
-        paths.Setup(p => p.GetContainerPhotoPaths(It.IsAny<Container>())).Returns(Array.Empty<string>());
+        if (paths is null)
+        {
+            var pathMock = new Mock<IImagePathResolver>();
+            pathMock.Setup(resolver => resolver.GetContainerPhotoPaths(It.IsAny<Container>()))
+                .Returns(Array.Empty<string>());
+            paths = pathMock.Object;
+        }
 
         return new ContainerListViewModel(
-            paths.Object,
+            paths,
             queries,
             Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(),

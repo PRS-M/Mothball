@@ -27,6 +27,27 @@ public sealed class ItemsListViewModelTests
     }
 
     [Test]
+    public async Task InitializeAsync_PublishesRowsWithImagePathsAlreadyPopulated()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        item.AddImageItem();
+        var queries = new Mock<IItemsListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, null, 0, 10))
+            .ReturnsAsync([new InventorySnapshot(item, 1, 0, [])]);
+        var paths = new Mock<IImagePathResolver>();
+        paths.Setup(p => p.GetItemPhotoPaths(item)).Returns(["widget.jpg"]);
+        var viewModel = CreateViewModel(queries.Object, paths: paths.Object);
+        var publishedWithImage = false;
+        viewModel.Items.CollectionChanged += (_, args) =>
+            publishedWithImage = args.NewItems?[0] is ItemViewModel row
+                && row.ImagePaths.SequenceEqual(["widget.jpg"]);
+
+        await viewModel.InitializeAsync();
+
+        Assert.That(publishedWithImage, Is.True);
+    }
+
+    [Test]
     public async Task SearchCommand_WithQuery_ReplacesListWithFilteredResults()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
@@ -117,10 +138,16 @@ public sealed class ItemsListViewModelTests
         IItemsListQueryHandler queries,
         IPopupService? popup = null,
         IDeleteItemCommandHandler? deleteHandler = null,
-        IPagedListLoadDiagnostics? diagnostics = null)
+        IPagedListLoadDiagnostics? diagnostics = null,
+        IImagePathResolver? paths = null)
     {
-        var paths = new Mock<IImagePathResolver>();
-        paths.Setup(p => p.GetItemPhotoPaths(It.IsAny<Item>())).Returns(Array.Empty<string>());
+        if (paths is null)
+        {
+            var pathMock = new Mock<IImagePathResolver>();
+            pathMock.Setup(resolver => resolver.GetItemPhotoPaths(It.IsAny<Item>()))
+                .Returns(Array.Empty<string>());
+            paths = pathMock.Object;
+        }
         popup ??= Mock.Of<IPopupService>();
         var details = Mock.Of<IItemDetailsQueryHandler>();
         var inventoryCommands = Mock.Of<IItemInventoryCommandService>();
@@ -128,7 +155,7 @@ public sealed class ItemsListViewModelTests
         var withdrawal = new ItemInventoryWithdrawalCoordinator(inventoryCommands, popup, definitions);
 
         return new ItemsListViewModel(
-            paths.Object,
+            paths,
             queries,
             Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(),

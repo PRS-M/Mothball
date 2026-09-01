@@ -74,10 +74,6 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav, applicationSettings.IsAdvancedMode);
 
-    /// <inheritdoc />
-    protected override void OnViewModelAdded(ContainerViewModel vm)
-        => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load container thumbnail");
-
     [RelayCommand]
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
 

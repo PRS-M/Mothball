@@ -63,7 +63,7 @@ The final short page, or an empty page, marks the list as exhausted. Search text
 
 List contents survive ordinary page appearances. `IInventoryChangeTracker` advances a process-local revision after successful inventory mutations and restores; a list reloads when its cached revision is stale. Pull-to-refresh always forces a reload regardless of the revision.
 
-Each page load emits a structured `PagedListLoadMeasurement` through `IPagedListLoadDiagnostics`. The log separates repository query time, synchronous row-population time, and total time, and identifies the list, filter/browse variant, page, page size, and result count. Query text is deliberately excluded. Thumbnail loading starts after each row is added and is asynchronous, so it is not included in the population measurement. Use these measurements to decide whether further work belongs in persistence, view-model population, or MAUI rendering.
+Each page load emits a structured `PagedListLoadMeasurement` through `IPagedListLoadDiagnostics`. The log separates repository query time, synchronous row-population time, and total time, and identifies the list, filter/browse variant, page, page size, and result count. Query text is deliberately excluded. Image paths are resolved while each row view model is constructed, before the row is added, and are included in population time. MAUI image decoding and rendering happen later and are not included. Use these measurements to decide whether further work belongs in persistence, view-model population, or MAUI rendering.
 
 ## Items
 

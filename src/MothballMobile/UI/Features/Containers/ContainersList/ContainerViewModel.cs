@@ -16,6 +16,7 @@ public partial class ContainerViewModel : ContainerWithImagesViewModelBase
     {
         this.nav = nav;
         ShowQuantityManagement = showQuantityManagement;
+        LoadContainerImages();
     }
 
     public bool ShowQuantityManagement { get; }
@@ -23,11 +24,6 @@ public partial class ContainerViewModel : ContainerWithImagesViewModelBase
     public string ItemTypesStoredText => $"Item types stored: {Container.ItemTypeCount}";
 
     public string ItemsStoredText => $"Items stored (Total): {(ShowQuantityManagement ? Container.TotalItemQuantity : Container.ItemTypeCount)}";
-
-    public Task LoadImageAsync()
-    {
-        return LoadContainerImagesAsync(clearFirst: true);
-    }
 
     [RelayCommand]
     private Task NavigateAsync()
