@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
-using Infrastructure.Services;
 
 namespace MothballMobile.UI.Features.Containers.ContainersList;
 
@@ -20,8 +19,6 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     private readonly INavigationService nav;
     private readonly IContainerListQueryHandler containerListQueries;
     private readonly IApplicationSettings applicationSettings;
-
-    private readonly DemoDataSeeder? demoSeeder; // optional in debug
 
     private ContainerListFilter selectedFilter = ContainerListFilter.All;
 
@@ -48,15 +45,13 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IBackgroundTaskObserver backgroundTasks,
-        IDebouncer? debouncer = null,
-        DemoDataSeeder? demoSeeder = null)
+        IDebouncer? debouncer = null)
         : base(backgroundTasks, debouncer, pageSize: 10)
     {
         this.imagePaths = imagePaths;
         this.containerListQueries = containerListQueries;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
-        this.demoSeeder = demoSeeder;
     }
 
     protected override string SearchOperationName => "Search containers";
@@ -64,14 +59,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     public ObservableCollection<ContainerViewModel> Containers => Items;
 
     /// <inheritdoc />
-    protected override async Task EnsureDummyData()
-    {
-        if (demoSeeder is not null)
-        {
-            await demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
-            await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
-        }
-    }
+    protected override Task EnsureDummyData() => Task.CompletedTask;
 
     protected override async Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
         => await containerListQueries.QueryAsync(IsEmptyFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);

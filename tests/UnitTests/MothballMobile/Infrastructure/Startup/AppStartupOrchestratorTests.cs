@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using MothballMobile.Infrastructure;
+using Infrastructure.Services.DatabaseModels;
 
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Startup;
 
@@ -49,5 +51,43 @@ public class AppStartupOrchestratorTests
                 It.IsAny<InvalidOperationException>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
+    }
+
+    [Test]
+    public async Task StartAsync_WhenDemoSeederIsAvailable_SeedsAfterPersistenceInitialization()
+    {
+        var initializer = new Mock<IAppStartupInitializer>();
+        var containers = new Mock<IRepository<DbContainer>>();
+        var items = new Mock<IRepository<DbItem>>();
+        var inventories = new Mock<IRepository<DbItemInventory>>();
+        var photos = new Mock<IRepository<DbImage>>();
+        var relations = new Mock<IRepository<DbItemContainerRelation>>();
+        containers.Setup(repository => repository.GetAllAsync()).ReturnsAsync(
+            Enumerable.Range(1, 5)
+                .Select(index => new DbContainer
+                {
+                    ContainerId = Guid.NewGuid(),
+                    Name = $"User container {index}",
+                })
+                .ToList());
+
+        var seeder = new DemoDataSeeder(
+            containers.Object,
+            items.Object,
+            inventories.Object,
+            photos.Object,
+            relations.Object,
+            Mock.Of<IFileHandler>(),
+            NullLogger<DemoDataSeeder>.Instance);
+        var orchestrator = new AppStartupOrchestrator(
+            initializer.Object,
+            Mock.Of<ILogger<AppStartupOrchestrator>>(),
+            seeder);
+
+        await orchestrator.StartAsync();
+
+        initializer.Verify(service => service.InitializeAsync(), Times.Once);
+        containers.Verify(repository => repository.GetAllAsync(), Times.Exactly(2));
+        items.Verify(repository => repository.InitializeAsync(), Times.Once);
     }
 }

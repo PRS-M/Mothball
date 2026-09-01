@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Application.Utilities;
-using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Specifications;
@@ -31,8 +30,6 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private readonly IDeleteItemCommandHandler deleteItemHandler;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
-    private readonly DemoDataSeeder? demoSeeder;
-
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
 
     public static ReadOnlyCollection<ItemsListFilter> AvailableFilters { get; } = EnumValues.CreateReadOnly<ItemsListFilter>();
@@ -63,8 +60,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         IBackgroundTaskObserver backgroundTasks,
-        IDebouncer? debouncer = null,
-        DemoDataSeeder? demoSeeder = null)
+        IDebouncer? debouncer = null)
         : base(backgroundTasks, debouncer)
     {
         this.paths = paths;
@@ -76,19 +72,12 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         this.deleteItemHandler = deleteItemHandler;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
-        this.demoSeeder = demoSeeder;
     }
 
     protected override string SearchOperationName => "Search items";
 
     /// <inheritdoc />
-    protected override async Task EnsureDummyData()
-    {
-        if (demoSeeder is not null)
-        {
-            await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
-        }
-    }
+    protected override Task EnsureDummyData() => Task.CompletedTask;
 
     protected override ItemViewModel MapToViewModel(InventorySnapshot source)
     {
