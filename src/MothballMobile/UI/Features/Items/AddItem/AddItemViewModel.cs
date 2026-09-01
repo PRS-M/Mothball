@@ -84,10 +84,10 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
     public string PhotoSelectionStatus =>
         IsPhotoProcessing
-            ? "Processing photo..."
+            ? Localization.Current.Get("Processing photo...")
             : HasTemporaryPhoto
-            ? "Photo selected. It will be saved when you tap Save."
-            : "No photo selected.";
+            ? Localization.Current.Get("Photo selected. It will be saved when you tap Save.")
+            : Localization.Current.Get("No photo selected.");
 
     partial void OnPhotoThumbnailPathChanged(string? value)
     {
@@ -148,7 +148,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         var trimmed = Name?.Trim();
         if (string.IsNullOrWhiteSpace(trimmed))
         {
-            ValidationMessage = "Name is required.";
+            ValidationMessage = Localization.Current.Get("Name is required.");
             return;
         }
 
@@ -157,7 +157,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         if (ShowQuantityManagement &&
             (!int.TryParse(Quantity?.Trim(), out parsedQuantity) || parsedQuantity <= 0))
         {
-            ValidationMessage = "Quantity must be a positive number.";
+            ValidationMessage = Localization.Current.Get("Quantity must be a positive number.");
             return;
         }
 

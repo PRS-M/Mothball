@@ -32,7 +32,7 @@ public sealed record NumberPickerPopupDefinition(
     string Placeholder = "Enter quantity",
     string Message = "")
 {
-    public string InvalidNumberMessage => $"Enter a number between {Min} and {Max}.";
+    public string InvalidNumberMessage => Localization.Current.Format("Enter a number between {0} and {1}.", Min, Max);
 
-    public string OutOfRangeMessage => $"Value must be between {Min} and {Max}.";
+    public string OutOfRangeMessage => Localization.Current.Format("Value must be between {0} and {1}.", Min, Max);
 }

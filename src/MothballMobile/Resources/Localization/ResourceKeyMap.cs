@@ -4,6 +4,9 @@ internal static class ResourceKeyMap
 {
     public static string Get(string key) => key switch
     {
+        "JSON" => "JSON",
+        "ZIP" => "ZIP",
+        "Setting '{0}' to zero will permanently remove the item, all container assignments, and its photos. Continue?" => "SettingItemToZero",
         "Add + upsert metadata" => "AddUpsertMetadata",
         "Add Container" => "AddContainer",
         "Add Existing Item" => "AddExistingItem",

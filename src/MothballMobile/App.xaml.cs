@@ -12,6 +12,7 @@ public partial class App : Application
 	private readonly IAppStartupOrchestrator startupOrchestrator;
 	private readonly IPhotoBackgroundOperationTracker photoBackgroundOperationTracker;
 	private readonly IApplicationSettings applicationSettings;
+	private readonly ILocalizationService localization;
 	private readonly IBackupSignatureSecretProvider backupSignatureSecretProvider;
 	private readonly IAppErrorPresenter appErrorPresenter;
 	private readonly AdMobSettings adMobSettings;
@@ -22,16 +23,20 @@ public partial class App : Application
 		IAppStartupOrchestrator startupOrchestrator,
 		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
 		IApplicationSettings applicationSettings,
+		ILocalizationService localization,
 		IBackupSignatureSecretProvider backupSignatureSecretProvider,
 		IAppErrorPresenter appErrorPresenter,
 		AdMobSettings adMobSettings,
 		ILogger<App> logger,
 		ILogger<AppShell> appShellLogger)
 	{
-		InitializeComponent();
 		this.startupOrchestrator = startupOrchestrator;
 		this.photoBackgroundOperationTracker = photoBackgroundOperationTracker;
 		this.applicationSettings = applicationSettings;
+		this.localization = localization;
+		Localization.Configure(localization);
+		localization.SetLanguage(applicationSettings.Language);
+		applicationSettings.LanguageChanged += OnLanguageChanged;
 		this.backupSignatureSecretProvider = backupSignatureSecretProvider;
 		this.appErrorPresenter = appErrorPresenter;
 		this.adMobSettings = adMobSettings;
@@ -41,6 +46,18 @@ public partial class App : Application
 		ThemePaletteApplier.Apply(Resources, applicationSettings.ThemePalette, UserAppTheme == AppTheme.Unspecified ? RequestedTheme : UserAppTheme);
 		applicationSettings.ThemePaletteChanged += OnThemePaletteChanged;
 		RequestedThemeChanged += OnRequestedThemeChanged;
+	}
+
+	private void OnLanguageChanged(object? sender, EventArgs args)
+	{
+		localization.SetLanguage(applicationSettings.Language);
+		foreach (var window in Windows)
+		{
+			if (window.Page is AppShell)
+			{
+				window.Page = new AppShell(photoBackgroundOperationTracker, appErrorPresenter, appShellLogger);
+			}
+		}
 	}
 
 	private void OnThemePaletteChanged(object? sender, EventArgs args)
@@ -131,7 +148,7 @@ public partial class App : Application
 	{
 		var retryButton = new Button
 		{
-			Text = "Retry startup"
+			Text = Localization.Current.Get("Retry startup")
 		};
 
 		retryButton.Clicked += async (_, _) =>
@@ -161,7 +178,7 @@ public partial class App : Application
 				{
 					new Label
 					{
-						Text = "Startup failed",
+						Text = Localization.Current.Get("Startup failed"),
 						HorizontalTextAlignment = TextAlignment.Center,
 						FontAttributes = FontAttributes.Bold
 					},
@@ -198,7 +215,7 @@ public partial class App : Application
 					},
 					new Label
 					{
-						Text = "Starting Mothball...",
+						Text = Localization.Current.Get("Starting Mothball..."),
 						HorizontalTextAlignment = TextAlignment.Center
 					}
 				}

@@ -60,7 +60,7 @@ public partial class BackupSigningKeySettingsViewModel : SettingsSectionViewMode
         {
             var file = await filePicker.PickAsync(new PickOptions
             {
-                PickerTitle = "Choose signing key",
+                PickerTitle = Localization.Current.Get("Choose signing key"),
                 FileTypes = JsonBackupFileType,
             });
             if (file is null)
@@ -73,10 +73,10 @@ public partial class BackupSigningKeySettingsViewModel : SettingsSectionViewMode
                 {
                     await using var stream = await file.OpenReadAsync();
                     var confirmed = await Popup.ConfirmAsync(
-                        "Import signing key",
-                        "This replaces the current backup signing key on this device. Backups signed by the current key will no longer verify here.",
-                        "Import",
-                        "Cancel");
+                        Localization.Current.Get("Import signing key"),
+                        Localization.Current.Get("This replaces the current backup signing key on this device. Backups signed by the current key will no longer verify here."),
+                        Localization.Current.Get("Import"),
+                        Localization.Current.Get("Cancel"));
                     if (!confirmed)
                     {
                         return;
@@ -84,8 +84,8 @@ public partial class BackupSigningKeySettingsViewModel : SettingsSectionViewMode
 
                     await signingKeyTransfer.ImportAsync(stream);
                     await Popup.ShowAlertAsync(new AlertPopupDefinition(
-                        "Signing key imported",
-                        "This device can now verify backups signed by the imported key."));
+                        Localization.Current.Get("Signing key imported"),
+                        Localization.Current.Get("This device can now verify backups signed by the imported key.")));
                 },
                 "Failed to import the Mothball backup signing key from {FileName}.",
                 PopupDefinitions.BackupSigningKeyImportFailed,

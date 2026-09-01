@@ -6,154 +6,156 @@ namespace MothballMobile.Infrastructure.Presentation.Popups;
 
 public sealed class PopupDefinitionService : IPopupDefinitionService
 {
+    private static string L(string key) => Localization.Current.Get(key);
+
     /// <inheritdoc />
     public AlertPopupDefinition BackupExported(string fullPath)
         => new(
-            "Backup Exported",
-            $"Backup saved to:\n{fullPath}");
+            L("Backup Exported"),
+            Localization.Current.Format("Backup saved to:\n{0}", fullPath));
 
     /// <inheritdoc />
     public AlertPopupDefinition BackupExportFailed(string errorMessage)
         => new(
-            "Export Failed",
-            $"Could not export backup.\n\n{errorMessage}");
+            L("Export Failed"),
+            Localization.Current.Format("Could not export backup.\n\n{0}", errorMessage));
 
     /// <inheritdoc />
     public AlertPopupDefinition BackupShareFailed(string errorMessage)
         => new(
-            "Share Failed",
-            $"Could not share backup.\n\n{errorMessage}");
+            L("Share Failed"),
+            Localization.Current.Format("Could not share backup.\n\n{0}", errorMessage));
 
     /// <inheritdoc />
     public AlertPopupDefinition BackupSigningKeyShareFailed(string errorMessage)
         => new(
-            "Share Failed",
-            $"Could not share the backup signing key.\n\n{errorMessage}");
+            L("Share Failed"),
+            Localization.Current.Format("Could not share the backup signing key.\n\n{0}", errorMessage));
 
     /// <inheritdoc />
     public AlertPopupDefinition BackupSigningKeyImportFailed(string errorMessage)
         => new(
-            "Import Failed",
-            $"Could not import the backup signing key.\n\n{errorMessage}");
+            L("Import Failed"),
+            Localization.Current.Format("Could not import the backup signing key.\n\n{0}", errorMessage));
 
     /// <inheritdoc />
     public AlertPopupDefinition RestoreCompleted(string summary)
-        => new("Restore Completed", summary);
+        => new(L("Restore Completed"), summary);
 
     /// <inheritdoc />
     public AlertPopupDefinition RestoreFailed(string errorMessage)
         => new(
-            "Restore Failed",
-            $"Could not import backup.\n\n{errorMessage}");
+            L("Restore Failed"),
+            Localization.Current.Format("Could not import backup.\n\n{0}", errorMessage));
 
     /// <inheritdoc />
     public ConfirmationPopupDefinition DeleteBackup(string fileName)
         => new(
-            "Delete backup",
-            $"Delete '{fileName}' from local backup storage?",
-            "Delete");
+            L("Delete backup"),
+            Localization.Current.Format("Delete '{0}' from local backup storage?", fileName),
+            L("Delete"));
 
     /// <inheritdoc />
     public AlertPopupDefinition BackupDeleted(string fileName)
         => new(
-            "Backup deleted",
-            $"Deleted: {fileName}");
+            L("Backup deleted"),
+            Localization.Current.Format("Deleted: {0}", fileName));
 
     /// <inheritdoc />
     public AlertPopupDefinition DeleteBackupFailed(string errorMessage)
         => new(
-            "Delete failed",
-            $"Could not delete backup.\n\n{errorMessage}");
+            L("Delete failed"),
+            Localization.Current.Format("Could not delete backup.\n\n{0}", errorMessage));
 
     /// <inheritdoc />
     public OptionPickerPopupDefinition<InventoryBackupConflictPolicy> RestorePolicyPicker()
         => new(
-            "Restore mode",
-            "Cancel",
+            L("Restore mode"),
+            L("Cancel"),
             new[]
             {
-                new PopupOption<InventoryBackupConflictPolicy>("Add only", InventoryBackupConflictPolicy.AddOnly),
-                new PopupOption<InventoryBackupConflictPolicy>("Add + upsert metadata", InventoryBackupConflictPolicy.AddAndUpsertMetadata),
-                new PopupOption<InventoryBackupConflictPolicy>("Full sync (roots)", InventoryBackupConflictPolicy.FullSync),
-                new PopupOption<InventoryBackupConflictPolicy>("Strict full sync", InventoryBackupConflictPolicy.StrictFullSync),
+                new PopupOption<InventoryBackupConflictPolicy>(L("Add only"), InventoryBackupConflictPolicy.AddOnly),
+                new PopupOption<InventoryBackupConflictPolicy>(L("Add + upsert metadata"), InventoryBackupConflictPolicy.AddAndUpsertMetadata),
+                new PopupOption<InventoryBackupConflictPolicy>(L("Full sync (roots)"), InventoryBackupConflictPolicy.FullSync),
+                new PopupOption<InventoryBackupConflictPolicy>(L("Strict full sync"), InventoryBackupConflictPolicy.StrictFullSync),
             });
 
     /// <inheritdoc />
     public AlertPopupDefinition NoBackupsFound()
         => new(
-            "No backups found",
-            "No backup files were found in local backup storage.");
+            L("No backups found"),
+            L("No backup files were found in local backup storage."));
 
     /// <inheritdoc />
     public OptionPickerPopupDefinition<string> BackupFilePicker(IReadOnlyList<string> fileNames)
         => new(
-            "Choose backup file",
-            "Cancel",
+            L("Choose backup file"),
+            L("Cancel"),
             fileNames.Select(fileName => new PopupOption<string>(fileName, fileName)).ToArray());
 
     /// <inheritdoc />
     public OptionPickerPopupDefinition<PhotoSource> PhotoSourcePicker()
         => new(
-            "Add photo",
-            "Cancel",
+            L("Add photo"),
+            L("Cancel"),
             new[]
             {
-                new PopupOption<PhotoSource>("Select Photo", PhotoSource.Library),
-                new PopupOption<PhotoSource>("Capture Photo", PhotoSource.Camera),
+                new PopupOption<PhotoSource>(L("Select Photo"), PhotoSource.Library),
+                new PopupOption<PhotoSource>(L("Capture Photo"), PhotoSource.Camera),
             });
 
     /// <inheritdoc />
     public OptionPickerPopupDefinition<ImageItem> ItemPhotoDeletePicker(IReadOnlyList<ImageItem> photos)
-        => PhotoPicker("Choose item photo to delete", photos);
+        => PhotoPicker(L("Choose item photo to delete"), photos);
 
     /// <inheritdoc />
     public OptionPickerPopupDefinition<ImageItem> ContainerPhotoDeletePicker(IReadOnlyList<ImageItem> photos)
-        => PhotoPicker("Choose container photo to delete", photos);
+        => PhotoPicker(L("Choose container photo to delete"), photos);
 
     /// <inheritdoc />
     public AlertPopupDefinition NoItemPhotos()
         => new(
-            "No photos",
-            "This item does not have any photos to delete.");
+            L("No photos"),
+            L("This item does not have any photos to delete."));
 
     /// <inheritdoc />
     public AlertPopupDefinition NoContainerPhotos()
         => new(
-            "No photos",
-            "This container does not have any photos to delete.");
+            L("No photos"),
+            L("This container does not have any photos to delete."));
 
     /// <inheritdoc />
     public ConfirmationPopupDefinition DeleteItem()
         => new(
-            "Delete item",
-            "Are you sure you want to delete this item? This cannot be undone.",
-            "Delete");
+            L("Delete item"),
+            L("Are you sure you want to delete this item? This cannot be undone."),
+            L("Delete"));
 
     /// <inheritdoc />
     public ConfirmationPopupDefinition DeleteItemBySettingTotalToZero(string itemName)
         => new(
-            "Remove item",
-            $"Setting '{itemName}' to zero will permanently remove the item, all container assignments, and its photos. Continue?",
-            "Remove");
+            L("Remove item"),
+            Localization.Current.Format("Setting '{0}' to zero will permanently remove the item, all container assignments, and its photos. Continue?", itemName),
+            L("Remove"));
 
     /// <inheritdoc />
     public ConfirmationPopupDefinition DeleteContainer()
         => new(
-            "Delete container",
-            "Delete this container? Items inside will not be deleted, only the relation.",
-            "Delete");
+            L("Delete container"),
+            L("Delete this container? Items inside will not be deleted, only the relation."),
+            L("Delete"));
 
     /// <inheritdoc />
     public ConfirmationPopupDefinition DeletePhoto()
         => new(
-            "Delete photo",
-            "Delete the selected photo?",
-            "Delete");
+            L("Delete photo"),
+            L("Delete the selected photo?"),
+            L("Delete"));
 
     /// <inheritdoc />
     public NumberPickerPopupDefinition SetQuantity(int initialValue)
         => new(
-            "Set quantity",
+            L("Set quantity"),
             Min: 0,
             Max: 1000,
             InitialValue: initialValue);
@@ -161,7 +163,7 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
     /// <inheritdoc />
     public NumberPickerPopupDefinition SetTotalQuantity(int initialValue, int assignedQuantity)
         => new(
-            "Set total quantity",
+            L("Set total quantity"),
             Min: 0,
             Max: int.MaxValue,
             InitialValue: initialValue);
@@ -169,28 +171,28 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
     /// <inheritdoc />
     public NumberPickerPopupDefinition AssociateUnassignedQuantity(int availableQuantity)
         => new(
-            "Assign to container",
+            L("Assign to container"),
             Min: 1,
             Max: availableQuantity,
             InitialValue: availableQuantity,
-            Message: "Enter how many unassigned items to place in this container.");
+            Message: L("Enter how many unassigned items to place in this container."));
 
     /// <inheritdoc />
     public AlertPopupDefinition InventoryQuantityUpdateFailed(string message)
         => new(
-            "Quantity not updated",
+            L("Quantity not updated"),
             message);
 
     /// <inheritdoc />
     public OptionPickerPopupDefinition<ItemContainerAllocation> WithdrawalContainerPicker(
         IReadOnlyList<ItemContainerAllocation> allocations)
         => new(
-            "Choose a container",
-            "Cancel",
+            L("Choose a container"),
+            L("Cancel"),
             allocations
                 .Where(allocation => allocation.Quantity > 0)
                 .Select(allocation => new PopupOption<ItemContainerAllocation>(
-                    $"{allocation.ContainerName} ({allocation.Quantity})",
+                    Localization.Current.Format("{0} ({1})", allocation.ContainerName, allocation.Quantity),
                     allocation))
                 .ToArray());
 
@@ -200,35 +202,35 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
         int carriedQuantity,
         int requiredQuantity)
         => new(
-            $"Withdraw from {allocation.ContainerName}",
+            Localization.Current.Format("Withdraw from {0}", allocation.ContainerName),
             Min: 0,
             Max: int.MaxValue,
             InitialValue: Math.Max(1, Math.Max(carriedQuantity, requiredQuantity)),
-            Placeholder: "Enter 0 to stop",
-            Message: "Enter how many items to withdraw from this container.");
+            Placeholder: L("Enter 0 to stop"),
+            Message: L("Enter how many items to withdraw from this container."));
 
     /// <inheritdoc />
     public AlertPopupDefinition WithdrawalCarryTooSmall(int carriedQuantity)
         => new(
-            "More items must be withdrawn",
-            $"Enter 0 to cancel, or withdraw at least the remaining {carriedQuantity} items.");
+            L("More items must be withdrawn"),
+            Localization.Current.Format("Enter 0 to cancel, or withdraw at least the remaining {0} items.", carriedQuantity));
 
     /// <inheritdoc />
     public ConfirmationPopupDefinition ConfirmUnassignedWithdrawal(int unassignedQuantity)
         => new(
-            "Withdraw unassigned items?",
-            $"Assigned withdrawals are complete. Continuing will withdraw from {unassignedQuantity} unassigned items and reduce the total quantity further.",
-            "Continue");
+            L("Withdraw unassigned items?"),
+            Localization.Current.Format("Assigned withdrawals are complete. Continuing will withdraw from {0} unassigned items and reduce the total quantity further.", unassignedQuantity),
+            L("Continue"));
 
     /// <inheritdoc />
     public NumberPickerPopupDefinition WithdrawUnassignedQuantity(int availableQuantity)
         => new(
-            "Withdraw unassigned items",
+            L("Withdraw unassigned items"),
             Min: 0,
             Max: availableQuantity,
             InitialValue: 0,
-            Placeholder: "Enter 0 to finish",
-            Message: "Enter how many unassigned items to withdraw.");
+            Placeholder: L("Enter 0 to finish"),
+            Message: L("Enter how many unassigned items to withdraw."));
 
     /// <inheritdoc />
     public OptionPickerPopupDefinition<ItemInventoryConsumptionSource> ConsumptionSourcePicker(
@@ -237,68 +239,68 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
         var options = inventory.Allocations
             .Where(allocation => allocation.Quantity > 0)
             .Select(allocation => new PopupOption<ItemInventoryConsumptionSource>(
-                $"{allocation.ContainerName} ({allocation.Quantity})",
+                Localization.Current.Format("{0} ({1})", allocation.ContainerName, allocation.Quantity),
                 ItemInventoryConsumptionSource.FromContainer(allocation.ContainerId)))
             .ToList();
 
         if (inventory.UnassignedQuantity > 0)
         {
             options.Add(new PopupOption<ItemInventoryConsumptionSource>(
-                $"Unassigned stock ({inventory.UnassignedQuantity})",
+                Localization.Current.Format("Unassigned stock ({0})", inventory.UnassignedQuantity),
                 ItemInventoryConsumptionSource.FromUnassigned()));
         }
 
         return new OptionPickerPopupDefinition<ItemInventoryConsumptionSource>(
-            "Use from",
-            "Cancel",
+            L("Use from"),
+            L("Cancel"),
             options);
     }
 
     /// <inheritdoc />
     public ConfirmationPopupDefinition ConfirmPreferredConsumptionSource(ItemContainerAllocation allocation)
         => new(
-            "Use from this container?",
-            $"Use '{allocation.ContainerName}' stock ({allocation.Quantity} available)?",
-            "Use here",
-            "Choose another source");
+            L("Use from this container?"),
+            Localization.Current.Format("Use '{0}' stock ({1} available)?", allocation.ContainerName, allocation.Quantity),
+            L("Use here"),
+            L("Choose another source"));
 
     /// <inheritdoc />
     public NumberPickerPopupDefinition ConsumeFromContainer(ItemContainerAllocation allocation)
         => new(
-            $"Use from {allocation.ContainerName}",
+            Localization.Current.Format("Use from {0}", allocation.ContainerName),
             Min: 1,
             Max: allocation.Quantity,
             InitialValue: 1,
-            Message: "Enter how many items to use permanently.");
+            Message: L("Enter how many items to use permanently."));
 
     /// <inheritdoc />
     public NumberPickerPopupDefinition ConsumeUnassignedQuantity(int availableQuantity)
         => new(
-            "Use unassigned stock",
+            L("Use unassigned stock"),
             Min: 1,
             Max: availableQuantity,
             InitialValue: 1,
-            Message: "Enter how many unassigned items to use permanently.");
+            Message: L("Enter how many unassigned items to use permanently."));
 
     /// <inheritdoc />
     public ConfirmationPopupDefinition ConfirmFinalStockConsumption(string itemName)
         => new(
-            "Use final item?",
-            $"This will permanently remove '{itemName}', all assignments, and its photos. Continue?",
-            "Use and remove");
+            L("Use final item?"),
+            Localization.Current.Format("This will permanently remove '{0}', all assignments, and its photos. Continue?", itemName),
+            L("Use and remove"));
 
     /// <inheritdoc />
     public ConfirmationPopupDefinition RemoveItemFromContainer(string itemName)
         => new(
-            "Remove item",
-            $"Remove '{itemName}' from this container? The item itself will not be deleted.",
-            "Remove");
+            L("Remove item"),
+            Localization.Current.Format("Remove '{0}' from this container? The item itself will not be deleted.", itemName),
+            L("Remove"));
 
     private static OptionPickerPopupDefinition<ImageItem> PhotoPicker(string title, IReadOnlyList<ImageItem> photos)
         => new(
             title,
-            "Cancel",
+            L("Cancel"),
             photos
-                .Select((photo, index) => new PopupOption<ImageItem>($"Photo {index + 1}", photo))
+                .Select((photo, index) => new PopupOption<ImageItem>(Localization.Current.Format("Photo {0}", index + 1), photo))
                 .ToArray());
 }

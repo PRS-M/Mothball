@@ -144,6 +144,7 @@
   <data name="ItemName" xml:space="preserve"><value>Nazwa przedmiotu</value></data>
   <data name="Items" xml:space="preserve"><value>Przedmioty</value></data>
   <data name="ItemsList" xml:space="preserve"><value>Lista przedmiotów</value></data>
+  <data name="JSON" xml:space="preserve"><value>JSON</value></data>
   <data name="ItemsInThisContainer" xml:space="preserve"><value>Przedmioty w tym pojemniku</value></data>
   <data name="Language" xml:space="preserve"><value>Język</value></data>
   <data name="Light" xml:space="preserve"><value>Jasny</value></data>
@@ -204,6 +205,7 @@
   <data name="ShortDescription" xml:space="preserve"><value>Krótki opis</value></data>
   <data name="SigningKeyImported" xml:space="preserve"><value>Zaimportowano klucz podpisu</value></data>
   <data name="Simple" xml:space="preserve"><value>Prosty</value></data>
+  <data name="ZIP" xml:space="preserve"><value>ZIP</value></data>
   <data name="StartingMothball" xml:space="preserve"><value>Uruchamianie Mothball...</value></data>
   <data name="StartupFailed" xml:space="preserve"><value>Uruchamianie nie powiodło się</value></data>
   <data name="StrictFullSync" xml:space="preserve"><value>Ścisła pełna synchronizacja</value></data>
@@ -238,4 +240,5 @@
   <data name="DotNetBotInAHovercraftNumberNine" xml:space="preserve"><value>dot net bot in a hovercraft number nine</value></data>
   <data name="EG1" xml:space="preserve"><value>np. 1</value></data>
   <data name="Text01" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="SettingItemToZero" xml:space="preserve"><value>Ustawienie „{0}” na zero bezpowrotnie usunie przedmiot, wszystkie przypisania i jego zdjęcia. Kontynuować?</value></data>
 </root>

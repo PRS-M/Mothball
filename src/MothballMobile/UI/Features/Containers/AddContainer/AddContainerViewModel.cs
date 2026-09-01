@@ -121,7 +121,7 @@ public partial class AddContainerViewModel : BaseViewModel
         var trimmedName = Name?.Trim();
         if (string.IsNullOrWhiteSpace(trimmedName))
         {
-            ValidationMessage = "Name is required.";
+            ValidationMessage = Localization.Current.Get("Name is required.");
             return;
         }
 

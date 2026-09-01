@@ -144,6 +144,7 @@
   <data name="ItemName" xml:space="preserve"><value>Item name</value></data>
   <data name="Items" xml:space="preserve"><value>Items</value></data>
   <data name="ItemsList" xml:space="preserve"><value>Items List</value></data>
+  <data name="JSON" xml:space="preserve"><value>JSON</value></data>
   <data name="ItemsInThisContainer" xml:space="preserve"><value>Items in this container</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
   <data name="Light" xml:space="preserve"><value>Light</value></data>
@@ -204,6 +205,7 @@
   <data name="ShortDescription" xml:space="preserve"><value>Short description</value></data>
   <data name="SigningKeyImported" xml:space="preserve"><value>Signing key imported</value></data>
   <data name="Simple" xml:space="preserve"><value>Simple</value></data>
+  <data name="ZIP" xml:space="preserve"><value>ZIP</value></data>
   <data name="StartingMothball" xml:space="preserve"><value>Starting Mothball...</value></data>
   <data name="StartupFailed" xml:space="preserve"><value>Startup failed</value></data>
   <data name="StrictFullSync" xml:space="preserve"><value>Strict full sync</value></data>
@@ -238,4 +240,5 @@
   <data name="DotNetBotInAHovercraftNumberNine" xml:space="preserve"><value>dot net bot in a hovercraft number nine</value></data>
   <data name="EG1" xml:space="preserve"><value>e.g. 1</value></data>
   <data name="Text01" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="SettingItemToZero" xml:space="preserve"><value>Setting '{0}' to zero will permanently remove the item, all container assignments, and its photos. Continue?</value></data>
 </root>
