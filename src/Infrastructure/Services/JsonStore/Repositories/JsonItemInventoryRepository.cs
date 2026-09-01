@@ -15,14 +15,49 @@ public sealed class JsonItemInventoryRepository : IItemInventoryRepository
     /// <inheritdoc />
     public async Task<ItemInventory?> GetAsync(Guid itemId)
     {
-        var state = await store.LoadAsync().ConfigureAwait(false);
-        var inventoryRow = state.Inventories.FirstOrDefault(row => row.ItemId == itemId);
-        if (inventoryRow is null)
+        var result = await GetManyAsync([itemId]).ConfigureAwait(false);
+        return result.GetValueOrDefault(itemId);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, ItemInventory>> GetManyAsync(IReadOnlyCollection<Guid> itemIds)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+
+        var distinctItemIds = itemIds
+            .Where(itemId => itemId != Guid.Empty)
+            .ToHashSet();
+        if (distinctItemIds.Count == 0)
         {
-            return null;
+            return new Dictionary<Guid, ItemInventory>();
         }
 
-        return new ItemInventory(itemId, inventoryRow.TotalQuantity, LoadAllocations(state, itemId));
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var containersById = state.Containers.ToDictionary(container => container.ContainerId);
+        var allocationsByItem = state.Relations
+            .Where(relation => distinctItemIds.Contains(relation.ItemId)
+                && relation.Quantity > 0
+                && containersById.ContainsKey(relation.ContainerId))
+            .GroupBy(relation => new { relation.ItemId, relation.ContainerId })
+            .GroupBy(group => group.Key.ItemId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<ItemContainerAllocation>)group
+                    .Select(relationGroup => new ItemContainerAllocation(
+                        relationGroup.Key.ContainerId,
+                        containersById[relationGroup.Key.ContainerId].Name,
+                        relationGroup.Sum(relation => relation.Quantity)))
+                    .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
+                    .ToList());
+
+        return state.Inventories
+            .Where(inventory => distinctItemIds.Contains(inventory.ItemId))
+            .ToDictionary(
+                inventory => inventory.ItemId,
+                inventory => new ItemInventory(
+                    inventory.ItemId,
+                    inventory.TotalQuantity,
+                    allocationsByItem.GetValueOrDefault(inventory.ItemId) ?? []));
     }
 
     /// <inheritdoc />
@@ -75,19 +110,4 @@ public sealed class JsonItemInventoryRepository : IItemInventoryRepository
             return Task.CompletedTask;
         });
 
-    private static IReadOnlyList<ItemContainerAllocation> LoadAllocations(JsonInventoryStore.StoreState state, Guid itemId)
-        => state.Relations
-            .Where(relation => relation.ItemId == itemId && relation.Quantity > 0)
-            .GroupBy(relation => relation.ContainerId)
-            .Select(group =>
-            {
-                var container = state.Containers.FirstOrDefault(row => row.ContainerId == group.Key);
-                return container is null
-                    ? null
-                    : new ItemContainerAllocation(group.Key, container.Name, group.Sum(relation => relation.Quantity));
-            })
-            .Where(allocation => allocation is not null)
-            .Select(allocation => allocation!)
-            .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
-            .ToList();
 }

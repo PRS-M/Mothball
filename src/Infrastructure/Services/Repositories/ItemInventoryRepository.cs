@@ -25,15 +25,63 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
     /// <inheritdoc />
     public async Task<ItemInventory?> GetAsync(Guid itemId)
     {
-        var inventoryRow = (await inventories.WhereAsync(inventory => inventory.ItemId == itemId).ConfigureAwait(false))
-            .FirstOrDefault();
-        if (inventoryRow is null)
+        var result = await GetManyAsync([itemId]).ConfigureAwait(false);
+        return result.GetValueOrDefault(itemId);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, ItemInventory>> GetManyAsync(IReadOnlyCollection<Guid> itemIds)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+
+        var distinctItemIds = itemIds
+            .Where(itemId => itemId != Guid.Empty)
+            .Distinct()
+            .ToList();
+        if (distinctItemIds.Count == 0)
         {
-            return null;
+            return new Dictionary<Guid, ItemInventory>();
         }
 
-        var allocations = await LoadAllocationsAsync(itemId).ConfigureAwait(false);
-        return new ItemInventory(itemId, inventoryRow.TotalQuantity, allocations);
+        var boxedItemIds = distinctItemIds.Select(itemId => (object)itemId).ToList();
+        var inventoryRows = await inventories.WhereInAsync(
+            nameof(DbItemInventory.ItemId),
+            boxedItemIds).ConfigureAwait(false);
+        var relationRows = (await relations.WhereInAsync(
+                nameof(DbItemContainerRelation.ItemId),
+                boxedItemIds).ConfigureAwait(false))
+            .Where(relation => relation.Quantity > 0)
+            .ToList();
+        var containerIds = relationRows
+            .Select(relation => relation.ContainerId)
+            .Distinct()
+            .ToList();
+        var containersById = containerIds.Count == 0
+            ? new Dictionary<Guid, DbContainer>()
+            : (await containers.WhereInAsync(
+                    nameof(DbContainer.ContainerId),
+                    containerIds.Select(containerId => (object)containerId).ToList()).ConfigureAwait(false))
+                .ToDictionary(container => container.ContainerId);
+        var allocationsByItem = relationRows
+            .GroupBy(relation => new { relation.ItemId, relation.ContainerId })
+            .Where(group => containersById.ContainsKey(group.Key.ContainerId))
+            .GroupBy(group => group.Key.ItemId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<ItemContainerAllocation>)group
+                    .Select(relationGroup => new ItemContainerAllocation(
+                        relationGroup.Key.ContainerId,
+                        containersById[relationGroup.Key.ContainerId].Name,
+                        relationGroup.Sum(relation => relation.Quantity)))
+                    .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
+                    .ToList());
+
+        return inventoryRows.ToDictionary(
+            inventory => inventory.ItemId,
+            inventory => new ItemInventory(
+                inventory.ItemId,
+                inventory.TotalQuantity,
+                allocationsByItem.GetValueOrDefault(inventory.ItemId) ?? []));
     }
 
     /// <inheritdoc />
@@ -74,26 +122,4 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
             scope.DeleteItemInventory(itemId);
         });
 
-    private async Task<IReadOnlyList<ItemContainerAllocation>> LoadAllocationsAsync(Guid itemId)
-    {
-        var relationRows = (await relations.WhereAsync(
-                relation => relation.ItemId == itemId && relation.Quantity > 0).ConfigureAwait(false))
-            .GroupBy(relation => relation.ContainerId)
-            .Select(group => new { ContainerId = group.Key, Quantity = group.Sum(row => row.Quantity) })
-            .ToList();
-
-        var result = new List<ItemContainerAllocation>(relationRows.Count);
-        foreach (var relation in relationRows)
-        {
-            var container = await containers.GetAsync(relation.ContainerId.ToString()).ConfigureAwait(false);
-            if (container is not null)
-            {
-                result.Add(new ItemContainerAllocation(relation.ContainerId, container.Name, relation.Quantity));
-            }
-        }
-
-        return result
-            .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-    }
 }
