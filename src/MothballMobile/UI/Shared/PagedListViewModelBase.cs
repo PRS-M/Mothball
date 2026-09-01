@@ -41,7 +41,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     {
         if (IsBusy) return;
         if (!CanLoadNextPage) return;
-        await LoadNextPageCore();
+        await RunCommandAsync(LoadNextPageCore);
     }
 
     /// <summary>
