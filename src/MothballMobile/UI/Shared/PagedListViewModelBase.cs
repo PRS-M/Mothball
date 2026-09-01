@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,15 +14,20 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     private bool hasMorePages = true;
     private bool initialized;
     private long loadedRevision;
+    private readonly IPagedListLoadDiagnostics? loadDiagnostics;
 
-    protected PagedListViewModelBase(int pageSize = 10)
+    protected PagedListViewModelBase(
+        int pageSize = 10,
+        IPagedListLoadDiagnostics? loadDiagnostics = null)
     {
         this.pageSize = pageSize;
+        this.loadDiagnostics = loadDiagnostics;
     }
 
     public ObservableCollection<TViewModel> Items { get; } = new();
     protected virtual bool CanLoadNextPage => hasMorePages;
     protected virtual long DataRevision => 0;
+    protected virtual string LoadVariant => "browse";
 
     /// <summary>
     /// Initializes the list by ensuring source data exists and loading its first page.
@@ -109,19 +115,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     protected async Task ReplaceWithFirstPagedAsync()
     {
         ResetPaging();
-
-        var page = await LoadAsync(currentPage, pageSize);
-        if (page.Count == 0)
-        {
-            hasMorePages = false;
-            return;
-        }
-
-        AddItemsPage(page);
-        if (page.Count < pageSize)
-            hasMorePages = false;
-
-        currentPage++;
+        await LoadNextPageCore();
     }
 
     private void AddItemsPage(List<TSource> sources)
@@ -137,11 +131,17 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     private async Task LoadNextPageCore()
     {
         if (!hasMorePages) return;
-        var page = await LoadAsync(currentPage, pageSize);
+        int pageNumber = currentPage;
+        long totalStart = Stopwatch.GetTimestamp();
+        long queryStart = Stopwatch.GetTimestamp();
+        var page = await LoadAsync(pageNumber, pageSize);
+        double queryElapsed = Stopwatch.GetElapsedTime(queryStart).TotalMilliseconds;
+        long populationStart = Stopwatch.GetTimestamp();
 
         if (page.Count == 0)
         {
             hasMorePages = false;
+            ReportPageLoaded(pageNumber, page.Count, queryElapsed, populationStart, totalStart);
             return;
         }
 
@@ -151,5 +151,22 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
             hasMorePages = false;
 
         currentPage++;
+        ReportPageLoaded(pageNumber, page.Count, queryElapsed, populationStart, totalStart);
     }
+
+    private void ReportPageLoaded(
+        int pageNumber,
+        int resultCount,
+        double queryElapsed,
+        long populationStart,
+        long totalStart)
+        => loadDiagnostics?.PageLoaded(new PagedListLoadMeasurement(
+            GetType().Name,
+            LoadVariant,
+            pageNumber,
+            pageSize,
+            resultCount,
+            queryElapsed,
+            Stopwatch.GetElapsedTime(populationStart).TotalMilliseconds,
+            Stopwatch.GetElapsedTime(totalStart).TotalMilliseconds));
 }

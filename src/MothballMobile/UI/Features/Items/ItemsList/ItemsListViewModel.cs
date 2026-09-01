@@ -62,8 +62,9 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         IPopupDefinitionService popupDefinitions,
         IInventoryChangeTracker inventoryChanges,
         IBackgroundTaskObserver backgroundTasks,
-        IDebouncer? debouncer = null)
-        : base(backgroundTasks, debouncer)
+        IDebouncer? debouncer = null,
+        IPagedListLoadDiagnostics? loadDiagnostics = null)
+        : base(backgroundTasks, debouncer, loadDiagnostics: loadDiagnostics)
     {
         this.paths = paths;
         this.itemListQueries = itemListQueries;
@@ -79,6 +80,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
 
     protected override string SearchOperationName => "Search items";
     protected override long DataRevision => inventoryChanges.Revision;
+    protected override string LoadVariant => $"{SelectedFilter}:{base.LoadVariant}";
 
     protected override ItemViewModel MapToViewModel(InventorySnapshot source)
     {

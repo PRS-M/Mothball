@@ -57,6 +57,7 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IBackupSigningKeyTransferService.cs" Link="Infrastructure/Backup/IBackupSigningKeyTransferService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IInventoryBackupWorkflowService.cs" Link="Infrastructure/Backup/IInventoryBackupWorkflowService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Utilities/IInitializable.cs" Link="Infrastructure/Utilities/IInitializable.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Diagnostics/IPagedListLoadDiagnostics.cs" Link="Infrastructure/Diagnostics/IPagedListLoadDiagnostics.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/AppMode.cs" Link="Infrastructure/Settings/AppMode.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/ThemePalette.cs" Link="Infrastructure/Settings/ThemePalette.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/IApplicationSettings.cs" Link="Infrastructure/Settings/IApplicationSettings.cs" />

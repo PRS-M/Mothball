@@ -21,8 +21,9 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
     protected SearchablePagedListViewModelBase(
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer,
-        int pageSize = 10)
-        : base(pageSize)
+        int pageSize = 10,
+        IPagedListLoadDiagnostics? loadDiagnostics = null)
+        : base(pageSize, loadDiagnostics)
     {
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
@@ -30,6 +31,8 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
 
     /// <summary>The background-operation label used while a search runs in the background.</summary>
     protected abstract string SearchOperationName { get; }
+    protected bool HasActiveQuery => activeQuery is not null;
+    protected override string LoadVariant => HasActiveQuery ? "search" : "browse";
 
     /// <summary>Loads one page using the active search query.</summary>
     protected abstract Task<List<TSource>> LoadPageAsync(string? query, int pageNumber, int pageSize);

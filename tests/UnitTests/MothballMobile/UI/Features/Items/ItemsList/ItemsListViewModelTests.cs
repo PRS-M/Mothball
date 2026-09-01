@@ -34,13 +34,18 @@ public sealed class ItemsListViewModelTests
         queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, null, 0, 10)).ReturnsAsync([]);
         queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, "Widget", 0, 10))
             .ReturnsAsync([new InventorySnapshot(item, 1, 0, [])]);
-        var viewModel = CreateViewModel(queries.Object);
+        var diagnostics = new Mock<IPagedListLoadDiagnostics>();
+        var viewModel = CreateViewModel(queries.Object, diagnostics: diagnostics.Object);
         await viewModel.InitializeAsync();
 
         viewModel.Query = "Widget";
         await viewModel.SearchCommand.ExecuteAsync(null);
 
         Assert.That(viewModel.Items, Has.Count.EqualTo(1));
+        diagnostics.Verify(observer => observer.PageLoaded(
+            It.Is<PagedListLoadMeasurement>(measurement =>
+                measurement.Variant == "All:search"
+                && !measurement.Variant.Contains("Widget", StringComparison.Ordinal))), Times.Once);
     }
 
     [Test]
@@ -111,7 +116,8 @@ public sealed class ItemsListViewModelTests
     private static ItemsListViewModel CreateViewModel(
         IItemsListQueryHandler queries,
         IPopupService? popup = null,
-        IDeleteItemCommandHandler? deleteHandler = null)
+        IDeleteItemCommandHandler? deleteHandler = null,
+        IPagedListLoadDiagnostics? diagnostics = null)
     {
         var paths = new Mock<IImagePathResolver>();
         paths.Setup(p => p.GetItemPhotoPaths(It.IsAny<Item>())).Returns(Array.Empty<string>());
@@ -132,6 +138,7 @@ public sealed class ItemsListViewModelTests
             popup,
             definitions,
             Mock.Of<IInventoryChangeTracker>(),
-            Mock.Of<IBackgroundTaskObserver>());
+            Mock.Of<IBackgroundTaskObserver>(),
+            loadDiagnostics: diagnostics);
     }
 }

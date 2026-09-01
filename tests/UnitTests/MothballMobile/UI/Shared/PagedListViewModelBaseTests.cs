@@ -43,6 +43,28 @@ public sealed class PagedListViewModelBaseTests
     }
 
     [Test]
+    public async Task InitializeAsync_ReportsQueryAndPopulationTimings()
+    {
+        var diagnostics = new RecordingPagedListLoadDiagnostics();
+        var viewModel = new CountingPagedListViewModel(diagnostics);
+
+        await viewModel.InitializeAsync();
+
+        var measurement = diagnostics.Measurements.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(measurement.ListName, Is.EqualTo(nameof(CountingPagedListViewModel)));
+            Assert.That(measurement.Variant, Is.EqualTo("browse"));
+            Assert.That(measurement.PageNumber, Is.Zero);
+            Assert.That(measurement.PageSize, Is.EqualTo(10));
+            Assert.That(measurement.ResultCount, Is.EqualTo(1));
+            Assert.That(measurement.QueryElapsedMilliseconds, Is.GreaterThanOrEqualTo(0));
+            Assert.That(measurement.PopulationElapsedMilliseconds, Is.GreaterThanOrEqualTo(0));
+            Assert.That(measurement.TotalElapsedMilliseconds, Is.GreaterThanOrEqualTo(0));
+        });
+    }
+
+    [Test]
     public async Task LoadNextPage_WhenAnotherPageIsLoading_DoesNotStartAnOverlappingRequest()
     {
         var viewModel = new BlockingPagedListViewModel();
@@ -92,6 +114,11 @@ public sealed class PagedListViewModelBaseTests
     {
         private long revision;
 
+        public CountingPagedListViewModel(IPagedListLoadDiagnostics? diagnostics = null)
+            : base(loadDiagnostics: diagnostics)
+        {
+        }
+
         public int LoadCallCount { get; private set; }
         protected override long DataRevision => revision;
 
@@ -104,5 +131,13 @@ public sealed class PagedListViewModelBaseTests
         }
 
         protected override int MapToViewModel(int source) => source;
+    }
+
+    private sealed class RecordingPagedListLoadDiagnostics : IPagedListLoadDiagnostics
+    {
+        public List<PagedListLoadMeasurement> Measurements { get; } = [];
+
+        public void PageLoaded(PagedListLoadMeasurement measurement)
+            => Measurements.Add(measurement);
     }
 }

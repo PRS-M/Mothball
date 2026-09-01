@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppErrorPresenter, AppErrorPresenter>();
         services.AddSingleton<IRetryService, RetryService>();
         services.AddSingleton<IBackgroundTaskObserver, LoggingBackgroundTaskObserver>();
+        services.AddSingleton<IPagedListLoadDiagnostics, PagedListLoadDiagnostics>();
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IInventoryChangeTracker, InventoryChangeTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
