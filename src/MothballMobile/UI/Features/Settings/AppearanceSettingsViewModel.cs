@@ -34,6 +34,41 @@ public partial class AppearanceSettingsViewModel : ObservableObject
         "Berry Archive",
     ];
 
+    public IReadOnlyList<string> LanguageOptions =>
+    [
+        L("System"),
+        L("English"),
+        L("Polish"),
+    ];
+
+    public string SelectedLanguageOption
+    {
+        get => applicationSettings.Language switch
+        {
+            LanguagePreference.English => L("English"),
+            LanguagePreference.Polish => L("Polish"),
+            _ => L("System"),
+        };
+        set
+        {
+            var language = value == L("English")
+                ? LanguagePreference.English
+                : value == L("Polish")
+                    ? LanguagePreference.Polish
+                    : LanguagePreference.System;
+
+            if (applicationSettings.Language == language)
+            {
+                return;
+            }
+
+            applicationSettings.Language = language;
+            OnPropertyChanged();
+        }
+    }
+
+    private static string L(string key) => Localization.Current.Get(key);
+
     public string SelectedModeOption
     {
         get => applicationSettings.ThemeOverride switch

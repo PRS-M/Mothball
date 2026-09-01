@@ -9,6 +9,8 @@ public interface IApplicationSettings
 
     event EventHandler? ThemePaletteChanged;
 
+    event EventHandler? LanguageChanged;
+
     AppTheme ThemeOverride { get; set; }
 
     ThemePalette ThemePalette { get; set; }
@@ -18,4 +20,6 @@ public interface IApplicationSettings
     bool IsAdvancedMode { get; set; }
 
     bool IsBackupSigningKeyEnabled { get; set; }
+
+    LanguagePreference Language { get; set; }
 }

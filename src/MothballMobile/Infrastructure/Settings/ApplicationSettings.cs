@@ -9,9 +9,32 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
     private const string ThemePaletteKey = "ThemePalette";
     private const string ThemePaletteConfiguredKey = "ThemePaletteConfigured";
     private const string BackupSigningKeyEnabledKey = "BackupSigningKeyEnabled";
+    private const string LanguageKey = "Language";
 
     public event EventHandler? AppModeChanged;
     public event EventHandler? ThemePaletteChanged;
+    public event EventHandler? LanguageChanged;
+
+    public LanguagePreference Language
+    {
+        get
+        {
+            var raw = preferences.Get(LanguageKey, nameof(LanguagePreference.System));
+            return Enum.TryParse<LanguagePreference>(raw, out var language)
+                ? language
+                : LanguagePreference.System;
+        }
+        set
+        {
+            if (Language == value)
+            {
+                return;
+            }
+
+            preferences.Set(LanguageKey, value.ToString());
+            LanguageChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
 
     public AppTheme ThemeOverride
     {
