@@ -55,8 +55,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     public bool IsViewingNotes => !IsEditingNotes;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public string DisplayNotes => string.IsNullOrWhiteSpace(Notes) ? "No description." : Notes;
-    public string ItemsStoredText => $"Items stored (Total): {TotalItemCount}";
-    public string ItemTypesStoredText => $"Item types stored: {ItemTypesCount}";
+    public string ItemsStoredText => Localization.Current.Format("Items stored (Total): {0}", TotalItemCount);
+    public string ItemTypesStoredText => Localization.Current.Format("Item types stored: {0}", ItemTypesCount);
 
     partial void OnTotalItemCountChanged(int value)
         => OnPropertyChanged(nameof(ItemsStoredText));

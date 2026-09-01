@@ -23,7 +23,7 @@
                     <Label Text="{Binding StatusText}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                     <ProgressBar Progress="{Binding OverallProgress}" />
-                    <Label Text="{Binding ActiveOperationCount, StringFormat='Active operations: {0}'}"
+                    <Label Text="{Binding ActiveOperationCount, StringFormat={x:Static strings:AppResources.ActiveOperationsFormat}}"
                            TextColor="{DynamicResource OnSurface}" />
                 </VerticalStackLayout>
             </Border>
@@ -64,19 +64,19 @@
 
                                 <Label Grid.Row="0"
                                        Grid.Column="1"
-                                       Text="{Binding Succeeded, StringFormat='Success: {0}'}"
+                                       Text="{Binding Succeeded, StringFormat={x:Static strings:AppResources.SuccessFormat}}"
                                        Style="{StaticResource BodySmall}"
                                        TextColor="{DynamicResource OnSurfaceVariant}" />
 
                                 <Label Grid.Row="1"
                                        Grid.Column="0"
-                                       Text="{Binding CompletedAt, StringFormat='Completed: {0:G}'}"
+                                       Text="{Binding CompletedAt, StringFormat={x:Static strings:AppResources.CompletedFormat}}"
                                        Style="{StaticResource BodySmall}"
                                        TextColor="{DynamicResource OnSurfaceVariant}" />
 
                                 <Label Grid.Row="1"
                                        Grid.Column="1"
-                                       Text="{Binding FinalProgress, StringFormat='Progress: {0:P0}'}"
+                                       Text="{Binding FinalProgress, StringFormat={x:Static strings:AppResources.ProgressFormat}}"
                                        Style="{StaticResource BodySmall}"
                                        TextColor="{DynamicResource OnSurfaceVariant}" />
                             </Grid>

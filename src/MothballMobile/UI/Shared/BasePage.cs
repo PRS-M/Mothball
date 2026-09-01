@@ -185,7 +185,7 @@ public class BasePage : ContentPage
             Padding = new Thickness(12, 0),
             Content = new Label
             {
-                Text = "Test Ad",
+                Text = Localization.Current.Get("Test Ad"),
                 FontSize = 12,
                 TextColor = Colors.DimGray,
                 HorizontalOptions = LayoutOptions.Center,

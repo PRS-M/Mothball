@@ -126,7 +126,7 @@
 
             <controls:ListLoadingView IsVisible="False"
                                       IsLoading="{Binding IsRefreshing}"
-                                      LoadingText="Loading items...">
+                                      LoadingText="{x:Static strings:AppResources.LoadingItems}">
                 <controls:ListLoadingView.Triggers>
                     <DataTrigger TargetType="controls:ListLoadingView"
                                  Binding="{Binding IsRefreshing}"

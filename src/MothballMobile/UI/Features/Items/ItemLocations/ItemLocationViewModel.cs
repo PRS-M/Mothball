@@ -25,7 +25,7 @@ public partial class ItemLocationViewModel : ContainerWithImagesViewModelBase
     public ItemContainerAllocation Allocation { get; }
     public bool ShowQuantityManagement { get; }
 
-    public new string ItemCount => $"Quantity here: {Allocation.Quantity}";
+    public new string ItemCount => Localization.Current.Format("Quantity here: {0}", Allocation.Quantity);
 
     public Task LoadImagesAsync()
         => LoadContainerImagesAsync(clearFirst: true);

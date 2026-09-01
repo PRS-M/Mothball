@@ -241,4 +241,21 @@
   <data name="EG1" xml:space="preserve"><value>np. 1</value></data>
   <data name="Text01" xml:space="preserve"><value>{0} ({1})</value></data>
   <data name="SettingItemToZero" xml:space="preserve"><value>Ustawienie „{0}” na zero bezpowrotnie usunie przedmiot, wszystkie przypisania i jego zdjęcia. Kontynuować?</value></data>
+  <data name="LoadingItems" xml:space="preserve"><value>Ładowanie przedmiotów...</value></data>
+  <data name="LoadingContainers" xml:space="preserve"><value>Ładowanie pojemników...</value></data>
+  <data name="LoadingContainerItems" xml:space="preserve"><value>Ładowanie przedmiotów w pojemniku...</value></data>
+  <data name="ActiveOperationsFormat" xml:space="preserve"><value>Aktywne operacje: {0}</value></data>
+  <data name="SuccessFormat" xml:space="preserve"><value>Sukces: {0}</value></data>
+  <data name="CompletedFormat" xml:space="preserve"><value>Ukończono: {0:G}</value></data>
+  <data name="ProgressFormat" xml:space="preserve"><value>Postęp: {0:P0}</value></data>
+  <data name="InThisContainerFormat" xml:space="preserve"><value>W tym pojemniku: {0}</value></data>
+  <data name="TotalFormat" xml:space="preserve"><value>Łącznie: {0}</value></data>
+  <data name="AssignedFormat" xml:space="preserve"><value>Przypisane: {0}</value></data>
+  <data name="UnassignedFormat" xml:space="preserve"><value>Nieprzypisane: {0}</value></data>
+  <data name="PhotoOperationsRunning" xml:space="preserve"><value>Operacje zdjęć w tle: {0}</value></data>
+  <data name="ItemsStoredFormat" xml:space="preserve"><value>Przechowywane przedmioty: {0}</value></data>
+  <data name="QuantityHereFormat" xml:space="preserve"><value>Ilość tutaj: {0}</value></data>
+  <data name="ItemsStoredTotalFormat" xml:space="preserve"><value>Przechowywane przedmioty (łącznie): {0}</value></data>
+  <data name="ItemTypesStoredFormat" xml:space="preserve"><value>Typy przechowywanych przedmiotów: {0}</value></data>
+  <data name="TestAd" xml:space="preserve"><value>Reklama testowa</value></data>
 </root>

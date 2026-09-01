@@ -241,4 +241,21 @@
   <data name="EG1" xml:space="preserve"><value>e.g. 1</value></data>
   <data name="Text01" xml:space="preserve"><value>{0} ({1})</value></data>
   <data name="SettingItemToZero" xml:space="preserve"><value>Setting '{0}' to zero will permanently remove the item, all container assignments, and its photos. Continue?</value></data>
+  <data name="LoadingItems" xml:space="preserve"><value>Loading items...</value></data>
+  <data name="LoadingContainers" xml:space="preserve"><value>Loading containers...</value></data>
+  <data name="LoadingContainerItems" xml:space="preserve"><value>Loading container items...</value></data>
+  <data name="ActiveOperationsFormat" xml:space="preserve"><value>Active operations: {0}</value></data>
+  <data name="SuccessFormat" xml:space="preserve"><value>Success: {0}</value></data>
+  <data name="CompletedFormat" xml:space="preserve"><value>Completed: {0:G}</value></data>
+  <data name="ProgressFormat" xml:space="preserve"><value>Progress: {0:P0}</value></data>
+  <data name="InThisContainerFormat" xml:space="preserve"><value>In this container: {0}</value></data>
+  <data name="TotalFormat" xml:space="preserve"><value>Total: {0}</value></data>
+  <data name="AssignedFormat" xml:space="preserve"><value>Assigned: {0}</value></data>
+  <data name="UnassignedFormat" xml:space="preserve"><value>Unassigned: {0}</value></data>
+  <data name="PhotoOperationsRunning" xml:space="preserve"><value>{0} photo operations running in background...</value></data>
+  <data name="ItemsStoredFormat" xml:space="preserve"><value>Items stored: {0}</value></data>
+  <data name="QuantityHereFormat" xml:space="preserve"><value>Quantity here: {0}</value></data>
+  <data name="ItemsStoredTotalFormat" xml:space="preserve"><value>Items stored (Total): {0}</value></data>
+  <data name="ItemTypesStoredFormat" xml:space="preserve"><value>Item types stored: {0}</value></data>
+  <data name="TestAd" xml:space="preserve"><value>Test Ad</value></data>
 </root>

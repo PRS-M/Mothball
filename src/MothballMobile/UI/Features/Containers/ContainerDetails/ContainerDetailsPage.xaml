@@ -219,7 +219,7 @@
             <Grid>
                 <controls:ListLoadingView IsVisible="{Binding IsLoadingItems}"
                                           IsLoading="{Binding IsLoadingItems}"
-                                          LoadingText="Loading container items..." />
+                                          LoadingText="{x:Static strings:AppResources.LoadingContainerItems}" />
                 <controls:EmptyStateView Title="{x:Static strings:AppResources.NoItemsInThisContainer}"
                                          IsVisible="{Binding IsItemListEmpty}" />
             </Grid>

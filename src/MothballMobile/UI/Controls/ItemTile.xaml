@@ -79,14 +79,14 @@
                 <Label Grid.Row="1"
                        Grid.ColumnSpan="2"
                        IsVisible="{Binding Source={x:Reference this}, Path=ShowQuantity}"
-                       Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat='In this container: {0}'}"
+                       Text="{Binding Source={x:Reference this}, Path=Quantity, StringFormat={x:Static strings:AppResources.InThisContainerFormat}}"
                        TextColor="{DynamicResource OnSurfaceVariant}"
                        FontSize="11" />
 
                 <Label Grid.Row="2"
                       Grid.ColumnSpan="2"
                       IsVisible="{Binding Source={x:Reference this}, Path=ShowInventorySummary}"
-                      Text="{Binding Source={x:Reference this}, Path=TotalQuantity, StringFormat='Total: {0}'}"
+                       Text="{Binding Source={x:Reference this}, Path=TotalQuantity, StringFormat={x:Static strings:AppResources.TotalFormat}}"
                       TextColor="{DynamicResource OnSurfaceVariant}"
                       FontSize="11" />
 
@@ -94,10 +94,10 @@
                                 Grid.ColumnSpan="2"
                                 IsVisible="{Binding Source={x:Reference this}, Path=ShowInventorySummary}"
                                 Spacing="12">
-                      <Label Text="{Binding Source={x:Reference this}, Path=AssignedQuantity, StringFormat='Assigned: {0}'}"
+                      <Label Text="{Binding Source={x:Reference this}, Path=AssignedQuantity, StringFormat={x:Static strings:AppResources.AssignedFormat}}"
                           TextColor="{DynamicResource OnSurfaceVariant}"
                           FontSize="11" />
-                      <Label Text="{Binding Source={x:Reference this}, Path=UnassignedQuantity, StringFormat='Unassigned: {0}'}"
+                      <Label Text="{Binding Source={x:Reference this}, Path=UnassignedQuantity, StringFormat={x:Static strings:AppResources.UnassignedFormat}}"
                           TextColor="{DynamicResource OnSurfaceVariant}"
                           FontSize="11" />
                   </HorizontalStackLayout>

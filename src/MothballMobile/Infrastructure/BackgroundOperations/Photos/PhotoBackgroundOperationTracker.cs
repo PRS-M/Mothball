@@ -158,7 +158,7 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
         }
         else
         {
-            status = $"{count} photo operations running in background...";
+                    status = Localization.Current.Format("{0} photo operations running in background...", count);
         }
 
         PublishState(count, progress, status, bannerVisible: true);

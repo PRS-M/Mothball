@@ -18,7 +18,7 @@ public abstract class ContainerWithImagesViewModelBase : ObservableObject
 
     public string Name => Container.Name;
     public string Notes => Container.Notes;
-    public string ItemCount => $"Items stored: {Container.TotalItemQuantity}";
+    public string ItemCount => Localization.Current.Format("Items stored: {0}", Container.TotalItemQuantity);
 
     public ObservableCollection<string> ImagePaths { get; } = new();
 
