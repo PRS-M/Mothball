@@ -9,7 +9,9 @@ The implementation follows the [.NET MAUI localization guidance](https://learn.m
 | File | Purpose |
 | --- | --- |
 | `src/MothballMobile/Resources/Localization/AppResources.resx` | Default English values and the generated `AppResources` class. |
-| `src/MothballMobile/Resources/Localization/AppResources.pl.resx` | Polish values with the same resource keys. |
+| `src/MothballMobile/Resources/Localization/AppResources.pl.resx` | Reviewed Polish values with the same resource keys. |
+| `src/MothballMobile/Resources/Localization/AppResources.de.resx` | German AI-translated values; pending native-speaker review. |
+| `src/MothballMobile/Resources/Localization/AppResources.es.resx` | Spanish AI-translated values; pending native-speaker review. |
 | `src/MothballMobile/Resources/Localization/ResourceKeyMap.cs` | Maps legacy English literals used by C# presentation code to resource keys. |
 
 The default resource file is configured for strongly typed code generation in `MothballMobile.csproj`. `<NeutralLanguage>en</NeutralLanguage>` ensures a readable English fallback when no matching translation exists.
@@ -29,7 +31,7 @@ LocalizationManager.Current.Get("Save");
 LocalizationManager.Current.Format("Deleted: {0}", fileName);
 ```
 
-When adding a user-facing string, add the same named key to both `.resx` files. If C# uses the string through `LocalizationManager.Current`, also add its literal-to-key entry to `ResourceKeyMap.cs`.
+When adding a user-facing string, add the same named key to every `.resx` file. If C# uses the string through `LocalizationManager.Current`, also add its literal-to-key entry to `ResourceKeyMap.cs`. German and Spanish values are AI-generated and must retain that status until native-speaker review.
 
 ## Language preference and startup
 
@@ -38,13 +40,15 @@ When adding a user-facing string, add the same named key to both `.resx` files. 
 - `System`
 - `English`
 - `Polish`
+- `German` (`AI-Translated`)
+- `Spanish` (`AI-Translated`)
 
 `LocalizationService.SetLanguage` resolves the preference and sets both `CultureInfo.DefaultThreadCurrentCulture` / `DefaultThreadCurrentUICulture` and the current-thread equivalents. `App` applies the persisted value before `InitializeComponent()`, so generated resource properties use the selected culture while XAML is first created.
 
 Platform declarations are also required for native controls:
 
-- `Platforms/iOS/Info.plist` and `Platforms/MacCatalyst/Info.plist` declare `en` and `pl` through `CFBundleLocalizations`, with `en` as `CFBundleDevelopmentRegion`.
-- `Platforms/Windows/Package.appxmanifest` declares `en-US` and `pl-PL` resources.
+- `Platforms/iOS/Info.plist` and `Platforms/MacCatalyst/Info.plist` declare `en`, `pl`, `de`, and `es` through `CFBundleLocalizations`, with `en` as `CFBundleDevelopmentRegion`.
+- `Platforms/Windows/Package.appxmanifest` declares `en-US`, `pl-PL`, `de-DE`, and `es-ES` resources.
 
 ## Changing language while the app is running
 
@@ -59,7 +63,7 @@ Do not attempt to programmatically terminate or relaunch the application, partic
 ## Verification checklist
 
 1. Start with the device language set to English; verify English UI.
-2. Start with the device language set to Polish and select `System`; verify Polish UI from the first screen.
-3. Choose English or Polish in Settings; verify the restart notice is visible and the app remains responsive.
+2. Start with the device language set to Polish, German, or Spanish and select `System`; verify the matching UI from the first screen.
+3. Choose any language in Settings; verify the restart notice is visible and the app remains responsive.
 4. Close and reopen Mothball; verify navigation labels, page titles, controls, popups, validation, and formatted quantities use the selected language.
 5. Check iOS/Mac Catalyst and Windows packaging declarations when adding another supported language.
