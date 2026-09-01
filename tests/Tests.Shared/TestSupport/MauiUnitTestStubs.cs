@@ -65,6 +65,17 @@ namespace Microsoft.Maui.Controls
 
 namespace Microsoft.Maui.Storage
 {
+    public interface IPreferences
+    {
+        string Get(string key, string defaultValue);
+
+        bool Get(string key, bool defaultValue);
+
+        void Set(string key, string value);
+
+        void Set(string key, bool value);
+    }
+
     public interface IFilePicker
     {
         Task<FileResult?> PickAsync(PickOptions? options = null);

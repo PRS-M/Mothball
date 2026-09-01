@@ -60,7 +60,13 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/Diagnostics/IPagedListLoadDiagnostics.cs" Link="Infrastructure/Diagnostics/IPagedListLoadDiagnostics.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/AppMode.cs" Link="Infrastructure/Settings/AppMode.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/ThemePalette.cs" Link="Infrastructure/Settings/ThemePalette.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Settings/ApplicationSettings.cs" Link="Infrastructure/Settings/ApplicationSettings.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Settings/IApplicationSettings.cs" Link="Infrastructure/Settings/IApplicationSettings.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Localization/LanguagePreference.cs" Link="Infrastructure/Localization/LanguagePreference.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Localization/ILocalizationService.cs" Link="Infrastructure/Localization/ILocalizationService.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Localization/LocalizationManager.cs" Link="Infrastructure/Localization/LocalizationManager.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Localization/LocalizationService.cs" Link="Infrastructure/Localization/LocalizationService.cs" />
+    <Compile Include="../../src/MothballMobile/Resources/Localization/ResourceKeyMap.cs" Link="Resources/Localization/ResourceKeyMap.cs" />
   </ItemGroup>
 
   <ItemGroup>

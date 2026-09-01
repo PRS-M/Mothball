@@ -1,3 +1,5 @@
+using MothballMobile.Infrastructure.Localization;
+
 namespace MothballMobile.Infrastructure.Settings;
 
 /// <summary>
