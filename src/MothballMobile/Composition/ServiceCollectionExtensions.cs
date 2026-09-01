@@ -6,6 +6,7 @@ using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
 using Infrastructure.Services.Repositories;
 using Infrastructure.Services.Startup;
+using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -44,7 +45,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppErrorPresenter, AppErrorPresenter>();
         services.AddSingleton<IRetryService, RetryService>();
         services.AddSingleton<IBackgroundTaskObserver, LoggingBackgroundTaskObserver>();
+        services.AddSingleton<IPagedListLoadDiagnostics, PagedListLoadDiagnostics>();
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
+        services.AddSingleton<IInventoryChangeTracker, InventoryChangeTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();
         services.AddSingleton<IBackupSignatureSecretProvider, BackupSignatureSecretProvider>();

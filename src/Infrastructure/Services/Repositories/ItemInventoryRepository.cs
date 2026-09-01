@@ -25,16 +25,99 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
     /// <inheritdoc />
     public async Task<ItemInventory?> GetAsync(Guid itemId)
     {
-        var inventoryRow = (await inventories.WhereAsync(inventory => inventory.ItemId == itemId).ConfigureAwait(false))
-            .FirstOrDefault();
-        if (inventoryRow is null)
+        var result = await GetManyAsync([itemId]).ConfigureAwait(false);
+        return result.GetValueOrDefault(itemId);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, ItemInventory>> GetManyAsync(IReadOnlyCollection<Guid> itemIds)
+    {
+        ArgumentNullException.ThrowIfNull(itemIds);
+
+        var distinctItemIds = NormalizeItemIds(itemIds);
+        if (distinctItemIds.Count == 0)
         {
-            return null;
+            return new Dictionary<Guid, ItemInventory>();
         }
 
-        var allocations = await LoadAllocationsAsync(itemId).ConfigureAwait(false);
-        return new ItemInventory(itemId, inventoryRow.TotalQuantity, allocations);
+        var boxedItemIds = BoxIds(distinctItemIds);
+
+        var inventoryRows = await inventories
+            .WhereInAsync(nameof(DbItemInventory.ItemId), boxedItemIds)
+            .ConfigureAwait(false);
+
+        var relationRows = await LoadPositiveRelationsAsync(boxedItemIds);
+        var allocationsByItem = await BuildAllocationsByItemAsync(relationRows);
+
+        return MapInventories(inventoryRows, allocationsByItem);
     }
+
+    private static List<Guid> NormalizeItemIds(IReadOnlyCollection<Guid> itemIds)
+        => itemIds
+            .Where(itemId => itemId != Guid.Empty)
+            .Distinct()
+            .ToList();
+
+    private static List<object> BoxIds(IEnumerable<Guid> ids)
+        => ids.Select(id => (object)id).ToList();
+
+    private async Task<List<DbItemContainerRelation>> LoadPositiveRelationsAsync(
+        IReadOnlyCollection<object> boxedItemIds)
+        => (await relations
+                .WhereInAsync(nameof(DbItemContainerRelation.ItemId), boxedItemIds)
+                .ConfigureAwait(false))
+            .Where(relation => relation.Quantity > 0)
+            .ToList();
+
+    private async Task<IReadOnlyDictionary<Guid, IReadOnlyList<ItemContainerAllocation>>> BuildAllocationsByItemAsync(
+        IReadOnlyCollection<DbItemContainerRelation> relationRows)
+    {
+        var containersById = await LoadContainersByIdAsync(relationRows);
+
+        return relationRows
+            .GroupBy(relation => new { relation.ItemId, relation.ContainerId })
+            .Where(group => containersById.ContainsKey(group.Key.ContainerId))
+            .GroupBy(group => group.Key.ItemId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<ItemContainerAllocation>)group
+                    .Select(relationGroup => new ItemContainerAllocation(
+                        relationGroup.Key.ContainerId,
+                        containersById[relationGroup.Key.ContainerId].Name,
+                        relationGroup.Sum(relation => relation.Quantity)))
+                    .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
+                    .ToList());
+    }
+
+    private async Task<IReadOnlyDictionary<Guid, DbContainer>> LoadContainersByIdAsync(
+        IReadOnlyCollection<DbItemContainerRelation> relationRows)
+    {
+        var containerIds = relationRows
+            .Select(relation => relation.ContainerId)
+            .Distinct()
+            .ToList();
+
+        if (containerIds.Count == 0)
+        {
+            return new Dictionary<Guid, DbContainer>();
+        }
+
+        var rows = await containers
+            .WhereInAsync(nameof(DbContainer.ContainerId), BoxIds(containerIds))
+            .ConfigureAwait(false);
+
+        return rows.ToDictionary(container => container.ContainerId);
+    }
+
+    private static IReadOnlyDictionary<Guid, ItemInventory> MapInventories(
+        IEnumerable<DbItemInventory> inventoryRows,
+        IReadOnlyDictionary<Guid, IReadOnlyList<ItemContainerAllocation>> allocationsByItem)
+        => inventoryRows.ToDictionary(
+            inventory => inventory.ItemId,
+            inventory => new ItemInventory(
+                inventory.ItemId,
+                inventory.TotalQuantity,
+                allocationsByItem.GetValueOrDefault(inventory.ItemId) ?? []));
 
     /// <inheritdoc />
     public Task InsertAsync(ItemInventory inventory)
@@ -74,26 +157,4 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
             scope.DeleteItemInventory(itemId);
         });
 
-    private async Task<IReadOnlyList<ItemContainerAllocation>> LoadAllocationsAsync(Guid itemId)
-    {
-        var relationRows = (await relations.WhereAsync(
-                relation => relation.ItemId == itemId && relation.Quantity > 0).ConfigureAwait(false))
-            .GroupBy(relation => relation.ContainerId)
-            .Select(group => new { ContainerId = group.Key, Quantity = group.Sum(row => row.Quantity) })
-            .ToList();
-
-        var result = new List<ItemContainerAllocation>(relationRows.Count);
-        foreach (var relation in relationRows)
-        {
-            var container = await containers.GetAsync(relation.ContainerId.ToString()).ConfigureAwait(false);
-            if (container is not null)
-            {
-                result.Add(new ItemContainerAllocation(relation.ContainerId, container.Name, relation.Quantity));
-            }
-        }
-
-        return result
-            .OrderBy(allocation => allocation.ContainerName, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-    }
 }

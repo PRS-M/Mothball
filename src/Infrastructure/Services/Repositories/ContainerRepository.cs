@@ -51,15 +51,26 @@ public class ContainerRepository : IContainerRepository
     public Task<List<Container>> QueryAsync(ContainerListSpecification specification)
     {
         var (term, hasSearch) = RepositoryQueryHelpers.NormalizeSearch(specification.SearchTerm);
+        var hasPaging = RepositoryQueryHelpers.TryGetPaging(
+            specification.PageNumber,
+            specification.PageSize,
+            out var pageNumberValue,
+            out var pageSizeValue);
 
         if (hasSearch)
         {
             return specification.Filter == ContainerQueryFilter.Empty
-                ? SearchEmptyAsync(term!)
-                : SearchAsync(term!);
+                ? SearchEmptyAsync(
+                    term!,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null)
+                : SearchAsync(
+                    term!,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null);
         }
 
-        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        if (hasPaging)
         {
             return specification.Filter == ContainerQueryFilter.Empty
                 ? GetEmptyAsync(pageNumberValue, pageSizeValue)
@@ -89,24 +100,55 @@ public class ContainerRepository : IContainerRepository
         return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
     }
 
-    private async Task<List<Container>> SearchAsync(string searchTerm)
+    private async Task<List<Container>> SearchAsync(
+        string searchTerm,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         string pattern = $"%{searchTerm}%";
+        var hasPaging = RepositoryQueryHelpers.TryGetPaging(
+            pageNumber,
+            pageSize,
+            out var pageNumberValue,
+            out var pageSizeValue);
+        if (hasPaging)
+        {
+            RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
+        }
+        string pagingClause = hasPaging ? " LIMIT ? OFFSET ?" : string.Empty;
+        object[] args = hasPaging
+            ? [pattern, pattern, pageSizeValue, RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue)]
+            : [pattern, pattern];
 
         List<DbContainer> dbContainers = await containers.QueryAsync(
             $@"SELECT * FROM {nameof(DbContainer)}
                WHERE Name LIKE ? COLLATE NOCASE
                   OR Notes LIKE ? COLLATE NOCASE
-               ORDER BY Name COLLATE NOCASE",
-            pattern,
-            pattern);
+               ORDER BY Name COLLATE NOCASE{pagingClause}",
+            args);
 
         return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
     }
 
-    private async Task<List<Container>> SearchEmptyAsync(string searchTerm)
+    private async Task<List<Container>> SearchEmptyAsync(
+        string searchTerm,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         string pattern = $"%{searchTerm}%";
+        var hasPaging = RepositoryQueryHelpers.TryGetPaging(
+            pageNumber,
+            pageSize,
+            out var pageNumberValue,
+            out var pageSizeValue);
+        if (hasPaging)
+        {
+            RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
+        }
+        string pagingClause = hasPaging ? " LIMIT ? OFFSET ?" : string.Empty;
+        object[] args = hasPaging
+            ? [pattern, pattern, pageSizeValue, RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue)]
+            : [pattern, pattern];
 
         List<DbContainer> dbContainers = await containers.QueryAsync(
             $@"SELECT c.* FROM {nameof(DbContainer)} c
@@ -115,9 +157,8 @@ public class ContainerRepository : IContainerRepository
                  AND NOT EXISTS (
                    SELECT 1 FROM {nameof(DbItemContainerRelation)} r
                    WHERE r.ContainerId = c.ContainerId)
-               ORDER BY c.Name COLLATE NOCASE",
-            pattern,
-            pattern);
+               ORDER BY c.Name COLLATE NOCASE{pagingClause}",
+            args);
 
         return await MapContainersWithPhotosAndRelationsAsync(dbContainers);
     }

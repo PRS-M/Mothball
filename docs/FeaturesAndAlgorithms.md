@@ -40,25 +40,32 @@ Containers represent physical places such as boxes, shelves, drawers, or cabinet
 
 ### Search and paging algorithm
 
-Container and item lists use `PagedListViewModelBase<TSource, TViewModel>`. A search creates a filtered result through a specification; normal browsing loads fixed-size pages.
+Container and item lists use `PagedListViewModelBase<TSource, TViewModel>`. Browsing and filtered search both load fixed-size pages.
 
 ```text
 initialize:
-  ensure development data when applicable
+  return immediately when the cached list matches the inventory revision
   clear displayed items
   request page 0
 
 load next page:
+  stop when another load is already running
   stop when the previous result was shorter than page size
-  request current page
+  request the current browse or search page
   map each source result to a row view model
   append mapped rows
   increment page number
 ```
 
-The final short page, or an empty page, marks the list as exhausted. Search paths can replace the collection with a complete filtered result set, disabling further paging. This keeps incremental scrolling simple while allowing responsive, debounced search.
+The final short page, or an empty page, marks the list as exhausted. Search text is trimmed, debounced, and retained as the active query while subsequent pages load. Clearing the query resets the collection and returns to paged browsing. The busy guard prevents overlapping requests from appending the same page twice.
 
-`ContainerListViewModel` and `ItemsListViewModel` both add debounced search on top of `PagedListViewModelBase` through a shared intermediate base, `SearchablePagedListViewModelBase<TSource, TViewModel>` (`src/MothballMobile/UI/Shared/SearchablePagedListViewModelBase.cs`). It owns the `Query` property and the debounce wiring (`OnQueryChanged`, `SearchCommand`), so a new searchable paged list only needs to implement `LoadQuerySearchAsync`, `SearchOperationName`, and the `PagedListViewModelBase` abstract members. `RefreshCommand` (`=> InitializeAsync()`) lives on `PagedListViewModelBase` itself, since every paged list — searchable or not — needs a pull-to-refresh reload. A filter change (e.g. `SelectedFilter`) should re-run the existing `SearchAsync`/`backgroundTasks` pair directly rather than duplicating the debounce logic.
+`ContainerListViewModel` and `ItemsListViewModel` both add debounced search on top of `PagedListViewModelBase` through `SearchablePagedListViewModelBase<TSource, TViewModel>` (`src/MothballMobile/UI/Shared/SearchablePagedListViewModelBase.cs`). It owns the `Query` property, active query, and debounce wiring. A searchable list implements `LoadPageAsync`, `SearchOperationName`, and the normal mapping members. Filter changes re-run the shared search path so the active query and paging state remain consistent.
+
+List contents survive ordinary page appearances. `IInventoryChangeTracker` advances a process-local revision after successful inventory mutations and restores; a list reloads when its cached revision is stale. Pull-to-refresh always forces a reload regardless of the revision.
+
+Each page load emits a structured `PagedListLoadMeasurement` through `IPagedListLoadDiagnostics`. The log separates repository query time, synchronous row-population time, and total time, and identifies the list, filter/browse variant, page, page size, and result count. Query text is deliberately excluded. Image paths are resolved while each row view model is constructed, before the row is added, and are included in population time. MAUI image decoding and rendering happen later and are not included. Use these measurements to decide whether further work belongs in persistence, view-model population, or MAUI rendering.
+
+Container details uses two-phase initialization. It publishes the container summary and photo paths first, allowing the dynamic-aspect-ratio carousel to render and size itself while the initial five-item query is in flight. Item rows are appended only after that query completes; a footer indicates that they are still loading. This keeps item-row creation and thumbnail rendering from blocking the first useful container header.
 
 ## Items
 
@@ -176,14 +183,16 @@ return remaining allocations, assigned quantity, unassigned quantity,
 
 The carried remainder is important: a requested withdrawal may span multiple locations, but it must be explicitly allocated across them. This avoids silently subtracting stock from an arbitrary container. Invalid allocations, negative quantities, and plans that cannot reach the requested total are rejected before persistence.
 
-The planner first calculates the minimum assigned withdrawal:
+Decrease priority depends on where the edit starts. The general item list consumes available unassigned stock first because no container is in context. If the requested decrease exceeds unassigned stock, the remaining amount enters the interactive container-withdrawal workflow. Item details retains the container-aware assigned-first workflow described below, including its preferred container when one is present in navigation context.
+
+The assigned-first planner calculates the minimum assigned withdrawal:
 
 ```text
 required assigned withdrawal =
   min(current total - requested total, assigned quantity)
 ```
 
-This gives assigned stock priority. For example, if the current total is 10, the requested total is 8, and five units are assigned to containers, two assigned units must be withdrawn. If the requested reduction is larger than all assigned stock, all assigned stock is withdrawn and the remainder comes from unassigned stock.
+For example, if the current total is 10, the requested total is 8, and five units are assigned to containers, an assigned-first edit withdraws two assigned units. If the requested reduction is larger than all assigned stock, all assigned stock is withdrawn and the remainder comes from unassigned stock.
 
 When a selected container does not contain enough stock, the planner removes what is available and carries the remainder forward:
 

@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
-using Infrastructure.Services;
 
 namespace MothballMobile.UI.Features.Containers.ContainersList;
 
@@ -20,8 +19,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     private readonly INavigationService nav;
     private readonly IContainerListQueryHandler containerListQueries;
     private readonly IApplicationSettings applicationSettings;
-
-    private readonly DemoDataSeeder? demoSeeder; // optional in debug
+    private readonly IInventoryChangeTracker inventoryChanges;
 
     private ContainerListFilter selectedFilter = ContainerListFilter.All;
 
@@ -47,57 +45,37 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
         IContainerListQueryHandler containerListQueries,
         INavigationService nav,
         IApplicationSettings applicationSettings,
+        IInventoryChangeTracker inventoryChanges,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
-        DemoDataSeeder? demoSeeder = null)
-        : base(backgroundTasks, debouncer, pageSize: 10)
+        IPagedListLoadDiagnostics? loadDiagnostics = null)
+        : base(backgroundTasks, debouncer, pageSize: 10, loadDiagnostics: loadDiagnostics)
     {
         this.imagePaths = imagePaths;
         this.containerListQueries = containerListQueries;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
-        this.demoSeeder = demoSeeder;
+        this.inventoryChanges = inventoryChanges;
     }
 
     protected override string SearchOperationName => "Search containers";
+    protected override long DataRevision => inventoryChanges.Revision;
+    protected override string LoadVariant => $"{SelectedFilter}:{base.LoadVariant}";
 
     public ObservableCollection<ContainerViewModel> Containers => Items;
 
-    /// <inheritdoc />
-    protected override async Task EnsureDummyData()
-    {
-        if (demoSeeder is not null)
-        {
-            await demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
-            await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
-        }
-    }
-
-    protected override async Task<List<Container>> LoadAsync(int pageNumber, int pageSize)
-        => await containerListQueries.QueryAsync(IsEmptyFilterSelected(), pageNumber: pageNumber, pageSize: pageSize);
+    protected override Task<List<Container>> LoadPageAsync(string? query, int pageNumber, int pageSize)
+        => containerListQueries.QueryAsync(
+            IsEmptyFilterSelected(),
+            query,
+            pageNumber,
+            pageSize);
 
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav, applicationSettings.IsAdvancedMode);
 
-    /// <inheritdoc />
-    protected override void OnViewModelAdded(ContainerViewModel vm)
-        => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load container thumbnail");
-
     [RelayCommand]
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
-
-    protected override async Task LoadQuerySearchAsync(string? searchQuery)
-    {
-        if (string.IsNullOrWhiteSpace(searchQuery))
-        {
-            await ReplaceWithFirstPagedAsync();
-            return;
-        }
-
-        var filtered = await containerListQueries.QueryAsync(IsEmptyFilterSelected(), searchQuery);
-
-        ReplaceWithFullResultSet(filtered);
-    }
 
     private bool IsEmptyFilterSelected()
         => SelectedFilter == ContainerListFilter.Empty;

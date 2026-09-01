@@ -87,6 +87,10 @@ public class DemoDataSeederTests
             "Containers without the seed GUID marker should not receive auto-seeded items.");
         Assert.That(createdInventories.All(inventory => inventory.TotalQuantity == 1), Is.True,
             "Each seeded item must include the quantity allocated to its seeded container.");
+        itemsRepo.Verify(repository => repository.GetAllAsync(), Times.Once);
+        inventoriesRepo.Verify(repository => repository.GetAllAsync(), Times.Once);
+        relationRepo.Verify(repository => repository.GetAllAsync(), Times.Once);
+        photosRepo.Verify(repository => repository.GetAllAsync(), Times.Once);
     }
 
     [Test]

@@ -27,20 +27,76 @@ public sealed class ItemsListViewModelTests
     }
 
     [Test]
+    public async Task InitializeAsync_PublishesRowsWithImagePathsAlreadyPopulated()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        item.AddImageItem();
+        var queries = new Mock<IItemsListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, null, 0, 10))
+            .ReturnsAsync([new InventorySnapshot(item, 1, 0, [])]);
+        var paths = new Mock<IImagePathResolver>();
+        paths.Setup(p => p.GetItemPhotoPaths(item)).Returns(["widget.jpg"]);
+        var viewModel = CreateViewModel(queries.Object, paths: paths.Object);
+        var publishedWithImage = false;
+        viewModel.Items.CollectionChanged += (_, args) =>
+            publishedWithImage = args.NewItems?[0] is ItemViewModel row
+                && row.ImagePaths.SequenceEqual(["widget.jpg"]);
+
+        await viewModel.InitializeAsync();
+
+        Assert.That(publishedWithImage, Is.True);
+    }
+
+    [Test]
     public async Task SearchCommand_WithQuery_ReplacesListWithFilteredResults()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
         var queries = new Mock<IItemsListQueryHandler>();
         queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, null, 0, 10)).ReturnsAsync([]);
-        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, "Widget", null, null))
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, "Widget", 0, 10))
             .ReturnsAsync([new InventorySnapshot(item, 1, 0, [])]);
-        var viewModel = CreateViewModel(queries.Object);
+        var diagnostics = new Mock<IPagedListLoadDiagnostics>();
+        var viewModel = CreateViewModel(queries.Object, diagnostics: diagnostics.Object);
         await viewModel.InitializeAsync();
 
         viewModel.Query = "Widget";
         await viewModel.SearchCommand.ExecuteAsync(null);
 
         Assert.That(viewModel.Items, Has.Count.EqualTo(1));
+        diagnostics.Verify(observer => observer.PageLoaded(
+            It.Is<PagedListLoadMeasurement>(measurement =>
+                measurement.Variant == "All:search"
+                && !measurement.Variant.Contains("Widget", StringComparison.Ordinal))), Times.Once);
+    }
+
+    [Test]
+    public async Task LoadNextPageCommand_DuringSearch_AppendsNextFilteredPage()
+    {
+        var firstPage = Enumerable.Range(1, 10)
+            .Select(index => new InventorySnapshot(
+                new Item(Guid.NewGuid(), $"Widget {index}", string.Empty),
+                1,
+                0,
+                []))
+            .ToList();
+        var lastItem = new InventorySnapshot(
+            new Item(Guid.NewGuid(), "Widget 11", string.Empty),
+            1,
+            0,
+            []);
+        var queries = new Mock<IItemsListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, null, 0, 10)).ReturnsAsync([]);
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, "Widget", 0, 10)).ReturnsAsync(firstPage);
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, "Widget", 1, 10)).ReturnsAsync([lastItem]);
+        var viewModel = CreateViewModel(queries.Object);
+        await viewModel.InitializeAsync();
+
+        viewModel.Query = "Widget";
+        await viewModel.SearchCommand.ExecuteAsync(null);
+        await viewModel.LoadNextPageCommand.ExecuteAsync(null);
+
+        Assert.That(viewModel.Items.Select(item => item.Name),
+            Is.EqualTo(firstPage.Select(item => item.Item.Name).Append(lastItem.Item.Name)));
     }
 
     [Test]
@@ -81,10 +137,17 @@ public sealed class ItemsListViewModelTests
     private static ItemsListViewModel CreateViewModel(
         IItemsListQueryHandler queries,
         IPopupService? popup = null,
-        IDeleteItemCommandHandler? deleteHandler = null)
+        IDeleteItemCommandHandler? deleteHandler = null,
+        IPagedListLoadDiagnostics? diagnostics = null,
+        IImagePathResolver? paths = null)
     {
-        var paths = new Mock<IImagePathResolver>();
-        paths.Setup(p => p.GetItemPhotoPaths(It.IsAny<Item>())).Returns(Array.Empty<string>());
+        if (paths is null)
+        {
+            var pathMock = new Mock<IImagePathResolver>();
+            pathMock.Setup(resolver => resolver.GetItemPhotoPaths(It.IsAny<Item>()))
+                .Returns(Array.Empty<string>());
+            paths = pathMock.Object;
+        }
         popup ??= Mock.Of<IPopupService>();
         var details = Mock.Of<IItemDetailsQueryHandler>();
         var inventoryCommands = Mock.Of<IItemInventoryCommandService>();
@@ -92,7 +155,7 @@ public sealed class ItemsListViewModelTests
         var withdrawal = new ItemInventoryWithdrawalCoordinator(inventoryCommands, popup, definitions);
 
         return new ItemsListViewModel(
-            paths.Object,
+            paths,
             queries,
             Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(),
@@ -101,6 +164,8 @@ public sealed class ItemsListViewModelTests
             deleteHandler ?? Mock.Of<IDeleteItemCommandHandler>(),
             popup,
             definitions,
-            Mock.Of<IBackgroundTaskObserver>());
+            Mock.Of<IInventoryChangeTracker>(),
+            Mock.Of<IBackgroundTaskObserver>(),
+            loadDiagnostics: diagnostics);
     }
 }

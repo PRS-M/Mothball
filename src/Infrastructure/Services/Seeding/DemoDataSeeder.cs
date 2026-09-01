@@ -117,11 +117,21 @@ public class DemoDataSeeder
             return;
         }
 
+        var allItems = await items.GetAllAsync();
+        var allInventories = await inventories.GetAllAsync();
+        var allRelations = await itemContainerRelations.GetAllAsync();
+        var allPhotos = await photos.GetAllAsync();
+
         foreach (var container in seededContainers)
         {
-            await RemoveDuplicateSeedItemsAsync(container);
+            await RemoveDuplicateSeedItemsAsync(
+                container,
+                allItems,
+                allInventories,
+                allRelations,
+                allPhotos);
 
-            var existingSeededItemNames = (await items.GetAllAsync())
+            var existingSeededItemNames = allItems
                 .Where(item => IsSeedItemForContainer(item, container))
                 .Select(item => item.Name)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -142,11 +152,16 @@ public class DemoDataSeeder
                 };
 
                 await items.InsertAsync(item);
-                await inventories.InsertAsync(new DbItemInventory
+                allItems.Add(item);
+                existingSeededItemNames.Add(itemName);
+
+                var inventory = new DbItemInventory
                 {
                     ItemId = itemId,
                     TotalQuantity = 1,
-                });
+                };
+                await inventories.InsertAsync(inventory);
+                allInventories.Add(inventory);
 
                 // Create relation
                 var relation = new DbItemContainerRelation
@@ -155,6 +170,7 @@ public class DemoDataSeeder
                     ContainerId = container.ContainerId
                 };
                 await itemContainerRelations.InsertAsync(relation);
+                allRelations.Add(relation);
 
                 if (withPhotos)
                 {
@@ -165,6 +181,7 @@ public class DemoDataSeeder
                     };
 
                     await photos.InsertAsync(img);
+                    allPhotos.Add(img);
 
                     // Use a bundled placeholder image; fall back gracefully if missing
                     try
@@ -181,13 +198,13 @@ public class DemoDataSeeder
         }
     }
 
-    private async Task RemoveDuplicateSeedItemsAsync(DbContainer container)
+    private async Task RemoveDuplicateSeedItemsAsync(
+        DbContainer container,
+        List<DbItem> allItems,
+        List<DbItemInventory> allInventories,
+        List<DbItemContainerRelation> allRelations,
+        List<DbImage> allPhotos)
     {
-        var allItems = await items.GetAllAsync();
-        var allInventories = await inventories.GetAllAsync();
-        var allRelations = await itemContainerRelations.GetAllAsync();
-        var allPhotos = await photos.GetAllAsync();
-
         var duplicateGroups = allItems
             .Where(item => IsSeedItemForContainer(item, container))
             .GroupBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
@@ -209,20 +226,24 @@ public class DemoDataSeeder
                 foreach (var relation in allRelations.Where(relation => relation.ItemId == duplicate.ItemId).ToList())
                 {
                     await itemContainerRelations.DeleteAsync(relation);
+                    allRelations.Remove(relation);
                 }
 
                 foreach (var photo in allPhotos.Where(photo => photo.OwnerUniqueId == duplicate.ItemId).ToList())
                 {
                     await photos.DeleteAsync(photo);
+                    allPhotos.Remove(photo);
                 }
 
                 var inventory = allInventories.FirstOrDefault(inventory => inventory.ItemId == duplicate.ItemId);
                 if (inventory is not null)
                 {
                     await inventories.DeleteAsync(inventory);
+                    allInventories.Remove(inventory);
                 }
 
                 await items.DeleteAsync(duplicate);
+                allItems.Remove(duplicate);
             }
         }
     }

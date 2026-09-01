@@ -12,6 +12,7 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
 {
     protected readonly IBackgroundTaskObserver backgroundTasks;
     private readonly IDebouncer debouncer;
+    private string? activeQuery;
     private bool disposed;
 
     [ObservableProperty]
@@ -20,8 +21,9 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
     protected SearchablePagedListViewModelBase(
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer,
-        int pageSize = 10)
-        : base(pageSize)
+        int pageSize = 10,
+        IPagedListLoadDiagnostics? loadDiagnostics = null)
+        : base(pageSize, loadDiagnostics)
     {
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
@@ -29,14 +31,25 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
 
     /// <summary>The background-operation label used while a search runs in the background.</summary>
     protected abstract string SearchOperationName { get; }
+    protected bool HasActiveQuery => activeQuery is not null;
+    protected override string LoadVariant => HasActiveQuery ? "search" : "browse";
 
-    /// <summary>Loads the full filtered result set for a query, or restores normal paging when the query is blank.</summary>
-    protected abstract Task LoadQuerySearchAsync(string? query);
+    /// <summary>Loads one page using the active search query.</summary>
+    protected abstract Task<List<TSource>> LoadPageAsync(string? query, int pageNumber, int pageSize);
+
+    /// <inheritdoc />
+    protected sealed override Task<List<TSource>> LoadAsync(int pageNumber, int pageSize)
+        => LoadPageAsync(activeQuery, pageNumber, pageSize);
 
     [RelayCommand]
     protected async Task SearchAsync()
     {
-        await RunCommandAsync(() => LoadQuerySearchAsync(Query));
+        var requestedQuery = string.IsNullOrWhiteSpace(Query) ? null : Query.Trim();
+        await RunCommandAsync(async () =>
+        {
+            activeQuery = requestedQuery;
+            await ReplaceWithFirstPagedAsync();
+        });
     }
 
     partial void OnQueryChanged(string value)

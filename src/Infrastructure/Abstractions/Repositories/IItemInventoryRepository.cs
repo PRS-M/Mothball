@@ -12,6 +12,13 @@ public interface IItemInventoryRepository
     /// </summary>
     /// <param name="itemId">The identifier used by the operation.</param>
     Task<ItemInventory?> GetAsync(Guid itemId);
+
+    /// <summary>
+    /// Gets inventory records for a set of items in one batch.
+    /// </summary>
+    /// <param name="itemIds">The item identifiers to load.</param>
+    Task<IReadOnlyDictionary<Guid, ItemInventory>> GetManyAsync(IReadOnlyCollection<Guid> itemIds);
+
     /// <summary>
     /// Inserts a new item inventory record.
     /// </summary>

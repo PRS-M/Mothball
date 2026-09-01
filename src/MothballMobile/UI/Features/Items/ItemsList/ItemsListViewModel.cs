@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Application.Utilities;
-using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Specifications;
@@ -31,8 +30,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private readonly IDeleteItemCommandHandler deleteItemHandler;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
-    private readonly DemoDataSeeder? demoSeeder;
-
+    private readonly IInventoryChangeTracker inventoryChanges;
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
 
     public static ReadOnlyCollection<ItemsListFilter> AvailableFilters { get; } = EnumValues.CreateReadOnly<ItemsListFilter>();
@@ -62,10 +60,11 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         IDeleteItemCommandHandler deleteItemHandler,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
+        IInventoryChangeTracker inventoryChanges,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
-        DemoDataSeeder? demoSeeder = null)
-        : base(backgroundTasks, debouncer)
+        IPagedListLoadDiagnostics? loadDiagnostics = null)
+        : base(backgroundTasks, debouncer, loadDiagnostics: loadDiagnostics)
     {
         this.paths = paths;
         this.itemListQueries = itemListQueries;
@@ -76,19 +75,12 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         this.deleteItemHandler = deleteItemHandler;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
-        this.demoSeeder = demoSeeder;
+        this.inventoryChanges = inventoryChanges;
     }
 
     protected override string SearchOperationName => "Search items";
-
-    /// <inheritdoc />
-    protected override async Task EnsureDummyData()
-    {
-        if (demoSeeder is not null)
-        {
-            await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
-        }
-    }
+    protected override long DataRevision => inventoryChanges.Revision;
+    protected override string LoadVariant => $"{SelectedFilter}:{base.LoadVariant}";
 
     protected override ItemViewModel MapToViewModel(InventorySnapshot source)
     {
@@ -115,27 +107,12 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
     }
 
-    protected override async Task LoadQuerySearchAsync(string? query)
-    {
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            // restore normal paging
-            await ReplaceWithFirstPagedAsync();
-        }
-        else
-        {
-            var items = await itemListQueries.QueryAsync(GetItemQueryFilter(), query);
-
-            ReplaceWithFullResultSet(items);
-        }
-    }
-
-    /// <inheritdoc />
-    protected override void OnViewModelAdded(ItemViewModel vm)
-        => vm.LoadImageAsync().FireAndForget(backgroundTasks, "Load item thumbnail");
-
-    protected override Task<List<InventorySnapshot>> LoadAsync(int pageNumber, int pageSize)
-        => itemListQueries.QueryAsync(GetItemQueryFilter(), pageNumber: pageNumber, pageSize: pageSize);
+    protected override Task<List<InventorySnapshot>> LoadPageAsync(string? query, int pageNumber, int pageSize)
+        => itemListQueries.QueryAsync(
+            GetItemQueryFilter(),
+            query,
+            pageNumber,
+            pageSize);
 
     private ItemQueryFilter GetItemQueryFilter()
         => SelectedFilter switch
@@ -149,7 +126,9 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     {
         try
         {
-            var execution = await quantityEditCoordinator.ExecuteAsync(item.Item.ItemId);
+            var execution = await quantityEditCoordinator.ExecuteAsync(
+                item.Item.ItemId,
+                decreasePreference: ItemQuantityDecreasePreference.UnassignedFirst);
             ApplyInventoryUpdate(item, execution?.Update, execution?.Inventory);
         }
         catch (Exception ex)

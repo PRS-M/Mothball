@@ -1,8 +1,15 @@
 using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Inventory;
 using MothballMobile.UI.Features.Items.ItemDetails;
 
 namespace MothballMobile.UI.Features.Items.Quantity;
+
+public enum ItemQuantityDecreasePreference
+{
+    AssignedFirst,
+    UnassignedFirst,
+}
 
 public sealed class ItemQuantityEditCoordinator
 {
@@ -28,7 +35,8 @@ public sealed class ItemQuantityEditCoordinator
 
     public async Task<ItemQuantityEditExecutionResult?> ExecuteAsync(
         Guid itemId,
-        Guid? preferredContainerId = null)
+        Guid? preferredContainerId = null,
+        ItemQuantityDecreasePreference decreasePreference = ItemQuantityDecreasePreference.AssignedFirst)
     {
         var details = await itemDetailsQueries.GetDetailsAsync(itemId.ToString());
         if (details is null)
@@ -66,10 +74,12 @@ public sealed class ItemQuantityEditCoordinator
                 ToSnapshot(inventory, increased, inventory.Allocations));
         }
 
-        var withdrawal = await withdrawalCoordinator.ExecuteAsync(
-            inventory,
-            selectedQuantity.Value,
-            preferredContainerId);
+        var withdrawal = decreasePreference == ItemQuantityDecreasePreference.UnassignedFirst
+            ? await ExecuteUnassignedFirstAsync(inventory, selectedQuantity.Value, preferredContainerId)
+            : await withdrawalCoordinator.ExecuteAsync(
+                inventory,
+                selectedQuantity.Value,
+                preferredContainerId);
         return withdrawal is null
             ? null
             : new ItemQuantityEditExecutionResult(
@@ -77,6 +87,34 @@ public sealed class ItemQuantityEditCoordinator
                 withdrawal.Update.ItemDeleted
                     ? null
                     : ToSnapshot(inventory, withdrawal.Update, withdrawal.Plan.Allocations));
+    }
+
+    private async Task<ItemInventoryWithdrawalExecutionResult?> ExecuteUnassignedFirstAsync(
+        InventorySnapshot inventory,
+        int requestedTotal,
+        Guid? preferredContainerId)
+    {
+        int requestedDecrease = inventory.TotalQuantity - requestedTotal;
+        int unassignedWithdrawal = Math.Min(requestedDecrease, inventory.UnassignedQuantity);
+        if (unassignedWithdrawal == requestedDecrease)
+        {
+            var plan = ItemInventoryConsumptionPlanner.Plan(
+                inventory,
+                ItemInventoryConsumptionSource.FromUnassigned(),
+                unassignedWithdrawal);
+            var update = await inventoryCommands.ApplyWithdrawalAsync(inventory.Item.ItemId, plan);
+            return new ItemInventoryWithdrawalExecutionResult(plan, update);
+        }
+
+        var inventoryAfterUnassignedWithdrawal = new InventorySnapshot(
+            inventory.Item,
+            inventory.TotalQuantity - unassignedWithdrawal,
+            inventory.AssignedQuantity,
+            inventory.Allocations);
+        return await withdrawalCoordinator.ExecuteAsync(
+            inventoryAfterUnassignedWithdrawal,
+            requestedTotal,
+            preferredContainerId);
     }
 
     private static InventorySnapshot ToSnapshot(

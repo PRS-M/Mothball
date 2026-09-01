@@ -10,11 +10,11 @@ public class DbItemContainerRelation : IValidatableDbModel
     public int Id { get; set; }
 
     // Foreign key to DbItem.UniqueId
-    [Indexed, ForeignKey(nameof(DbItem))]
+    [Indexed, Indexed("UX_DbItemContainerRelation_ItemId_ContainerId", 1, Unique = true), ForeignKey(nameof(DbItem))]
     public Guid ItemId { get; set; }
 
     // Foreign key to DbContainer.UniqueId
-    [Indexed, ForeignKey(nameof(DbContainer))]
+    [Indexed, Indexed("UX_DbItemContainerRelation_ItemId_ContainerId", 2, Unique = true), ForeignKey(nameof(DbContainer))]
     public Guid ContainerId { get; set; }
 
     [NotNull]

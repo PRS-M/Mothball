@@ -8,10 +8,14 @@ namespace Infrastructure.Services.Restore;
 public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreService
 {
     private readonly JsonInventoryStore store;
+    private readonly IInventoryChangeTracker? inventoryChanges;
 
-    public JsonInventoryBackupRestoreService(JsonInventoryStore store)
+    public JsonInventoryBackupRestoreService(
+        JsonInventoryStore store,
+        IInventoryChangeTracker? inventoryChanges = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.inventoryChanges = inventoryChanges;
     }
 
     /// <inheritdoc />
@@ -52,6 +56,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
             return Task.CompletedTask;
         }).ConfigureAwait(false);
 
+        inventoryChanges?.MarkChanged();
         return result;
     }
 

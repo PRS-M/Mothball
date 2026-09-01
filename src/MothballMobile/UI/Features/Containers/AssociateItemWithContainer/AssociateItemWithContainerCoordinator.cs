@@ -1,5 +1,4 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
-using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
@@ -10,7 +9,6 @@ public sealed class AssociateItemWithContainerCoordinator : IDisposable
     private readonly IContainerAssociationQueryHandler associationQueries;
     private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
-    private readonly DemoDataSeeder? demoSeeder;
     private readonly IDebouncer debouncer;
 
     public AssociateItemWithContainerCoordinator(
@@ -18,19 +16,14 @@ public sealed class AssociateItemWithContainerCoordinator : IDisposable
         IContainerAssociationQueryHandler associationQueries,
         IApplicationSettings applicationSettings,
         IBackgroundTaskObserver backgroundTasks,
-        IDebouncer? debouncer = null,
-        DemoDataSeeder? demoSeeder = null)
+        IDebouncer? debouncer = null)
     {
         this.imagePaths = imagePaths;
         this.associationQueries = associationQueries;
         this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
         this.debouncer = debouncer ?? new Debouncer(300, NullLogger<Debouncer>.Instance);
-        this.demoSeeder = demoSeeder;
     }
-
-    public Task EnsureDummyDataAsync()
-        => demoSeeder?.EnsureContainersAsync(minContainers: 5, withPhotos: true) ?? Task.CompletedTask;
 
     public Task<List<Container>> LoadPageAsync(int pageNumber, int pageSize)
         => associationQueries.QueryContainersAsync(pageNumber, pageSize);

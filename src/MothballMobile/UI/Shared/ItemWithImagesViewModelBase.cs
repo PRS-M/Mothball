@@ -47,7 +47,7 @@ public abstract class ItemWithImagesViewModelBase : ObservableObject
     /// Loads this item's photo paths into <see cref="ImagePaths"/>.
     /// </summary>
     /// <param name="clearFirst">Whether to clear existing paths before loading.</param>
-    protected Task LoadItemImagesAsync(bool clearFirst = true)
+    protected void LoadItemImages(bool clearFirst = true)
     {
         if (clearFirst)
         {
@@ -58,7 +58,11 @@ public abstract class ItemWithImagesViewModelBase : ObservableObject
         {
             ImagePaths.Add(imagePath);
         }
+    }
 
+    protected Task LoadItemImagesAsync(bool clearFirst = true)
+    {
+        LoadItemImages(clearFirst);
         return Task.CompletedTask;
     }
 }

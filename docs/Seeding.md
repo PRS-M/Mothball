@@ -1,142 +1,70 @@
 # Seeding in Mothball
 
-This document explains where demo seeding is triggered, when it runs, and why new user-created containers should remain empty.
+This document describes development demo-data seeding and its startup boundary.
 
-## TL;DR
+## Trigger and lifetime
 
-- Seeding is **development-only** (`#if DEBUG`).
-- Seeding is **not** triggered by app startup orchestrator.
-- Seeding is triggered by pages whose BindingContext is a paged view model and implements `IInitializable`.
-- `EnsureDummyData()` is called from `PagedListViewModelBase.InitializeAsync()` before the first page load.
-- User-created containers are now excluded from item auto-seeding.
-- Seed recognition uses a fixed GUID marker token in `Notes`, not only a phrase prefix.
+`DemoDataSeeder` is registered only in Debug builds. `AppStartupOrchestrator.StartAsync()` initializes the selected persistence backend and then invokes the seeder before the main shell is shown:
 
-## Core Trigger Chain
+1. Initialize SQLite or the JSON operational store.
+2. Ensure at least five demo containers exist.
+3. Ensure each seeded container has at least three demo items.
+4. Continue application startup.
 
-1. A page deriving from `BasePage` appears.
-2. `BasePage.OnAppearing()` checks whether `BindingContext` implements `IInitializable`.
-3. If yes, it calls `InitializeAsync()`.
-4. For paged list view models, `InitializeAsync()` calls `EnsureDummyData()`.
-5. Then paging resets and the first page of data is loaded.
+List pages do not seed data. `PagedListViewModelBase.InitializeAsync()` only decides whether its cached list is current and loads the first page when a reload is needed. Navigating between the item and container lists therefore does not scan or mutate the database for demo data.
 
-### Relevant files
+Relevant files:
 
-- `BasePage` lifecycle trigger: [src/MothballMobile/UI/Shared/BasePage.cs](../src/MothballMobile/UI/Shared/BasePage.cs)
-- `EnsureDummyData` call site: [src/MothballMobile/UI/Shared/PagedListViewModelBase.cs](../src/MothballMobile/UI/Shared/PagedListViewModelBase.cs)
+- Startup coordination: [src/MothballMobile/Infrastructure/Startup/AppStartupOrchestrator.cs](../src/MothballMobile/Infrastructure/Startup/AppStartupOrchestrator.cs)
+- Debug registration: [src/MothballMobile/Composition/ServiceCollectionExtensions.cs](../src/MothballMobile/Composition/ServiceCollectionExtensions.cs)
+- Seeder implementation: [src/Infrastructure/Services/Seeding/DemoDataSeeder.cs](../src/Infrastructure/Services/Seeding/DemoDataSeeder.cs)
 
-## Where `EnsureDummyData()` is overridden
+## Seeder behavior
 
-### 1) Containers list
+### Containers
 
-File: [src/MothballMobile/UI/Features/Containers/ContainersList/ContainerListViewModel.cs](../src/MothballMobile/UI/Features/Containers/ContainersList/ContainerListViewModel.cs)
+`EnsureContainersAsync(minContainers, withPhotos)` reads the existing containers and creates only the number needed to reach `minContainers`. Seeded containers receive a marker in `Notes`:
 
-Behavior:
-- Calls `EnsureContainersAsync(minContainers: 5, withPhotos: true)`
-- Calls `EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true)`
+```text
+[SEED-CONTAINER-MARKER:4f3c5d11-2f9b-44b3-9e55-2e0f1ea7a8d2]
+```
 
-When:
-- Whenever the Containers page appears and this VM initializes.
+When photos are enabled, the seeder also creates image metadata and attempts to copy the bundled container image.
 
-### 2) Items list
+### Items
 
-File: [src/MothballMobile/UI/Features/Items/ItemsList/ItemsListViewModel.cs](../src/MothballMobile/UI/Features/Items/ItemsList/ItemsListViewModel.cs)
+`EnsureItemsAsync(minItemsPerContainer, withPhotos)` ensures containers exist and then operates only on containers carrying the exact seed marker. It fills each seeded container up to the requested number of item relations. User-created containers are excluded and remain empty until the user explicitly assigns an item.
 
-Behavior:
-- Calls `EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true)`
+The seeder reuses an existing seeded item by name when possible, including an item that has become unassigned, instead of creating another item with the same seeded name. When photos are enabled, it creates image metadata and attempts to copy the bundled item image.
 
-When:
-- Whenever the Items page appears.
-- Also when `RefreshCommand` calls `InitializeAsync()`.
+## Idempotency
 
-### 3) Associate item with container
+Startup may be retried after a failure, so seeding remains idempotent:
 
-File: [src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs](../src/MothballMobile/UI/Features/Containers/AssociateItemWithContainer/AssociateItemWithContainerViewModel.cs)
+- Containers are added only until the configured minimum is reached.
+- Items are added only until each marked container reaches its configured minimum.
+- Existing seeded item names are reused.
+- User-created containers are never selected for automatic item assignment.
 
-Behavior:
-- Calls `EnsureContainersAsync(minContainers: 5, withPhotos: true)` only.
+Release builds do not register `DemoDataSeeder`; the optional orchestrator dependency is then `null`, and startup performs no demo-data work.
 
-When:
-- Whenever the associate page appears.
-
-### 4) Add existing item to container
-
-File: [src/MothballMobile/UI/Features/Containers/AddExistingItemToContainer/AddExistingItemToContainerViewModel.cs](../src/MothballMobile/UI/Features/Containers/AddExistingItemToContainer/AddExistingItemToContainerViewModel.cs)
-
-Behavior:
-- `EnsureDummyData()` returns completed task.
-- No seeding.
-
-## Debug vs Release
-
-`DemoDataSeeder` is only registered in DI in DEBUG:
-
-- Registration: [src/MothballMobile/Composition/ServiceCollectionExtensions.cs](../src/MothballMobile/Composition/ServiceCollectionExtensions.cs)
-
-Meaning:
-- **Debug build**: seeder instance is injected and seeding can run.
-- **Release build**: seeder is not registered, injected parameter is `null`, and each `EnsureDummyData` block skips seeding.
-
-## What `DemoDataSeeder` actually does
-
-File: [src/Infrastructure/Services/Seeding/DemoDataSeeder.cs](../src/Infrastructure/Services/Seeding/DemoDataSeeder.cs)
-
-### `EnsureContainersAsync(minContainers, withPhotos)`
-
-- Ensures repository/table initialization.
-- Reads all containers.
-- If current count is below `minContainers`, creates missing containers.
-- New seeded containers get:
-  - `Name = "Container N"`
-    - `Notes = "Seeded notes for container ... [SEED-CONTAINER-MARKER:4f3c5d11-2f9b-44b3-9e55-2e0f1ea7a8d2]"`
-- Optionally adds one photo entry + copies `container.png`.
-
-### `EnsureItemsAsync(minItemsPerContainer, withPhotos)`
-
-- Ensures table initialization.
-- Ensures there are containers (creates a few if needed).
-- **Important current behavior**: seeds items only for containers recognized as seeded containers.
-- For each seeded container, ensures at least `minItemsPerContainer` relations.
-- Optionally adds one photo per seeded item + attempts to copy `mothball_logo.png`.
-
-Seeded-container recognition:
-- `container.Notes` contains `[SEED-CONTAINER-MARKER:4f3c5d11-2f9b-44b3-9e55-2e0f1ea7a8d2]`.
-- A manual note that only copies the text phrase is **not** enough.
-
-## Why the bug happened before
-
-Before the fix, `EnsureItemsAsync()` iterated over all containers, including user-created ones. Since list pages call `EnsureDummyData()` during initialization, simply returning to a list could backfill new containers up to 3 items.
-
-## Why new containers are empty now
-
-Now `EnsureItemsAsync()` filters to seeded containers only. User-created containers are not in that set, so they remain empty until a user explicitly adds items.
-
-## Idempotency and repeated triggers
-
-Seeding can be triggered multiple times in debug because page initialization can happen multiple times. This is expected.
-
-Why it does not grow infinitely:
-- Container seeding only fills up to `minContainers`.
-- Item seeding only fills seeded containers up to `minItemsPerContainer`.
-- Once limits are met, subsequent calls do no additional inserts.
-
-## Sequence Diagram
+## Sequence
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Page as BasePage.OnAppearing
-    participant VM as PagedListViewModelBase.InitializeAsync
-    participant Seeder as DemoDataSeeder
-    participant Repo as Repositories
+    participant App
+    participant Startup as AppStartupOrchestrator
+    participant Store as Persistence initializer
+    participant Seeder as DemoDataSeeder (Debug only)
+    participant Shell
 
-    User->>Page: Navigate to list page
-    Page->>VM: InitializeAsync() (if IInitializable)
-    VM->>VM: EnsureDummyData()
-    alt DEBUG and DemoDataSeeder injected
-        VM->>Seeder: EnsureContainersAsync / EnsureItemsAsync
-        Seeder->>Repo: Check counts and insert only missing demo data
-    else RELEASE or no seeder
-        VM-->>VM: No-op
+    App->>Startup: StartAsync()
+    Startup->>Store: InitializeAsync()
+    Store-->>Startup: Ready
+    opt DemoDataSeeder is registered
+        Startup->>Seeder: EnsureContainersAsync(5, photos: true)
+        Startup->>Seeder: EnsureItemsAsync(3, photos: true)
     end
-    VM->>Repo: Load first paged dataset
+    Startup-->>App: Startup complete
+    App->>Shell: Show main UI
 ```

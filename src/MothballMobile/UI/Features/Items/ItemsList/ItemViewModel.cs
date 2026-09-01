@@ -28,14 +28,10 @@ public partial class ItemViewModel : ItemWithImagesViewModelBase
         this.editQuantity = editQuantity;
         this.use = use;
         this.delete = delete;
+        LoadItemImages();
     }
 
     public bool ShowQuantityManagement { get; }
-
-    public Task LoadImageAsync()
-    {
-        return LoadItemImagesAsync(clearFirst: true);
-    }
 
     [RelayCommand]
     private Task NavigateToItemDetailsAsync()

@@ -60,15 +60,26 @@ public sealed class JsonContainerRepository : IContainerRepository
     public Task<List<Container>> QueryAsync(ContainerListSpecification specification)
     {
         var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
+        var hasPaging = RepositoryQueryHelpers.TryGetPaging(
+            specification.PageNumber,
+            specification.PageSize,
+            out var pageNumberValue,
+            out var pageSizeValue);
 
         if (hasSearch)
         {
             return specification.Filter == ContainerQueryFilter.Empty
-                ? SearchEmptyAsync(term!)
-                : SearchAsync(term!);
+                ? SearchEmptyAsync(
+                    term!,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null)
+                : SearchAsync(
+                    term!,
+                    hasPaging ? pageNumberValue : null,
+                    hasPaging ? pageSizeValue : null);
         }
 
-        if (RepositoryQueryHelpers.TryGetPaging(specification.PageNumber, specification.PageSize, out var pageNumberValue, out var pageSizeValue))
+        if (hasPaging)
         {
             return specification.Filter == ContainerQueryFilter.Empty
                 ? GetEmptyAsync(pageNumberValue, pageSizeValue)
@@ -98,32 +109,56 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ToList();
     }
 
-    private async Task<List<Container>> SearchAsync(string searchTerm)
+    private async Task<List<Container>> SearchAsync(
+        string searchTerm,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
         var term = searchTerm ?? string.Empty;
-
-        return state.Containers
+        IEnumerable<JsonContainerRow> query = state.Containers
             .Where(c => c.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
                 || c.Notes.Contains(term, StringComparison.OrdinalIgnoreCase))
             .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(c => c.RowId)
+            .ThenBy(c => c.RowId);
+
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
+            query = query
+                .Skip(RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue))
+                .Take(pageSizeValue);
+        }
+
+        return query
             .Select(c => MapContainer(state, c, includeRelations: true)!)
             .ToList();
     }
 
-    private async Task<List<Container>> SearchEmptyAsync(string searchTerm)
+    private async Task<List<Container>> SearchEmptyAsync(
+        string searchTerm,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
         var term = searchTerm ?? string.Empty;
         var nonEmpty = state.Relations.Select(r => r.ContainerId).ToHashSet();
-
-        return state.Containers
+        IEnumerable<JsonContainerRow> query = state.Containers
             .Where(c => !nonEmpty.Contains(c.ContainerId)
                 && (c.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
                 || c.Notes.Contains(term, StringComparison.OrdinalIgnoreCase)))
             .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(c => c.RowId)
+            .ThenBy(c => c.RowId);
+
+        if (RepositoryQueryHelpers.TryGetPaging(pageNumber, pageSize, out var pageNumberValue, out var pageSizeValue))
+        {
+            RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
+            query = query
+                .Skip(RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue))
+                .Take(pageSizeValue);
+        }
+
+        return query
             .Select(c => MapContainer(state, c, includeRelations: true)!)
             .ToList();
     }

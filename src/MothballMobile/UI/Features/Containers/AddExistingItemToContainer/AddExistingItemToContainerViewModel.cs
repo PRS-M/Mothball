@@ -45,9 +45,6 @@ public partial class AddExistingItemToContainerViewModel : PagedListViewModelBas
     }
 
     /// <inheritdoc />
-    protected override Task EnsureDummyData() => Task.CompletedTask;
-
-    /// <inheritdoc />
     protected override UnassignedItemViewModel MapToViewModel(InventorySnapshot source)
         => new(source, paths, AssignAsync, applicationSettings.IsAdvancedMode);
 

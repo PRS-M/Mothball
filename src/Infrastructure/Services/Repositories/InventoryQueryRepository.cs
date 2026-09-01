@@ -75,11 +75,11 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         ItemListSpecification specification)
     {
         var items = await itemRepo.QueryWithPhotosAsync(specification);
+        var inventories = await itemInventoryRepo.GetManyAsync(items.Select(item => item.ItemId).ToList());
         var summaries = new List<InventorySnapshot>(items.Count);
         foreach (var item in items)
         {
-            var inventory = await itemInventoryRepo.GetAsync(item.ItemId);
-            if (inventory is not null)
+            if (inventories.TryGetValue(item.ItemId, out var inventory))
             {
                 summaries.Add(CreateSnapshot(item, inventory));
             }
@@ -100,11 +100,11 @@ public class InventoryQueryRepository : IInventoryQueryRepository
             return [];
         }
 
+        var inventories = await itemInventoryRepo.GetManyAsync(items.Select(item => item.ItemId).ToList());
         var entries = new List<ContainerItemInventoryEntry>(items.Count);
         foreach (var item in items)
         {
-            var inventory = await itemInventoryRepo.GetAsync(item.ItemId);
-            if (inventory is null)
+            if (!inventories.TryGetValue(item.ItemId, out var inventory))
             {
                 continue;
             }

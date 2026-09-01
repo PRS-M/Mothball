@@ -215,8 +215,13 @@
         </CollectionView.ItemsLayout>
 
         <CollectionView.Footer>
-            <controls:EmptyStateView Title="No items in this container"
-                                     IsVisible="{Binding IsItemListEmpty}" />
+            <Grid>
+                <controls:ListLoadingView IsVisible="{Binding IsLoadingItems}"
+                                          IsLoading="{Binding IsLoadingItems}"
+                                          LoadingText="Loading container items..." />
+                <controls:EmptyStateView Title="No items in this container"
+                                         IsVisible="{Binding IsItemListEmpty}" />
+            </Grid>
         </CollectionView.Footer>
     </CollectionView>
 </views:BasePage>
