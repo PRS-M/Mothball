@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Application.Contracts;
 using CoreApp.Application.Features.Photos;
 using CoreApp.Application.Utilities;
 using CoreApp.Domain.Entities.Shared;
@@ -21,6 +22,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly PendingPhoto pendingPhoto;
     private readonly IBarcodeScanSession barcodeScanner;
+    private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IItemReceiptService itemReceipts;
 
     public static ReadOnlyCollection<BarcodeSymbology> AvailableBarcodeSymbologies { get; } = EnumValues.CreateReadOnly<BarcodeSymbology>();
 
@@ -29,7 +32,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
     public bool IsAddingToContainer => Guid.TryParse(ContainerId, out var cid) && cid != Guid.Empty;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
-    public bool ShowQuantityField => ShowQuantityManagement;
+    public bool ShowQuantityField => ShowQuantityManagement || IsReceivingExistingItem;
+    public bool IsReceivingExistingItem { get; private set; }
+    public bool IsItemMetadataEditable => !IsReceivingExistingItem;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -64,7 +69,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         ILogger<AddItemViewModel> logger,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
-        IBarcodeScanSession barcodeScanner)
+        IBarcodeScanSession barcodeScanner,
+        IInventoryQueryRepository inventoryQueries,
+        IItemReceiptService itemReceipts)
     {
         this.createItem = createItem ?? throw new ArgumentNullException(nameof(createItem));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
@@ -73,6 +80,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
         this.barcodeScanner = barcodeScanner ?? throw new ArgumentNullException(nameof(barcodeScanner));
+        this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
+        this.itemReceipts = itemReceipts ?? throw new ArgumentNullException(nameof(itemReceipts));
         pendingPhoto = new PendingPhoto(imageService ?? throw new ArgumentNullException(nameof(imageService)));
     }
 
@@ -169,6 +178,17 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         BarcodeValue = barcode.Value;
         BarcodeSymbology = barcode.Symbology;
+
+        var existingOwner = await inventoryQueries.FindBarcodeAsync(barcode.Value);
+        if (existingOwner?.OwnerKind != BarcodeOwnerKind.Item)
+        {
+            return;
+        }
+
+        Name = existingOwner.OwnerName;
+        IsReceivingExistingItem = true;
+        OnPropertyChanged(nameof(ShowQuantityField));
+        OnPropertyChanged(nameof(IsItemMetadataEditable));
     }
 
     [RelayCommand(CanExecute = nameof(CanAdd))]
@@ -183,7 +203,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         var isAddingToContainer = IsAddingToContainer;
         var parsedQuantity = 1;
-        if (ShowQuantityManagement &&
+        if ((ShowQuantityManagement || IsReceivingExistingItem) &&
             (!int.TryParse(Quantity?.Trim(), out parsedQuantity) || parsedQuantity <= 0))
         {
             ValidationMessage = LocalizationManager.Current.Get("Quantity must be a positive number.");
@@ -192,35 +212,62 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         await RunCommandAsync(async () =>
         {
-            Guid? cid = isAddingToContainer && Guid.TryParse(ContainerId, out var parsedContainerId) && parsedContainerId != Guid.Empty
-                ? parsedContainerId
-                : null;
-            var normalizedBarcodeValue = BarcodeValue?.Trim();
-            var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
-                ? null
-                : new Barcode(normalizedBarcodeValue, BarcodeSymbology);
+            var destinationContainerId = GetDestinationContainerId(isAddingToContainer);
 
-            try
+            if (IsReceivingExistingItem)
             {
-                await createItem.CreateAsync(
-                    trimmed,
-                    Description?.Trim() ?? string.Empty,
-                    cid,
-                    parsedQuantity,
-                    pendingPhoto.Bytes,
-                    barcode);
+                await ReceiveExistingItemAsync(parsedQuantity, destinationContainerId);
+                await nav.GoBackAsync();
+                return;
             }
-            catch (Exception ex)
-            {
-                // Log locally, then rethrow so RunCommandAsync surfaces it through the shared error banner.
-                logger.LogError(ex, "Failed to save item.");
-                throw;
-            }
+
+            await CreateItemAsync(trimmed, parsedQuantity, destinationContainerId);
 
             await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;
             ValidationMessage = null;
             await nav.GoBackAsync();
         });
+    }
+
+    private Guid? GetDestinationContainerId(bool isAddingToContainer)
+        => isAddingToContainer && Guid.TryParse(ContainerId, out var parsedContainerId) && parsedContainerId != Guid.Empty
+            ? parsedContainerId
+            : null;
+
+    private async Task ReceiveExistingItemAsync(int quantity, Guid? containerId)
+    {
+        var existingItem = await inventoryQueries.FindBarcodeAsync(BarcodeValue);
+        if (existingItem?.OwnerKind != BarcodeOwnerKind.Item)
+        {
+            throw new InvalidOperationException("The scanned item barcode is no longer available.");
+        }
+
+        await itemReceipts.ReceiveAsync(existingItem.OwnerId, quantity, containerId);
+    }
+
+    private async Task CreateItemAsync(string name, int quantity, Guid? containerId)
+    {
+        var normalizedBarcodeValue = BarcodeValue?.Trim();
+        var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
+            ? null
+            : new Barcode(normalizedBarcodeValue, BarcodeSymbology);
+
+        try
+        {
+            await createItem.CreateAsync(
+                name,
+                Description?.Trim() ?? string.Empty,
+                containerId,
+                quantity,
+                pendingPhoto.Bytes,
+                barcode);
+        }
+        catch (Exception ex)
+        {
+            // Log locally, then rethrow so RunCommandAsync surfaces it through the shared error banner.
+            logger.LogError(ex, "Failed to save item.");
+            throw;
+        }
     }
 }

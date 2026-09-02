@@ -63,6 +63,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryBackupZipRestoreService, InventoryBackupZipRestoreService>();
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
         services.AddSingleton<IItemInventoryCommandService, ItemInventoryCommandService>();
+        services.AddSingleton<IItemReceiptService, ItemReceiptService>();
         services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
         services.AddSingleton<IBarcodeAssignmentService, BarcodeAssignmentService>();
         services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();

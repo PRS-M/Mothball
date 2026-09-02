@@ -28,6 +28,7 @@
                                                  WidthRequest="{StaticResource WidthM}"
                                                  Placeholder="{x:Static strings:AppResources.ItemName}"
                                                  Text="{Binding Name}"
+                                                 IsEnabled="{Binding IsItemMetadataEditable}"
                                                  ReturnType="Done"
                                                  ReturnCommand="{Binding SaveCommand}"
                                                  ValidationMessage="{Binding ValidationMessage}" />
@@ -37,17 +38,20 @@
                                                FieldWidthRequest="{StaticResource WidthM}"
                                                WrapperStyle="{StaticResource InputWrapper}"
                                                Placeholder="{x:Static strings:AppResources.ShortDescription}"
-                                               Text="{Binding Description}" />
+                                                                                             Text="{Binding Description}"
+                                                                                             IsEnabled="{Binding IsItemMetadataEditable}" />
 
                         <controls:LabeledEntryField Label="{x:Static strings:AppResources.Barcode}"
                                        LabelMargin="4,8,4,0"
                                        FieldWidthRequest="{StaticResource WidthM}"
                                        WrapperStyle="{StaticResource InputWrapper}"
-                                       Text="{Binding BarcodeValue}" />
+                                                                             Text="{Binding BarcodeValue}"
+                                                                             IsEnabled="{Binding IsItemMetadataEditable}" />
 
                         <Grid WidthRequest="{StaticResource WidthM}"
                           ColumnDefinitions="*,Auto"
-                          ColumnSpacing="8">
+                                                    ColumnSpacing="8"
+                                                    IsEnabled="{Binding IsItemMetadataEditable}">
                         <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
                             ItemsSource="{x:Static Member=vm:AddItemViewModel.AvailableBarcodeSymbologies}"
                             SelectedItem="{Binding BarcodeSymbology}" />

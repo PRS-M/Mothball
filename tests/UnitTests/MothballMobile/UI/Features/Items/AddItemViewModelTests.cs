@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Features.Inventory.Allocation;
 using CoreApp.Domain.Entities.Shared;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Items.AddItem;
@@ -78,10 +80,66 @@ public sealed class AddItemViewModelTests
         });
     }
 
+    [Test]
+    public async Task ScanBarcodeCommand_WhenBarcodeBelongsToItem_EntersReceiptMode()
+    {
+        var itemId = Guid.NewGuid();
+        var scanner = new Mock<IBarcodeScanSession>();
+        scanner.Setup(service => service.ScanAsync())
+            .ReturnsAsync(new Barcode("widget-01", BarcodeSymbology.Code128));
+        var inventoryQueries = new Mock<IInventoryQueryRepository>();
+        inventoryQueries.Setup(repository => repository.FindBarcodeAsync("widget-01"))
+            .ReturnsAsync(new BarcodeLookupResult(BarcodeOwnerKind.Item, itemId, "Widget"));
+        var viewModel = CreateViewModel(
+            Mock.Of<ICreateItemCommandHandler>(),
+            false,
+            scanner.Object,
+            inventoryQueries.Object);
+
+        await viewModel.ScanBarcodeCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.IsReceivingExistingItem, Is.True);
+            Assert.That(viewModel.IsItemMetadataEditable, Is.False);
+            Assert.That(viewModel.ShowQuantityField, Is.True);
+            Assert.That(viewModel.Name, Is.EqualTo("Widget"));
+        });
+    }
+
+    [Test]
+    public async Task SaveCommand_InReceiptMode_ReceivesIntoSelectedContainer()
+    {
+        var itemId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+        var scanner = new Mock<IBarcodeScanSession>();
+        scanner.Setup(service => service.ScanAsync())
+            .ReturnsAsync(new Barcode("widget-01", BarcodeSymbology.Code128));
+        var inventoryQueries = new Mock<IInventoryQueryRepository>();
+        inventoryQueries.Setup(repository => repository.FindBarcodeAsync("widget-01"))
+            .ReturnsAsync(new BarcodeLookupResult(BarcodeOwnerKind.Item, itemId, "Widget"));
+        var receipts = new Mock<IItemReceiptService>();
+        var viewModel = CreateViewModel(
+            Mock.Of<ICreateItemCommandHandler>(),
+            false,
+            scanner.Object,
+            inventoryQueries.Object,
+            receipts.Object);
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object> { [NavigationParams.ContainerId] = containerId.ToString() });
+        viewModel.Quantity = "2";
+
+        await viewModel.ScanBarcodeCommand.ExecuteAsync(null);
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        receipts.Verify(service => service.ReceiveAsync(itemId, 2, containerId), Times.Once);
+    }
+
     private static AddItemViewModel CreateViewModel(
         ICreateItemCommandHandler createItem,
         bool isAdvancedMode,
-        IBarcodeScanSession? barcodeScanner = null)
+        IBarcodeScanSession? barcodeScanner = null,
+        IInventoryQueryRepository? inventoryQueries = null,
+        IItemReceiptService? itemReceipts = null)
         => new(
             new ImageService(
                 Mock.Of<IPhotoSourceReader>(),
@@ -95,5 +153,7 @@ public sealed class AddItemViewModelTests
             NullLogger<AddItemViewModel>.Instance,
             Mock.Of<IPopupService>(),
             Mock.Of<IPopupDefinitionService>(),
-            barcodeScanner ?? Mock.Of<IBarcodeScanSession>());
+            barcodeScanner ?? Mock.Of<IBarcodeScanSession>(),
+            inventoryQueries ?? Mock.Of<IInventoryQueryRepository>(),
+            itemReceipts ?? Mock.Of<IItemReceiptService>());
 }
