@@ -39,6 +39,24 @@
                                                Placeholder="{x:Static strings:AppResources.ShortDescription}"
                                                Text="{Binding Description}" />
 
+                        <controls:LabeledEntryField Label="{x:Static strings:AppResources.Barcode}"
+                                       LabelMargin="4,8,4,0"
+                                       FieldWidthRequest="{StaticResource WidthM}"
+                                       WrapperStyle="{StaticResource InputWrapper}"
+                                       Text="{Binding BarcodeValue}" />
+
+                        <Grid WidthRequest="{StaticResource WidthM}"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="8">
+                        <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
+                            ItemsSource="{x:Static Member=vm:AddItemViewModel.AvailableBarcodeSymbologies}"
+                            SelectedItem="{Binding BarcodeSymbology}" />
+                        <Button Grid.Column="1"
+                            Text="{x:Static strings:AppResources.ScanBarcode}"
+                            Style="{StaticResource OutlinedButton}"
+                            Command="{Binding ScanBarcodeCommand}" />
+                        </Grid>
+
                     <controls:LabeledEntryField Label="Quantity"
                                                LabelMargin="4,8,4,0"
                                                FieldWidthRequest="{StaticResource WidthM}"

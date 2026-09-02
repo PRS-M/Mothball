@@ -51,6 +51,7 @@ internal static class ResourceKeyMap
         "Auto (System)" => "AutoSystem",
         "Background Operations" => "BackgroundOperations",
         "Background photo operations" => "BackgroundPhotoOperations",
+        "Barcode" => "Barcode",
         "Backup" => "Backup",
         "Backup Exported" => "BackupExported",
         "Backup deleted" => "BackupDeleted",

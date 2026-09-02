@@ -1,5 +1,6 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Domain.Entities.Shared;
 using CoreApp.Application.Features.Containers.ContainerDetails;
 using Moq;
 using MothballMobile.UI.Features.Containers.ContainerDetails;
@@ -14,6 +15,7 @@ public sealed class ContainerDetailsViewModelTests
     public async Task InitializeAsync_PublishesHeaderAndPhotoBeforeItemRowsComplete()
     {
         var container = new Container(Guid.NewGuid(), "Garage", "Top shelf");
+        container.UpdateBarcode(new Barcode("garage-01", BarcodeSymbology.Code128));
         container.AddImageItem();
         var summary = new ContainerDetailsSummary(container, ItemTypesCount: 3, TotalItemCount: 7);
         var details = new Mock<IContainerDetailsHandler>();
@@ -63,6 +65,8 @@ public sealed class ContainerDetailsViewModelTests
         {
             Assert.That(initialization.IsCompleted, Is.False);
             Assert.That(viewModel.Name, Is.EqualTo("Garage"));
+            Assert.That(viewModel.BarcodeValue, Is.EqualTo("garage-01"));
+            Assert.That(viewModel.BarcodeSymbology, Is.EqualTo("Code128"));
             Assert.That(viewModel.ContainerImagePaths, Is.EqualTo(new[] { "container.jpg" }));
             Assert.That(viewModel.Rows, Has.Count.EqualTo(1));
             Assert.That(viewModel.Rows.Single(), Is.SameAs(viewModel));

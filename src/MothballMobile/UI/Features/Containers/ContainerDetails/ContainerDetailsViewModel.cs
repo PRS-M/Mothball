@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.Shared;
 using CoreApp.Application.Contracts;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -32,6 +33,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private string notesDraft = string.Empty;
 
     [ObservableProperty]
+    private string barcodeValue = string.Empty;
+
+    [ObservableProperty]
+    private string barcodeSymbology = string.Empty;
+
+    [ObservableProperty]
     private bool isEditingNotes;
 
     [ObservableProperty]
@@ -54,6 +61,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private bool isLoadingItems;
 
     public bool IsViewingNotes => !IsEditingNotes;
+    public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public string DisplayNotes => string.IsNullOrWhiteSpace(Notes) ? "No description." : Notes;
     public string ItemsStoredText => LocalizationManager.Current.Format("Items stored (Total): {0}", TotalItemCount);
@@ -67,6 +75,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     partial void OnNotesChanged(string value)
         => OnPropertyChanged(nameof(DisplayNotes));
+
+    partial void OnBarcodeValueChanged(string value)
+        => OnPropertyChanged(nameof(HasBarcode));
 
     public ContainerDetailsViewModel(
         IDeleteContainerCommandHandler deleteContainerHandler,
@@ -143,6 +154,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             Name = "Container not found";
             Notes = string.Empty;
             NotesDraft = string.Empty;
+            BarcodeValue = string.Empty;
+            BarcodeSymbology = string.Empty;
             IsEditingNotes = false;
             TotalItemCount = 0;
             ItemTypesCount = 0;
@@ -155,6 +168,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         Name = currentContainer.Name;
         Notes = currentContainer.Notes;
         NotesDraft = currentContainer.Notes;
+        BarcodeValue = currentContainer.Barcode?.Value ?? string.Empty;
+        BarcodeSymbology = currentContainer.Barcode?.Symbology.ToString() ?? string.Empty;
         IsEditingNotes = false;
         ItemTypesCount = summary.ItemTypesCount;
         TotalItemCount = ShowQuantityManagement ? summary.TotalItemCount : summary.ItemTypesCount;

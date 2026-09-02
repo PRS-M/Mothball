@@ -1,7 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Features.Photos;
+using CoreApp.Application.Utilities;
+using CoreApp.Domain.Entities.Shared;
 using Microsoft.Extensions.Logging;
+using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Items.AddItem;
@@ -16,6 +20,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly PendingPhoto pendingPhoto;
+    private readonly IBarcodeScanSession barcodeScanner;
+
+    public static ReadOnlyCollection<BarcodeSymbology> AvailableBarcodeSymbologies { get; } = EnumValues.CreateReadOnly<BarcodeSymbology>();
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -35,6 +42,12 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private string quantity = "1";
 
     [ObservableProperty]
+    private string barcodeValue = string.Empty;
+
+    [ObservableProperty]
+    private BarcodeSymbology barcodeSymbology = BarcodeSymbology.QrCode;
+
+    [ObservableProperty]
     private string? validationMessage;
 
     [ObservableProperty]
@@ -50,7 +63,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         IApplicationSettings applicationSettings,
         ILogger<AddItemViewModel> logger,
         IPopupService popup,
-        IPopupDefinitionService popupDefinitions)
+        IPopupDefinitionService popupDefinitions,
+        IBarcodeScanSession barcodeScanner)
     {
         this.createItem = createItem ?? throw new ArgumentNullException(nameof(createItem));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
@@ -58,6 +72,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
+        this.barcodeScanner = barcodeScanner ?? throw new ArgumentNullException(nameof(barcodeScanner));
         pendingPhoto = new PendingPhoto(imageService ?? throw new ArgumentNullException(nameof(imageService)));
     }
 
@@ -143,6 +158,19 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private async Task<PhotoSource?> SelectPhotoSourceAsync()
         => await PhotoSourceSelector.SelectPhotoSourceAsync(popup, popupDefinitions);
 
+    [RelayCommand]
+    private async Task ScanBarcodeAsync()
+    {
+        var barcode = await barcodeScanner.ScanAsync();
+        if (barcode is null)
+        {
+            return;
+        }
+
+        BarcodeValue = barcode.Value;
+        BarcodeSymbology = barcode.Symbology;
+    }
+
     [RelayCommand(CanExecute = nameof(CanAdd))]
     private async Task SaveAsync()
     {
@@ -167,6 +195,10 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             Guid? cid = isAddingToContainer && Guid.TryParse(ContainerId, out var parsedContainerId) && parsedContainerId != Guid.Empty
                 ? parsedContainerId
                 : null;
+            var normalizedBarcodeValue = BarcodeValue?.Trim();
+            var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
+                ? null
+                : new Barcode(normalizedBarcodeValue, BarcodeSymbology);
 
             try
             {
@@ -175,7 +207,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                     Description?.Trim() ?? string.Empty,
                     cid,
                     parsedQuantity,
-                    pendingPhoto.Bytes);
+                    pendingPhoto.Bytes,
+                    barcode);
             }
             catch (Exception ex)
             {

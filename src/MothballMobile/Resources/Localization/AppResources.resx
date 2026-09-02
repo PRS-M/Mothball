@@ -25,6 +25,8 @@
   <data name="AutoSystem" xml:space="preserve"><value>Auto (System)</value></data>
   <data name="BackgroundOperations" xml:space="preserve"><value>Background Operations</value></data>
   <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Background photo operations</value></data>
+  <data name="Barcode" xml:space="preserve"><value>Barcode</value></data>
+  <data name="BarcodeSymbology" xml:space="preserve"><value>Barcode type</value></data>
   <data name="Backup" xml:space="preserve"><value>Backup</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Backup Exported</value></data>
   <data name="BackupDeleted" xml:space="preserve"><value>Backup deleted</value></data>
@@ -189,6 +191,7 @@
   <data name="SaveItem" xml:space="preserve"><value>Save Item</value></data>
   <data name="SearchContainers" xml:space="preserve"><value>Search containers...</value></data>
   <data name="SearchItems" xml:space="preserve"><value>Search items...</value></data>
+  <data name="ScanBarcode" xml:space="preserve"><value>Scan barcode</value></data>
   <data name="SearchWithinContainer" xml:space="preserve"><value>Search within container...</value></data>
   <data name="SelectPhoto" xml:space="preserve"><value>Select Photo</value></data>
   <data name="SelectAnItem" xml:space="preserve"><value>Select an item</value></data>

@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using CoreApp.Domain.Entities.Shared;
+using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Items.AddItem;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Items;
@@ -59,9 +61,27 @@ public sealed class AddItemViewModelTests
         });
     }
 
+    [Test]
+    public async Task ScanBarcodeCommand_WhenScanCompletes_PopulatesBarcodeFields()
+    {
+        var scanner = new Mock<IBarcodeScanSession>();
+        scanner.Setup(service => service.ScanAsync())
+            .ReturnsAsync(new Barcode("widget-01", BarcodeSymbology.Code128));
+        var viewModel = CreateViewModel(Mock.Of<ICreateItemCommandHandler>(), false, scanner.Object);
+
+        await viewModel.ScanBarcodeCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.BarcodeValue, Is.EqualTo("widget-01"));
+            Assert.That(viewModel.BarcodeSymbology, Is.EqualTo(BarcodeSymbology.Code128));
+        });
+    }
+
     private static AddItemViewModel CreateViewModel(
         ICreateItemCommandHandler createItem,
-        bool isAdvancedMode)
+        bool isAdvancedMode,
+        IBarcodeScanSession? barcodeScanner = null)
         => new(
             new ImageService(
                 Mock.Of<IPhotoSourceReader>(),
@@ -74,5 +94,6 @@ public sealed class AddItemViewModelTests
             Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == isAdvancedMode),
             NullLogger<AddItemViewModel>.Instance,
             Mock.Of<IPopupService>(),
-            Mock.Of<IPopupDefinitionService>());
+            Mock.Of<IPopupDefinitionService>(),
+            barcodeScanner ?? Mock.Of<IBarcodeScanSession>());
 }

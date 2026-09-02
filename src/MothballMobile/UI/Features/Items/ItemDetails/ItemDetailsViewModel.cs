@@ -31,6 +31,12 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private string descriptionDraft = string.Empty;
 
     [ObservableProperty]
+    private string barcodeValue = string.Empty;
+
+    [ObservableProperty]
+    private string barcodeSymbology = string.Empty;
+
+    [ObservableProperty]
     private bool isEditingDescription;
 
     [ObservableProperty]
@@ -50,6 +56,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public bool HasUnassignedQuantity => UnassignedQuantity > 0;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+    public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
     public string DisplayDescription => HasDescription ? Description : "No description.";
     public bool IsViewingDescription => !IsEditingDescription;
     public bool ShowGoToContainerButton => HasContainerRelation
@@ -106,6 +113,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         OnPropertyChanged(nameof(DisplayDescription));
     }
 
+    partial void OnBarcodeValueChanged(string value)
+        => OnPropertyChanged(nameof(HasBarcode));
+
     partial void OnIsEditingDescriptionChanged(bool value)
         => OnPropertyChanged(nameof(IsViewingDescription));
 
@@ -139,6 +149,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 Name = "Item not found";
                 Description = string.Empty;
                 DescriptionDraft = string.Empty;
+                BarcodeValue = string.Empty;
+                BarcodeSymbology = string.Empty;
                 IsEditingDescription = false;
                 OnPropertyChanged(nameof(HasDescription));
                 ImagePaths.Add(paths.GetFallbackImagePath());
@@ -151,6 +163,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             Name = item.Name;
             Description = item.Description;
             DescriptionDraft = item.Description;
+            BarcodeValue = item.Barcode?.Value ?? string.Empty;
+            BarcodeSymbology = item.Barcode?.Symbology.ToString() ?? string.Empty;
             IsEditingDescription = false;
             ApplyQuantities(details.Inventory);
             OnPropertyChanged(nameof(HasDescription));

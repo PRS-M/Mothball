@@ -26,6 +26,8 @@
   <data name="AutoSystem" xml:space="preserve"><value>Automático (sistema)</value></data>
   <data name="BackgroundOperations" xml:space="preserve"><value>Operaciones en segundo plano</value></data>
   <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Operaciones de fotos en segundo plano</value></data>
+  <data name="Barcode" xml:space="preserve"><value>Código de barras</value></data>
+  <data name="BarcodeSymbology" xml:space="preserve"><value>Tipo de código de barras</value></data>
   <data name="Backup" xml:space="preserve"><value>Copia de seguridad</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Copia de seguridad exportada</value></data>
   <data name="BackupDeleted" xml:space="preserve"><value>Copia de seguridad eliminada</value></data>
@@ -190,6 +192,7 @@
   <data name="SaveItem" xml:space="preserve"><value>Guardar artículo</value></data>
   <data name="SearchContainers" xml:space="preserve"><value>Buscar contenedores…</value></data>
   <data name="SearchItems" xml:space="preserve"><value>Buscar artículos…</value></data>
+  <data name="ScanBarcode" xml:space="preserve"><value>Escanear código de barras</value></data>
   <data name="SearchWithinContainer" xml:space="preserve"><value>Buscar en el contenedor…</value></data>
   <data name="SelectPhoto" xml:space="preserve"><value>Seleccionar foto</value></data>
   <data name="SelectAnItem" xml:space="preserve"><value>Seleccionar un artículo</value></data>

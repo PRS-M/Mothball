@@ -27,6 +27,7 @@ using MothballMobile.UI.Features.Items.ItemLocations;
 using MothballMobile.UI.Features.Items.ItemsList;
 using MothballMobile.UI.Features.Settings;
 using MothballMobile.UI.Features.Scanning;
+using CoreApp.Application.Features.Barcodes.Commands;
 
 namespace MothballMobile.Composition;
 
@@ -63,6 +64,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
         services.AddSingleton<IItemInventoryCommandService, ItemInventoryCommandService>();
         services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
+        services.AddSingleton<IBarcodeAssignmentService, BarcodeAssignmentService>();
         services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
         services.AddSingleton<IContainerDetailsHandler, ContainerDetailsHandler>();
         services.AddSingleton<IContainerAssociationQueryHandler, ContainerAssociationQueryHandler>();
@@ -131,6 +133,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddPlatformServices(this IServiceCollection services)
     {
         services.AddSingleton<IBarcodeScanSession, BarcodeScanSession>();
+        services.AddSingleton<BarcodeLookupCoordinator>();
         services.AddSingleton<ICameraHandler, CameraHandler>();
         services.AddSingleton<IFileHandler, MobileFileHandler>();
         services.AddSingleton<IImageMetadataReader, SkiaImageMetadataReader>();

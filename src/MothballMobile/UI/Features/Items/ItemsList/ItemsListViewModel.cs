@@ -9,6 +9,7 @@ using CoreApp.Application.Contracts;
 using CoreApp.Application.Specifications;
 using MothballMobile.UI.Features.Items.Consumption;
 using MothballMobile.UI.Features.Items.Quantity;
+using MothballMobile.Infrastructure.Scanning;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
 
@@ -31,6 +32,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly IInventoryChangeTracker inventoryChanges;
+    private readonly BarcodeLookupCoordinator barcodeLookup;
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
 
     public static ReadOnlyCollection<ItemsListFilter> AvailableFilters { get; } = EnumValues.CreateReadOnly<ItemsListFilter>();
@@ -61,6 +63,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         IInventoryChangeTracker inventoryChanges,
+        BarcodeLookupCoordinator barcodeLookup,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         IPagedListLoadDiagnostics? loadDiagnostics = null)
@@ -76,6 +79,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
         this.inventoryChanges = inventoryChanges;
+        this.barcodeLookup = barcodeLookup ?? throw new ArgumentNullException(nameof(barcodeLookup));
     }
 
     protected override string SearchOperationName => "Search items";
@@ -106,6 +110,9 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     {
         return nav.GoToAsync(Infrastructure.NavigationRoutes.AddItem);
     }
+
+    [RelayCommand]
+    private Task ScanToFindAsync() => barcodeLookup.ScanAndNavigateAsync();
 
     protected override Task<List<InventorySnapshot>> LoadPageAsync(string? query, int pageNumber, int pageSize)
         => itemListQueries.QueryAsync(

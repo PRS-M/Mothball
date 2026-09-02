@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
+using MothballMobile.Infrastructure.Scanning;
 
 namespace MothballMobile.UI.Features.Containers.ContainersList;
 
@@ -20,6 +21,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     private readonly IContainerListQueryHandler containerListQueries;
     private readonly IApplicationSettings applicationSettings;
     private readonly IInventoryChangeTracker inventoryChanges;
+    private readonly BarcodeLookupCoordinator barcodeLookup;
 
     private ContainerListFilter selectedFilter = ContainerListFilter.All;
 
@@ -46,6 +48,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IInventoryChangeTracker inventoryChanges,
+        BarcodeLookupCoordinator barcodeLookup,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         IPagedListLoadDiagnostics? loadDiagnostics = null)
@@ -56,6 +59,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
         this.nav = nav;
         this.applicationSettings = applicationSettings;
         this.inventoryChanges = inventoryChanges;
+        this.barcodeLookup = barcodeLookup ?? throw new ArgumentNullException(nameof(barcodeLookup));
     }
 
     protected override string SearchOperationName => "Search containers";
@@ -76,6 +80,9 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
 
     [RelayCommand]
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
+
+    [RelayCommand]
+    private Task ScanToFindAsync() => barcodeLookup.ScanAndNavigateAsync();
 
     private bool IsEmptyFilterSelected()
         => SelectedFilter == ContainerListFilter.Empty;

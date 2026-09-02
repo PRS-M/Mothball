@@ -6,6 +6,7 @@ using MothballMobile.UI.Features.Items.ItemsList;
 using MothballMobile.UI.Features.Items.Consumption;
 using MothballMobile.UI.Features.Items.ItemDetails;
 using MothballMobile.UI.Features.Items.Quantity;
+using MothballMobile.Infrastructure.Scanning;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Items.ItemsList;
 
@@ -165,6 +166,10 @@ public sealed class ItemsListViewModelTests
             popup,
             definitions,
             Mock.Of<IInventoryChangeTracker>(),
+            new BarcodeLookupCoordinator(
+                Mock.Of<IBarcodeScanSession>(),
+                Mock.Of<IInventoryQueryRepository>(),
+                Mock.Of<INavigationService>()),
             Mock.Of<IBackgroundTaskObserver>(),
             loadDiagnostics: diagnostics);
     }

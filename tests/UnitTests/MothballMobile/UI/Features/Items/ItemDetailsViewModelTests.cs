@@ -97,6 +97,25 @@ public sealed class ItemDetailsViewModelTests
     }
 
     [Test]
+    public async Task InitializeAsync_WhenItemHasBarcode_PublishesBarcodeValueAndSymbology()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        item.UpdateBarcode(new Barcode("widget-01", BarcodeSymbology.QrCode));
+        var details = new ItemDetailsResult(new InventorySnapshot(item, 1, 0, []));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+        var viewModel = CreateViewModel(itemDetails.Object, Mock.Of<IItemInventoryCommandService>(), Mock.Of<IPopupService>());
+
+        await viewModel.InitializeAsync(item.ItemId.ToString());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.HasBarcode, Is.True);
+            Assert.That(viewModel.BarcodeValue, Is.EqualTo("widget-01"));
+            Assert.That(viewModel.BarcodeSymbology, Is.EqualTo("QrCode"));
+        });
+    }
+
+    [Test]
     public async Task InitializeAsync_WhenItemIsFullyAssignedToOneContainer_ShowsGoToContainerAndHidesAssociate()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");

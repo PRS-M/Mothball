@@ -68,6 +68,26 @@
                     </VerticalStackLayout>
                 </Border>
 
+                  <Border Style="{StaticResource Card}"
+                       IsVisible="{Binding HasBarcode}">
+                      <Grid ColumnDefinitions="Auto,*"
+                         ColumnSpacing="12"
+                         RowDefinitions="Auto,Auto">
+                       <Label Text="{x:Static strings:AppResources.Barcode}"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource OnSurface}" />
+                       <Label Grid.Column="1"
+                           Text="{Binding BarcodeSymbology}"
+                           TextColor="{DynamicResource OnSurfaceVariant}"
+                           HorizontalOptions="End" />
+                       <Label Grid.Row="1"
+                           Grid.ColumnSpan="2"
+                           Text="{Binding BarcodeValue}"
+                           LineBreakMode="CharacterWrap"
+                           TextColor="{DynamicResource OnSurface}" />
+                      </Grid>
+                  </Border>
+
                 <Border Style="{StaticResource Card}">
                     <VerticalStackLayout Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
