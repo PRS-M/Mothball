@@ -40,6 +40,8 @@ The MAUI app can be launched from the IDE using `MothballMobile` and an iOS Simu
 
 Put behavior in the lowest layer that can own it. For stored data, update the Application contract/model first, then the SQLite model/mapper/repository and equivalent JSON implementation. Consider backup export/restore and add parity tests. Register new application services, persistence services, platform services, view models, and routes in their existing composition/navigation extension points.
 
+Document public APIs with concise XML comments, especially public classes, interfaces, methods, properties, and parameters in Domain, Application, and infrastructure contracts. Keep comments focused on the contract, invariants, side effects, failure behavior, and backend/platform differences; update them when behavior changes. Do not add noisy comments that merely restate obvious implementation code.
+
 For UI, keep feature page, XAML, code-behind, view model, and presentation-only models together under `src/MothballMobile/UI/Features`. Prefer compiled bindings (`x:DataType`), CommunityToolkit MVVM attributes, `CollectionView` for lists, and navigation through `INavigationService`. User-facing strings belong in all localization `.resx` files and may also require `ResourceKeyMap.cs`.
 
 Do not reference the MAUI app project from `UnitTests`. Its mobile-only classes are deliberately listed as explicit `<Compile Include=...>` entries in `tests/UnitTests/UnitTests.csproj`; add a new entry when a test needs another mobile source file. Do not add generated `bin/`, `obj/`, IDE cache, local AdMob configuration, or design-prototype files.

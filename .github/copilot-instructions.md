@@ -33,3 +33,5 @@ There is no lint command configured. `Directory.Packages.props` owns all package
 - Release iOS builds need ignored `AdMob.Release.props` and `appsettings.Release.json` created from examples. Do not commit them or secrets.
 
 Use focused tests for planner/domain/application changes, integration tests for persistence and backend parity, and targeted MAUI builds for UI/project changes. Update the relevant documentation when behavior or developer workflow changes. Leave generated outputs and unrelated working-tree changes untouched.
+
+Include concise XML documentation comments for public API classes, interfaces, methods, properties, and parameters, with priority on Domain, Application, and infrastructure contracts. Explain contract meaning, invariants, side effects, exceptions, and backend/platform differences where relevant. Keep comments accurate as behavior changes and avoid comments that only narrate obvious code.
