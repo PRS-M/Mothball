@@ -9,6 +9,12 @@ namespace Infrastructure.Abstractions.Repositories;
 public interface IItemRepository
 {
     /// <summary>
+    /// Finds an item with an exact barcode value.
+    /// </summary>
+    /// <param name="barcodeValue">The barcode value to find.</param>
+    Task<Item?> FindByBarcodeAsync(string barcodeValue);
+
+    /// <summary>
     /// Gets an item with its associated photos.
     /// </summary>
     /// <param name="itemId">The identifier used by the operation.</param>

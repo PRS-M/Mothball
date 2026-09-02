@@ -19,6 +19,52 @@ namespace Mothball.Tests.Integration.Infrastructure.Persistence;
 public class BackendParityTests
 {
     [Test]
+    public async Task ContainersAndItems_RoundTripBarcodeValueAndSymbologyAcrossBackends()
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var container = new Container(Guid.NewGuid(), "Box", "");
+        var item = new Item(Guid.NewGuid(), "Cable", "USB-C");
+        container.UpdateBarcode(new Barcode("CONTAINER-42", BarcodeSymbology.Code128));
+        item.UpdateBarcode(new Barcode("1234567890123", BarcodeSymbology.Ean13));
+
+        foreach (var command in new[] { sqlite.Command, json.Command })
+        {
+            await command.InsertContainerAsync(container);
+            await command.InsertItemAsync(item);
+        }
+
+        var sqliteContainer = await sqlite.Query.GetContainerAsync(container.ContainerId.ToString());
+        var jsonContainer = await json.Query.GetContainerAsync(container.ContainerId.ToString());
+        var sqliteItem = await sqlite.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var jsonItem = await json.Query.GetItemWithPhotosAsync(item.ItemId.ToString());
+        var containerLookups = await Task.WhenAll(
+            sqlite.Query.FindBarcodeAsync(container.Barcode!.Value),
+            json.Query.FindBarcodeAsync(container.Barcode.Value));
+        var itemLookups = await Task.WhenAll(
+            sqlite.Query.FindBarcodeAsync(item.Barcode!.Value),
+            json.Query.FindBarcodeAsync(item.Barcode.Value));
+
+        Assert.Multiple(() =>
+        {
+            foreach (var result in new[] { sqliteContainer, jsonContainer })
+            {
+                Assert.That(result!.Barcode, Is.EqualTo(container.Barcode));
+            }
+
+            foreach (var result in new[] { sqliteItem, jsonItem })
+            {
+                Assert.That(result!.Barcode, Is.EqualTo(item.Barcode));
+            }
+
+            Assert.That(containerLookups, Is.All.Matches<BarcodeLookupResult?>(result =>
+                result is { OwnerKind: BarcodeOwnerKind.Container, OwnerId: var ownerId } && ownerId == container.ContainerId));
+            Assert.That(itemLookups, Is.All.Matches<BarcodeLookupResult?>(result =>
+                result is { OwnerKind: BarcodeOwnerKind.Item, OwnerId: var ownerId } && ownerId == item.ItemId));
+        });
+    }
+
+    [Test]
     public async Task QueryContainersAsync_OrdersAllResultsByInsertionAndPagesConsistently()
     {
         await using var sqlite = await BuildSqliteAsync();

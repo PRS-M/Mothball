@@ -28,6 +28,7 @@ public class Container : BaseEntity, IAggregateRoot
     public Guid ContainerId { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public string Notes { get; private set; } = string.Empty;
+    public Barcode? Barcode { get; private set; }
     public IReadOnlyList<ImageItem> Photos => photos.AsReadOnly();
 
     // Read-only counts sourced from the ItemInventory aggregate; not owned or persisted by Container itself.
@@ -69,6 +70,11 @@ public class Container : BaseEntity, IAggregateRoot
 
         Name = name;
         Notes = notes ?? string.Empty;
+    }
+
+    public void UpdateBarcode(Barcode? barcode)
+    {
+        Barcode = barcode;
     }
 
     /// <summary>

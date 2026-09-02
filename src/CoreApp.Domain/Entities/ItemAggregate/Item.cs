@@ -38,6 +38,7 @@ public class Item : BaseEntity, IAggregateRoot
     public Guid ItemId { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
+    public Barcode? Barcode { get; private set; }
     public IReadOnlyList<ImageItem> Photos => photos.AsReadOnly();
 
     /// <summary>
@@ -54,6 +55,11 @@ public class Item : BaseEntity, IAggregateRoot
 
         Name = name;
         Description = description ?? string.Empty;
+    }
+
+    public void UpdateBarcode(Barcode? barcode)
+    {
+        Barcode = barcode;
     }
 
     /// <summary>

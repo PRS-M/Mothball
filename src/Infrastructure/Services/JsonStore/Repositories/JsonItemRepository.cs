@@ -32,6 +32,20 @@ public sealed class JsonItemRepository : IItemRepository
         return MapItem(state, row);
     }
 
+    /// <inheritdoc />
+    public async Task<Item?> FindByBarcodeAsync(string barcodeValue)
+    {
+        var normalizedValue = barcodeValue?.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedValue))
+        {
+            return null;
+        }
+
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var row = state.Items.FirstOrDefault(item => item.BarcodeValue == normalizedValue);
+        return row is null ? null : MapItem(state, row);
+    }
+
     private async Task<List<Item>> GetAllWithPhotosAsync()
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
@@ -307,6 +321,8 @@ public sealed class JsonItemRepository : IItemRepository
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
+                existing.BarcodeValue = item.Barcode?.Value ?? string.Empty;
+                existing.BarcodeSymbology = item.Barcode is null ? null : (int)item.Barcode.Symbology;
                 return Task.CompletedTask;
             }
 
@@ -316,6 +332,8 @@ public sealed class JsonItemRepository : IItemRepository
                 ItemId = item.ItemId,
                 Name = item.Name,
                 Description = item.Description,
+                BarcodeValue = item.Barcode?.Value ?? string.Empty,
+                BarcodeSymbology = item.Barcode is null ? null : (int)item.Barcode.Symbology,
             });
 
             return Task.CompletedTask;
@@ -338,12 +356,16 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    BarcodeValue = item.Barcode?.Value ?? string.Empty,
+                    BarcodeSymbology = item.Barcode is null ? null : (int)item.Barcode.Symbology,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
+                existing.BarcodeValue = item.Barcode?.Value ?? string.Empty;
+                existing.BarcodeSymbology = item.Barcode is null ? null : (int)item.Barcode.Symbology;
             }
 
             return Task.CompletedTask;
@@ -368,12 +390,16 @@ public sealed class JsonItemRepository : IItemRepository
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    BarcodeValue = item.Barcode?.Value ?? string.Empty,
+                    BarcodeSymbology = item.Barcode is null ? null : (int)item.Barcode.Symbology,
                 });
             }
             else
             {
                 existing.Name = item.Name;
                 existing.Description = item.Description;
+                existing.BarcodeValue = item.Barcode?.Value ?? string.Empty;
+                existing.BarcodeSymbology = item.Barcode is null ? null : (int)item.Barcode.Symbology;
             }
 
             return Task.CompletedTask;
@@ -402,6 +428,8 @@ public sealed class JsonItemRepository : IItemRepository
             ItemId = row.ItemId,
             Name = row.Name,
             Description = row.Description,
+            BarcodeValue = row.BarcodeValue,
+            BarcodeSymbology = row.BarcodeSymbology,
         };
 
         var photos = state.Images

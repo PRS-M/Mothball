@@ -14,6 +14,10 @@ public class DbItem : IValidatableDbModel
 	[NotNull]
 	public string Description { get; set; } = string.Empty;
 
+    public string BarcodeValue { get; set; } = string.Empty;
+
+    public int? BarcodeSymbology { get; set; }
+
     public void Validate()
     {
         if (ItemId == Guid.Empty)
