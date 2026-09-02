@@ -134,6 +134,16 @@ public interface IPopupDefinitionService
     ConfirmationPopupDefinition DeletePhoto();
 
     /// <summary>
+    /// Creates a confirmation prompt for replacing an existing barcode.
+    /// </summary>
+    ConfirmationPopupDefinition ReplaceBarcode();
+
+    /// <summary>
+    /// Creates a confirmation prompt for clearing an existing barcode.
+    /// </summary>
+    ConfirmationPopupDefinition ClearBarcode();
+
+    /// <summary>
     /// Creates a number picker for setting a container allocation quantity.
     /// </summary>
     /// <param name="initialValue">The value used by the operation.</param>
