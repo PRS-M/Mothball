@@ -14,4 +14,5 @@ public static class NavigationRoutes
     public const string AddExistingItemToContainer = "AddExistingItemToContainer";
     public const string AssociateItemWithContainer = "AssociateItemWithContainer";
     public const string BackgroundOperations = "BackgroundOperations";
+    public const string BarcodeScanner = "BarcodeScanner";
 }

@@ -18,5 +18,7 @@
     <PackageVersion Include="SkiaSharp" Version="3.119.2" />
     <PackageVersion Include="sqlite-net-pcl" Version="1.9.172" />
     <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
+    <PackageVersion Include="ZXing.Net.Maui" Version="0.10.4" />
+    <PackageVersion Include="ZXing.Net.Maui.Controls" Version="0.10.4" />
   </ItemGroup>
 </Project>

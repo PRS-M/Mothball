@@ -93,6 +93,8 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
 		<PackageReference Include="Plugin.AdMob" />
 		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
+		<PackageReference Include="ZXing.Net.Maui" />
+		<PackageReference Include="ZXing.Net.Maui.Controls" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(MauiDevFlowEnabled)' == 'true' and '$(Configuration)' == 'Debug'">
@@ -101,6 +103,8 @@
 		<PackageReference Update="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
 		<PackageReference Update="Plugin.AdMob" Version="10.0.90" />
 		<PackageReference Update="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
+		<PackageReference Update="ZXing.Net.Maui" Version="0.10.4" />
+		<PackageReference Update="ZXing.Net.Maui.Controls" Version="0.10.4" />
 	</ItemGroup>
 
 	<ItemGroup>

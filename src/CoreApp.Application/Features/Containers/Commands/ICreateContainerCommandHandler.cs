@@ -1,4 +1,5 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Domain.Entities.Shared;
 
 namespace CoreApp.Application.Features.Containers.Commands;
 
@@ -13,5 +14,6 @@ public interface ICreateContainerCommandHandler
     /// <param name="name">The value used by the operation.</param>
     /// <param name="notes">The value used by the operation.</param>
     /// <param name="photoBytes">The value used by the operation.</param>
-    Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null);
+    /// <param name="barcode">The optional globally unique barcode assigned to the container.</param>
+    Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null, Barcode? barcode = null);
 }

@@ -1,6 +1,8 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
+using CoreApp.Application.Contracts;
 using CoreApp.Application.Specifications;
 using Moq;
 
@@ -109,6 +111,7 @@ public sealed class ListAndItemWorkflowHandlerTests
     public async Task CreateItemCommandHandler_CreatesItemWithContainerRelation()
     {
         var commands = new Mock<IInventoryCommandRepository>();
+        var queries = new Mock<IInventoryQueryRepository>();
         var imageService = new ImageService(
             Mock.Of<IPhotoSourceReader>(),
             Mock.Of<IPhotoFilePersistenceService>(),
@@ -116,7 +119,7 @@ public sealed class ListAndItemWorkflowHandlerTests
             Mock.Of<IPhotoDeletionService>(),
             commands.Object);
         var containerId = Guid.NewGuid();
-        var handler = new CreateItemCommandHandler(commands.Object, imageService);
+        var handler = new CreateItemCommandHandler(commands.Object, queries.Object, imageService);
 
         var item = await handler.CreateAsync("Hat", "Blue", containerId, quantity: 3);
 
@@ -126,5 +129,26 @@ public sealed class ListAndItemWorkflowHandlerTests
             && inventory.TotalQuantity == 3
             && inventory.Allocations.Single().ContainerId == containerId
             && inventory.Allocations.Single().Quantity == 3)), Times.Once);
+    }
+
+    [Test]
+    public void CreateItemCommandHandler_WhenBarcodeIsAssigned_RejectsExistingOwner()
+    {
+        var commands = new Mock<IInventoryCommandRepository>();
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(query => query.FindBarcodeAsync("1234567890123"))
+            .ReturnsAsync(new BarcodeLookupResult(BarcodeOwnerKind.Container, Guid.NewGuid(), "Archive box"));
+        var imageService = new ImageService(
+            Mock.Of<IPhotoSourceReader>(),
+            Mock.Of<IPhotoFilePersistenceService>(),
+            Mock.Of<ITemporaryPhotoService>(),
+            Mock.Of<IPhotoDeletionService>(),
+            commands.Object);
+        var handler = new CreateItemCommandHandler(commands.Object, queries.Object, imageService);
+
+        var action = () => handler.CreateAsync("Hat", "Blue", barcode: new Barcode("1234567890123", BarcodeSymbology.Ean13));
+
+        Assert.That(action, Throws.InvalidOperationException.With.Message.Contains("Archive box"));
+        commands.Verify(command => command.InsertItemAsync(It.IsAny<Item>()), Times.Never);
     }
 }

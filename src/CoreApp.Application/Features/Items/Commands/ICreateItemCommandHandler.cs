@@ -1,4 +1,5 @@
 using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
 
 namespace CoreApp.Application.Features.Items.Commands;
 
@@ -15,5 +16,6 @@ public interface ICreateItemCommandHandler
     /// <param name="containerId">The identifier used by the operation.</param>
     /// <param name="quantity">The quantity used by the operation.</param>
     /// <param name="photoBytes">The value used by the operation.</param>
-    Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null);
+    /// <param name="barcode">The optional globally unique barcode assigned to the item.</param>
+    Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null, Barcode? barcode = null);
 }

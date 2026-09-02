@@ -52,5 +52,6 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddExistingItemToContainer, typeof(UI.Features.Containers.AddExistingItemToContainer.AddExistingItemToContainerPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.AssociateItemWithContainer, typeof(UI.Features.Containers.AssociateItemWithContainer.AssociateItemWithContainerPage));
 		Routing.RegisterRoute(Infrastructure.NavigationRoutes.BackgroundOperations, typeof(UI.Features.BackgroundOperations.BackgroundOperationsPage));
+		Routing.RegisterRoute(Infrastructure.NavigationRoutes.BarcodeScanner, typeof(UI.Features.Scanning.BarcodeScannerPage));
 	}
 }
