@@ -73,10 +73,20 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
 
             var existingState = new InventoryBackupExistingState(
                 connection.Table<DbContainer>()
-                    .Select(c => new InventoryBackupExistingContainer(c.ContainerId, c.Name, c.Notes))
+                    .Select(c => new InventoryBackupExistingContainer(
+                        c.ContainerId,
+                        c.Name,
+                        c.Notes,
+                        c.BarcodeValue,
+                        c.BarcodeSymbology))
                     .ToList(),
                 connection.Table<DbItem>()
-                    .Select(i => new InventoryBackupExistingItem(i.ItemId, i.Name, i.Description))
+                    .Select(i => new InventoryBackupExistingItem(
+                        i.ItemId,
+                        i.Name,
+                        i.Description,
+                        i.BarcodeValue,
+                        i.BarcodeSymbology))
                     .ToList(),
                 existingContainerImages,
                 existingItemImages,
@@ -94,6 +104,8 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     ContainerId = container.ContainerId,
                     Name = container.Name,
                     Notes = container.Notes,
+                    BarcodeValue = container.BarcodeValue,
+                    BarcodeSymbology = container.BarcodeSymbology,
                 });
             }
 
@@ -105,6 +117,8 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     ContainerId = container.ContainerId,
                     Name = container.Name,
                     Notes = container.Notes,
+                    BarcodeValue = container.BarcodeValue,
+                    BarcodeSymbology = container.BarcodeSymbology,
                 });
             }
 
@@ -116,6 +130,8 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    BarcodeValue = item.BarcodeValue,
+                    BarcodeSymbology = item.BarcodeSymbology,
                 });
                 connection.InsertOrReplace(new DbItemInventory
                 {
@@ -132,6 +148,8 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    BarcodeValue = item.BarcodeValue,
+                    BarcodeSymbology = item.BarcodeSymbology,
                 });
                 connection.InsertOrReplace(new DbItemInventory
                 {

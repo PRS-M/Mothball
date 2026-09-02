@@ -72,7 +72,9 @@ internal sealed class InventoryBackupRestorePlanBuilder
             {
                 bool shouldUpdate = mergePolicy.AllowMetadataUpdates
                     && (!string.Equals(existing.Name, container.Name, StringComparison.Ordinal)
-                    || !string.Equals(existing.Notes, container.Notes, StringComparison.Ordinal));
+                    || !string.Equals(existing.Notes, container.Notes, StringComparison.Ordinal)
+                    || !string.Equals(existing.BarcodeValue, container.BarcodeValue, StringComparison.Ordinal)
+                    || existing.BarcodeSymbology != container.BarcodeSymbology);
 
                 if (shouldUpdate)
                 {
@@ -104,7 +106,9 @@ internal sealed class InventoryBackupRestorePlanBuilder
             {
                 bool shouldUpdate = mergePolicy.AllowMetadataUpdates
                     && (!string.Equals(existing.Name, item.Name, StringComparison.Ordinal)
-                    || !string.Equals(existing.Description, item.Description, StringComparison.Ordinal));
+                    || !string.Equals(existing.Description, item.Description, StringComparison.Ordinal)
+                    || !string.Equals(existing.BarcodeValue, item.BarcodeValue, StringComparison.Ordinal)
+                    || existing.BarcodeSymbology != item.BarcodeSymbology);
 
                 if (shouldUpdate)
                 {

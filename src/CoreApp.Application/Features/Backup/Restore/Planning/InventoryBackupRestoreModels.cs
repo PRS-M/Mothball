@@ -4,9 +4,19 @@ namespace CoreApp.Application.Features.Backup.Restore.Planning;
 
 public sealed record InventoryBackupImageOwnership(Guid OwnerId, Guid ImageId);
 
-public sealed record InventoryBackupExistingContainer(Guid ContainerId, string Name, string Notes);
+public sealed record InventoryBackupExistingContainer(
+    Guid ContainerId,
+    string Name,
+    string Notes,
+    string BarcodeValue = "",
+    int? BarcodeSymbology = null);
 
-public sealed record InventoryBackupExistingItem(Guid ItemId, string Name, string Description);
+public sealed record InventoryBackupExistingItem(
+    Guid ItemId,
+    string Name,
+    string Description,
+    string BarcodeValue = "",
+    int? BarcodeSymbology = null);
 
 public sealed record InventoryBackupExistingRelation(Guid ContainerId, Guid ItemId, int Quantity);
 

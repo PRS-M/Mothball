@@ -60,10 +60,20 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
 
         var existingState = new InventoryBackupExistingState(
             existingContainers
-                .Select(c => new InventoryBackupExistingContainer(c.ContainerId, c.Name, c.Notes))
+                .Select(c => new InventoryBackupExistingContainer(
+                    c.ContainerId,
+                    c.Name,
+                    c.Notes,
+                    c.Barcode?.Value ?? string.Empty,
+                    c.Barcode is null ? null : (int)c.Barcode.Symbology))
                 .ToList(),
             existingItems
-                .Select(i => new InventoryBackupExistingItem(i.ItemId, i.Name, i.Description))
+                .Select(i => new InventoryBackupExistingItem(
+                    i.ItemId,
+                    i.Name,
+                    i.Description,
+                    i.Barcode?.Value ?? string.Empty,
+                    i.Barcode is null ? null : (int)i.Barcode.Symbology))
                 .ToList(),
             existingContainers
                 .SelectMany(c => c.Photos.Select(p => new InventoryBackupImageOwnership(c.ContainerId, p.ImageId)))
@@ -81,21 +91,21 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
         foreach (var container in plan.ContainersToInsert)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await inventoryCommands.InsertContainerAsync(new Container(container.ContainerId, container.Name, container.Notes))
+            await inventoryCommands.InsertContainerAsync(CreateContainer(container))
                 .ConfigureAwait(false);
         }
 
         foreach (var container in plan.ContainersToUpdate)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await inventoryCommands.UpdateContainerAsync(new Container(container.ContainerId, container.Name, container.Notes))
+            await inventoryCommands.UpdateContainerAsync(CreateContainer(container))
                 .ConfigureAwait(false);
         }
 
         foreach (var item in plan.ItemsToInsert)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await inventoryCommands.InsertItemAsync(new Item(item.ItemId, item.Name, item.Description))
+            await inventoryCommands.InsertItemAsync(CreateItem(item))
                 .ConfigureAwait(false);
             await inventoryCommands.InsertItemInventoryAsync(new ItemInventory(item.ItemId, item.TotalQuantity))
                 .ConfigureAwait(false);
@@ -104,7 +114,7 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
         foreach (var item in plan.ItemsToUpdate)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await inventoryCommands.UpdateItemAsync(new Item(item.ItemId, item.Name, item.Description))
+            await inventoryCommands.UpdateItemAsync(CreateItem(item))
                 .ConfigureAwait(false);
             await inventoryCommands.SaveItemInventoryAsync(new ItemInventory(item.ItemId, item.TotalQuantity))
                 .ConfigureAwait(false);
@@ -164,4 +174,27 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
 
         return plan.Result;
     }
+
+    private static Container CreateContainer(InventoryBackupContainer container)
+    {
+        var result = new Container(container.ContainerId, container.Name, container.Notes);
+        result.UpdateBarcode(CreateBarcode(container.BarcodeValue, container.BarcodeSymbology));
+        return result;
+    }
+
+    private static Item CreateItem(InventoryBackupItem item)
+    {
+        var result = new Item(item.ItemId, item.Name, item.Description);
+        result.UpdateBarcode(CreateBarcode(item.BarcodeValue, item.BarcodeSymbology));
+        return result;
+    }
+
+    private static Barcode? CreateBarcode(string value, int? symbology)
+        => string.IsNullOrWhiteSpace(value)
+            ? null
+            : new Barcode(
+                value,
+                symbology is int storedSymbology && Enum.IsDefined(typeof(BarcodeSymbology), storedSymbology)
+                    ? (BarcodeSymbology)storedSymbology
+                    : throw new ArgumentException("Backup barcode symbology is invalid.", nameof(symbology)));
 }

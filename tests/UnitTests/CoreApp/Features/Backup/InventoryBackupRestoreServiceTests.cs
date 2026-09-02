@@ -14,6 +14,54 @@ namespace Mothball.Tests.Unit.Core.Features.Backup;
 public class InventoryBackupRestoreServiceTests
 {
     [Test]
+    public async Task RestoreAsync_InsertsBarcodeMetadata()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers =
+                [
+                    new InventoryBackupContainer
+                    {
+                        ContainerId = containerId,
+                        Name = "Box",
+                        BarcodeValue = "CONTAINER-42",
+                        BarcodeSymbology = (int)BarcodeSymbology.Code128,
+                    },
+                ],
+                Items =
+                [
+                    new InventoryBackupItem
+                    {
+                        ItemId = itemId,
+                        Name = "Cable",
+                        BarcodeValue = "1234567890123",
+                        BarcodeSymbology = (int)BarcodeSymbology.Ean13,
+                    },
+                ],
+            },
+        });
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(query => query.QueryContainersAsync(It.IsAny<ContainerListSpecification>())).ReturnsAsync([]);
+        queries.Setup(query => query.QueryItemsWithPhotosAsync(It.IsAny<ItemListSpecification>())).ReturnsAsync([]);
+        queries.Setup(query => query.QueryInventorySnapshotsAsync(It.IsAny<ItemListSpecification>())).ReturnsAsync([]);
+        var commands = new Mock<IInventoryCommandRepository>();
+        var sut = new InventoryBackupRestoreService(queries.Object, commands.Object);
+
+        await sut.RestoreAsync(backup);
+
+        commands.Verify(command => command.InsertContainerAsync(It.Is<Container>(container =>
+            container.ContainerId == containerId
+            && container.Barcode == new Barcode("CONTAINER-42", BarcodeSymbology.Code128))), Times.Once);
+        commands.Verify(command => command.InsertItemAsync(It.Is<Item>(item =>
+            item.ItemId == itemId
+            && item.Barcode == new Barcode("1234567890123", BarcodeSymbology.Ean13))), Times.Once);
+    }
+
+    [Test]
     public async Task RestoreAsync_AddsOnlyMissingParts_WhenDatabaseAlreadyHasData()
     {
         var container1Id = Guid.NewGuid();

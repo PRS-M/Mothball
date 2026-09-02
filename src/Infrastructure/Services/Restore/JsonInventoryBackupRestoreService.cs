@@ -77,10 +77,20 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
 
         return new InventoryBackupExistingState(
             state.Containers
-                .Select(container => new InventoryBackupExistingContainer(container.ContainerId, container.Name, container.Notes))
+                .Select(container => new InventoryBackupExistingContainer(
+                    container.ContainerId,
+                    container.Name,
+                    container.Notes,
+                    container.BarcodeValue,
+                    container.BarcodeSymbology))
                 .ToList(),
             state.Items
-                .Select(item => new InventoryBackupExistingItem(item.ItemId, item.Name, item.Description))
+                .Select(item => new InventoryBackupExistingItem(
+                    item.ItemId,
+                    item.Name,
+                    item.Description,
+                    item.BarcodeValue,
+                    item.BarcodeSymbology))
                 .ToList(),
             containerImages,
             itemImages,
@@ -103,6 +113,8 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                 ContainerId = container.ContainerId,
                 Name = container.Name,
                 Notes = container.Notes,
+                BarcodeValue = container.BarcodeValue,
+                BarcodeSymbology = container.BarcodeSymbology,
             });
         }
 
@@ -118,12 +130,16 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                     ContainerId = container.ContainerId,
                     Name = container.Name,
                     Notes = container.Notes,
+                    BarcodeValue = container.BarcodeValue,
+                    BarcodeSymbology = container.BarcodeSymbology,
                 });
                 continue;
             }
 
             existing.Name = container.Name;
             existing.Notes = container.Notes;
+            existing.BarcodeValue = container.BarcodeValue;
+            existing.BarcodeSymbology = container.BarcodeSymbology;
         }
 
         foreach (var item in plan.ItemsToInsert)
@@ -135,6 +151,8 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                 ItemId = item.ItemId,
                 Name = item.Name,
                 Description = item.Description,
+                BarcodeValue = item.BarcodeValue,
+                BarcodeSymbology = item.BarcodeSymbology,
             });
             UpsertInventory(state, item.ItemId, item.TotalQuantity);
         }
@@ -151,6 +169,8 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                     ItemId = item.ItemId,
                     Name = item.Name,
                     Description = item.Description,
+                    BarcodeValue = item.BarcodeValue,
+                    BarcodeSymbology = item.BarcodeSymbology,
                 });
                 UpsertInventory(state, item.ItemId, item.TotalQuantity);
                 continue;
@@ -158,6 +178,8 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
 
             existing.Name = item.Name;
             existing.Description = item.Description;
+            existing.BarcodeValue = item.BarcodeValue;
+            existing.BarcodeSymbology = item.BarcodeSymbology;
             UpsertInventory(state, item.ItemId, item.TotalQuantity);
         }
 

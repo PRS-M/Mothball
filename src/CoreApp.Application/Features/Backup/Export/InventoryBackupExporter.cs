@@ -59,6 +59,8 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
                 ContainerId = c.ContainerId,
                 Name = c.Name,
                 Notes = c.Notes,
+                BarcodeValue = c.Barcode?.Value ?? string.Empty,
+                BarcodeSymbology = c.Barcode is null ? null : (int)c.Barcode.Symbology,
             })
             .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(c => c.ContainerId)
@@ -71,6 +73,8 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
                 Name = i.Item.Name,
                 Description = i.Item.Description,
                 TotalQuantity = i.TotalQuantity,
+                BarcodeValue = i.Item.Barcode?.Value ?? string.Empty,
+                BarcodeSymbology = i.Item.Barcode is null ? null : (int)i.Item.Barcode.Symbology,
             })
             .OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(i => i.ItemId)

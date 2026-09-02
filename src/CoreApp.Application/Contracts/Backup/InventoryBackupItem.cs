@@ -6,4 +6,6 @@ public sealed record InventoryBackupItem
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
     public int TotalQuantity { get; init; } = 1;
+    public string BarcodeValue { get; init; } = string.Empty;
+    public int? BarcodeSymbology { get; init; }
 }
