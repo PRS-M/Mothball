@@ -199,6 +199,7 @@
   <data name="NoBarcodeFound" xml:space="preserve"><value>Kein Barcode gefunden</value></data>
   <data name="NoSupportedBarcodeInImage" xml:space="preserve"><value>Das ausgewählte Bild enthält keinen unterstützten Barcode.</value></data>
   <data name="SelectBarcode" xml:space="preserve"><value>Barcode auswählen</value></data>
+  <data name="CameraBarcodeScanningUnavailable" xml:space="preserve"><value>Das Scannen von Barcodes mit der Kamera ist auf diesem Gerät nicht verfügbar. Wählen Sie stattdessen ein Bild aus der Galerie.</value></data>
   <data name="SearchWithinContainer" xml:space="preserve"><value>In diesem Container suchen …</value></data>
   <data name="SelectPhoto" xml:space="preserve"><value>Foto auswählen</value></data>
   <data name="SelectAnItem" xml:space="preserve"><value>Gegenstand auswählen</value></data>

@@ -198,6 +198,7 @@
   <data name="NoBarcodeFound" xml:space="preserve"><value>Nie znaleziono kodu kreskowego</value></data>
   <data name="NoSupportedBarcodeInImage" xml:space="preserve"><value>Wybrany obraz nie zawiera obsługiwanego kodu kreskowego.</value></data>
   <data name="SelectBarcode" xml:space="preserve"><value>Wybierz kod kreskowy</value></data>
+  <data name="CameraBarcodeScanningUnavailable" xml:space="preserve"><value>Skanowanie kodów kreskowych aparatem nie jest dostępne na tym urządzeniu. Wybierz obraz z galerii.</value></data>
   <data name="SearchWithinContainer" xml:space="preserve"><value>Szukaj w pojemniku...</value></data>
   <data name="SelectPhoto" xml:space="preserve"><value>Wybierz zdjęcie</value></data>
   <data name="SelectAnItem" xml:space="preserve"><value>Wybierz przedmiot</value></data>

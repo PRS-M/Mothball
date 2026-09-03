@@ -11,6 +11,8 @@ public partial class BarcodeScannerPage
     {
         InitializeComponent();
         BindingContext = viewModel;
+        barcodeReader.IsVisible = BarcodeScanning.IsSupported;
+        cameraUnsupportedMessage.IsVisible = !BarcodeScanning.IsSupported;
         barcodeReader.Options = new BarcodeReaderOptions
         {
             Formats = BarcodeFormats.All,

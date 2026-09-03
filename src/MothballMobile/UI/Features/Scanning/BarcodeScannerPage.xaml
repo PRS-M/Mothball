@@ -10,8 +10,15 @@
                 Background="{DynamicResource Surface}">
     <Grid RowDefinitions="*,Auto"
           Padding="16">
-        <zxing:CameraBarcodeReaderView x:Name="barcodeReader"
-                                       BarcodesDetected="OnBarcodesDetected" />
+         <zxing:CameraBarcodeReaderView x:Name="barcodeReader"
+                                            BarcodesDetected="OnBarcodesDetected" />
+         <Label x:Name="cameraUnsupportedMessage"
+                 IsVisible="False"
+                 HorizontalOptions="Center"
+                 VerticalOptions="Center"
+                 HorizontalTextAlignment="Center"
+                 Text="{x:Static strings:AppResources.CameraBarcodeScanningUnavailable}"
+                 TextColor="{DynamicResource OnSurfaceVariant}" />
         <Grid Grid.Row="1"
               ColumnDefinitions="Auto,Auto,*"
               ColumnSpacing="12"
