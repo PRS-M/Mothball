@@ -5,6 +5,7 @@
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+                xmlns:scanning="clr-namespace:MothballMobile.Infrastructure.Scanning"
                 x:Class="MothballMobile.UI.Features.Containers.ContainerDetails.ContainerDetailsPage"
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ContainerDetailsViewModel"
@@ -12,6 +13,7 @@
                 Background="{DynamicResource Surface}">
 
     <ContentPage.Resources>
+        <scanning:BarcodeFormatConverter x:Key="BarcodeFormatConverter" />
         <DataTemplate x:Key="ContainerHeaderTemplate"
                       x:DataType="vm:ContainerDetailsViewModel">
             <VerticalStackLayout Spacing="16">
@@ -101,7 +103,7 @@
                           HorizontalOptions="Center"
                           ForegroundColor="{DynamicResource OnSurface}"
                           Value="{Binding BarcodeValue}"
-                          Format="{Binding BarcodeSymbology}" />
+                          Format="{Binding BarcodeSymbology, Converter={StaticResource BarcodeFormatConverter}}" />
                       <VerticalStackLayout IsVisible="{Binding IsEditingBarcode}" Spacing="8">
                        <Entry Style="{StaticResource Input}" Text="{Binding BarcodeValueDraft}" />
                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">

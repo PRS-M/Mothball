@@ -1,3 +1,4 @@
+using System.Globalization;
 using CoreApp.Domain.Entities.Shared;
 using ZXing.Net.Maui;
 
@@ -30,7 +31,7 @@ public partial class BarcodeScannerPage
         }
 
         var result = e.Results.FirstOrDefault();
-        if (result is null || !Enum.TryParse<BarcodeSymbology>(result.Format.ToString(), ignoreCase: true, out var symbology))
+        if (result is null || !BarcodeFormatMapper.TryToBarcodeSymbology(result.Format, out var symbology))
         {
             Interlocked.Exchange(ref hasAcceptedResult, 0);
             return;
@@ -104,8 +105,95 @@ public partial class BarcodeScannerPage
 
     private static Barcode? TryCreateBarcode(BarcodeResult result)
     {
-        return Enum.TryParse<BarcodeSymbology>(result.Format.ToString(), ignoreCase: true, out var symbology)
+        return BarcodeFormatMapper.TryToBarcodeSymbology(result.Format, out var symbology)
             ? new Barcode(result.Value, symbology)
             : null;
+    }
+}
+
+
+/// <summary>
+/// Converts a displayed barcode symbology name to the typed ZXing format required by its generator control.
+/// </summary>
+public sealed class BarcodeFormatConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is string symbologyName
+           && Enum.TryParse<BarcodeSymbology>(symbologyName, ignoreCase: false, out var symbology)
+            ? BarcodeFormatMapper.ToBarcodeFormat(symbology)
+            : BarcodeFormatMapper.ToBarcodeFormat(BarcodeSymbology.QrCode);
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+internal static class BarcodeFormatMapper
+{
+    public static BarcodeFormat ToBarcodeFormat(BarcodeSymbology symbology)
+        => symbology switch
+        {
+            BarcodeSymbology.QrCode => BarcodeFormat.QrCode,
+            BarcodeSymbology.Aztec => BarcodeFormat.Aztec,
+            BarcodeSymbology.Codabar => BarcodeFormat.Codabar,
+            BarcodeSymbology.Code39 => BarcodeFormat.Code39,
+            BarcodeSymbology.Code93 => BarcodeFormat.Code93,
+            BarcodeSymbology.Code128 => BarcodeFormat.Code128,
+            BarcodeSymbology.DataMatrix => BarcodeFormat.DataMatrix,
+            BarcodeSymbology.Ean8 => BarcodeFormat.Ean8,
+            BarcodeSymbology.Ean13 => BarcodeFormat.Ean13,
+            BarcodeSymbology.Itf => BarcodeFormat.Itf,
+            BarcodeSymbology.Pdf417 => BarcodeFormat.Pdf417,
+            BarcodeSymbology.UpcA => BarcodeFormat.UpcA,
+            BarcodeSymbology.UpcE => BarcodeFormat.UpcE,
+            _ => throw new ArgumentOutOfRangeException(nameof(symbology), symbology, "Unsupported barcode symbology."),
+        };
+
+    public static bool TryToBarcodeSymbology(BarcodeFormat format, out BarcodeSymbology symbology)
+    {
+        switch (format)
+        {
+            case BarcodeFormat.QrCode:
+                symbology = BarcodeSymbology.QrCode;
+                return true;
+            case BarcodeFormat.Aztec:
+                symbology = BarcodeSymbology.Aztec;
+                return true;
+            case BarcodeFormat.Codabar:
+                symbology = BarcodeSymbology.Codabar;
+                return true;
+            case BarcodeFormat.Code39:
+                symbology = BarcodeSymbology.Code39;
+                return true;
+            case BarcodeFormat.Code93:
+                symbology = BarcodeSymbology.Code93;
+                return true;
+            case BarcodeFormat.Code128:
+                symbology = BarcodeSymbology.Code128;
+                return true;
+            case BarcodeFormat.DataMatrix:
+                symbology = BarcodeSymbology.DataMatrix;
+                return true;
+            case BarcodeFormat.Ean8:
+                symbology = BarcodeSymbology.Ean8;
+                return true;
+            case BarcodeFormat.Ean13:
+                symbology = BarcodeSymbology.Ean13;
+                return true;
+            case BarcodeFormat.Itf:
+                symbology = BarcodeSymbology.Itf;
+                return true;
+            case BarcodeFormat.Pdf417:
+                symbology = BarcodeSymbology.Pdf417;
+                return true;
+            case BarcodeFormat.UpcA:
+                symbology = BarcodeSymbology.UpcA;
+                return true;
+            case BarcodeFormat.UpcE:
+                symbology = BarcodeSymbology.UpcE;
+                return true;
+            default:
+                symbology = default;
+                return false;
+        }
     }
 }
