@@ -375,6 +375,15 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
             BarcodeValueDraft = barcode.Value;
             BarcodeSymbologyDraft = barcode.Symbology;
+
+            var item = currentItem;
+            if (item?.Barcode is null && item is not null)
+            {
+                await barcodeAssignments.UpdateItemAsync(item, barcode);
+                BarcodeValue = item.Barcode?.Value ?? string.Empty;
+                BarcodeSymbology = item.Barcode?.Symbology.ToString() ?? string.Empty;
+                IsEditingBarcode = false;
+            }
         });
     }
 

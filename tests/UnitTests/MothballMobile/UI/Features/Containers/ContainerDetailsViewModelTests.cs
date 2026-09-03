@@ -132,6 +132,55 @@ public sealed class ContainerDetailsViewModelTests
             It.Is<Barcode>(barcode => barcode.Value == "garage-01" && barcode.Symbology == BarcodeSymbology.Code128)), Times.Once);
     }
 
+    [Test]
+    public async Task ScanBarcodeCommand_WhenContainerHasNoBarcode_AssignsAndPublishesScannedBarcode()
+    {
+        var container = new Container(Guid.NewGuid(), "Garage", "Top shelf");
+        var details = new Mock<IContainerDetailsHandler>();
+        details.Setup(handler => handler.GetSummaryAsync(container.ContainerId.ToString()))
+            .ReturnsAsync(new ContainerDetailsSummary(container, 0, 0));
+        var assignments = new Mock<IBarcodeAssignmentService>();
+        assignments.Setup(service => service.UpdateContainerAsync(container, It.IsAny<Barcode>()))
+            .Callback<Container, Barcode?>((target, barcode) => target.UpdateBarcode(barcode));
+        var scanner = new Mock<IBarcodeScanSession>();
+        scanner.Setup(service => service.ScanAsync())
+            .ReturnsAsync(new Barcode("garage-01", BarcodeSymbology.QrCode));
+        var queries = new Mock<IContainerDetailsQueryHandler>();
+        queries.Setup(handler => handler.QueryItemsAsync(container.ContainerId.ToString(), null, 0, 5))
+            .ReturnsAsync([]);
+        var itemCoordinator = new ContainerDetailsItemsCoordinator(
+            details.Object,
+            queries.Object,
+            Mock.Of<IImagePathResolver>(),
+            Mock.Of<INavigationService>(),
+            Mock.Of<IPopupService>(),
+            new PopupDefinitionService(),
+            new ItemConsumptionCoordinator(
+                Mock.Of<IItemDetailsQueryHandler>(),
+                Mock.Of<IItemInventoryCommandService>(),
+                Mock.Of<IPopupService>(),
+                new PopupDefinitionService()),
+            Mock.Of<IBackgroundTaskObserver>());
+        var viewModel = new ContainerDetailsViewModel(
+            Mock.Of<IDeleteContainerCommandHandler>(), Mock.Of<IUpdateContainerNotesCommandHandler>(),
+            Mock.Of<IImagePathResolver>(), Mock.Of<IPopupService>(), new PopupDefinitionService(), CreateImageService(),
+            Mock.Of<INavigationService>(), Mock.Of<IApplicationSettings>(), Mock.Of<IPhotoBackgroundOperationTracker>(),
+            itemCoordinator, Mock.Of<IBackgroundTaskObserver>(), assignments.Object, scanner.Object);
+        await viewModel.InitializeAsync(container.ContainerId.ToString());
+        viewModel.EditBarcodeCommand.Execute(null);
+
+        await viewModel.ScanBarcodeCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.BarcodeValue, Is.EqualTo("garage-01"));
+            Assert.That(viewModel.BarcodeSymbology, Is.EqualTo("QrCode"));
+            Assert.That(viewModel.IsEditingBarcode, Is.False);
+        });
+        assignments.Verify(service => service.UpdateContainerAsync(container,
+            It.Is<Barcode>(barcode => barcode.Value == "garage-01" && barcode.Symbology == BarcodeSymbology.QrCode)), Times.Once);
+    }
+
     private static ImageService CreateImageService()
         => new(
             Mock.Of<IPhotoSourceReader>(),

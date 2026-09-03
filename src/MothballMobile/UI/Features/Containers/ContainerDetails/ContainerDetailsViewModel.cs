@@ -332,6 +332,15 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
             BarcodeValueDraft = barcode.Value;
             BarcodeSymbologyDraft = barcode.Symbology;
+
+            var container = currentContainer;
+            if (container?.Barcode is null && container is not null)
+            {
+                await barcodeAssignments.UpdateContainerAsync(container, barcode);
+                BarcodeValue = container.Barcode?.Value ?? string.Empty;
+                BarcodeSymbology = container.Barcode?.Symbology.ToString() ?? string.Empty;
+                IsEditingBarcode = false;
+            }
         });
     }
 
