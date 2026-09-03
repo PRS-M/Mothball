@@ -1,7 +1,7 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 
 namespace Infrastructure.Services.Repositories;
 

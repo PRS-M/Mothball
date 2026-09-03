@@ -3,7 +3,7 @@ using Moq;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Containers.ContainersList;
 using MothballMobile.Infrastructure.BarcodeDocuments;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Containers.ContainersList;
 

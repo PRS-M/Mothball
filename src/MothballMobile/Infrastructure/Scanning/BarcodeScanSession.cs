@@ -1,4 +1,4 @@
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Navigation;
 
 namespace MothballMobile.Infrastructure.Scanning;

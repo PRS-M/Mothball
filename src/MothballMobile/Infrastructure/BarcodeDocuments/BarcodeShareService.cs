@@ -1,4 +1,4 @@
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Storage;
 

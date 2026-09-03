@@ -1,5 +1,5 @@
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.Settings;
 using MothballMobile.UI.Shared;

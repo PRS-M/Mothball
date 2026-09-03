@@ -1,7 +1,7 @@
 using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 
 namespace CoreApp.Application.Features.Barcodes.Commands;
 

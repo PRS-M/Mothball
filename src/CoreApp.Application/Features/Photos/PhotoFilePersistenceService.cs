@@ -1,4 +1,4 @@
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 
 namespace CoreApp.Application.Features.Photos;

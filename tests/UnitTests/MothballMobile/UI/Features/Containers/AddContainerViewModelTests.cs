@@ -1,5 +1,5 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using Moq;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Containers.AddContainer;

@@ -1,6 +1,9 @@
-namespace CoreApp.Domain.Entities.Shared;
+namespace CoreApp.Domain.ValueObjects;
 
-public record ImageItem // Value Object
+/// <summary>
+/// Identifies an image stored for an inventory entity.
+/// </summary>
+public record ImageItem
 {
     public ImageItem()
     {
