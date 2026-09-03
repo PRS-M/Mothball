@@ -5,63 +5,65 @@
              x:Class="MothballMobile.UI.Controls.SegmentedSwitch"
              x:Name="this"
              x:DataType="self:SegmentedSwitch">
-        <Border Padding="0"
+    <Border Padding="0"
             HeightRequest="40"
             Background="{DynamicResource PickerSurface}"
             Stroke="Transparent"
             StrokeThickness="0"
             StrokeShape="RoundRectangle 20">
-          <Grid x:Name="segmentGrid"
+        <Grid x:Name="segmentGrid"
               ColumnDefinitions="*,*"
               SizeChanged="OnSegmentGridSizeChanged">
             <Border x:Name="selectionIndicator"
-                Grid.Column="0"
-                HeightRequest="40"
-                HorizontalOptions="Fill"
-                Background="{DynamicResource Surface}"
-                Stroke="Transparent"
-                StrokeThickness="0"
-                StrokeShape="RoundRectangle 20"
-                InputTransparent="True"
-                ZIndex="0" />
-                <Label Grid.Column="0"
-                       Text="{Binding Source={x:Reference this}, Path=LeftText}"
-                       TextColor="{DynamicResource OnSurfaceVariant}"
-                       HorizontalTextAlignment="Center"
-                       VerticalTextAlignment="Center"
-                       FontAttributes="Bold"
-                       ZIndex="1"
-                       SemanticProperties.Hint="{Binding Source={x:Reference this}, Path=LeftText}">
-                    <Label.Triggers>
-                        <DataTrigger TargetType="Label"
-                                     Binding="{Binding Source={x:Reference this}, Path=IsRightSelected}"
-                                     Value="False">
-                            <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
-                        </DataTrigger>
-                    </Label.Triggers>
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnLeftTapped" />
-                    </Label.GestureRecognizers>
-                </Label>
-                <Label Grid.Column="1"
-                       Text="{Binding Source={x:Reference this}, Path=RightText}"
-                       TextColor="{DynamicResource OnSurfaceVariant}"
-                       HorizontalTextAlignment="Center"
-                       VerticalTextAlignment="Center"
-                       FontAttributes="Bold"
-                       ZIndex="1"
-                       SemanticProperties.Hint="{Binding Source={x:Reference this}, Path=RightText}">
-                    <Label.Triggers>
-                        <DataTrigger TargetType="Label"
-                                     Binding="{Binding Source={x:Reference this}, Path=IsRightSelected}"
-                                     Value="True">
-                            <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
-                        </DataTrigger>
-                    </Label.Triggers>
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnRightTapped" />
-                    </Label.GestureRecognizers>
-                </Label>
+                    Grid.Column="0"
+                    HeightRequest="40"
+                    HorizontalOptions="Fill"
+                    Background="{DynamicResource Surface}"
+                    Stroke="Transparent"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 20"
+                    InputTransparent="True"
+                    ZIndex="0" />
+
+            <Label Grid.Column="0"
+                   Text="{Binding Source={x:Reference this}, Path=LeftText}"
+                   TextColor="{DynamicResource OnSurfaceVariant}"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center"
+                   FontAttributes="Bold"
+                   ZIndex="1"
+                   SemanticProperties.Hint="{Binding Source={x:Reference this}, Path=LeftText}">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label"
+                                 Binding="{Binding Source={x:Reference this}, Path=IsRightSelected}"
+                                 Value="False">
+                        <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
+                    </DataTrigger>
+                </Label.Triggers>
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnLeftTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <Label Grid.Column="1"
+                   Text="{Binding Source={x:Reference this}, Path=RightText}"
+                   TextColor="{DynamicResource OnSurfaceVariant}"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center"
+                   FontAttributes="Bold"
+                   ZIndex="1"
+                   SemanticProperties.Hint="{Binding Source={x:Reference this}, Path=RightText}">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label"
+                                 Binding="{Binding Source={x:Reference this}, Path=IsRightSelected}"
+                                 Value="True">
+                        <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
+                    </DataTrigger>
+                </Label.Triggers>
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRightTapped" />
+                </Label.GestureRecognizers>
+            </Label>
         </Grid>
     </Border>
 </ContentView>
