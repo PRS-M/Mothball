@@ -37,13 +37,6 @@ internal static class JsonStoreConstants
         InventoriesFileName,
         ImagesFileName,
         RelationsFileName,
-        WorkspacesFileName,
-        PendingSyncOperationsFileName,
-        EntityTombstonesFileName,
-        WorkspaceSyncStatesFileName,
-        AppliedRemoteOperationsFileName,
-        CanonicalBalancesFileName,
-        CanonicalMovementsFileName,
     ];
 
     public static string SlotFolder(string slot) =>

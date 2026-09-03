@@ -7,6 +7,11 @@ public sealed class SqliteStartupInitializer : IAppStartupInitializer
     private readonly MothballDatabase database;
     private readonly IWorkspaceContext workspace;
 
+    public SqliteStartupInitializer(MothballDatabase database)
+        : this(database, new SqliteWorkspaceContext(database))
+    {
+    }
+
     public SqliteStartupInitializer(MothballDatabase database, IWorkspaceContext workspace)
     {
         this.database = database;

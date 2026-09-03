@@ -7,6 +7,11 @@ public sealed class JsonStoreStartupInitializer : IAppStartupInitializer
     private readonly JsonInventoryStore store;
     private readonly IWorkspaceContext workspace;
 
+    public JsonStoreStartupInitializer(JsonInventoryStore store)
+        : this(store, new JsonWorkspaceContext(store))
+    {
+    }
+
     public JsonStoreStartupInitializer(JsonInventoryStore store, IWorkspaceContext workspace)
     {
         this.store = store;
