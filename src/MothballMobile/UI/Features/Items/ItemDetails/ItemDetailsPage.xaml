@@ -4,11 +4,17 @@
                 xmlns:vm="clr-namespace:MothballMobile.UI.Features.Items.ItemDetails"
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+                xmlns:scanning="clr-namespace:MothballMobile.UI.Features.Scanning"
                 x:Class="MothballMobile.UI.Features.Items.ItemDetails.ItemDetailsPage"
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ItemDetailsViewModel"
                 Title="{x:Static strings:AppResources.Item}"
                 Background="{DynamicResource Surface}">
+
+    <ContentPage.Resources>
+        <scanning:BarcodeFormatConverter x:Key="BarcodeFormatConverter" />
+    </ContentPage.Resources>
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Priority="0"
@@ -23,6 +29,7 @@
         </ToolbarItem>
     </ContentPage.ToolbarItems>
 
+    <Grid>
     <ScrollView>
         <VerticalStackLayout Padding="16"
                              Spacing="16">
@@ -100,6 +107,47 @@
 
                 </VerticalStackLayout>
             </Border>
+
+                 <Border Style="{StaticResource Card}">
+                  <VerticalStackLayout Spacing="8">
+                  <Grid ColumnDefinitions="Auto,*,Auto"
+                     ColumnSpacing="12">
+                      <Label Text="{x:Static strings:AppResources.Barcode}"
+                          FontAttributes="Bold"
+                          TextColor="{DynamicResource OnSurface}" />
+                      <Label Grid.Column="1"
+                          Text="{Binding BarcodeSymbology}"
+                          TextColor="{DynamicResource OnSurfaceVariant}"
+                          HorizontalOptions="End" />
+                      <Button Grid.Column="2" Text="{x:Static strings:AppResources.EditDescription}"
+                          Style="{StaticResource OutlinedButton}" Command="{Binding EditBarcodeCommand}"
+                          IsVisible="{Binding IsViewingBarcode}" />
+                      <Button Grid.Column="2" Text="{x:Static strings:AppResources.Save}"
+                          Style="{StaticResource TonalButton}" Command="{Binding SaveBarcodeCommand}"
+                          IsVisible="{Binding IsEditingBarcode}" />
+                  </Grid>
+                      <Label Text="{Binding BarcodeValue}"
+                          IsVisible="{Binding HasBarcode}"
+                          LineBreakMode="CharacterWrap"
+                          TextColor="{DynamicResource OnSurface}" />
+                  <zxing:BarcodeGeneratorView IsVisible="{Binding HasBarcode}"
+                      HeightRequest="116"
+                      WidthRequest="240"
+                      HorizontalOptions="Center"
+                      ForegroundColor="{DynamicResource OnSurface}"
+                      Value="{Binding BarcodeValue}"
+                      Format="{Binding BarcodeSymbology, Converter={StaticResource BarcodeFormatConverter}}" />
+                  <VerticalStackLayout IsVisible="{Binding IsEditingBarcode}" Spacing="8">
+                      <Entry Style="{StaticResource Input}" Text="{Binding BarcodeValueDraft}" />
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                          <Picker ItemsSource="{Binding AvailableBarcodeSymbologies}"
+                              SelectedItem="{Binding BarcodeSymbologyDraft}" />
+                          <Button Grid.Column="1" Text="{x:Static strings:AppResources.ScanBarcode}"
+                              Style="{StaticResource OutlinedButton}" Command="{Binding ScanBarcodeCommand}" />
+                      </Grid>
+                  </VerticalStackLayout>
+                  </VerticalStackLayout>
+                 </Border>
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
@@ -211,4 +259,13 @@
 
         </VerticalStackLayout>
     </ScrollView>
+          <Grid IsVisible="{Binding IsBusy}">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               Color="{DynamicResource Primary}"
+                               HeightRequest="48"
+                               WidthRequest="48"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+        </Grid>
+    </Grid>
 </views:BasePage>

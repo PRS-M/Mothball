@@ -4,6 +4,7 @@
 
 [![PR Tests](https://github.com/PRS-M/Mothball/actions/workflows/pr-tests.yml/badge.svg)](https://github.com/PRS-M/Mothball/actions/workflows/pr-tests.yml)
 
+## Overview
 Mothball helps you remember what you have, where you put it, and how much is left. Use it for a garage, workshop, pantry, wardrobe, storage unit, or small stockroom: create bins, shelves, drawers, or cabinets, then add the items inside.
 
 Add notes, photos, and quantities to make things easy to find later. Your inventory stays on your device and can be backed up and restored when needed.
@@ -48,6 +49,7 @@ Use shelves, bins, cabinets, or zones as containers and treat products, spare pa
 - Create, edit, and list items.
 - Associate existing items with containers.
 - Track relation quantities between items and containers.
+- Scan, label, and find containers and item types by barcode.
 
 ### Backup and restore
 
@@ -59,6 +61,16 @@ Use shelves, bins, cabinets, or zones as containers and treat products, spare pa
   - `FullSync`
   - `StrictFullSync`
 - Use backend-agnostic restore or SQLite transactional restore (all-or-nothing behavior).
+
+### Barcodes
+
+- Assign an optional barcode to each container or item type and display it as a scannable label.
+- Scan with the device camera or decode a barcode from a selected image.
+- Use Scan from the container list, item list, or app toolbar to open the matching record.
+- Prevent duplicate barcode assignments across all containers and item types.
+- Use item barcode scans to receive more quantity for an existing item, optionally into a scanned container.
+
+See [Barcodes](docs/Barcodes.md) for barcode workflows, supported formats, and data rules.
 
 ### Persistence backends
 
@@ -87,6 +99,8 @@ Use shelves, bins, cabinets, or zones as containers and treat products, spare pa
   - Explains the solution structure, project boundaries, extension points, dependency injection, and testing for new contributors.
 - [Features and Algorithms](docs/FeaturesAndAlgorithms.md)
   - Maps user features to their implementation and summarizes the main inventory, persistence, backup, navigation, and UI algorithms.
+- [Barcodes](docs/Barcodes.md)
+  - Describes barcode scanning, assignment, lookup, item receipts, supported formats, data rules, and persistence behavior.
 - [Overview video](<docs/MothballOverview_iPhone 16 Pro - 2026-08-14.mp4>)
   - Shows the app running on an iPhone 16 Pro simulator.
 - [Backup and Restore](docs/BackupRestore.md)

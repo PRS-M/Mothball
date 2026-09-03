@@ -16,6 +16,8 @@ public static class ContainerMapper
             ContainerId = container.ContainerId,
             Name = container.Name,
             Notes = container.Notes,
+            BarcodeValue = container.Barcode?.Value ?? string.Empty,
+            BarcodeSymbology = container.Barcode is null ? null : (int)container.Barcode.Symbology,
         };
     }
 
@@ -51,6 +53,7 @@ public static class ContainerMapper
             dbContainer.Name,
             dbContainer.Notes
         );
+        result.UpdateBarcode(CreateBarcode(dbContainer.BarcodeValue, dbContainer.BarcodeSymbology));
 
         return result;
     }
@@ -72,6 +75,21 @@ public static class ContainerMapper
             itemTypeCount: positive.Select(r => r.ItemId).Distinct().Count(),
             totalItemQuantity: positive.Sum(r => r.Quantity));
     }
+
+    private static Barcode? CreateBarcode(string? value, int? symbology)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        if (symbology is null || !Enum.IsDefined(typeof(BarcodeSymbology), symbology.Value))
+        {
+            throw new InvalidOperationException("Stored container barcode symbology is invalid.");
+        }
+
+        return new Barcode(value, (BarcodeSymbology)symbology.Value);
+    }
 }
 
 public static class ItemMapper
@@ -84,6 +102,8 @@ public static class ItemMapper
             ItemId = item.ItemId,
             Name = item.Name,
             Description = item.Description,
+            BarcodeValue = item.Barcode?.Value ?? string.Empty,
+            BarcodeSymbology = item.Barcode is null ? null : (int)item.Barcode.Symbology,
         };
     }
 
@@ -91,6 +111,7 @@ public static class ItemMapper
     {
         ArgumentNullException.ThrowIfNull(dbItem);
         var item = new Item(dbItem.ItemId, dbItem.Name, dbItem.Description);
+        item.UpdateBarcode(CreateBarcode(dbItem.BarcodeValue, dbItem.BarcodeSymbology));
 
         if (dbPhotos is not null)
         {
@@ -100,6 +121,21 @@ public static class ItemMapper
         }
 
         return item;
+    }
+
+    private static Barcode? CreateBarcode(string? value, int? symbology)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        if (symbology is null || !Enum.IsDefined(typeof(BarcodeSymbology), symbology.Value))
+        {
+            throw new InvalidOperationException("Stored item barcode symbology is invalid.");
+        }
+
+        return new Barcode(value, (BarcodeSymbology)symbology.Value);
     }
 }
 

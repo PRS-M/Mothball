@@ -40,6 +40,10 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationRequest.cs" Link="Infrastructure/Navigation/NavigationRequest.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationParams.cs" Link="Infrastructure/Navigation/NavigationParams.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Navigation/NavigationRoutes.cs" Link="Infrastructure/Navigation/NavigationRoutes.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Scanning/IBarcodeScanSession.cs" Link="Infrastructure/Scanning/IBarcodeScanSession.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Scanning/BarcodeScanSession.cs" Link="Infrastructure/Scanning/BarcodeScanSession.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Scanning/BarcodeLookupCoordinator.cs" Link="Infrastructure/Scanning/BarcodeLookupCoordinator.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Scanning/BarcodeScannerViewModel.cs" Link="UI/Features/Scanning/BarcodeScannerViewModel.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" Link="Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" Link="Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Presentation/Popups/IPopupService.cs" Link="Infrastructure/Presentation/Popups/IPopupService.cs" />
@@ -94,6 +98,7 @@
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ContainerDetailsItemsCoordinator.cs" Link="UI/Features/Containers/ContainerDetails/ContainerDetailsItemsCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ContainerDetailsViewModel.cs" Link="UI/Features/Containers/ContainerDetails/ContainerDetailsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/AddItem/AddItemViewModel.cs" Link="UI/Features/Items/AddItem/AddItemViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Containers/AddContainer/AddContainerViewModel.cs" Link="UI/Features/Containers/AddContainer/AddContainerViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemDetails/ItemInventoryWithdrawalCoordinator.cs" Link="UI/Features/Items/ItemDetails/ItemInventoryWithdrawalCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/Consumption/ItemConsumptionCoordinator.cs" Link="UI/Features/Items/Consumption/ItemConsumptionCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Items/Quantity/ItemQuantityEditCoordinator.cs" Link="UI/Features/Items/Quantity/ItemQuantityEditCoordinator.cs" />

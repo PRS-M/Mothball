@@ -25,6 +25,13 @@
   <data name="AutoSystem" xml:space="preserve"><value>Auto (System)</value></data>
   <data name="BackgroundOperations" xml:space="preserve"><value>Background Operations</value></data>
   <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Background photo operations</value></data>
+  <data name="Barcode" xml:space="preserve"><value>Barcode</value></data>
+  <data name="Error" xml:space="preserve"><value>Error</value></data>
+  <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>This barcode is already in use.</value></data>
+  <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Something went wrong. Please try again.</value></data>
+  <data name="BarcodesExtendedMode" xml:space="preserve"><value>Barcodes extended mode</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Shows additional barcode types. QR Code is always available.</value></data>
+  <data name="BarcodeSymbology" xml:space="preserve"><value>Barcode type</value></data>
   <data name="Backup" xml:space="preserve"><value>Backup</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Backup Exported</value></data>
   <data name="BackupDeleted" xml:space="preserve"><value>Backup deleted</value></data>
@@ -56,6 +63,7 @@
   <data name="ChooseWhetherMothballFollowsTheSystemAppearanceOrAlwaysUsesALightOrDarkMode" xml:space="preserve"><value>Choose whether Mothball follows the system appearance or always uses a light or dark mode.</value></data>
   <data name="ChoosingAnImportMode" xml:space="preserve"><value>Choosing an import mode</value></data>
   <data name="Container" xml:space="preserve"><value>Container</value></data>
+  <data name="EnableAdditionalBarcodeTypes" xml:space="preserve"><value>Enable additional barcode types</value></data>
   <data name="Containers" xml:space="preserve"><value>Containers</value></data>
   <data name="ContainersList" xml:space="preserve"><value>Containers List</value></data>
   <data name="Continue" xml:space="preserve"><value>Continue</value></data>
@@ -189,6 +197,14 @@
   <data name="SaveItem" xml:space="preserve"><value>Save Item</value></data>
   <data name="SearchContainers" xml:space="preserve"><value>Search containers...</value></data>
   <data name="SearchItems" xml:space="preserve"><value>Search items...</value></data>
+  <data name="ScanBarcode" xml:space="preserve"><value>Scan barcode</value></data>
+  <data name="BarcodeScannerTitle" xml:space="preserve"><value>Scan barcode</value></data>
+  <data name="Torch" xml:space="preserve"><value>Torch</value></data>
+  <data name="Gallery" xml:space="preserve"><value>Gallery</value></data>
+  <data name="NoBarcodeFound" xml:space="preserve"><value>No barcode found</value></data>
+  <data name="NoSupportedBarcodeInImage" xml:space="preserve"><value>The selected image does not contain a supported barcode.</value></data>
+  <data name="SelectBarcode" xml:space="preserve"><value>Select barcode</value></data>
+  <data name="CameraBarcodeScanningUnavailable" xml:space="preserve"><value>Camera barcode scanning is unavailable on this device. Choose an image from the gallery instead.</value></data>
   <data name="SearchWithinContainer" xml:space="preserve"><value>Search within container...</value></data>
   <data name="SelectPhoto" xml:space="preserve"><value>Select Photo</value></data>
   <data name="SelectAnItem" xml:space="preserve"><value>Select an item</value></data>

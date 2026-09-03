@@ -34,6 +34,20 @@ public sealed class JsonContainerRepository : IContainerRepository
         return MapContainer(state, row, includeRelations: true);
     }
 
+    /// <inheritdoc />
+    public async Task<Container?> FindByBarcodeAsync(string barcodeValue)
+    {
+        var normalizedValue = barcodeValue?.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedValue))
+        {
+            return null;
+        }
+
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        var row = state.Containers.FirstOrDefault(container => container.BarcodeValue == normalizedValue);
+        return row is null ? null : MapContainer(state, row, includeRelations: true);
+    }
+
     private async Task<List<Container>> GetAllAsync()
     {
         var state = await store.LoadAsync().ConfigureAwait(false);
@@ -268,6 +282,8 @@ public sealed class JsonContainerRepository : IContainerRepository
             {
                 existing.Name = container.Name;
                 existing.Notes = container.Notes;
+                existing.BarcodeValue = container.Barcode?.Value ?? string.Empty;
+                existing.BarcodeSymbology = container.Barcode is null ? null : (int)container.Barcode.Symbology;
                 return Task.CompletedTask;
             }
 
@@ -277,6 +293,8 @@ public sealed class JsonContainerRepository : IContainerRepository
                 ContainerId = container.ContainerId,
                 Name = container.Name,
                 Notes = container.Notes,
+                BarcodeValue = container.Barcode?.Value ?? string.Empty,
+                BarcodeSymbology = container.Barcode is null ? null : (int)container.Barcode.Symbology,
             });
 
             return Task.CompletedTask;
@@ -299,12 +317,16 @@ public sealed class JsonContainerRepository : IContainerRepository
                     ContainerId = container.ContainerId,
                     Name = container.Name,
                     Notes = container.Notes,
+                    BarcodeValue = container.Barcode?.Value ?? string.Empty,
+                    BarcodeSymbology = container.Barcode is null ? null : (int)container.Barcode.Symbology,
                 });
             }
             else
             {
                 existing.Name = container.Name;
                 existing.Notes = container.Notes;
+                existing.BarcodeValue = container.Barcode?.Value ?? string.Empty;
+                existing.BarcodeSymbology = container.Barcode is null ? null : (int)container.Barcode.Symbology;
             }
 
             return Task.CompletedTask;
@@ -329,12 +351,16 @@ public sealed class JsonContainerRepository : IContainerRepository
                     ContainerId = container.ContainerId,
                     Name = container.Name,
                     Notes = container.Notes,
+                    BarcodeValue = container.Barcode?.Value ?? string.Empty,
+                    BarcodeSymbology = container.Barcode is null ? null : (int)container.Barcode.Symbology,
                 });
             }
             else
             {
                 existing.Name = container.Name;
                 existing.Notes = container.Notes;
+                existing.BarcodeValue = container.Barcode?.Value ?? string.Empty;
+                existing.BarcodeSymbology = container.Barcode is null ? null : (int)container.Barcode.Symbology;
             }
 
             return Task.CompletedTask;
@@ -366,6 +392,8 @@ public sealed class JsonContainerRepository : IContainerRepository
             ContainerId = row.ContainerId,
             Name = row.Name,
             Notes = row.Notes,
+            BarcodeValue = row.BarcodeValue,
+            BarcodeSymbology = row.BarcodeSymbology,
         };
 
         var photos = state.Images

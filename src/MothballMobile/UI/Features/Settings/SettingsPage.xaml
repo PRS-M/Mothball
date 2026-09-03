@@ -102,6 +102,29 @@
                 </VerticalStackLayout>
             </Border>
 
+                                                 <Border Padding="14"
+                                                                                        StrokeThickness="1"
+                                                                                        Stroke="{DynamicResource OutlineVariant}"
+                                                                                        StrokeShape="RoundRectangle 16"
+                                                                                        Background="{DynamicResource SurfaceVariant}">
+                                                                        <VerticalStackLayout Spacing="10">
+                                                                                        <Grid ColumnDefinitions="*,Auto"
+                                                                                                                ColumnSpacing="12">
+                                                                                                        <Label Text="{x:Static strings:AppResources.BarcodesExtendedMode}"
+                                                                                                                                 Style="{StaticResource HeadlineSmall}"
+                                                                                                                                 VerticalOptions="Center"
+                                                                                                                                 TextColor="{DynamicResource OnSurface}" />
+                                                                                                        <Switch Grid.Column="1"
+                                                                                                                                        IsToggled="{Binding Appearance.IsBarcodeExtendedMode, Mode=TwoWay}"
+                                                                                                                                        SemanticProperties.Hint="{x:Static strings:AppResources.EnableAdditionalBarcodeTypes}" />
+                                                                                        </Grid>
+
+                                                                                <Label Text="{x:Static strings:AppResources.BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable}"
+                                                                                                         Style="{StaticResource BodyMedium}"
+                                                                                                         TextColor="{DynamicResource OnSurfaceVariant}" />
+                                                                </VerticalStackLayout>
+                                                </Border>
+
              <Border Padding="14"
                       StrokeThickness="1"
                       Stroke="{DynamicResource OutlineVariant}"

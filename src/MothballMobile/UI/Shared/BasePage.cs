@@ -1,6 +1,5 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Extensions.Logging;
-using MothballMobile.Infrastructure.Presentation.Errors;
 #if IOS || ANDROID
 using Plugin.AdMob;
 #endif
@@ -100,11 +99,13 @@ public class BasePage : ContentPage
         base.OnDisappearing();
     }
 
-    private static void OnViewModelErrorOccurred(string message)
+    private static async void OnViewModelErrorOccurred(string message)
     {
-        IPlatformApplication.Current?.Services
-            .GetService<IAppErrorPresenter>()
-            ?.Show(message);
+        var popup = IPlatformApplication.Current?.Services.GetService<IPopupService>();
+        if (popup is not null)
+        {
+            await popup.ShowAlertAsync(LocalizationManager.Current.Get("Error"), message);
+        }
     }
 
     private void WrapContentWithAdBanner()

@@ -21,7 +21,8 @@
                    Text="{Binding Source={x:Reference this}, Path=Text}"
                    Keyboard="{Binding Source={x:Reference this}, Path=Keyboard}"
                    ReturnType="{Binding Source={x:Reference this}, Path=ReturnType}"
-                   ReturnCommand="{Binding Source={x:Reference this}, Path=ReturnCommand}" />
+                   ReturnCommand="{Binding Source={x:Reference this}, Path=ReturnCommand}"
+                   Unfocused="OnEntryUnfocused" />
         </Border>
 
         <!-- Unwrapped entry (for cases that previously had no Border wrapper) -->
@@ -32,6 +33,7 @@
                Text="{Binding Source={x:Reference this}, Path=Text}"
                Keyboard="{Binding Source={x:Reference this}, Path=Keyboard}"
                ReturnType="{Binding Source={x:Reference this}, Path=ReturnType}"
-               ReturnCommand="{Binding Source={x:Reference this}, Path=ReturnCommand}" />
+               ReturnCommand="{Binding Source={x:Reference this}, Path=ReturnCommand}"
+               Unfocused="OnEntryUnfocused" />
     </VerticalStackLayout>
 </ContentView>

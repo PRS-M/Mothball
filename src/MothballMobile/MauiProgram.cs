@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using MothballMobile.Composition;
 using Microsoft.Maui.Handlers;
+using ZXing.Net.Maui.Controls;
 #if IOS || ANDROID
 using Plugin.AdMob;
 using Plugin.AdMob.Configuration;
@@ -32,7 +33,9 @@ public static class MauiProgram
 						: backendOverride
 			});
 
-		builder.UseMauiApp<App>();
+		builder
+			.UseMauiApp<App>()
+			.UseBarcodeReader();
 #if IOS || ANDROID
 		builder.UseAdMob();
 #endif

@@ -19,6 +19,8 @@ public interface IApplicationSettings
 
     bool IsAdvancedMode { get; set; }
 
+    bool IsBarcodeExtendedMode { get; set; }
+
     bool IsBackupSigningKeyEnabled { get; set; }
 
     LanguagePreference Language { get; set; }

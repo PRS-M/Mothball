@@ -1,6 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Features.Photos;
+using CoreApp.Application.Utilities;
+using CoreApp.Domain.Entities.Shared;
+using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;
@@ -13,18 +18,30 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly PendingPhoto pendingPhoto;
+    private readonly IBarcodeScanSession barcodeScanner;
+    private readonly IApplicationSettings applicationSettings;
+    private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
+    private static readonly ReadOnlyCollection<BarcodeSymbology> qrCodeOnlySymbologies = new([BarcodeSymbology.QrCode]);
+
+    public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
+        ? extendedBarcodeSymbologies
+        : qrCodeOnlySymbologies;
 
     public AddContainerViewModel(
         ImageService imageService,
         ICreateContainerCommandHandler createContainer,
         INavigationService navigationService,
+        IApplicationSettings applicationSettings,
         IPopupService popup,
-        IPopupDefinitionService popupDefinitions)
+        IPopupDefinitionService popupDefinitions,
+        IBarcodeScanSession barcodeScanner)
     {
         this.createContainer = createContainer ?? throw new ArgumentNullException(nameof(createContainer));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
+        this.barcodeScanner = barcodeScanner ?? throw new ArgumentNullException(nameof(barcodeScanner));
         pendingPhoto = new PendingPhoto(imageService ?? throw new ArgumentNullException(nameof(imageService)));
     }
 
@@ -34,6 +51,12 @@ public partial class AddContainerViewModel : BaseViewModel
 
     [ObservableProperty]
     private string notes = string.Empty;
+
+    [ObservableProperty]
+    private string barcodeValue = string.Empty;
+
+    [ObservableProperty]
+    private BarcodeSymbology barcodeSymbology = BarcodeSymbology.QrCode;
 
     [ObservableProperty]
     private string? validationMessage;
@@ -113,6 +136,22 @@ public partial class AddContainerViewModel : BaseViewModel
     private async Task<PhotoSource?> SelectPhotoSourceAsync()
         => await PhotoSourceSelector.SelectPhotoSourceAsync(popup, popupDefinitions);
 
+    [RelayCommand]
+    private async Task ScanBarcodeAsync()
+    {
+        await RunCommandAsync(async () =>
+        {
+            var barcode = await barcodeScanner.ScanAsync();
+            if (barcode is null)
+            {
+                return;
+            }
+
+            BarcodeValue = barcode.Value;
+            BarcodeSymbology = barcode.Symbology;
+        }, rethrowOnError: false);
+    }
+
     /// <summary>
     /// Creates the container and persists its staged photo, if one was selected.
     /// </summary>
@@ -128,15 +167,25 @@ public partial class AddContainerViewModel : BaseViewModel
 
         await RunCommandAsync(async () =>
         {
+            var normalizedBarcodeValue = BarcodeValue?.Trim();
+            var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
+                ? null
+                : new Barcode(normalizedBarcodeValue, BarcodeSymbology);
             await createContainer.CreateAsync(
                 trimmedName,
                 string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim(),
-                pendingPhoto.Bytes);
+                pendingPhoto.Bytes,
+                barcode);
 
             await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;
             ValidationMessage = null;
             await navigationService.GoBackAsync();
-        });
+        }, errorMessageFactory: BarcodeOperationErrorMessage, rethrowOnError: false);
     }
+
+    private static string BarcodeOperationErrorMessage(Exception exception)
+        => exception is BarcodeAlreadyAssignedException
+            ? LocalizationManager.Current.Get("This barcode is already in use.")
+            : LocalizationManager.Current.Get("Something went wrong. Please try again.");
 }

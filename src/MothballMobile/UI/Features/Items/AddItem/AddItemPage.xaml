@@ -10,6 +10,7 @@
                 Title="{x:Static strings:AppResources.AddItem}"
                 Background="{DynamicResource Surface}">
 
+    <Grid>
     <ScrollView>
         <Grid Padding="20"
               RowDefinitions="Auto,Auto"
@@ -28,6 +29,7 @@
                                                  WidthRequest="{StaticResource WidthM}"
                                                  Placeholder="{x:Static strings:AppResources.ItemName}"
                                                  Text="{Binding Name}"
+                                                 IsEnabled="{Binding IsItemMetadataEditable}"
                                                  ReturnType="Done"
                                                  ReturnCommand="{Binding SaveCommand}"
                                                  ValidationMessage="{Binding ValidationMessage}" />
@@ -37,7 +39,43 @@
                                                FieldWidthRequest="{StaticResource WidthM}"
                                                WrapperStyle="{StaticResource InputWrapper}"
                                                Placeholder="{x:Static strings:AppResources.ShortDescription}"
-                                               Text="{Binding Description}" />
+                                                                                             Text="{Binding Description}"
+                                                                                             IsEnabled="{Binding IsItemMetadataEditable}" />
+
+                        <controls:LabeledEntryField Label="{x:Static strings:AppResources.Barcode}"
+                                       LabelMargin="4,8,4,0"
+                                       FieldWidthRequest="{StaticResource WidthM}"
+                                       WrapperStyle="{StaticResource InputWrapper}"
+                                       Text="{Binding BarcodeValue}"
+                                       IsEnabled="{Binding IsItemMetadataEditable}"
+                                       ReturnCommand="{Binding ResolveBarcodeCommand}"
+                                       UnfocusedCommand="{Binding ResolveBarcodeCommand}" />
+
+                        <Grid WidthRequest="{StaticResource WidthM}"
+                          ColumnDefinitions="*,Auto"
+                                                    ColumnSpacing="8"
+                                                    IsEnabled="{Binding IsItemMetadataEditable}">
+                        <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
+                            ItemsSource="{Binding AvailableBarcodeSymbologies}"
+                            SelectedItem="{Binding BarcodeSymbology}" />
+                        <Button Grid.Column="1"
+                            Text="{x:Static strings:AppResources.ScanBarcode}"
+                            Style="{StaticResource OutlinedButton}"
+                            Command="{Binding ScanBarcodeCommand}" />
+                        </Grid>
+
+                            <VerticalStackLayout WidthRequest="{StaticResource WidthM}"
+                                     Spacing="8"
+                                     IsVisible="{Binding IsReceivingExistingItem}">
+                            <Label Text="{x:Static strings:AppResources.SelectContainer}"
+                                   Style="{StaticResource LabelSmall}" />
+                            <Button Text="{x:Static strings:AppResources.ScanBarcode}"
+                                Style="{StaticResource OutlinedButton}"
+                                Command="{Binding ScanDestinationContainerCommand}" />
+                            <Label Text="{Binding DestinationContainerName}"
+                                   Style="{StaticResource BodySmall}"
+                                   IsVisible="{Binding HasDestinationContainer}" />
+                            </VerticalStackLayout>
 
                     <controls:LabeledEntryField Label="Quantity"
                                                LabelMargin="4,8,4,0"
@@ -111,4 +149,13 @@
             </Border>
         </Grid>
     </ScrollView>
+          <Grid IsVisible="{Binding IsBusy}">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               Color="{DynamicResource Primary}"
+                               HeightRequest="48"
+                               WidthRequest="48"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+        </Grid>
+    </Grid>
 </views:BasePage>

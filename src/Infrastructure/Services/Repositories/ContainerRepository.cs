@@ -42,6 +42,20 @@ public class ContainerRepository : IContainerRepository
         return await MapContainerWithPhotosAndRelationsAsync(dbContainer);
     }
 
+    /// <inheritdoc />
+    public async Task<Container?> FindByBarcodeAsync(string barcodeValue)
+    {
+        var normalizedValue = barcodeValue?.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedValue))
+        {
+            return null;
+        }
+
+        var dbContainer = (await containers.WhereAsync(container => container.BarcodeValue == normalizedValue))
+            .FirstOrDefault();
+        return dbContainer is null ? null : await MapContainerWithPhotosAndRelationsAsync(dbContainer);
+    }
+
     private Task<List<Container>> GetAllAsync()
         => GetContainersInternalAsync();
 

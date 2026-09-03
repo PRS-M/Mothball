@@ -11,6 +11,16 @@
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
+        <ToolbarItem Priority="1"
+                     Order="Primary"
+                     Command="{Binding ScanToFindCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid"
+                                 Glyph="&#xF02A;"
+                                 Color="{DynamicResource OnSurface}"
+                                 Size="22" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
         <ToolbarItem Priority="0"
                 Order="Primary"
                 Command="{Binding NavigateToAddContainerCommand}">

@@ -13,6 +13,10 @@ public class DbContainer : IValidatableDbModel
 
 	public string Notes { get; set; } = string.Empty;
 
+    public string BarcodeValue { get; set; } = string.Empty;
+
+    public int? BarcodeSymbology { get; set; }
+
     public void Validate()
     {
         if (ContainerId == Guid.Empty)

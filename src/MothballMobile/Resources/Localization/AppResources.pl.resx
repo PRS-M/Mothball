@@ -25,6 +25,13 @@
   <data name="AutoSystem" xml:space="preserve"><value>Automatycznie (systemowy)</value></data>
   <data name="BackgroundOperations" xml:space="preserve"><value>Operacje w tle</value></data>
   <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Operacje zdjęć w tle</value></data>
+  <data name="Barcode" xml:space="preserve"><value>Kod kreskowy</value></data>
+  <data name="Error" xml:space="preserve"><value>Błąd</value></data>
+  <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Ten kod kreskowy jest już używany.</value></data>
+  <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Coś poszło nie tak. Spróbuj ponownie.</value></data>
+  <data name="BarcodesExtendedMode" xml:space="preserve"><value>Rozszerzony tryb kodów kreskowych</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Pokazuje dodatkowe typy kodów kreskowych. Kod QR jest zawsze dostępny.</value></data>
+  <data name="BarcodeSymbology" xml:space="preserve"><value>Typ kodu kreskowego</value></data>
   <data name="Backup" xml:space="preserve"><value>Kopia zapasowa</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Wyeksportowano kopię zapasową</value></data>
   <data name="BackupDeleted" xml:space="preserve"><value>Usunięto kopię zapasową</value></data>
@@ -56,6 +63,7 @@
   <data name="ChooseWhetherMothballFollowsTheSystemAppearanceOrAlwaysUsesALightOrDarkMode" xml:space="preserve"><value>Wybierz, czy Mothball ma używać wyglądu systemu, czy zawsze trybu jasnego lub ciemnego.</value></data>
   <data name="ChoosingAnImportMode" xml:space="preserve"><value>Wybór trybu importu</value></data>
   <data name="Container" xml:space="preserve"><value>Pojemnik</value></data>
+  <data name="EnableAdditionalBarcodeTypes" xml:space="preserve"><value>Włącz dodatkowe typy kodów kreskowych</value></data>
   <data name="Containers" xml:space="preserve"><value>Pojemniki</value></data>
   <data name="ContainersList" xml:space="preserve"><value>Lista pojemników</value></data>
   <data name="Continue" xml:space="preserve"><value>Kontynuuj</value></data>
@@ -189,6 +197,14 @@
   <data name="SaveItem" xml:space="preserve"><value>Zapisz przedmiot</value></data>
   <data name="SearchContainers" xml:space="preserve"><value>Szukaj pojemników...</value></data>
   <data name="SearchItems" xml:space="preserve"><value>Szukaj przedmiotów...</value></data>
+  <data name="ScanBarcode" xml:space="preserve"><value>Skanuj kod kreskowy</value></data>
+  <data name="BarcodeScannerTitle" xml:space="preserve"><value>Skanuj kod kreskowy</value></data>
+  <data name="Torch" xml:space="preserve"><value>Latarka</value></data>
+  <data name="Gallery" xml:space="preserve"><value>Galeria</value></data>
+  <data name="NoBarcodeFound" xml:space="preserve"><value>Nie znaleziono kodu kreskowego</value></data>
+  <data name="NoSupportedBarcodeInImage" xml:space="preserve"><value>Wybrany obraz nie zawiera obsługiwanego kodu kreskowego.</value></data>
+  <data name="SelectBarcode" xml:space="preserve"><value>Wybierz kod kreskowy</value></data>
+  <data name="CameraBarcodeScanningUnavailable" xml:space="preserve"><value>Skanowanie kodów kreskowych aparatem nie jest dostępne na tym urządzeniu. Wybierz obraz z galerii.</value></data>
   <data name="SearchWithinContainer" xml:space="preserve"><value>Szukaj w pojemniku...</value></data>
   <data name="SelectPhoto" xml:space="preserve"><value>Wybierz zdjęcie</value></data>
   <data name="SelectAnItem" xml:space="preserve"><value>Wybierz przedmiot</value></data>

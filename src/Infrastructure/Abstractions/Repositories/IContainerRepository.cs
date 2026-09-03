@@ -11,6 +11,12 @@ namespace Infrastructure.Abstractions.Repositories;
 public interface IContainerRepository
 {
     /// <summary>
+    /// Finds a container with an exact barcode value.
+    /// </summary>
+    /// <param name="barcodeValue">The barcode value to find.</param>
+    Task<Container?> FindByBarcodeAsync(string barcodeValue);
+
+    /// <summary>
     /// Gets a container by its string identifier.
     /// </summary>
     /// <param name="containerId">The identifier used by the operation.</param>

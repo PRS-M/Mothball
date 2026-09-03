@@ -10,6 +10,7 @@
                 Title="{x:Static strings:AppResources.AddContainer}"
                 Background="{DynamicResource Surface}">
 
+    <Grid>
     <ScrollView>
         <Grid Padding="20"
               RowDefinitions="Auto,Auto"
@@ -40,6 +41,24 @@
                                                UseWrapper="False"
                                                Placeholder="{x:Static strings:AppResources.EnterADescriptionOrNotes}"
                                                Text="{Binding Notes}" />
+
+                        <controls:LabeledEntryField Label="{x:Static strings:AppResources.Barcode}"
+                                       LabelMargin="4,8,4,0"
+                                       FieldWidthRequest="{StaticResource WidthM}"
+                                       UseWrapper="False"
+                                       Text="{Binding BarcodeValue}" />
+
+                        <Grid WidthRequest="{StaticResource WidthM}"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="8">
+                        <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
+                            ItemsSource="{Binding AvailableBarcodeSymbologies}"
+                            SelectedItem="{Binding BarcodeSymbology}" />
+                        <Button Grid.Column="1"
+                            Text="{x:Static strings:AppResources.ScanBarcode}"
+                            Style="{StaticResource OutlinedButton}"
+                            Command="{Binding ScanBarcodeCommand}" />
+                        </Grid>
 
                     <!-- Temporary photo selection -->
                     <Button Text="{x:Static strings:AppResources.ChoosePhoto}"
@@ -106,4 +125,13 @@
             </Border>
         </Grid>
     </ScrollView>
+          <Grid IsVisible="{Binding IsBusy}">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               Color="{DynamicResource Primary}"
+                               HeightRequest="48"
+                               WidthRequest="48"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+        </Grid>
+    </Grid>
 </views:BasePage>

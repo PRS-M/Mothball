@@ -26,6 +26,27 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     }
 
     /// <inheritdoc />
+    public async Task<BarcodeLookupResult?> FindBarcodeAsync(string barcodeValue)
+    {
+        var normalizedValue = barcodeValue?.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedValue))
+        {
+            return null;
+        }
+
+        var container = await containerRepo.FindByBarcodeAsync(normalizedValue);
+        if (container is not null)
+        {
+            return new BarcodeLookupResult(BarcodeOwnerKind.Container, container.ContainerId, container.Name);
+        }
+
+        var item = await itemRepo.FindByBarcodeAsync(normalizedValue);
+        return item is null
+            ? null
+            : new BarcodeLookupResult(BarcodeOwnerKind.Item, item.ItemId, item.Name);
+    }
+
+    /// <inheritdoc />
     public Task<Container?> GetContainerAsync(string containerId)
         => containerRepo.GetAsync(containerId);
 

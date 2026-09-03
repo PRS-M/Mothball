@@ -14,6 +14,7 @@ using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using MothballMobile.Infrastructure.Presentation.Errors;
+using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.Localization;
 using MothballMobile.UI.Features.Containers.AddContainer;
 using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
@@ -25,6 +26,8 @@ using MothballMobile.UI.Features.Items.ItemDetails;
 using MothballMobile.UI.Features.Items.ItemLocations;
 using MothballMobile.UI.Features.Items.ItemsList;
 using MothballMobile.UI.Features.Settings;
+using MothballMobile.UI.Features.Scanning;
+using CoreApp.Application.Features.Barcodes.Commands;
 
 namespace MothballMobile.Composition;
 
@@ -43,7 +46,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService, ShellNavigationService>();
         services.AddSingleton<IPopupService, MauiPopupService>();
         services.AddSingleton<IPopupDefinitionService, PopupDefinitionService>();
-        services.AddSingleton<IAppErrorPresenter, AppErrorPresenter>();
         services.AddSingleton<IRetryService, RetryService>();
         services.AddSingleton<IBackgroundTaskObserver, LoggingBackgroundTaskObserver>();
         services.AddSingleton<IPagedListLoadDiagnostics, PagedListLoadDiagnostics>();
@@ -60,7 +62,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryBackupZipRestoreService, InventoryBackupZipRestoreService>();
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
         services.AddSingleton<IItemInventoryCommandService, ItemInventoryCommandService>();
+        services.AddSingleton<IItemReceiptService, ItemReceiptService>();
         services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
+        services.AddSingleton<IBarcodeAssignmentService, BarcodeAssignmentService>();
         services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
         services.AddSingleton<IContainerDetailsHandler, ContainerDetailsHandler>();
         services.AddSingleton<IContainerAssociationQueryHandler, ContainerAssociationQueryHandler>();
@@ -128,6 +132,8 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddPlatformServices(this IServiceCollection services)
     {
+        services.AddSingleton<IBarcodeScanSession, BarcodeScanSession>();
+        services.AddSingleton<BarcodeLookupCoordinator>();
         services.AddSingleton<ICameraHandler, CameraHandler>();
         services.AddSingleton<IFileHandler, MobileFileHandler>();
         services.AddSingleton<IImageMetadataReader, SkiaImageMetadataReader>();
@@ -162,6 +168,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<BackupSettingsViewModel>();
         services.AddTransient<BackupSigningKeySettingsViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<BarcodeScannerViewModel>();
 
         return services;
     }

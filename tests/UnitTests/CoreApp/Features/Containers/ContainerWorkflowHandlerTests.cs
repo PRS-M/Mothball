@@ -1,6 +1,7 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Specifications;
 using CoreApp.Application.Features.Containers.ContainerDetails;
@@ -8,6 +9,7 @@ using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
+using MothballMobile.Infrastructure.Scanning;
 
 namespace Mothball.Tests.Unit.Core.Features.Containers;
 
@@ -256,7 +258,9 @@ public sealed class ContainerWorkflowHandlerTests
             nav.Object,
             applicationSettings,
             popup.Object,
-            new PopupDefinitionService());
+            new PopupDefinitionService(),
+            Mock.Of<IBarcodeScanSession>(),
+            Mock.Of<IInventoryQueryRepository>());
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
             [NavigationParams.ItemId] = itemId.ToString(),
@@ -306,7 +310,9 @@ public sealed class ContainerWorkflowHandlerTests
             nav.Object,
             applicationSettings,
             popup.Object,
-            new PopupDefinitionService());
+            new PopupDefinitionService(),
+            Mock.Of<IBarcodeScanSession>(),
+            Mock.Of<IInventoryQueryRepository>());
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
             [NavigationParams.ItemId] = itemId.ToString(),
@@ -317,6 +323,47 @@ public sealed class ContainerWorkflowHandlerTests
         await viewModel.Containers.Single().SelectCommand.ExecuteAsync(null);
 
         itemAssociation.Verify(handler => handler.TryAssociateAsync(itemId, container.ContainerId, 4, 3), Times.Once);
+    }
+
+    [Test]
+    public async Task AssociateItemWithContainerViewModel_ScanContainer_AssociatesScannedContainer()
+    {
+        var itemId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+        var scanner = new Mock<IBarcodeScanSession>();
+        scanner.Setup(service => service.ScanAsync())
+            .ReturnsAsync(new Barcode("box-01", BarcodeSymbology.Code128));
+        var inventoryQueries = new Mock<IInventoryQueryRepository>();
+        inventoryQueries.Setup(repository => repository.FindBarcodeAsync("box-01"))
+            .ReturnsAsync(new BarcodeLookupResult(BarcodeOwnerKind.Container, containerId, "Box"));
+        var itemAssociation = new Mock<IContainerItemAssociationHandler>();
+        itemAssociation.Setup(handler => handler.GetAvailableQuantityAsync(itemId, containerId, 1))
+            .ReturnsAsync(1);
+        itemAssociation.Setup(handler => handler.TryAssociateAsync(itemId, containerId, 1, 1))
+            .ReturnsAsync(new ContainerItemAssociationResult(Associated: true, AvailableQuantity: 1));
+        var applicationSettings = Mock.Of<IApplicationSettings>(settings => !settings.IsAdvancedMode);
+        var viewModel = new AssociateItemWithContainerViewModel(
+            new AssociateItemWithContainerCoordinator(
+                Mock.Of<IImagePathResolver>(),
+                Mock.Of<IContainerAssociationQueryHandler>(),
+                applicationSettings,
+                Mock.Of<IBackgroundTaskObserver>()),
+            itemAssociation.Object,
+            Mock.Of<INavigationService>(),
+            applicationSettings,
+            Mock.Of<IPopupService>(),
+            new PopupDefinitionService(),
+            scanner.Object,
+            inventoryQueries.Object);
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object>
+        {
+            [NavigationParams.ItemId] = itemId.ToString(),
+            [NavigationParams.UnassignedQuantity] = 1,
+        });
+
+        await viewModel.ScanContainerCommand.ExecuteAsync(null);
+
+        itemAssociation.Verify(handler => handler.TryAssociateAsync(itemId, containerId, 1, 1), Times.Once);
     }
 
 }

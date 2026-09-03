@@ -46,6 +46,25 @@ public class ItemRepository : IItemRepository
         return dbItem.ToDomain(dbPhotos);
     }
 
+    /// <inheritdoc />
+    public async Task<Item?> FindByBarcodeAsync(string barcodeValue)
+    {
+        var normalizedValue = barcodeValue?.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedValue))
+        {
+            return null;
+        }
+
+        var dbItem = (await items.WhereAsync(item => item.BarcodeValue == normalizedValue)).FirstOrDefault();
+        if (dbItem is null)
+        {
+            return null;
+        }
+
+        var dbPhotos = await photos.WhereAsync(photo => photo.OwnerUniqueId == dbItem.ItemId);
+        return dbItem.ToDomain(dbPhotos);
+    }
+
     private Task<List<Item>> GetAllWithPhotosAsync()
         => GetItemsInternalAsync();
 

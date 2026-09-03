@@ -1,5 +1,6 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
 using Moq;
+using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Containers.ContainersList;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Containers.ContainersList;
@@ -111,6 +112,10 @@ public sealed class ContainerListViewModelTests
             Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(),
             Mock.Of<IInventoryChangeTracker>(),
+            new BarcodeLookupCoordinator(
+                Mock.Of<IBarcodeScanSession>(),
+                Mock.Of<IInventoryQueryRepository>(),
+                Mock.Of<INavigationService>()),
             Mock.Of<IBackgroundTaskObserver>());
     }
 }

@@ -153,6 +153,20 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             L("Delete"));
 
     /// <inheritdoc />
+    public ConfirmationPopupDefinition ReplaceBarcode()
+        => new(
+            L("Replace barcode"),
+            L("Replace the existing barcode?"),
+            L("Replace"));
+
+    /// <inheritdoc />
+    public ConfirmationPopupDefinition ClearBarcode()
+        => new(
+            L("Clear barcode"),
+            L("Remove the barcode from this inventory record?"),
+            L("Clear"));
+
+    /// <inheritdoc />
     public NumberPickerPopupDefinition SetQuantity(int initialValue)
         => new(
             L("Set quantity"),

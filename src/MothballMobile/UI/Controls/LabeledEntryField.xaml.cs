@@ -31,6 +31,9 @@ public partial class LabeledEntryField : ContentView
 	public static readonly BindableProperty ReturnCommandProperty =
 		BindableProperty.Create(nameof(ReturnCommand), typeof(ICommand), typeof(LabeledEntryField), null);
 
+	public static readonly BindableProperty UnfocusedCommandProperty =
+		BindableProperty.Create(nameof(UnfocusedCommand), typeof(ICommand), typeof(LabeledEntryField), null);
+
 	public static readonly BindableProperty FieldWidthRequestProperty =
 		BindableProperty.Create(nameof(FieldWidthRequest), typeof(double), typeof(LabeledEntryField), -1d);
 
@@ -87,6 +90,12 @@ public partial class LabeledEntryField : ContentView
 		set => SetValue(ReturnCommandProperty, value);
 	}
 
+	public ICommand? UnfocusedCommand
+	{
+		get => (ICommand?)GetValue(UnfocusedCommandProperty);
+		set => SetValue(UnfocusedCommandProperty, value);
+	}
+
 	public double FieldWidthRequest
 	{
 		get => (double)GetValue(FieldWidthRequestProperty);
@@ -103,6 +112,14 @@ public partial class LabeledEntryField : ContentView
 	{
 		get => (bool)GetValue(UseWrapperProperty);
 		set => SetValue(UseWrapperProperty, value);
+	}
+
+	private void OnEntryUnfocused(object? sender, FocusEventArgs e)
+	{
+		if (UnfocusedCommand?.CanExecute(null) == true)
+		{
+			UnfocusedCommand.Execute(null);
+		}
 	}
 
 	void ApplyWrapperVisibility()

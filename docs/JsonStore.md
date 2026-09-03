@@ -153,8 +153,8 @@ Serializer configuration:
 
 ### table files
 
-- `containers.json`: list of `JsonContainerRow`
-- `items.json`: list of `JsonItemRow`
+- `containers.json`: list of `JsonContainerRow`, including optional `barcodeValue` and `barcodeSymbology`
+- `items.json`: list of `JsonItemRow`, including optional `barcodeValue` and `barcodeSymbology`
 - `images.json`: list of `JsonImageRow`
 - `relations.json`: list of `JsonRelationRow`
 
@@ -185,13 +185,13 @@ These examples reflect the actual serializer settings (camelCase, compact output
 #### Example containers.json
 
 ```json
-[{"rowId":1,"containerId":"6ec1f1ea-f52b-4b4e-bca3-8d589ce4d3d8","name":"Garage Shelf A","notes":"Top-left bin stack"}]
+[{"rowId":1,"containerId":"6ec1f1ea-f52b-4b4e-bca3-8d589ce4d3d8","name":"Garage Shelf A","notes":"Top-left bin stack","barcodeValue":"BOX-001","barcodeSymbology":6}]
 ```
 
 #### Example items.json
 
 ```json
-[{"rowId":1,"itemId":"f8f21693-d4d3-4821-9ba7-96cb8aee0a99","name":"Zip Ties","description":"Black, 8 inch"}]
+[{"rowId":1,"itemId":"f8f21693-d4d3-4821-9ba7-96cb8aee0a99","name":"Zip Ties","description":"Black, 8 inch","barcodeValue":"WIDGET-001","barcodeSymbology":6}]
 ```
 
 #### Example images.json

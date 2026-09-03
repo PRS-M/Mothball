@@ -17,6 +17,8 @@ public class InventoryBackupExporterTests
     {
         var container = new Container(Guid.NewGuid(), "Garage", "Shelf A");
         var item = new Item("Zip Ties", "Black 8 inch");
+        container.UpdateBarcode(new Barcode("CONTAINER-42", BarcodeSymbology.Code128));
+        item.UpdateBarcode(new Barcode("1234567890123", BarcodeSymbology.Ean13));
 
         container.AddImageItem(Guid.NewGuid());
         item.AddImageItem(Guid.NewGuid());
@@ -52,6 +54,10 @@ public class InventoryBackupExporterTests
             Assert.That(backup.Data.Relations.Count, Is.EqualTo(1));
             Assert.That(backup.Data.Images.Count, Is.EqualTo(2));
             Assert.That(backup.Data.Relations[0].Quantity, Is.EqualTo(5));
+            Assert.That(backup.Data.Containers[0].BarcodeValue, Is.EqualTo("CONTAINER-42"));
+            Assert.That(backup.Data.Containers[0].BarcodeSymbology, Is.EqualTo((int)BarcodeSymbology.Code128));
+            Assert.That(backup.Data.Items[0].BarcodeValue, Is.EqualTo("1234567890123"));
+            Assert.That(backup.Data.Items[0].BarcodeSymbology, Is.EqualTo((int)BarcodeSymbology.Ean13));
         });
     }
 

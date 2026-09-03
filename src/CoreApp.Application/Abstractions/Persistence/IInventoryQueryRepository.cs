@@ -12,6 +12,12 @@ namespace CoreApp.Application.Abstractions.Persistence;
 public interface IInventoryQueryRepository
 {
     /// <summary>
+    /// Finds the container or item that owns an exact barcode value.
+    /// </summary>
+    /// <param name="barcodeValue">The barcode value to find.</param>
+    Task<BarcodeLookupResult?> FindBarcodeAsync(string barcodeValue);
+
+    /// <summary>
     /// Gets a container by its string identifier.
     /// </summary>
     /// <param name="containerId">The string identifier of the container.</param>

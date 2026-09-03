@@ -2,6 +2,7 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 ﻿using CoreApp.Domain.Entities;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
 using CoreApp.Application.Utilities;
 
 namespace Mothball.Tests.Unit.Core.Entities;
@@ -84,6 +85,27 @@ public class CoreAppTests
         var item = new Item("Name", "Description");
 
         Assert.That(() => item.UpdateDetails("", "Description"), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void Item_UpdateBarcode_ReplacesAndClearsBarcode()
+    {
+        var item = new Item("Name", "Description");
+        var barcode = new Barcode("  1234567890123  ", BarcodeSymbology.Ean13);
+
+        item.UpdateBarcode(barcode);
+        item.UpdateBarcode(null);
+
+        Assert.That(barcode.Value, Is.EqualTo("1234567890123"));
+        Assert.That(item.Barcode, Is.Null);
+    }
+
+    [Test]
+    public void Barcode_WithBlankValue_Throws()
+    {
+        Assert.That(
+            () => new Barcode(" ", BarcodeSymbology.QrCode),
+            Throws.ArgumentException);
     }
 
     [Test]
@@ -185,6 +207,17 @@ public class CoreAppTests
         var container = new Container(Guid.NewGuid(), "Name", "Notes");
 
         Assert.That(() => container.UpdateDetails("", "Notes"), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void Container_UpdateBarcode_AssignsBarcode()
+    {
+        var container = new Container(Guid.NewGuid(), "Name", "Notes");
+        var barcode = new Barcode("container-42", BarcodeSymbology.Code128);
+
+        container.UpdateBarcode(barcode);
+
+        Assert.That(container.Barcode, Is.EqualTo(barcode));
     }
 
     [Test]

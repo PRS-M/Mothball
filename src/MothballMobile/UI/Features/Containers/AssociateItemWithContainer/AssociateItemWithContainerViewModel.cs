@@ -1,7 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.ContainerAggregate;
+using MothballMobile.Infrastructure.Scanning;
 
 namespace MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 
@@ -13,6 +15,8 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
     private readonly IApplicationSettings applicationSettings;
     private readonly IPopupService popup;
     private readonly IPopupDefinitionService popupDefinitions;
+    private readonly IBarcodeScanSession barcodeScanner;
+    private readonly IInventoryQueryRepository inventoryQueries;
     private string? itemId;
     private int unassignedQuantity;
 
@@ -25,7 +29,9 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         INavigationService nav,
         IApplicationSettings applicationSettings,
         IPopupService popup,
-        IPopupDefinitionService popupDefinitions)
+        IPopupDefinitionService popupDefinitions,
+        IBarcodeScanSession barcodeScanner,
+        IInventoryQueryRepository inventoryQueries)
         : base(pageSize: 10)
     {
         this.coordinator = coordinator;
@@ -34,6 +40,8 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
         this.applicationSettings = applicationSettings;
         this.popup = popup;
         this.popupDefinitions = popupDefinitions;
+        this.barcodeScanner = barcodeScanner;
+        this.inventoryQueries = inventoryQueries;
     }
 
     public ObservableCollection<SelectableContainerViewModel> Containers => Items;
@@ -83,6 +91,22 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
 
     partial void OnSearchQueryChanged(string value)
         => coordinator.DebounceSearch(ApplySearchAsync);
+
+    [RelayCommand]
+    private async Task ScanContainerAsync()
+    {
+        var barcode = await barcodeScanner.ScanAsync();
+        if (barcode is null)
+        {
+            return;
+        }
+
+        var owner = await inventoryQueries.FindBarcodeAsync(barcode.Value);
+        if (owner?.OwnerKind == BarcodeOwnerKind.Container)
+        {
+            await AssociateWithContainerAsync(owner.OwnerId);
+        }
+    }
 
     private async Task AssociateWithContainerAsync(Guid containerId)
     {

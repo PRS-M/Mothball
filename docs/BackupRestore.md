@@ -31,7 +31,7 @@ This document describes the backup/export and restore features added for invento
 Exporter behavior:
 
 - Reads containers and items through query repositories.
-- Includes containers, items, item-container relations, and image references.
+- Includes containers, items, item-container relations, image references, and optional barcode value/symbology fields on containers and items.
 - Emits a versioned envelope (`PayloadVersion`, `SchemaVersion`, `CreatedUtc`, `Source`).
 - Computes and attaches integrity checksum metadata.
 - Can emit either raw JSON or a ZIP archive containing the JSON payload plus photo files.
@@ -43,6 +43,8 @@ Resulting payload shape:
 - `data.items`
 - `data.relations`
 - `data.images`
+
+Barcode fields are part of existing container and item entries. They do not change `PayloadVersion` or `SchemaVersion`, which remain `1`; absent barcode fields restore as no barcode.
 
 ZIP archive layout:
 
