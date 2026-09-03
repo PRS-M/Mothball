@@ -45,6 +45,7 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/Scanning/BarcodeLookupCoordinator.cs" Link="Infrastructure/Scanning/BarcodeLookupCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Scanning/BarcodeScannerViewModel.cs" Link="UI/Features/Scanning/BarcodeScannerViewModel.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/BarcodeDocuments/BarcodeLabelData.cs" Link="Infrastructure/BarcodeDocuments/BarcodeLabelData.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/BarcodeDocuments/BarcodeDocumentLayout.cs" Link="Infrastructure/BarcodeDocuments/BarcodeDocumentLayout.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/BarcodeDocuments/IBarcodeShareService.cs" Link="Infrastructure/BarcodeDocuments/IBarcodeShareService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" Link="Infrastructure/BackgroundOperations/Photos/IPhotoBackgroundOperationTracker.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" Link="Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationEntry.cs" />

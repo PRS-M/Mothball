@@ -10,13 +10,6 @@ namespace MothballMobile.Infrastructure.BarcodeDocuments;
 /// </summary>
 public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGenerator
 {
-    private const float PointsPerInch = 72f;
-    private const float PageWidth = 8.27f * PointsPerInch;
-    private const float PageHeight = 11.69f * PointsPerInch;
-    private const float PageMargin = 28f;
-    private const float LabelGap = 10f;
-    private const int Columns = 2;
-    private const int Rows = 4;
     private const string DocumentsFolder = "BarcodeDocuments";
 
     private readonly IFileSystem fileSystem;
@@ -51,7 +44,7 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
             ? safeFileName
             : $"{safeFileName}.pdf");
 
-        var pageCount = (int)Math.Ceiling(labels.Count / (double)(Columns * Rows));
+        var pageCount = BarcodeDocumentLayout.GetPageCount(labels.Count);
         await Task.Run(() => RenderAsync(labels, fullPath, pageCount, directory, cancellationToken), cancellationToken)
             .ConfigureAwait(false);
 
@@ -78,36 +71,30 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
             IsAntialias = true,
         };
 
-        var labelWidth = (PageWidth - (2 * PageMargin) - ((Columns - 1) * LabelGap)) / Columns;
-        var labelHeight = (PageHeight - (2 * PageMargin) - ((Rows - 1) * LabelGap)) / Rows;
         var labelIndex = 0;
         var labelList = labels.ToArray();
 
         for (var pageIndex = 0; pageIndex < pageCount; pageIndex++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            using var canvas = document.BeginPage(PageWidth, PageHeight);
+            using var canvas = document.BeginPage(BarcodeDocumentLayout.PageWidth, BarcodeDocumentLayout.PageHeight);
             canvas.Clear(SKColors.White);
 
-            for (var row = 0; row < Rows && labelIndex < labelList.Length; row++)
+            for (var slotIndex = 0; slotIndex < BarcodeDocumentLayout.LabelsPerPage && labelIndex < labelList.Length; slotIndex++)
             {
-                for (var column = 0; column < Columns && labelIndex < labelList.Length; column++)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var x = PageMargin + column * (labelWidth + LabelGap);
-                    var y = PageMargin + row * (labelHeight + LabelGap);
-                    await RenderLabelAsync(
-                        canvas,
-                        new SKRect(x, y, x + labelWidth, y + labelHeight),
-                        labelList[labelIndex++],
-                        borderPaint,
-                        titleFont,
-                        titlePaint,
-                        valueFont,
-                        valuePaint,
-                        temporaryDirectory,
-                        cancellationToken).ConfigureAwait(false);
-                }
+                cancellationToken.ThrowIfCancellationRequested();
+                var bounds = BarcodeDocumentLayout.GetBounds(slotIndex);
+                await RenderLabelAsync(
+                    canvas,
+                    new SKRect(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom),
+                    labelList[labelIndex++],
+                    borderPaint,
+                    titleFont,
+                    titlePaint,
+                    valueFont,
+                    valuePaint,
+                    temporaryDirectory,
+                    cancellationToken).ConfigureAwait(false);
             }
 
             document.EndPage();
