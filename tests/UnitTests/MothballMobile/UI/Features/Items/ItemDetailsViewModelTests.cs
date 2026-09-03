@@ -120,6 +120,96 @@ public sealed class ItemDetailsViewModelTests
     }
 
     [Test]
+    public async Task SaveBarcodeCommand_WhenReplacementIsConfirmed_AssignsAndPublishesBarcode()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var details = new ItemDetailsResult(new InventorySnapshot(item, 1, 0, []));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+        var assignments = new Mock<IBarcodeAssignmentService>();
+        assignments.Setup(service => service.UpdateItemAsync(item, It.IsAny<Barcode>()))
+            .Callback<Item, Barcode?>((target, barcode) => target.UpdateBarcode(barcode));
+        var popup = new Mock<IPopupService>();
+        popup.Setup(service => service.ConfirmAsync(It.IsAny<ConfirmationPopupDefinition>()))
+            .ReturnsAsync(true);
+        var viewModel = CreateViewModel(
+            itemDetails.Object,
+            Mock.Of<IItemInventoryCommandService>(),
+            popup.Object,
+            barcodeAssignments: assignments.Object);
+        await viewModel.InitializeAsync(item.ItemId.ToString());
+        viewModel.BarcodeValueDraft = "widget-01";
+        viewModel.BarcodeSymbologyDraft = BarcodeSymbology.Code128;
+
+        await viewModel.SaveBarcodeCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.BarcodeValue, Is.EqualTo("widget-01"));
+            Assert.That(viewModel.BarcodeSymbology, Is.EqualTo("Code128"));
+            Assert.That(viewModel.IsEditingBarcode, Is.False);
+        });
+        assignments.Verify(service => service.UpdateItemAsync(item,
+            It.Is<Barcode>(barcode => barcode.Value == "widget-01" && barcode.Symbology == BarcodeSymbology.Code128)), Times.Once);
+    }
+
+    [Test]
+    public async Task ScanBarcodeCommand_WhenScanCompletes_PopulatesBarcodeDraft()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var details = new ItemDetailsResult(new InventorySnapshot(item, 1, 0, []));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+        var scanner = new Mock<IBarcodeScanSession>();
+        scanner.Setup(service => service.ScanAsync())
+            .ReturnsAsync(new Barcode("widget-01", BarcodeSymbology.Code128));
+        var viewModel = CreateViewModel(
+            itemDetails.Object,
+            Mock.Of<IItemInventoryCommandService>(),
+            Mock.Of<IPopupService>(),
+            barcodeScanner: scanner.Object);
+        await viewModel.InitializeAsync(item.ItemId.ToString());
+
+        await viewModel.ScanBarcodeCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.BarcodeValueDraft, Is.EqualTo("widget-01"));
+            Assert.That(viewModel.BarcodeSymbologyDraft, Is.EqualTo(BarcodeSymbology.Code128));
+        });
+    }
+
+    [Test]
+    public async Task SaveBarcodeCommand_WhenClearIsConfirmed_RemovesBarcode()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        item.UpdateBarcode(new Barcode("widget-01", BarcodeSymbology.Code128));
+        var details = new ItemDetailsResult(new InventorySnapshot(item, 1, 0, []));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+        var assignments = new Mock<IBarcodeAssignmentService>();
+        assignments.Setup(service => service.UpdateItemAsync(item, null))
+            .Callback<Item, Barcode?>((target, barcode) => target.UpdateBarcode(barcode));
+        var popup = new Mock<IPopupService>();
+        popup.Setup(service => service.ConfirmAsync(It.IsAny<ConfirmationPopupDefinition>()))
+            .ReturnsAsync(true);
+        var viewModel = CreateViewModel(
+            itemDetails.Object,
+            Mock.Of<IItemInventoryCommandService>(),
+            popup.Object,
+            barcodeAssignments: assignments.Object);
+        await viewModel.InitializeAsync(item.ItemId.ToString());
+        viewModel.BarcodeValueDraft = string.Empty;
+
+        await viewModel.SaveBarcodeCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.HasBarcode, Is.False);
+            Assert.That(viewModel.BarcodeValue, Is.Empty);
+            Assert.That(viewModel.BarcodeSymbology, Is.Empty);
+        });
+        assignments.Verify(service => service.UpdateItemAsync(item, null), Times.Once);
+    }
+
+    [Test]
     public async Task InitializeAsync_WhenItemIsFullyAssignedToOneContainer_ShowsGoToContainerAndHidesAssociate()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
@@ -365,7 +455,9 @@ public sealed class ItemDetailsViewModelTests
         IItemDetailsQueryHandler itemDetails,
         IItemInventoryCommandService inventoryCommands,
         IPopupService popup,
-        INavigationService? nav = null)
+        INavigationService? nav = null,
+        IBarcodeAssignmentService? barcodeAssignments = null,
+        IBarcodeScanSession? barcodeScanner = null)
         => new(
             CreateCoordinator(itemDetails, inventoryCommands, popup),
             nav ?? Mock.Of<INavigationService>(),
@@ -376,8 +468,8 @@ public sealed class ItemDetailsViewModelTests
             CreateImageService(),
             Mock.Of<IPhotoBackgroundOperationTracker>(),
             Mock.Of<IBackgroundTaskObserver>(),
-            Mock.Of<IBarcodeAssignmentService>(),
-            Mock.Of<IBarcodeScanSession>());
+            barcodeAssignments ?? Mock.Of<IBarcodeAssignmentService>(),
+            barcodeScanner ?? Mock.Of<IBarcodeScanSession>());
 
     private static ItemDetailsCoordinator CreateCoordinator(
         IItemDetailsQueryHandler itemDetails,
