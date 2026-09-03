@@ -6,7 +6,7 @@
                 xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
                 x:Class="MothballMobile.UI.Features.Scanning.BarcodeScannerPage"
                 x:DataType="local:BarcodeScannerViewModel"
-                Title="Scan barcode"
+                Title="{x:Static strings:AppResources.BarcodeScannerTitle}"
                 Background="{DynamicResource Surface}">
     <Grid RowDefinitions="*,Auto"
           Padding="16">
@@ -16,15 +16,15 @@
               ColumnDefinitions="Auto,Auto,*"
               ColumnSpacing="12"
               Margin="0,16,0,0">
-            <Button Text="Torch"
+            <Button Text="{x:Static strings:AppResources.Torch}"
                     Style="{StaticResource OutlinedButton}"
                     Clicked="OnTorchClicked" />
             <Button Grid.Column="1"
-                    Text="Gallery"
+                    Text="{x:Static strings:AppResources.Gallery}"
                     Style="{StaticResource OutlinedButton}"
                     Clicked="OnGalleryClicked" />
             <Button Grid.Column="2"
-                    Text="Cancel"
+                    Text="{x:Static strings:AppResources.Cancel}"
                     Style="{StaticResource PrimaryButton}"
                     Command="{Binding CancelCommand}" />
         </Grid>

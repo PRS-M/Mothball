@@ -163,7 +163,7 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
     public ConfirmationPopupDefinition ClearBarcode()
         => new(
             L("Clear barcode"),
-            L("Remove the barcode from this item?"),
+            L("Remove the barcode from this inventory record?"),
             L("Clear"));
 
     /// <inheritdoc />

@@ -193,6 +193,12 @@
   <data name="SearchContainers" xml:space="preserve"><value>Buscar contenedores…</value></data>
   <data name="SearchItems" xml:space="preserve"><value>Buscar artículos…</value></data>
   <data name="ScanBarcode" xml:space="preserve"><value>Escanear código de barras</value></data>
+  <data name="BarcodeScannerTitle" xml:space="preserve"><value>Escanear código de barras</value></data>
+  <data name="Torch" xml:space="preserve"><value>Linterna</value></data>
+  <data name="Gallery" xml:space="preserve"><value>Galería</value></data>
+  <data name="NoBarcodeFound" xml:space="preserve"><value>No se encontró ningún código de barras</value></data>
+  <data name="NoSupportedBarcodeInImage" xml:space="preserve"><value>La imagen seleccionada no contiene un código de barras compatible.</value></data>
+  <data name="SelectBarcode" xml:space="preserve"><value>Seleccionar código de barras</value></data>
   <data name="SearchWithinContainer" xml:space="preserve"><value>Buscar en el contenedor…</value></data>
   <data name="SelectPhoto" xml:space="preserve"><value>Seleccionar foto</value></data>
   <data name="SelectAnItem" xml:space="preserve"><value>Seleccionar un artículo</value></data>

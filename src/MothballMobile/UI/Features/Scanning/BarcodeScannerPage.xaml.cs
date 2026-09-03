@@ -71,7 +71,10 @@ public partial class BarcodeScannerPage
 
         if (barcodes.Length == 0)
         {
-            await DisplayAlertAsync("No barcode found", "The selected image does not contain a supported barcode.", "OK");
+            await DisplayAlertAsync(
+                LocalizationManager.Current.Get("NoBarcodeFound"),
+                LocalizationManager.Current.Get("NoSupportedBarcodeInImage"),
+                LocalizationManager.Current.Get("OK"));
             return;
         }
 
@@ -88,7 +91,11 @@ public partial class BarcodeScannerPage
     private async Task<Barcode?> SelectBarcodeAsync(IReadOnlyList<Barcode> barcodes)
     {
         var options = barcodes.Select(barcode => $"{barcode.Symbology}: {barcode.Value}").ToArray();
-        var selected = await DisplayActionSheetAsync("Select barcode", "Cancel", null, options);
+        var selected = await DisplayActionSheetAsync(
+            LocalizationManager.Current.Get("SelectBarcode"),
+            LocalizationManager.Current.Get("Cancel"),
+            null,
+            options);
         var index = Array.IndexOf(options, selected);
         return index >= 0 ? barcodes[index] : null;
     }
