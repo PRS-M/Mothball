@@ -20,5 +20,6 @@ public sealed partial class JsonInventoryStore
         public List<AppliedRemoteOperation> AppliedRemoteOperations { get; set; } = [];
         public List<JsonCanonicalBalanceRow> CanonicalBalances { get; set; } = [];
         public List<JsonCanonicalMovementRow> CanonicalMovements { get; set; } = [];
+        public List<JsonMediaSyncMetadataRow> MediaSyncMetadata { get; set; } = [];
     }
 }

@@ -27,6 +27,7 @@ internal static class JsonStoreConstants
     public static readonly string AppliedRemoteOperationsFileName = "appliedRemoteOperations.json";
     public static readonly string CanonicalBalancesFileName = "canonicalBalances.json";
     public static readonly string CanonicalMovementsFileName = "canonicalMovements.json";
+    public static readonly string MediaSyncMetadataFileName = "mediaSyncMetadata.json";
 
     public static readonly string[] ExpectedFiles =
     [

@@ -31,6 +31,7 @@ public sealed partial class JsonInventoryStore
         var appliedRemoteOperations = await TryReadJsonAsync<List<AppliedRemoteOperation>>(JsonStoreConstants.AppliedRemoteOperationsFileName, slotFolder) ?? [];
         var canonicalBalances = await TryReadJsonAsync<List<JsonCanonicalBalanceRow>>(JsonStoreConstants.CanonicalBalancesFileName, slotFolder) ?? [];
         var canonicalMovements = await TryReadJsonAsync<List<JsonCanonicalMovementRow>>(JsonStoreConstants.CanonicalMovementsFileName, slotFolder) ?? [];
+        var mediaSyncMetadata = await TryReadJsonAsync<List<JsonMediaSyncMetadataRow>>(JsonStoreConstants.MediaSyncMetadataFileName, slotFolder) ?? [];
 
         // Ensure counters are sane even if metadata is missing/outdated.
         metadata.NextContainerRowId = Math.Max(metadata.NextContainerRowId, containers.Select(c => c.RowId).DefaultIfEmpty(0).Max() + 1);
@@ -53,6 +54,7 @@ public sealed partial class JsonInventoryStore
             AppliedRemoteOperations = appliedRemoteOperations,
             CanonicalBalances = canonicalBalances,
             CanonicalMovements = canonicalMovements,
+            MediaSyncMetadata = mediaSyncMetadata,
         };
     }
 
@@ -88,6 +90,7 @@ public sealed partial class JsonInventoryStore
         await WriteJsonAsync(JsonStoreConstants.AppliedRemoteOperationsFileName, slotFolder, state.AppliedRemoteOperations).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.CanonicalBalancesFileName, slotFolder, state.CanonicalBalances).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.CanonicalMovementsFileName, slotFolder, state.CanonicalMovements).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.MediaSyncMetadataFileName, slotFolder, state.MediaSyncMetadata).ConfigureAwait(false);
 
         // Commit info written last inside the slot.
         var commitInfo = new JsonStoreCommitInfo
