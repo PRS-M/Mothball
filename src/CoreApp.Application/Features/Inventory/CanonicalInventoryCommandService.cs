@@ -5,7 +5,7 @@ using CoreApp.Domain.Inventory;
 namespace CoreApp.Application.Features.Inventory;
 
 /// <summary>Application command seam for canonical inventory mutations.</summary>
-public sealed class CanonicalInventoryCommandService(ICanonicalInventoryRepository inventory, ISyncOperationStore syncOperations)
+public sealed class CanonicalInventoryCommandService(ICanonicalInventoryMutationStore inventory)
 {
     /// <summary>Receives stock into a placement and queues the same mutation for synchronization.</summary>
     public async Task<InventoryMovementPlan> ReceiveAsync(InventoryWorkspaceId workspaceId, Guid itemId, InventoryPlacementId placementId, int quantity, string reason, Guid operationId, CancellationToken cancellationToken = default)
@@ -38,9 +38,8 @@ public sealed class CanonicalInventoryCommandService(ICanonicalInventoryReposito
 
     private async Task<InventoryMovementPlan> ApplyAsync(InventoryMovementPlan plan, Guid operationId, CancellationToken cancellationToken)
     {
-        await inventory.ApplyAsync(plan, cancellationToken).ConfigureAwait(false);
-        var movement = JsonSerializer.Serialize(plan.Movement);
-        await syncOperations.EnqueueAsync(new PendingSyncOperation(operationId, plan.Movement.WorkspaceId.Value, Guid.Empty, "Inventory", plan.Movement.ItemId, plan.Movement.Type.ToString(), 1, movement, null, plan.Movement.OccurredUtc), cancellationToken).ConfigureAwait(false);
+        var operation = new PendingSyncOperation(operationId, plan.Movement.WorkspaceId.Value, Guid.Empty, "Inventory", plan.Movement.ItemId, plan.Movement.Type.ToString(), 1, JsonSerializer.Serialize(plan.Movement), null, plan.Movement.OccurredUtc);
+        await inventory.ApplyWithOutboxAsync(plan, operation, cancellationToken).ConfigureAwait(false);
         return plan;
     }
 
