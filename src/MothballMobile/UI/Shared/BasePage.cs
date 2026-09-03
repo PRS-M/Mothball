@@ -1,5 +1,8 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Extensions.Logging;
+using MothballMobile.Infrastructure.BackgroundOperations.Photos;
+using Microsoft.Maui.Controls.Shapes;
+
 #if IOS || ANDROID
 using Plugin.AdMob;
 #endif
@@ -157,6 +160,7 @@ public class BasePage : ContentPage
     {
 		var adMobSettings = IPlatformApplication.Current?.Services.GetRequiredService<AdMobSettings>()
 			?? throw new InvalidOperationException("AdMob settings are not available.");
+		var photoTracker = IPlatformApplication.Current.Services.GetRequiredService<IPhotoBackgroundOperationTracker>();
         var bannerHost = new Grid
         {
             HeightRequest = 60,
@@ -179,10 +183,59 @@ public class BasePage : ContentPage
         banner.OnAdLoaded += (_, _) => placeholder.IsVisible = false;
         banner.OnAdFailedToLoad += (_, _) => placeholder.IsVisible = true;
 
-        bannerHost.Add(banner);
-        bannerHost.Add(placeholder);
+        var adContent = new Grid();
+        adContent.Add(banner);
+        adContent.Add(placeholder);
+
+        var progressBar = new ProgressBar
+        {
+            HorizontalOptions = LayoutOptions.Fill
+        };
+        progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(IPhotoBackgroundOperationTracker.OverallProgress));
+
+        var progressContent = new Border
+        {
+            Padding = new Thickness(12, 6),
+            Background = new SolidColorBrush(Color.FromArgb("#F2F2F2")),
+            Stroke = new SolidColorBrush(Colors.LightGray),
+            StrokeThickness = 1,
+            StrokeShape = new RoundRectangle { CornerRadius = 8 },
+            Content = new VerticalStackLayout
+            {
+                Spacing = 2,
+                Children =
+                {
+                    new Label
+                    {
+                        Text = LocalizationManager.Current.Get("Image processing"),
+                        FontSize = 12,
+                        TextColor = Colors.DimGray,
+                        HorizontalOptions = LayoutOptions.Center
+                    },
+                    progressBar
+                }
+            }
+        };
+
+        bannerHost.BindingContext = photoTracker;
+        adContent.SetBinding(IsVisibleProperty, new Binding(
+            nameof(IPhotoBackgroundOperationTracker.IsProcessing),
+            converter: new InverseBooleanConverter()));
+        progressContent.SetBinding(IsVisibleProperty, nameof(IPhotoBackgroundOperationTracker.IsProcessing));
+
+        bannerHost.Add(adContent);
+        bannerHost.Add(progressContent);
 
         return bannerHost;
+    }
+
+    private sealed class InverseBooleanConverter : IValueConverter
+    {
+        public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+            => value is bool isProcessing && !isProcessing;
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+            => throw new NotSupportedException();
     }
 
     private static View CreateDevelopmentAdPlaceholder()

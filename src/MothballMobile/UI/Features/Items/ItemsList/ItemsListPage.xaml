@@ -8,7 +8,6 @@
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:Name="ItemsPage"
                 x:DataType="vm:ItemsListViewModel"
-                Title="{x:Static strings:AppResources.Items}"
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>

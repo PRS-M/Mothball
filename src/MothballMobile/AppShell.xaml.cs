@@ -10,7 +10,6 @@ public partial class AppShell : Shell
 	private readonly IPopupService popup;
 
 	public AppShell(
-		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
 		IPopupService popup,
 		ILogger<AppShell> logger,
 		BarcodeLookupCoordinator barcodeLookupCoordinator)
@@ -19,7 +18,6 @@ public partial class AppShell : Shell
 		this.barcodeLookupCoordinator = barcodeLookupCoordinator ?? throw new ArgumentNullException(nameof(barcodeLookupCoordinator));
 		this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
 		InitializeComponent();
-		BindingContext = photoBackgroundOperationTracker;
 		RegisterRoutes();
 	}
 
@@ -35,19 +33,6 @@ public partial class AppShell : Shell
 			await popup.ShowAlertAsync(
 				LocalizationManager.Current.Get("Error"),
 				LocalizationManager.Current.Get("Something went wrong. Please try again."));
-		}
-	}
-
-	private async void OnBackgroundOperationsBannerTapped(object? sender, TappedEventArgs e)
-	{
-		try
-		{
-			await GoToAsync(Infrastructure.NavigationRoutes.BackgroundOperations);
-		}
-		catch (Exception ex)
-		{
-			logger.LogWarning(ex, "Background operations navigation failed.");
-			// Best-effort UX: ignore navigation failures from banner tap.
 		}
 	}
 

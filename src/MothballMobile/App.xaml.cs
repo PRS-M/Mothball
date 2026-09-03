@@ -73,7 +73,7 @@ public partial class App : Application
 		{
 			await backupSignatureSecretProvider.GetOrCreateAsync();
 			await startupOrchestrator.StartAsync();
-			var shell = new AppShell(photoBackgroundOperationTracker, popup, appShellLogger, barcodeLookupCoordinator);
+			var shell = new AppShell(popup, appShellLogger, barcodeLookupCoordinator);
 			var shellLoaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			shell.Loaded += OnShellLoaded;
 			window.Page = shell;

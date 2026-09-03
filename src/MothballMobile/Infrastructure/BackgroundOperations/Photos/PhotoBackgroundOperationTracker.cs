@@ -30,6 +30,8 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
         private set => SetProperty(ref activeOperationCount, value);
     }
 
+    public bool IsProcessing => ActiveOperationCount > 0;
+
     public double OverallProgress
     {
         get => overallProgress;
@@ -169,6 +171,7 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
         MainThread.BeginInvokeOnMainThread(() =>
         {
             ActiveOperationCount = activeCount;
+            OnPropertyChanged(nameof(IsProcessing));
             OverallProgress = Math.Clamp(progress, 0, 1);
             StatusText = status;
             IsBannerVisible = bannerVisible;

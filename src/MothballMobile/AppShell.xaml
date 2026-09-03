@@ -5,39 +5,10 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MothballMobile"
-    xmlns:backgroundOperations="clr-namespace:MothballMobile.Infrastructure.BackgroundOperations.Photos"
     xmlns:containers="clr-namespace:MothballMobile.UI.Features.Containers.ContainersList"
     xmlns:items="clr-namespace:MothballMobile.UI.Features.Items.ItemsList"
     xmlns:settings="clr-namespace:MothballMobile.UI.Features.Settings"
     Title="MothballMobile">
-    <Shell.TitleView>
-        <VerticalStackLayout HorizontalOptions="Fill"
-                             Padding="12,0"
-                             Spacing="2">
-            <Border IsVisible="{Binding IsBannerVisible}"
-                    HorizontalOptions="Center"
-                    Margin="8,2"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeThickness="1"
-                    StrokeShape="RoundRectangle 8"
-                    Padding="10,6"
-                    Background="{DynamicResource Surface}">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnBackgroundOperationsBannerTapped" />
-                </Border.GestureRecognizers>
-                <VerticalStackLayout Spacing="4"
-                                     WidthRequest="280"
-                                     x:DataType="backgroundOperations:IPhotoBackgroundOperationTracker">
-                    <Label Text="{Binding StatusText}"
-                           FontSize="12"
-                           LineBreakMode="TailTruncation"
-                           TextColor="{DynamicResource OnSurface}" />
-                    <ProgressBar Progress="{Binding OverallProgress}" />
-                </VerticalStackLayout>
-            </Border>
-        </VerticalStackLayout>
-    </Shell.TitleView>
-
     <Shell.ToolbarItems>
         <ToolbarItem Text="{x:Static strings:AppResources.ScanBarcode}"
                      IconImageSource="{FontImageSource Glyph=&#xF02A;, FontFamily=FontAwesomeSolid, Size=18}"
@@ -56,7 +27,6 @@
     <FlyoutItem Title="{x:Static strings:AppResources.Containers}" Route="Containers">
         <Tab Title="{x:Static strings:AppResources.ContainersList}">
             <ShellContent
-                Title="{x:Static strings:AppResources.ContainersList}"
                 ContentTemplate="{DataTemplate containers:ContainersListPage}"
                 Route="ContainersList">
                 <ShellContent.Icon>
@@ -68,7 +38,6 @@
     <FlyoutItem Title="{x:Static strings:AppResources.Items}" Route="Items">
         <Tab Title="{x:Static strings:AppResources.ItemsList}">
             <ShellContent
-                Title="{x:Static strings:AppResources.Items}"
                 ContentTemplate="{DataTemplate items:ItemsListPage}"
                 Route="ItemsList">
                 <ShellContent.Icon>
