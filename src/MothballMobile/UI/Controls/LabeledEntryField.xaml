@@ -22,7 +22,7 @@
                    Keyboard="{Binding Source={x:Reference this}, Path=Keyboard}"
                    ReturnType="{Binding Source={x:Reference this}, Path=ReturnType}"
                    ReturnCommand="{Binding Source={x:Reference this}, Path=ReturnCommand}"
-                   UnfocusedCommand="{Binding Source={x:Reference this}, Path=UnfocusedCommand}" />
+                   Unfocused="OnEntryUnfocused" />
         </Border>
 
         <!-- Unwrapped entry (for cases that previously had no Border wrapper) -->
@@ -34,6 +34,6 @@
                Keyboard="{Binding Source={x:Reference this}, Path=Keyboard}"
                ReturnType="{Binding Source={x:Reference this}, Path=ReturnType}"
                ReturnCommand="{Binding Source={x:Reference this}, Path=ReturnCommand}"
-               UnfocusedCommand="{Binding Source={x:Reference this}, Path=UnfocusedCommand}" />
+               Unfocused="OnEntryUnfocused" />
     </VerticalStackLayout>
 </ContentView>

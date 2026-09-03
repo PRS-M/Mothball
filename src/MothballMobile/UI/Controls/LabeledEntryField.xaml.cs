@@ -114,6 +114,14 @@ public partial class LabeledEntryField : ContentView
 		set => SetValue(UseWrapperProperty, value);
 	}
 
+	private void OnEntryUnfocused(object? sender, FocusEventArgs e)
+	{
+		if (UnfocusedCommand?.CanExecute(null) == true)
+		{
+			UnfocusedCommand.Execute(null);
+		}
+	}
+
 	void ApplyWrapperVisibility()
 	{
 		WrapperBorder.IsVisible = UseWrapper;
