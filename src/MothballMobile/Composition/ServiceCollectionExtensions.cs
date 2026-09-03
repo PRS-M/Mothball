@@ -8,15 +8,9 @@ using Infrastructure.Services.Repositories;
 using Infrastructure.Services.Startup;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.ApplicationModel.DataTransfer;
-using Microsoft.Maui.Media;
-using Microsoft.Maui.Storage;
-using MothballMobile.Infrastructure.Presentation.Errors;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.BarcodeDocuments;
-using MothballMobile.Infrastructure.Localization;
 using MothballMobile.UI.Features.Containers.AddContainer;
 using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
@@ -36,6 +30,16 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCoreApplication(this IServiceCollection services)
     {
+        return services
+            .AddPresentationInfrastructure()
+            .AddBackupServices()
+            .AddInventoryServices()
+            .AddContainerServices()
+            .AddItemServices();
+    }
+
+    private static IServiceCollection AddPresentationInfrastructure(this IServiceCollection services)
+    {
         services.AddTransient<IDebouncer>(sp => new Debouncer(300, sp.GetRequiredService<ILogger<Debouncer>>()));
         services.AddSingleton<JsonHandler>();
         services.AddSingleton<IPhotoSourceReader, PhotoSourceReader>();
@@ -53,8 +57,15 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IInventoryChangeTracker, InventoryChangeTracker>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
+        services.AddSingleton<AppStartupCoordinator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();
         services.AddSingleton<ILocalizationService, LocalizationService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddBackupServices(this IServiceCollection services)
+    {
         services.AddSingleton<IBackupSignatureSecretProvider, BackupSignatureSecretProvider>();
         services.AddSingleton<IInventoryBackupWorkflowService, InventoryBackupWorkflowService>();
         services.AddSingleton<IBackupSigningKeyTransferService, BackupSigningKeyTransferService>();
@@ -62,9 +73,21 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryBackupService, InventoryBackupService>();
         services.AddSingleton<IInventoryBackupZipRestoreService, InventoryBackupZipRestoreService>();
         services.AddSingleton<IInventoryBackupClient, NoopInventoryBackupClient>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddInventoryServices(this IServiceCollection services)
+    {
         services.AddSingleton<IItemInventoryCommandService, ItemInventoryCommandService>();
         services.AddSingleton<IItemReceiptService, ItemReceiptService>();
         services.AddSingleton<IContainerItemQuantityService, ContainerItemQuantityService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddContainerServices(this IServiceCollection services)
+    {
         services.AddSingleton<IBarcodeAssignmentService, BarcodeAssignmentService>();
         services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
         services.AddSingleton<IContainerDetailsHandler, ContainerDetailsHandler>();
@@ -74,6 +97,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDeleteContainerCommandHandler, DeleteContainerCommandHandler>();
         services.AddSingleton<IContainerListQueryHandler, ContainerListQueryHandler>();
         services.AddSingleton<ICreateContainerCommandHandler, CreateContainerCommandHandler>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddItemServices(this IServiceCollection services)
+    {
         services.AddSingleton<IItemsListQueryHandler, ItemsListQueryHandler>();
         services.AddSingleton<IItemDetailsQueryHandler, ItemDetailsQueryHandler>();
         services.AddSingleton<ICreateItemCommandHandler, CreateItemCommandHandler>();
