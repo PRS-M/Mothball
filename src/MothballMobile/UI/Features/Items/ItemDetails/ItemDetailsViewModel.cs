@@ -3,8 +3,12 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Utilities;
 using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.Entities.Shared;
 using Microsoft.Extensions.Logging;
+using MothballMobile.Infrastructure.Scanning;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;
 
@@ -14,6 +18,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly INavigationService nav;
     private readonly IApplicationSettings applicationSettings;
     private readonly IBackgroundTaskObserver backgroundTasks;
+    private readonly IBarcodeAssignmentService barcodeAssignments;
+    private readonly IBarcodeScanSession barcodeScanner;
     private Item? currentItem;
     private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
@@ -37,6 +43,15 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private string barcodeSymbology = string.Empty;
 
     [ObservableProperty]
+    private string barcodeValueDraft = string.Empty;
+
+    [ObservableProperty]
+    private global::CoreApp.Domain.Entities.Shared.BarcodeSymbology barcodeSymbologyDraft = global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+
+    [ObservableProperty]
+    private bool isEditingBarcode;
+
+    [ObservableProperty]
     private bool isEditingDescription;
 
     [ObservableProperty]
@@ -57,6 +72,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
     public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
+    public bool IsViewingBarcode => !IsEditingBarcode;
+    public static ReadOnlyCollection<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> AvailableBarcodeSymbologies { get; } = EnumValues.CreateReadOnly<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology>();
     public string DisplayDescription => HasDescription ? Description : "No description.";
     public bool IsViewingDescription => !IsEditingDescription;
     public bool ShowGoToContainerButton => HasContainerRelation
@@ -75,13 +92,17 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IPopupDefinitionService popupDefinitions,
         ImageService imageService,
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
-        IBackgroundTaskObserver backgroundTasks)
+        IBackgroundTaskObserver backgroundTasks,
+        IBarcodeAssignmentService barcodeAssignments,
+        IBarcodeScanSession barcodeScanner)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.itemDetailsCoordinator = itemDetailsCoordinator;
         this.nav = nav;
         this.applicationSettings = applicationSettings;
         this.backgroundTasks = backgroundTasks;
+        this.barcodeAssignments = barcodeAssignments;
+        this.barcodeScanner = barcodeScanner;
     }
 
     /// <inheritdoc />
@@ -119,6 +140,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     partial void OnIsEditingDescriptionChanged(bool value)
         => OnPropertyChanged(nameof(IsViewingDescription));
 
+    partial void OnIsEditingBarcodeChanged(bool value)
+        => OnPropertyChanged(nameof(IsViewingBarcode));
+
     /// <inheritdoc />
     public Task InitializeAsync()
     {
@@ -151,6 +175,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 DescriptionDraft = string.Empty;
                 BarcodeValue = string.Empty;
                 BarcodeSymbology = string.Empty;
+                BarcodeValueDraft = string.Empty;
+                BarcodeSymbologyDraft = global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+                IsEditingBarcode = false;
                 IsEditingDescription = false;
                 OnPropertyChanged(nameof(HasDescription));
                 ImagePaths.Add(paths.GetFallbackImagePath());
@@ -165,6 +192,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             DescriptionDraft = item.Description;
             BarcodeValue = item.Barcode?.Value ?? string.Empty;
             BarcodeSymbology = item.Barcode?.Symbology.ToString() ?? string.Empty;
+            BarcodeValueDraft = BarcodeValue;
+            BarcodeSymbologyDraft = item.Barcode?.Symbology ?? global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+            IsEditingBarcode = false;
             IsEditingDescription = false;
             ApplyQuantities(details.Inventory);
             OnPropertyChanged(nameof(HasDescription));
@@ -317,6 +347,60 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             Description = currentItem.Description;
             DescriptionDraft = currentItem.Description;
             IsEditingDescription = false;
+        });
+    }
+
+    [RelayCommand]
+    private void EditBarcode()
+    {
+        BarcodeValueDraft = BarcodeValue;
+        BarcodeSymbologyDraft = currentItem?.Barcode?.Symbology ?? global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+        IsEditingBarcode = true;
+    }
+
+    [RelayCommand]
+    private async Task ScanBarcodeAsync()
+    {
+        var barcode = await barcodeScanner.ScanAsync();
+        if (barcode is null)
+        {
+            return;
+        }
+
+        BarcodeValueDraft = barcode.Value;
+        BarcodeSymbologyDraft = barcode.Symbology;
+    }
+
+    [RelayCommand]
+    private async Task SaveBarcodeAsync()
+    {
+        if (currentItem is null)
+        {
+            return;
+        }
+
+        var normalizedBarcodeValue = BarcodeValueDraft?.Trim();
+        var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
+            ? null
+            : new Barcode(normalizedBarcodeValue, BarcodeSymbologyDraft);
+        if (currentItem.Barcode == barcode)
+        {
+            IsEditingBarcode = false;
+            return;
+        }
+
+        var confirmation = barcode is null ? popupDefinitions.ClearBarcode() : popupDefinitions.ReplaceBarcode();
+        if (!await popup.ConfirmAsync(confirmation))
+        {
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            await barcodeAssignments.UpdateItemAsync(currentItem, barcode);
+            BarcodeValue = currentItem.Barcode?.Value ?? string.Empty;
+            BarcodeSymbology = currentItem.Barcode?.Symbology.ToString() ?? string.Empty;
+            IsEditingBarcode = false;
         });
     }
 

@@ -68,11 +68,10 @@
                     </VerticalStackLayout>
                 </Border>
 
-                  <Border Style="{StaticResource Card}"
-                       IsVisible="{Binding HasBarcode}">
-                      <Grid ColumnDefinitions="Auto,*"
-                         ColumnSpacing="12"
-                         RowDefinitions="Auto,Auto">
+                  <Border Style="{StaticResource Card}">
+                      <VerticalStackLayout Spacing="8">
+                      <Grid ColumnDefinitions="Auto,*,Auto"
+                         ColumnSpacing="12">
                        <Label Text="{x:Static strings:AppResources.Barcode}"
                            FontAttributes="Bold"
                            TextColor="{DynamicResource OnSurface}" />
@@ -80,12 +79,31 @@
                            Text="{Binding BarcodeSymbology}"
                            TextColor="{DynamicResource OnSurfaceVariant}"
                            HorizontalOptions="End" />
-                       <Label Grid.Row="1"
-                           Grid.ColumnSpan="2"
-                           Text="{Binding BarcodeValue}"
+                       <Button Grid.Column="2"
+                           Text="{x:Static strings:AppResources.EditDescription}"
+                           Style="{StaticResource OutlinedButton}"
+                           Command="{Binding EditBarcodeCommand}"
+                           IsVisible="{Binding IsViewingBarcode}" />
+                       <Button Grid.Column="2"
+                           Text="{x:Static strings:AppResources.Save}"
+                           Style="{StaticResource TonalButton}"
+                           Command="{Binding SaveBarcodeCommand}"
+                           IsVisible="{Binding IsEditingBarcode}" />
+                      </Grid>
+                       <Label Text="{Binding BarcodeValue}"
+                           IsVisible="{Binding HasBarcode}"
                            LineBreakMode="CharacterWrap"
                            TextColor="{DynamicResource OnSurface}" />
-                      </Grid>
+                      <VerticalStackLayout IsVisible="{Binding IsEditingBarcode}" Spacing="8">
+                       <Entry Style="{StaticResource Input}" Text="{Binding BarcodeValueDraft}" />
+                       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Picker ItemsSource="{x:Static Member=vm:ContainerDetailsViewModel.AvailableBarcodeSymbologies}"
+                            SelectedItem="{Binding BarcodeSymbologyDraft}" />
+                        <Button Grid.Column="1" Text="{x:Static strings:AppResources.ScanBarcode}"
+                            Style="{StaticResource OutlinedButton}" Command="{Binding ScanBarcodeCommand}" />
+                       </Grid>
+                      </VerticalStackLayout>
+                      </VerticalStackLayout>
                   </Border>
 
                 <Border Style="{StaticResource Card}">

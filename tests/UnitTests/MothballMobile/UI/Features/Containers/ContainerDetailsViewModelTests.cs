@@ -2,7 +2,9 @@ using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.Shared;
 using CoreApp.Application.Features.Containers.ContainerDetails;
+using CoreApp.Application.Features.Barcodes.Commands;
 using Moq;
+using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Containers.ContainerDetails;
 using MothballMobile.UI.Features.Items.Consumption;
 
@@ -57,7 +59,9 @@ public sealed class ContainerDetailsViewModelTests
             Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode),
             Mock.Of<IPhotoBackgroundOperationTracker>(),
             itemCoordinator,
-            Mock.Of<IBackgroundTaskObserver>());
+            Mock.Of<IBackgroundTaskObserver>(),
+            Mock.Of<IBarcodeAssignmentService>(),
+            Mock.Of<IBarcodeScanSession>());
 
         var initialization = viewModel.InitializeAsync(container.ContainerId.ToString());
 
@@ -81,6 +85,51 @@ public sealed class ContainerDetailsViewModelTests
             Assert.That(viewModel.IsLoadingItems, Is.False);
             Assert.That(viewModel.IsItemListEmpty, Is.True);
         });
+    }
+
+    [Test]
+    public async Task SaveBarcodeCommand_WhenReplacementIsConfirmed_AssignsAndPublishesBarcode()
+    {
+        var container = new Container(Guid.NewGuid(), "Garage", "Top shelf");
+        var details = new Mock<IContainerDetailsHandler>();
+        details.Setup(handler => handler.GetSummaryAsync(container.ContainerId.ToString()))
+            .ReturnsAsync(new ContainerDetailsSummary(container, 0, 0));
+        var assignments = new Mock<IBarcodeAssignmentService>();
+        assignments.Setup(service => service.UpdateContainerAsync(container, It.IsAny<Barcode>()))
+            .Callback<Container, Barcode?>((target, barcode) => target.UpdateBarcode(barcode));
+        var popup = new Mock<IPopupService>();
+        popup.Setup(service => service.ConfirmAsync(It.IsAny<ConfirmationPopupDefinition>())).ReturnsAsync(true);
+        var queries = new Mock<IContainerDetailsQueryHandler>();
+        queries.Setup(handler => handler.QueryItemsAsync(container.ContainerId.ToString(), null, 0, 5))
+            .ReturnsAsync([]);
+        var itemCoordinator = new ContainerDetailsItemsCoordinator(
+            details.Object,
+            queries.Object,
+            Mock.Of<IImagePathResolver>(),
+            Mock.Of<INavigationService>(),
+            popup.Object,
+            new PopupDefinitionService(),
+            new ItemConsumptionCoordinator(Mock.Of<IItemDetailsQueryHandler>(), Mock.Of<IItemInventoryCommandService>(), popup.Object, new PopupDefinitionService()),
+            Mock.Of<IBackgroundTaskObserver>());
+        var viewModel = new ContainerDetailsViewModel(
+            Mock.Of<IDeleteContainerCommandHandler>(), Mock.Of<IUpdateContainerNotesCommandHandler>(),
+            Mock.Of<IImagePathResolver>(), popup.Object, new PopupDefinitionService(), CreateImageService(),
+            Mock.Of<INavigationService>(), Mock.Of<IApplicationSettings>(), Mock.Of<IPhotoBackgroundOperationTracker>(),
+            itemCoordinator, Mock.Of<IBackgroundTaskObserver>(), assignments.Object, Mock.Of<IBarcodeScanSession>());
+        await viewModel.InitializeAsync(container.ContainerId.ToString());
+        viewModel.BarcodeValueDraft = "garage-01";
+        viewModel.BarcodeSymbologyDraft = BarcodeSymbology.Code128;
+
+        await viewModel.SaveBarcodeCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.BarcodeValue, Is.EqualTo("garage-01"));
+            Assert.That(viewModel.BarcodeSymbology, Is.EqualTo("Code128"));
+            Assert.That(viewModel.IsEditingBarcode, Is.False);
+        });
+        assignments.Verify(service => service.UpdateContainerAsync(container,
+            It.Is<Barcode>(barcode => barcode.Value == "garage-01" && barcode.Symbology == BarcodeSymbology.Code128)), Times.Once);
     }
 
     private static ImageService CreateImageService()

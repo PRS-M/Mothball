@@ -1,5 +1,6 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.Entities.Shared;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -8,6 +9,7 @@ using MothballMobile.UI.Features.Items.Quantity;
 using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Presentation.Popups;
+using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Items.ItemDetails;
 using MothballMobile.UI.Features.Items.ItemLocations;
 
@@ -68,7 +70,9 @@ public sealed class ItemDetailsViewModelTests
             new PopupDefinitionService(),
             imageService,
             Mock.Of<IPhotoBackgroundOperationTracker>(),
-            Mock.Of<IBackgroundTaskObserver>());
+            Mock.Of<IBackgroundTaskObserver>(),
+            Mock.Of<IBarcodeAssignmentService>(),
+            Mock.Of<IBarcodeScanSession>());
         await viewModel.InitializeAsync(item.ItemId.ToString());
 
         await viewModel.DeletePhotoCommand.ExecuteAsync(null);
@@ -371,7 +375,9 @@ public sealed class ItemDetailsViewModelTests
             new PopupDefinitionService(),
             CreateImageService(),
             Mock.Of<IPhotoBackgroundOperationTracker>(),
-            Mock.Of<IBackgroundTaskObserver>());
+            Mock.Of<IBackgroundTaskObserver>(),
+            Mock.Of<IBarcodeAssignmentService>(),
+            Mock.Of<IBarcodeScanSession>());
 
     private static ItemDetailsCoordinator CreateCoordinator(
         IItemDetailsQueryHandler itemDetails,
