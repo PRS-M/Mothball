@@ -27,6 +27,9 @@
   <data name="BackgroundOperations" xml:space="preserve"><value>Operaciones en segundo plano</value></data>
   <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Operaciones de fotos en segundo plano</value></data>
   <data name="Barcode" xml:space="preserve"><value>Código de barras</value></data>
+  <data name="Error" xml:space="preserve"><value>Error</value></data>
+  <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Este código de barras ya está en uso.</value></data>
+  <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Algo salió mal. Inténtalo de nuevo.</value></data>
   <data name="BarcodesExtendedMode" xml:space="preserve"><value>Modo ampliado de códigos de barras</value></data>
   <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Muestra tipos adicionales de códigos de barras. El código QR siempre está disponible.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Tipo de código de barras</value></data>

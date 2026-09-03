@@ -3,6 +3,7 @@ using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.Entities.Shared;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Specifications;
 using Moq;
 
@@ -148,7 +149,7 @@ public sealed class ListAndItemWorkflowHandlerTests
 
         var action = () => handler.CreateAsync("Hat", "Blue", barcode: new Barcode("1234567890123", BarcodeSymbology.Ean13));
 
-        Assert.That(action, Throws.InvalidOperationException.With.Message.Contains("Archive box"));
+        Assert.That(action, Throws.TypeOf<BarcodeAlreadyAssignedException>().With.Message.Contains("Archive box"));
         commands.Verify(command => command.InsertItemAsync(It.IsAny<Item>()), Times.Never);
     }
 }

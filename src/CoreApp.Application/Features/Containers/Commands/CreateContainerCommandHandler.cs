@@ -1,5 +1,6 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.Shared;
+using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Features.Photos;
 
 namespace CoreApp.Application.Features.Containers.Commands;
@@ -51,7 +52,7 @@ public sealed class CreateContainerCommandHandler : ICreateContainerCommandHandl
         var existing = await inventoryQueries.FindBarcodeAsync(barcode.Value);
         if (existing is not null)
         {
-            throw new InvalidOperationException($"Barcode '{barcode.Value}' is already assigned to {existing.OwnerKind} '{existing.OwnerName}'.");
+            throw new BarcodeAlreadyAssignedException(barcode.Value, existing.OwnerKind, existing.OwnerName);
         }
     }
 }

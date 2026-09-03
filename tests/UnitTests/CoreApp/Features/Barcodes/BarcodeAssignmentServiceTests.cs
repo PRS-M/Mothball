@@ -38,7 +38,7 @@ public sealed class BarcodeAssignmentServiceTests
 
         var action = () => service.UpdateItemAsync(item, barcode);
 
-        Assert.That(action, Throws.InvalidOperationException.With.Message.Contains("Archive box"));
+        Assert.That(action, Throws.TypeOf<BarcodeAlreadyAssignedException>().With.Message.Contains("Archive box"));
         Assert.That(item.Barcode, Is.Null);
         commands.Verify(repository => repository.UpdateItemAsync(It.IsAny<Item>()), Times.Never);
     }

@@ -82,7 +82,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     private Task NavigateToAddContainerAsync() => nav.GoToAsync(NavigationRoutes.AddContainer);
 
     [RelayCommand]
-    private Task ScanToFindAsync() => RunCommandAsync(barcodeLookup.ScanAndNavigateAsync);
+    private Task ScanToFindAsync() => RunCommandAsync(barcodeLookup.ScanAndNavigateAsync, rethrowOnError: false);
 
     private bool IsEmptyFilterSelected()
         => SelectedFilter == ContainerListFilter.Empty;

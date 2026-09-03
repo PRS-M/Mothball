@@ -60,6 +60,6 @@ public sealed class BarcodeAssignmentService : IBarcodeAssignmentService
             return;
         }
 
-        throw new InvalidOperationException($"Barcode '{barcode.Value}' is already assigned to {existing.OwnerKind} '{existing.OwnerName}'.");
+        throw new BarcodeAlreadyAssignedException(barcode.Value, existing.OwnerKind, existing.OwnerName);
     }
 }

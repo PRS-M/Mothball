@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Features.Photos;
 using CoreApp.Application.Utilities;
 using CoreApp.Domain.Entities.Shared;
@@ -148,7 +149,7 @@ public partial class AddContainerViewModel : BaseViewModel
 
             BarcodeValue = barcode.Value;
             BarcodeSymbology = barcode.Symbology;
-        });
+        }, rethrowOnError: false);
     }
 
     /// <summary>
@@ -180,6 +181,11 @@ public partial class AddContainerViewModel : BaseViewModel
             PhotoThumbnailPath = null;
             ValidationMessage = null;
             await navigationService.GoBackAsync();
-        });
+        }, errorMessageFactory: BarcodeOperationErrorMessage, rethrowOnError: false);
     }
+
+    private static string BarcodeOperationErrorMessage(Exception exception)
+        => exception is BarcodeAlreadyAssignedException
+            ? LocalizationManager.Current.Get("This barcode is already in use.")
+            : LocalizationManager.Current.Get("Something went wrong. Please try again.");
 }

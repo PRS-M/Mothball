@@ -46,7 +46,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService, ShellNavigationService>();
         services.AddSingleton<IPopupService, MauiPopupService>();
         services.AddSingleton<IPopupDefinitionService, PopupDefinitionService>();
-        services.AddSingleton<IAppErrorPresenter, AppErrorPresenter>();
         services.AddSingleton<IRetryService, RetryService>();
         services.AddSingleton<IBackgroundTaskObserver, LoggingBackgroundTaskObserver>();
         services.AddSingleton<IPagedListLoadDiagnostics, PagedListLoadDiagnostics>();

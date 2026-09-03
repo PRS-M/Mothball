@@ -57,7 +57,11 @@ public abstract class BaseViewModel : ObservableObject
     /// </summary>
     /// <param name="action">The command to run.</param>
     /// <param name="showRefreshing">Whether to set <see cref="IsRefreshing"/> while the command runs.</param>
-    protected async Task RunCommandAsync(Func<Task> action, bool showRefreshing = false)
+    protected async Task RunCommandAsync(
+        Func<Task> action,
+        bool showRefreshing = false,
+        Func<Exception, string>? errorMessageFactory = null,
+        bool rethrowOnError = true)
     {
         if (IsBusy)
             return;
@@ -73,9 +77,13 @@ public abstract class BaseViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
-            ErrorOccurred?.Invoke(ex.Message);
-            throw;
+            var message = errorMessageFactory?.Invoke(ex) ?? ex.Message;
+            ErrorMessage = message;
+            ErrorOccurred?.Invoke(message);
+            if (rethrowOnError)
+            {
+                throw;
+            }
         }
         finally
         {

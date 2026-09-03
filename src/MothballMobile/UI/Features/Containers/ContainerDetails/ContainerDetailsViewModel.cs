@@ -341,7 +341,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                 BarcodeSymbology = container.Barcode?.Symbology.ToString() ?? string.Empty;
                 IsEditingBarcode = false;
             }
-        });
+        }, errorMessageFactory: BarcodeOperationErrorMessage, rethrowOnError: false);
     }
 
     [RelayCommand]
@@ -374,8 +374,13 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             BarcodeValue = currentContainer.Barcode?.Value ?? string.Empty;
             BarcodeSymbology = currentContainer.Barcode?.Symbology.ToString() ?? string.Empty;
             IsEditingBarcode = false;
-        });
+        }, errorMessageFactory: BarcodeOperationErrorMessage, rethrowOnError: false);
     }
+
+    private static string BarcodeOperationErrorMessage(Exception exception)
+        => exception is BarcodeAlreadyAssignedException
+            ? LocalizationManager.Current.Get("This barcode is already in use.")
+            : LocalizationManager.Current.Get("Something went wrong. Please try again.");
 
     [RelayCommand]
     private async Task DeleteContainerAsync()

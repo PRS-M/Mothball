@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MothballMobile.Infrastructure.Presentation.Errors;
 using MothballMobile.Infrastructure.Scanning;
 #if IOS || ANDROID
 using Plugin.AdMob.Services;
@@ -15,7 +14,7 @@ public partial class App : Application
 	private readonly IApplicationSettings applicationSettings;
 	private readonly ILocalizationService localization;
 	private readonly IBackupSignatureSecretProvider backupSignatureSecretProvider;
-	private readonly IAppErrorPresenter appErrorPresenter;
+	private readonly IPopupService popup;
 	private readonly AdMobSettings adMobSettings;
 	private readonly ILogger<App> logger;
 	private readonly ILogger<AppShell> appShellLogger;
@@ -27,7 +26,7 @@ public partial class App : Application
 		IApplicationSettings applicationSettings,
 		ILocalizationService localization,
 		IBackupSignatureSecretProvider backupSignatureSecretProvider,
-		IAppErrorPresenter appErrorPresenter,
+		IPopupService popup,
 		AdMobSettings adMobSettings,
 		ILogger<App> logger,
 		ILogger<AppShell> appShellLogger,
@@ -41,7 +40,7 @@ public partial class App : Application
 		localization.SetLanguage(applicationSettings.Language);
 		InitializeComponent();
 		this.backupSignatureSecretProvider = backupSignatureSecretProvider;
-		this.appErrorPresenter = appErrorPresenter;
+		this.popup = popup;
 		this.adMobSettings = adMobSettings;
 		UserAppTheme = applicationSettings.ThemeOverride;
 		this.logger = logger;
@@ -74,7 +73,7 @@ public partial class App : Application
 		{
 			await backupSignatureSecretProvider.GetOrCreateAsync();
 			await startupOrchestrator.StartAsync();
-			var shell = new AppShell(photoBackgroundOperationTracker, appErrorPresenter, appShellLogger, barcodeLookupCoordinator);
+			var shell = new AppShell(photoBackgroundOperationTracker, popup, appShellLogger, barcodeLookupCoordinator);
 			var shellLoaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			shell.Loaded += OnShellLoaded;
 			window.Page = shell;

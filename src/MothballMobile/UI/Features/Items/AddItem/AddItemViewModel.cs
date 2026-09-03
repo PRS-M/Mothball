@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Features.Photos;
 using CoreApp.Application.Utilities;
 using CoreApp.Domain.Entities.Shared;
@@ -195,12 +196,12 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             BarcodeSymbology = barcode.Symbology;
 
             await ResolveBarcodeCoreAsync();
-        });
+        }, rethrowOnError: false);
     }
 
     [RelayCommand]
     private Task ResolveBarcodeAsync()
-        => RunCommandAsync(ResolveBarcodeCoreAsync);
+        => RunCommandAsync(ResolveBarcodeCoreAsync, rethrowOnError: false);
 
     private async Task ResolveBarcodeCoreAsync()
     {
@@ -279,7 +280,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
             ContainerId = owner.OwnerId.ToString();
             DestinationContainerName = owner.OwnerName;
-        });
+        }, rethrowOnError: false);
     }
 
     [RelayCommand(CanExecute = nameof(CanAdd))]
@@ -318,8 +319,13 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             PhotoThumbnailPath = null;
             ValidationMessage = null;
             await nav.GoBackAsync();
-        });
+        }, errorMessageFactory: BarcodeOperationErrorMessage, rethrowOnError: false);
     }
+
+    private static string BarcodeOperationErrorMessage(Exception exception)
+        => exception is BarcodeAlreadyAssignedException
+            ? LocalizationManager.Current.Get("This barcode is already in use.")
+            : LocalizationManager.Current.Get("Something went wrong. Please try again.");
 
     private Guid? GetDestinationContainerId(bool isAddingToContainer)
         => isAddingToContainer && Guid.TryParse(ContainerId, out var parsedContainerId) && parsedContainerId != Guid.Empty

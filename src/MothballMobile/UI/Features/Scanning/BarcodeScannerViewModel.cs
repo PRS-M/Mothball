@@ -33,7 +33,7 @@ public sealed partial class BarcodeScannerViewModel : BaseViewModel
     /// <param name="barcode">The barcode selected by the user.</param>
     /// <returns>A task that completes after the scanner closes.</returns>
     public Task CompleteAsync(Barcode barcode)
-        => IsBusy ? scanner.CompleteAsync(barcode) : RunCommandAsync(() => scanner.CompleteAsync(barcode));
+        => IsBusy ? scanner.CompleteAsync(barcode) : RunCommandAsync(() => scanner.CompleteAsync(barcode), rethrowOnError: false);
 
     /// <summary>
     /// Runs gallery barcode processing while exposing processing state to the scanner page.
@@ -41,9 +41,9 @@ public sealed partial class BarcodeScannerViewModel : BaseViewModel
     /// <param name="operation">The gallery operation to run.</param>
     /// <returns>A task that completes after the gallery operation finishes.</returns>
     public Task ProcessGalleryAsync(Func<Task> operation)
-        => RunCommandAsync(operation);
+        => RunCommandAsync(operation, rethrowOnError: false);
 
     [RelayCommand]
     private Task CancelAsync()
-        => RunCommandAsync(() => scanner.CompleteAsync(null));
+        => RunCommandAsync(() => scanner.CompleteAsync(null), rethrowOnError: false);
 }
