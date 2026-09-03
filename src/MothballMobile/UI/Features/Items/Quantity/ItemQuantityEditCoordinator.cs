@@ -1,4 +1,3 @@
-using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Inventory;
 using MothballMobile.UI.Features.Items.ItemDetails;

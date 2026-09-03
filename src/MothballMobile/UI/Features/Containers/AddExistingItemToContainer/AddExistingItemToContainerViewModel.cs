@@ -1,8 +1,5 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CoreApp.Domain.Entities.ItemAggregate;
-using CoreApp.Application.Contracts;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 

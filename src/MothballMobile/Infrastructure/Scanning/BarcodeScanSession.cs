@@ -1,5 +1,4 @@
 using CoreApp.Domain.ValueObjects;
-using MothballMobile.Infrastructure.Navigation;
 
 namespace MothballMobile.Infrastructure.Scanning;
 

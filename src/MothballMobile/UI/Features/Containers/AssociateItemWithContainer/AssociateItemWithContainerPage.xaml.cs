@@ -1,6 +1,4 @@
-﻿using MothballMobile.UI.Shared;
-
-namespace MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
+﻿namespace MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 
 public partial class AssociateItemWithContainerPage : BasePage
 {

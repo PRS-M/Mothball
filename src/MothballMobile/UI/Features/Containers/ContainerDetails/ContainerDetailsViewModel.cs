@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.ValueObjects;
-using CoreApp.Application.Contracts;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;

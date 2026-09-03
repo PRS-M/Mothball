@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MothballMobile.Infrastructure.Presentation.Popups;
 
 public sealed record AlertPopupDefinition(

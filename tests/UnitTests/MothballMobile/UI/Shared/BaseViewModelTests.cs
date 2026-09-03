@@ -1,5 +1,3 @@
-using MothballMobile.UI.Shared;
-
 namespace Mothball.Tests.Unit.Mobile.UI.Shared;
 
 [TestFixture]

@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Scanning;
 
 namespace Microsoft.Maui.Controls

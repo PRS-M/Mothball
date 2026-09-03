@@ -1,6 +1,3 @@
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Navigation;
-
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Navigation;
 
 [TestFixture]

@@ -1,8 +1,6 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ContainerAggregate;
-using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Application.Specifications;
-using CoreApp.Application.Contracts;
 
 namespace CoreApp.Application.Features.Containers.Queries;
 

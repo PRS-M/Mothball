@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace MothballMobile.Infrastructure.Presentation.Popups;
 
 /// <summary>

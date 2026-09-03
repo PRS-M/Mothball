@@ -1,6 +1,4 @@
-﻿using MothballMobile.UI.Shared;
-
-namespace MothballMobile.UI.Features.BackgroundOperations;
+﻿namespace MothballMobile.UI.Features.BackgroundOperations;
 
 public partial class BackgroundOperationsPage : BasePage
 {

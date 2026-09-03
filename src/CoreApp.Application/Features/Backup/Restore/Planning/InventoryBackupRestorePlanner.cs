@@ -1,4 +1,3 @@
-using CoreApp.Application.Contracts;
 using CoreApp.Domain.Inventory;
 using Microsoft.Extensions.Logging;
 

@@ -1,5 +1,3 @@
-using MothballMobile.Infrastructure;
-
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Utilities;
 
 public sealed class TaskExtensionsTests

@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using CoreApp.Application.Contracts;
-using CoreApp.Application.Features.Inventory.Allocation;
 using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Items.AddItem;

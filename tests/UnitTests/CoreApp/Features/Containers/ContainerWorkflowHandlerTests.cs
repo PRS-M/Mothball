@@ -4,10 +4,7 @@ using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Specifications;
-using CoreApp.Application.Features.Containers.ContainerDetails;
 using Moq;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
 using MothballMobile.Infrastructure.Scanning;
 

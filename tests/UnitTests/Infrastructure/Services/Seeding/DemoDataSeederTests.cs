@@ -1,4 +1,3 @@
-using Infrastructure.Services;
 using Infrastructure.Services.DatabaseModels;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;

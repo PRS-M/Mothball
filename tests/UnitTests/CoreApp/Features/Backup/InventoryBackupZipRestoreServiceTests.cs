@@ -1,7 +1,6 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
-using CoreApp.Application.Contracts;
 using CoreApp.Application.Utilities;
 using Moq;
 

@@ -1,7 +1,6 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using Moq;
-using MothballMobile.Infrastructure;
 using MothballMobile.UI.Features.Items.ItemsList;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Shared;

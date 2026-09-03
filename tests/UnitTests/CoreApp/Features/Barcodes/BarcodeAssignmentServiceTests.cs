@@ -1,4 +1,3 @@
-using CoreApp.Application.Abstractions.Persistence;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Domain.Entities.ContainerAggregate;

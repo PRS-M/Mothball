@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Infrastructure.Services.JsonStore;
 
 public sealed class JsonStoreStartupInitializer : IAppStartupInitializer

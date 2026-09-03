@@ -1,5 +1,3 @@
-using CoreApp.Application.Contracts;
-
 namespace CoreApp.Application.Features.Backup.Export;
 
 public sealed class InventoryBackupService : IInventoryBackupService

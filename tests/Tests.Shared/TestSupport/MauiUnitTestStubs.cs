@@ -1,5 +1,4 @@
 global using Microsoft.Maui.ApplicationModel;
-global using Microsoft.Maui.Controls;
 
 namespace Microsoft.Maui.ApplicationModel
 {

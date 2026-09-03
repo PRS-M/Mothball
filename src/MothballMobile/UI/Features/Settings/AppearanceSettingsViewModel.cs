@@ -1,7 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Application.Contracts;
-using Microsoft.Maui.Devices;
 
 namespace MothballMobile.UI.Features.Settings;
 

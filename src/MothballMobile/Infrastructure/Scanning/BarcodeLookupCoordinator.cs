@@ -1,6 +1,4 @@
-using CoreApp.Application.Abstractions.Persistence;
 using CoreApp.Application.Contracts;
-using MothballMobile.Infrastructure.Navigation;
 
 namespace MothballMobile.Infrastructure.Scanning;
 

@@ -1,4 +1,3 @@
-using CoreApp.Domain.Entities.InventoryAggregate;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using CoreApp.Domain.Entities.ItemAggregate;

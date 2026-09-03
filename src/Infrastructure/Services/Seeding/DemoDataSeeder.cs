@@ -1,4 +1,3 @@
-using System;
 using CoreApp.Application.Utilities;
 using Infrastructure.Services.DatabaseModels;
 using Microsoft.Extensions.Logging;

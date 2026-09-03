@@ -1,5 +1,4 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
-using CoreApp.Application.Contracts;
 using CoreApp.Application.Specifications;
 
 namespace CoreApp.Application.Features.Items.Queries;

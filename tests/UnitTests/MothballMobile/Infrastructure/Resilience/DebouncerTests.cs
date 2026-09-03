@@ -1,4 +1,3 @@
-using MothballMobile.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Resilience;

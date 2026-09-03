@@ -1,10 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Application.Contracts;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Storage;
-using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Settings;
 

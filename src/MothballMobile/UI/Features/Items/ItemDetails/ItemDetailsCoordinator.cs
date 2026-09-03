@@ -1,5 +1,3 @@
-using CoreApp.Application.Contracts;
-using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using Microsoft.Extensions.Logging;
 using MothballMobile.UI.Features.Items.Consumption;

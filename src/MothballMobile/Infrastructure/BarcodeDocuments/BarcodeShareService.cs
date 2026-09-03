@@ -1,6 +1,4 @@
 using CoreApp.Domain.ValueObjects;
-using Microsoft.Maui.ApplicationModel.DataTransfer;
-using Microsoft.Maui.Storage;
 
 namespace MothballMobile.Infrastructure.BarcodeDocuments;
 

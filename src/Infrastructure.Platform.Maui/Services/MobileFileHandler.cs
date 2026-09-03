@@ -1,6 +1,3 @@
-using CoreApp.Application.Utilities;
-using System.IO;
-
 namespace Infrastructure.Services;
 
 /// <summary>

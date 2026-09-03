@@ -1,4 +1,3 @@
-using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using Moq;

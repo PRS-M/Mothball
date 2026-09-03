@@ -1,8 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Scanning;
-using MothballMobile.Infrastructure.Settings;
-using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Scanning;
 

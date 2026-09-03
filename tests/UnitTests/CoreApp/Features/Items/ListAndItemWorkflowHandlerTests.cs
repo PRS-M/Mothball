@@ -1,5 +1,4 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
-using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Contracts;

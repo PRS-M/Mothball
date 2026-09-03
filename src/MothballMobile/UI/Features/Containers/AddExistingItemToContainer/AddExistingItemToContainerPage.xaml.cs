@@ -1,6 +1,4 @@
-﻿using MothballMobile.UI.Shared;
-
-namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
+﻿namespace MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
 
 public partial class AddExistingItemToContainerPage : BasePage
 {

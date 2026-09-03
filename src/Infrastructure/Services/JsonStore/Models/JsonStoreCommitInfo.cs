@@ -1,5 +1,3 @@
-using System;
-
 namespace Infrastructure.Services.JsonStore.Models;
 
 public sealed class JsonStoreCommitInfo

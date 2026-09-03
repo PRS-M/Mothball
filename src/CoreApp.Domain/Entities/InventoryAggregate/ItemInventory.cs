@@ -1,5 +1,4 @@
 using CoreApp.Domain.Abstractions;
-using CoreApp.Domain.Entities;
 
 namespace CoreApp.Domain.Entities.InventoryAggregate;
 

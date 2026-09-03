@@ -1,6 +1,3 @@
-using CoreApp.Application.Abstractions.Persistence;
-using CoreApp.Application.Contracts.Inventory;
-using CoreApp.Application.Features.Inventory.Allocation;
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using Moq;

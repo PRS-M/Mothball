@@ -1,5 +1,3 @@
-using CoreApp.Application.Contracts.Inventory;
-
 namespace CoreApp.Application.Features.Inventory.Allocation;
 
 /// <summary>

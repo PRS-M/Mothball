@@ -1,7 +1,4 @@
 using System.Globalization;
-using Microsoft.Maui.Storage;
-using MothballMobile.Infrastructure.Localization;
-using MothballMobile.Infrastructure.Settings;
 using MothballMobile.UI.Features.Settings;
 
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Localization;
