@@ -35,3 +35,13 @@ There is no lint command configured. `Directory.Packages.props` owns all package
 Use focused tests for planner/domain/application changes, integration tests for persistence and backend parity, and targeted MAUI builds for UI/project changes. Update the relevant documentation when behavior or developer workflow changes. Leave generated outputs and unrelated working-tree changes untouched.
 
 Include concise XML documentation comments for public API classes, interfaces, methods, properties, and parameters, with priority on Domain, Application, and infrastructure contracts. Explain contract meaning, invariants, side effects, exceptions, and backend/platform differences where relevant. Keep comments accurate as behavior changes and avoid comments that only narrate obvious code.
+
+## Change Delivery
+
+After each step that makes a meaningful change, provide a copyable one-line commit message in a fenced code block. Use Conventional Commits with the type first, followed by a Gitmoji in colon-code text format and a concise imperative description, for example:
+
+```text
+feat: :sparkles: add barcode layout validation
+```
+
+After a large batch of work, provide a concise pull-request title and relatively short description in Markdown. Keep the description brief; a few bullet points are appropriate. Put longer explanations in the relevant documentation instead of expanding the PR description.
