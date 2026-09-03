@@ -34,4 +34,24 @@ public sealed class BarcodeScanSessionTests
 
         Assert.That(await scan, Is.Null);
     }
+
+    [Test]
+    public async Task CompleteAsync_WaitsForScannerNavigationBeforeReturningBarcode()
+    {
+        var navigation = new Mock<INavigationService>();
+        var scannerNavigation = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        navigation.Setup(service => service.GoBackAsync()).Returns(scannerNavigation.Task);
+        var session = new BarcodeScanSession(navigation.Object);
+        var expected = new Barcode("crate-17", BarcodeSymbology.Code128);
+
+        var scan = session.ScanAsync();
+        var completion = session.CompleteAsync(expected);
+
+        Assert.That(scan.IsCompleted, Is.False);
+
+        scannerNavigation.SetResult();
+        await completion;
+
+        Assert.That(await scan, Is.EqualTo(expected));
+    }
 }

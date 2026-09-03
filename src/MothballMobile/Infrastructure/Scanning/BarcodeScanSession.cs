@@ -33,7 +33,7 @@ public sealed class BarcodeScanSession : IBarcodeScanSession
     public async Task CompleteAsync(Barcode? barcode)
     {
         var result = pendingResult ?? throw new InvalidOperationException("There is no active barcode scan.");
-        result.TrySetResult(barcode);
         await navigation.GoBackAsync().ConfigureAwait(false);
+        result.TrySetResult(barcode);
     }
 }
