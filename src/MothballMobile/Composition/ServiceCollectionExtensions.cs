@@ -144,6 +144,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<JsonInventoryStore>();
         services.AddSingleton<IAppStartupInitializer, JsonStoreStartupInitializer>();
+        services.AddSingleton<IWorkspaceContext, JsonWorkspaceContext>();
         services.AddSingleton<IInventoryMaintenanceService, JsonInventoryMaintenanceService>();
 
         services.AddSingleton<IContainerRepository, JsonContainerRepository>();
@@ -164,6 +165,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<MothballDatabase>();
         services.AddSingleton<IAppStartupInitializer, SqliteStartupInitializer>();
+        services.AddSingleton<IWorkspaceContext, SqliteWorkspaceContext>();
         services.AddSingleton<ITransactionRunner, SqliteTransactionRunner>();
         services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
 

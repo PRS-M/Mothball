@@ -22,6 +22,8 @@ public sealed partial class JsonInventoryStore
                     ?? [];
         var relations = await TryReadJsonAsync<List<JsonRelationRow>>(JsonStoreConstants.RelationsFileName, slotFolder)
                        ?? [];
+        var workspaces = await TryReadJsonAsync<List<JsonWorkspaceRow>>(JsonStoreConstants.WorkspacesFileName, slotFolder)
+                       ?? [];
 
         // Ensure counters are sane even if metadata is missing/outdated.
         metadata.NextContainerRowId = Math.Max(metadata.NextContainerRowId, containers.Select(c => c.RowId).DefaultIfEmpty(0).Max() + 1);
@@ -37,6 +39,7 @@ public sealed partial class JsonInventoryStore
             Inventories = inventories,
             Images = images,
             Relations = relations,
+            Workspaces = workspaces,
         };
     }
 
@@ -65,6 +68,7 @@ public sealed partial class JsonInventoryStore
         await WriteJsonAsync(JsonStoreConstants.InventoriesFileName, slotFolder, state.Inventories).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.ImagesFileName, slotFolder, state.Images).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.RelationsFileName, slotFolder, state.Relations).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.WorkspacesFileName, slotFolder, state.Workspaces).ConfigureAwait(false);
 
         // Commit info written last inside the slot.
         var commitInfo = new JsonStoreCommitInfo
