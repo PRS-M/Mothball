@@ -11,7 +11,7 @@
                 Background="{DynamicResource Surface}">
 
         <Grid Padding="16"
-            RowDefinitions="Auto,Auto,*"
+            RowDefinitions="Auto,Auto,Auto,*"
           ColumnDefinitions="*">
 
           <controls:PageHeader Grid.Row="0"
@@ -27,7 +27,13 @@
                           Text="{Binding SearchQuery}"
                           SearchCommand="{Binding ApplySearchCommand}" />
 
-          <CollectionView Grid.Row="2"
+          <Button Grid.Row="2"
+              Text="{x:Static strings:AppResources.ScanBarcode}"
+              Style="{StaticResource OutlinedButton}"
+              Margin="0,8,0,0"
+              Command="{Binding ScanContainerCommand}" />
+
+          <CollectionView Grid.Row="3"
                         ItemsSource="{Binding Containers}"
                         Margin="0,8,0,0"
                         SelectionMode="None"

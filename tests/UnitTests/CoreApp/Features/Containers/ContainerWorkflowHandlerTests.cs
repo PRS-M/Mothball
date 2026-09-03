@@ -8,6 +8,7 @@ using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.UI.Features.Containers.AssociateItemWithContainer;
+using MothballMobile.Infrastructure.Scanning;
 
 namespace Mothball.Tests.Unit.Core.Features.Containers;
 
@@ -256,7 +257,9 @@ public sealed class ContainerWorkflowHandlerTests
             nav.Object,
             applicationSettings,
             popup.Object,
-            new PopupDefinitionService());
+            new PopupDefinitionService(),
+            Mock.Of<IBarcodeScanSession>(),
+            Mock.Of<IInventoryQueryRepository>());
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
             [NavigationParams.ItemId] = itemId.ToString(),
@@ -306,7 +309,9 @@ public sealed class ContainerWorkflowHandlerTests
             nav.Object,
             applicationSettings,
             popup.Object,
-            new PopupDefinitionService());
+            new PopupDefinitionService(),
+            Mock.Of<IBarcodeScanSession>(),
+            Mock.Of<IInventoryQueryRepository>());
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
             [NavigationParams.ItemId] = itemId.ToString(),
