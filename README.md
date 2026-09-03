@@ -9,11 +9,8 @@ Mothball helps you remember what you have, where you put it, and how much is lef
 
 Add notes, photos, and quantities to make things easy to find later. Your inventory stays on your device and can be backed up and restored when needed.
 
-<p align="center">
-  <video src="docs/MothballOverview_iPhone%2016%20Pro%20-%202026-08-14.mp4" controls width="360">
-    <a href="docs/MothballOverview_iPhone%2016%20Pro%20-%202026-08-14.mp4">Overview video</a>
-  </video>
-</p>
+## Video
+https://github.com/user-attachments/assets/8ba4bd1b-96b2-406f-8455-8696ae47368d
 
 ## What the app does
 
