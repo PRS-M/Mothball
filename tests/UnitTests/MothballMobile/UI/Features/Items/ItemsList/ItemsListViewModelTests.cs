@@ -7,6 +7,8 @@ using MothballMobile.UI.Features.Items.Consumption;
 using MothballMobile.UI.Features.Items.ItemDetails;
 using MothballMobile.UI.Features.Items.Quantity;
 using MothballMobile.Infrastructure.Scanning;
+using MothballMobile.Infrastructure.BarcodeDocuments;
+using CoreApp.Domain.Entities.Shared;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Items.ItemsList;
 
@@ -135,12 +137,59 @@ public sealed class ItemsListViewModelTests
         deleteHandler.Verify(h => h.DeleteAsync(item.ItemId.ToString()), Times.Once);
     }
 
+    [Test]
+    public async Task SelectAllLoadedCommand_SelectsLoadedRowsAndShareCommandSharesOnlyBarcodedRows()
+    {
+        var barcodedItem = new Item(Guid.NewGuid(), "Widget", "");
+        barcodedItem.UpdateBarcode(new Barcode("WIDGET-01", BarcodeSymbology.Code128));
+        var unbarcodedItem = new Item(Guid.NewGuid(), "Cable", "");
+        var queries = new Mock<IItemsListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, null, 0, 10))
+            .ReturnsAsync([
+                new InventorySnapshot(barcodedItem, 1, 0, []),
+                new InventorySnapshot(unbarcodedItem, 1, 0, []),
+            ]);
+        var share = new Mock<IBarcodeShareService>();
+        var viewModel = CreateViewModel(queries.Object, barcodeShare: share.Object);
+
+        await viewModel.InitializeAsync();
+        viewModel.EnterSelectionModeCommand.Execute(null);
+        viewModel.SelectAllLoadedCommand.Execute(null);
+        await viewModel.ShareSelectedCommand.ExecuteAsync(null);
+
+        Assert.That(viewModel.SelectedCount, Is.EqualTo(2));
+        share.Verify(service => service.ShareAsync(
+            It.Is<IReadOnlyCollection<BarcodeLabelData>>(labels =>
+                labels.Count == 1 && labels.Single().BarcodeValue == "WIDGET-01"),
+            "Share item barcodes"), Times.Once);
+    }
+
+    [Test]
+    public async Task ShareAllMatchingCommand_QueriesWithoutPagingAndPreservesSearch()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        item.UpdateBarcode(new Barcode("WIDGET-01", BarcodeSymbology.Code128));
+        var queries = new Mock<IItemsListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, null, 0, 10)).ReturnsAsync([]);
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, "widget", null, null))
+            .ReturnsAsync([new InventorySnapshot(item, 1, 0, [])]);
+        var share = new Mock<IBarcodeShareService>();
+        var viewModel = CreateViewModel(queries.Object, barcodeShare: share.Object);
+        await viewModel.InitializeAsync();
+        viewModel.Query = "widget";
+
+        await viewModel.ShareAllMatchingCommand.ExecuteAsync(null);
+
+        queries.Verify(q => q.QueryAsync(ItemQueryFilter.All, "widget", null, null), Times.Once);
+    }
+
     private static ItemsListViewModel CreateViewModel(
         IItemsListQueryHandler queries,
         IPopupService? popup = null,
         IDeleteItemCommandHandler? deleteHandler = null,
         IPagedListLoadDiagnostics? diagnostics = null,
-        IImagePathResolver? paths = null)
+        IImagePathResolver? paths = null,
+        IBarcodeShareService? barcodeShare = null)
     {
         if (paths is null)
         {
@@ -171,6 +220,7 @@ public sealed class ItemsListViewModelTests
                 Mock.Of<IInventoryQueryRepository>(),
                 Mock.Of<INavigationService>()),
             Mock.Of<IBackgroundTaskObserver>(),
-            loadDiagnostics: diagnostics);
+            loadDiagnostics: diagnostics,
+            barcodeShare: barcodeShare);
     }
 }
