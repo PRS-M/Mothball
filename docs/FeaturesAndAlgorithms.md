@@ -95,6 +95,8 @@ Items are catalogued things that may be stored in one or more containers. Their 
 
 Containers and item types can have one optional native barcode value and symbology. The app stores decoded values, never source camera or gallery images. Barcode values are globally unique across containers and items; comparisons trim surrounding whitespace but remain case-sensitive. `IInventoryQueryRepository.FindBarcodeAsync` returns the typed owner for scan-to-find and collision checks, while `IBarcodeAssignmentService` permits an owner to retain, replace, or clear its own barcode but rejects another owner's value.
 
+For the full user workflow and contributor reference, see [Barcodes](Barcodes.md).
+
 The scanner supports camera and gallery decoding. It is available from container and item lists, the Shell, create forms, and barcode detail editing. Scan-to-find opens the matching container or item details. In the item create flow, a scanned or typed barcode belonging to an existing item enters receipt mode: item metadata is locked, quantity defaults to one in simple mode, and saving delegates to `IItemReceiptService`. A receipt can remain unassigned, use the container context that opened the form, or scan a container barcode as its destination. The item/container association picker can likewise scan a container barcode and executes its normal available-quantity association path.
 
 ## Assignments and Inventory Quantities
