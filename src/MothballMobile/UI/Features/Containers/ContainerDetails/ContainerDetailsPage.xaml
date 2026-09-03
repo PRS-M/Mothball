@@ -279,8 +279,7 @@
             </Grid>
         </CollectionView.Footer>
     </CollectionView>
-        <Grid BackgroundColor="#80000000"
-              IsVisible="{Binding IsBusy}">
+          <Grid IsVisible="{Binding IsBusy}">
             <ActivityIndicator IsRunning="{Binding IsBusy}"
                                Color="{DynamicResource Primary}"
                                HeightRequest="48"

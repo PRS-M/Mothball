@@ -36,8 +36,7 @@
                     Style="{StaticResource PrimaryButton}"
                     Command="{Binding CancelCommand}" />
         </Grid>
-                <Grid Grid.RowSpan="2"
-                          BackgroundColor="#80000000"
+                  <Grid Grid.RowSpan="2"
                           IsVisible="{Binding IsBusy}">
                         <ActivityIndicator IsRunning="{Binding IsBusy}"
                                                            Color="{DynamicResource Primary}"
