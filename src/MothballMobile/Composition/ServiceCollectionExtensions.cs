@@ -151,6 +151,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWorkspaceContext, JsonWorkspaceContext>();
         services.AddSingleton<ISyncOperationStore, JsonSyncOperationStore>();
         services.AddSingleton<ICanonicalInventoryMutationStore, JsonCanonicalInventoryRepository>();
+        services.AddSingleton<ICanonicalInventoryRepository>(sp => sp.GetRequiredService<ICanonicalInventoryMutationStore>());
         services.AddSingleton<IMediaSyncMetadataRepository, JsonMediaSyncMetadataRepository>();
         services.AddSingleton<IInventoryMaintenanceService, JsonInventoryMaintenanceService>();
 
@@ -175,6 +176,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWorkspaceContext, SqliteWorkspaceContext>();
         services.AddSingleton<ISyncOperationStore, SqliteSyncOperationStore>();
         services.AddSingleton<ICanonicalInventoryMutationStore, SqliteCanonicalInventoryRepository>();
+        services.AddSingleton<ICanonicalInventoryRepository>(sp => sp.GetRequiredService<ICanonicalInventoryMutationStore>());
         services.AddSingleton<IMediaSyncMetadataRepository, SqliteMediaSyncMetadataRepository>();
         services.AddSingleton<ITransactionRunner, SqliteTransactionRunner>();
         services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));

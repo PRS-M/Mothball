@@ -3,6 +3,7 @@ using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Application.Specifications;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Contracts.Workspace;
 
 namespace Infrastructure.Services.Repositories;
 
@@ -14,15 +15,21 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     private readonly IContainerRepository containerRepo;
     private readonly IItemRepository itemRepo;
     private readonly IItemInventoryRepository itemInventoryRepo;
+    private readonly ICanonicalInventoryRepository? canonicalInventoryRepo;
+    private readonly IWorkspaceContext? workspaceContext;
 
     public InventoryQueryRepository(
         IContainerRepository containerRepo,
         IItemRepository itemRepo,
-        IItemInventoryRepository itemInventoryRepo)
+        IItemInventoryRepository itemInventoryRepo,
+        ICanonicalInventoryRepository? canonicalInventoryRepo = null,
+        IWorkspaceContext? workspaceContext = null)
     {
         this.containerRepo = containerRepo;
         this.itemRepo = itemRepo;
         this.itemInventoryRepo = itemInventoryRepo;
+        this.canonicalInventoryRepo = canonicalInventoryRepo;
+        this.workspaceContext = workspaceContext;
     }
 
     /// <inheritdoc />
@@ -80,6 +87,12 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         if (item is null)
         {
             return null;
+        }
+
+        var canonicalSnapshot = await TryCreateCanonicalSnapshotAsync(item);
+        if (canonicalSnapshot is not null)
+        {
+            return canonicalSnapshot;
         }
 
         var inventory = await itemInventoryRepo.GetAsync(itemId);
@@ -141,4 +154,30 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     private static InventorySnapshot CreateSnapshot(Item item, ItemInventory inventory)
         => new(item, inventory.TotalQuantity, inventory.AssignedQuantity, inventory.Allocations);
+
+    private async Task<InventorySnapshot?> TryCreateCanonicalSnapshotAsync(Item item)
+    {
+        if (canonicalInventoryRepo is null || workspaceContext is null)
+        {
+            return null;
+        }
+
+        var defaults = (await workspaceContext.EnsureDefaultAsync()).Defaults;
+        var balances = await canonicalInventoryRepo.GetBalancesAsync(new InventoryWorkspaceId(defaults.WorkspaceId), item.ItemId);
+        if (balances.Count == 0)
+        {
+            return null;
+        }
+
+        var allocations = new List<ItemContainerAllocation>();
+        foreach (var balance in balances.Where(x => x.PlacementId.Value != defaults.UnassignedLocationId && x.OnHandQuantity > 0))
+        {
+            var container = await containerRepo.GetAsync(balance.PlacementId.Value.ToString());
+            allocations.Add(new ItemContainerAllocation(balance.PlacementId.Value, container?.Name ?? string.Empty, balance.OnHandQuantity));
+        }
+
+        var total = balances.Sum(x => x.OnHandQuantity);
+        var assigned = allocations.Sum(x => x.Quantity);
+        return total < 1 ? null : new InventorySnapshot(item, total, assigned, allocations);
+    }
 }
