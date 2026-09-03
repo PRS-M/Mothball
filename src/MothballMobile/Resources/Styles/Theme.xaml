@@ -80,6 +80,13 @@
         <Setter Property="Background" Value="{DynamicResource SurfaceVariant}"/>
     </Style>
 
+    <Style TargetType="Border" x:Key="OutlinedCard">
+        <Setter Property="Stroke" Value="{DynamicResource OutlineVariant}"/>
+        <Setter Property="StrokeThickness" Value="1"/>
+        <Setter Property="StrokeShape" Value="RoundRectangle 12"/>
+        <Setter Property="Padding" Value="12"/>
+    </Style>
+
     <!-- Material Design Inputs -->
     <Style TargetType="Border" x:Key="InputWrapper">
         <Setter Property="Stroke" Value="{DynamicResource Outline}"/>
