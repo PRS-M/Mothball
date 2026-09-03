@@ -108,6 +108,58 @@ public sealed class AddItemViewModelTests
     }
 
     [Test]
+    public async Task ResolveBarcodeCommand_WhenBarcodeBelongsToItem_EntersReceiptMode()
+    {
+        var itemId = Guid.NewGuid();
+        var inventoryQueries = new Mock<IInventoryQueryRepository>();
+        inventoryQueries.Setup(repository => repository.FindBarcodeAsync("widget-01"))
+            .ReturnsAsync(new BarcodeLookupResult(BarcodeOwnerKind.Item, itemId, "Widget"));
+        var viewModel = CreateViewModel(
+            Mock.Of<ICreateItemCommandHandler>(),
+            false,
+            inventoryQueries: inventoryQueries.Object);
+        viewModel.BarcodeValue = "  widget-01  ";
+
+        await viewModel.ResolveBarcodeCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.BarcodeValue, Is.EqualTo("widget-01"));
+            Assert.That(viewModel.IsReceivingExistingItem, Is.True);
+            Assert.That(viewModel.Name, Is.EqualTo("Widget"));
+            Assert.That(viewModel.Quantity, Is.EqualTo("1"));
+        });
+    }
+
+    [Test]
+    public async Task ResolveBarcodeCommand_WhenBarcodeIsCleared_ExitsReceiptMode()
+    {
+        var itemId = Guid.NewGuid();
+        var scanner = new Mock<IBarcodeScanSession>();
+        scanner.Setup(service => service.ScanAsync())
+            .ReturnsAsync(new Barcode("widget-01", BarcodeSymbology.Code128));
+        var inventoryQueries = new Mock<IInventoryQueryRepository>();
+        inventoryQueries.Setup(repository => repository.FindBarcodeAsync("widget-01"))
+            .ReturnsAsync(new BarcodeLookupResult(BarcodeOwnerKind.Item, itemId, "Widget"));
+        var viewModel = CreateViewModel(
+            Mock.Of<ICreateItemCommandHandler>(),
+            false,
+            scanner.Object,
+            inventoryQueries.Object);
+
+        await viewModel.ScanBarcodeCommand.ExecuteAsync(null);
+        viewModel.BarcodeValue = string.Empty;
+        await viewModel.ResolveBarcodeCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.IsReceivingExistingItem, Is.False);
+            Assert.That(viewModel.IsItemMetadataEditable, Is.True);
+            Assert.That(viewModel.Name, Is.Empty);
+        });
+    }
+
+    [Test]
     public async Task SaveCommand_InReceiptMode_ReceivesIntoSelectedContainer()
     {
         var itemId = Guid.NewGuid();

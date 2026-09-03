@@ -31,6 +31,9 @@ public partial class LabeledEntryField : ContentView
 	public static readonly BindableProperty ReturnCommandProperty =
 		BindableProperty.Create(nameof(ReturnCommand), typeof(ICommand), typeof(LabeledEntryField), null);
 
+	public static readonly BindableProperty UnfocusedCommandProperty =
+		BindableProperty.Create(nameof(UnfocusedCommand), typeof(ICommand), typeof(LabeledEntryField), null);
+
 	public static readonly BindableProperty FieldWidthRequestProperty =
 		BindableProperty.Create(nameof(FieldWidthRequest), typeof(double), typeof(LabeledEntryField), -1d);
 
@@ -85,6 +88,12 @@ public partial class LabeledEntryField : ContentView
 	{
 		get => (ICommand?)GetValue(ReturnCommandProperty);
 		set => SetValue(ReturnCommandProperty, value);
+	}
+
+	public ICommand? UnfocusedCommand
+	{
+		get => (ICommand?)GetValue(UnfocusedCommandProperty);
+		set => SetValue(UnfocusedCommandProperty, value);
 	}
 
 	public double FieldWidthRequest

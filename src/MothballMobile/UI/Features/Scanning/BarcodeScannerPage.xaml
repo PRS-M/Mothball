@@ -4,6 +4,7 @@
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 xmlns:local="clr-namespace:MothballMobile.UI.Features.Scanning"
                 xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:Class="MothballMobile.UI.Features.Scanning.BarcodeScannerPage"
                 x:DataType="local:BarcodeScannerViewModel"
                 Title="{x:Static strings:AppResources.BarcodeScannerTitle}"

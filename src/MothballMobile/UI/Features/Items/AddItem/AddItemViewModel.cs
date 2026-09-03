@@ -187,14 +187,59 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         BarcodeValue = barcode.Value;
         BarcodeSymbology = barcode.Symbology;
 
-        var existingOwner = await inventoryQueries.FindBarcodeAsync(barcode.Value);
+        await ResolveBarcodeAsync();
+    }
+
+    [RelayCommand]
+    private async Task ResolveBarcodeAsync()
+    {
+        var normalizedBarcodeValue = BarcodeValue?.Trim() ?? string.Empty;
+        ValidationMessage = null;
+        if (!string.Equals(BarcodeValue, normalizedBarcodeValue, StringComparison.Ordinal))
+        {
+            BarcodeValue = normalizedBarcodeValue;
+        }
+
+        if (string.IsNullOrWhiteSpace(normalizedBarcodeValue))
+        {
+            ResetReceiptMode();
+            return;
+        }
+
+        var existingOwner = await inventoryQueries.FindBarcodeAsync(normalizedBarcodeValue);
+        if (!string.Equals(BarcodeValue, normalizedBarcodeValue, StringComparison.Ordinal))
+        {
+            return;
+        }
+
         if (existingOwner?.OwnerKind != BarcodeOwnerKind.Item)
         {
+            ResetReceiptMode();
+            if (existingOwner?.OwnerKind == BarcodeOwnerKind.Container)
+            {
+                ValidationMessage = LocalizationManager.Current.Get("This barcode is already assigned to a container.");
+            }
             return;
         }
 
         Name = existingOwner.OwnerName;
         IsReceivingExistingItem = true;
+        OnPropertyChanged(nameof(ShowQuantityField));
+        OnPropertyChanged(nameof(IsItemMetadataEditable));
+    }
+
+    private void ResetReceiptMode()
+    {
+        if (!IsReceivingExistingItem)
+        {
+            return;
+        }
+
+        IsReceivingExistingItem = false;
+        Name = string.Empty;
+        Description = string.Empty;
+        Quantity = "1";
+        DestinationContainerName = string.Empty;
         OnPropertyChanged(nameof(ShowQuantityField));
         OnPropertyChanged(nameof(IsItemMetadataEditable));
     }

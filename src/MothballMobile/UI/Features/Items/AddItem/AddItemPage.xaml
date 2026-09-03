@@ -45,8 +45,10 @@
                                        LabelMargin="4,8,4,0"
                                        FieldWidthRequest="{StaticResource WidthM}"
                                        WrapperStyle="{StaticResource InputWrapper}"
-                                                                             Text="{Binding BarcodeValue}"
-                                                                             IsEnabled="{Binding IsItemMetadataEditable}" />
+                                       Text="{Binding BarcodeValue}"
+                                       IsEnabled="{Binding IsItemMetadataEditable}"
+                                       ReturnCommand="{Binding ResolveBarcodeCommand}"
+                                       UnfocusedCommand="{Binding ResolveBarcodeCommand}" />
 
                         <Grid WidthRequest="{StaticResource WidthM}"
                           ColumnDefinitions="*,Auto"
