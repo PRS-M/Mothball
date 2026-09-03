@@ -9,8 +9,25 @@ public sealed class SqliteSyncOperationStore(MothballDatabase database) : ISyncO
     public async Task<IReadOnlyList<PendingSyncOperation>> GetPendingAsync(Guid workspaceId, int maxCount, CancellationToken cancellationToken = default)
     {
         await database.InitializeAsync().ConfigureAwait(false);
-        var rows = await database.Connection.Table<DbPendingSyncOperation>().Where(x => x.WorkspaceId == workspaceId && x.State == (int)SyncOperationState.Pending).Take(maxCount).ToListAsync().ConfigureAwait(false);
+        var rows = await database.Connection.Table<DbPendingSyncOperation>().Where(x => x.WorkspaceId == workspaceId && (x.State == (int)SyncOperationState.Pending || x.State == (int)SyncOperationState.InFlight)).Take(maxCount).ToListAsync().ConfigureAwait(false);
         return rows.OrderBy(x => x.CreatedUtc).Select(Map).ToList();
+    }
+
+    public async Task MarkInFlightAsync(Guid workspaceId, IReadOnlyCollection<Guid> operationIds, CancellationToken cancellationToken = default)
+    {
+        await database.InitializeAsync().ConfigureAwait(false);
+        await database.RunInTransactionAsync(connection =>
+        {
+            foreach (var id in operationIds)
+            {
+                var row = connection.Find<DbPendingSyncOperation>(id);
+                if (row is null || row.WorkspaceId != workspaceId) continue;
+                row.State = (int)SyncOperationState.InFlight;
+                row.AttemptCount++;
+                row.LastAttemptUtc = DateTimeOffset.UtcNow;
+                connection.Update(row);
+            }
+        }).ConfigureAwait(false);
     }
 
     public async Task EnqueueAsync(PendingSyncOperation operation, CancellationToken cancellationToken = default)

@@ -20,7 +20,18 @@ public sealed class SyncOrchestrator(ISyncOperationStore store, ISyncClient clie
         var pending = await store.GetPendingAsync(workspaceId, batchSize, cancellationToken).ConfigureAwait(false);
         if (pending.Count > 0)
         {
-            var pushed = await client.PushAsync(workspaceId, pending, cancellationToken).ConfigureAwait(false);
+            await store.MarkInFlightAsync(workspaceId, pending.Select(x => x.OperationId).ToList(), cancellationToken).ConfigureAwait(false);
+            SyncPushResult pushed;
+            try
+            {
+                pushed = await client.PushAsync(workspaceId, pending, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                foreach (var operation in pending)
+                    await store.RecordFailureAsync(workspaceId, operation.OperationId, "Transport", cancellationToken).ConfigureAwait(false);
+                throw;
+            }
             await store.AcknowledgeAsync(workspaceId, pushed.AcknowledgedOperationIds, cancellationToken).ConfigureAwait(false);
             foreach (var conflict in pushed.Conflicts)
                 await store.RecordFailureAsync(workspaceId, conflict.OperationId, conflict.Code, cancellationToken).ConfigureAwait(false);

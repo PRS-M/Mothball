@@ -63,6 +63,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<AppStartupCoordinator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();
+        services.AddSingleton<IDeviceIdentityProvider, DeviceIdentityProvider>();
         services.AddSingleton<ILocalizationService, LocalizationService>();
 
         return services;

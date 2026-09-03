@@ -56,6 +56,7 @@ public interface ISyncClient
 public interface ISyncOperationStore
 {
     Task<IReadOnlyList<PendingSyncOperation>> GetPendingAsync(Guid workspaceId, int maxCount, CancellationToken cancellationToken = default);
+    Task MarkInFlightAsync(Guid workspaceId, IReadOnlyCollection<Guid> operationIds, CancellationToken cancellationToken = default);
     Task EnqueueAsync(PendingSyncOperation operation, CancellationToken cancellationToken = default);
     Task AddTombstoneAsync(EntityTombstone tombstone, CancellationToken cancellationToken = default);
     Task AcknowledgeAsync(Guid workspaceId, IReadOnlyCollection<Guid> operationIds, CancellationToken cancellationToken = default);

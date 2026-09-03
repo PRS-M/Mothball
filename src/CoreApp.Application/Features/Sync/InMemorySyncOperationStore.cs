@@ -12,7 +12,14 @@ public sealed class InMemorySyncOperationStore : ISyncOperationStore
     public Task<IReadOnlyList<PendingSyncOperation>> GetPendingAsync(Guid workspaceId, int maxCount, CancellationToken cancellationToken = default)
     {
         if (maxCount < 1) throw new ArgumentOutOfRangeException(nameof(maxCount));
-        lock (gate) return Task.FromResult<IReadOnlyList<PendingSyncOperation>>(operations.Values.Where(x => x.WorkspaceId == workspaceId && x.State == SyncOperationState.Pending).OrderBy(x => x.CreatedUtc).Take(maxCount).ToList());
+        lock (gate) return Task.FromResult<IReadOnlyList<PendingSyncOperation>>(operations.Values.Where(x => x.WorkspaceId == workspaceId && (x.State == SyncOperationState.Pending || x.State == SyncOperationState.InFlight)).OrderBy(x => x.CreatedUtc).Take(maxCount).ToList());
+    }
+
+    public Task MarkInFlightAsync(Guid workspaceId, IReadOnlyCollection<Guid> operationIds, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+            foreach (var id in operationIds.Where(operations.ContainsKey)) operations[id] = operations[id] with { State = SyncOperationState.InFlight, AttemptCount = operations[id].AttemptCount + 1, LastAttemptUtc = DateTimeOffset.UtcNow };
+        return Task.CompletedTask;
     }
 
     public Task EnqueueAsync(PendingSyncOperation operation, CancellationToken cancellationToken = default)
