@@ -8,12 +8,12 @@ namespace CoreApp.Application.Features.Inventory;
 public sealed class CanonicalInventoryCommandService(ICanonicalInventoryMutationStore inventory)
 {
     /// <summary>Seeds a missing canonical placement from legacy inventory during compatibility migration.</summary>
-    public async Task EnsureOpeningBalanceAsync(InventoryWorkspaceId workspaceId, Guid itemId, InventoryPlacementId placementId, int quantity, CancellationToken cancellationToken = default)
+    public async Task EnsureOpeningBalanceAsync(InventoryWorkspaceId workspaceId, Guid itemId, InventoryPlacementId placementId, int quantity, Guid? operationId = null, CancellationToken cancellationToken = default)
     {
         if (quantity < 0) throw new ArgumentOutOfRangeException(nameof(quantity));
         if (await inventory.GetBalanceAsync(workspaceId, itemId, placementId, cancellationToken).ConfigureAwait(false) is not null) return;
         if (quantity == 0) return;
-        await AdjustAsync(workspaceId, itemId, placementId, quantity, "Legacy opening balance", Guid.NewGuid(), cancellationToken).ConfigureAwait(false);
+        await AdjustAsync(workspaceId, itemId, placementId, quantity, "Legacy opening balance", operationId ?? Guid.NewGuid(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Receives stock into a placement and queues the same mutation for synchronization.</summary>

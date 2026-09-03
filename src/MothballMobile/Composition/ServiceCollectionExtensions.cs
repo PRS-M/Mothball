@@ -149,6 +149,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<JsonInventoryStore>();
         services.AddSingleton<IAppStartupInitializer, JsonStoreStartupInitializer>();
         services.AddSingleton<IWorkspaceContext, JsonWorkspaceContext>();
+        services.AddSingleton<CanonicalInventoryMigrationService>();
         services.AddSingleton<ISyncOperationStore, JsonSyncOperationStore>();
         services.AddSingleton<ICanonicalInventoryMutationStore, JsonCanonicalInventoryRepository>();
         services.AddSingleton<ICanonicalInventoryRepository>(sp => sp.GetRequiredService<ICanonicalInventoryMutationStore>());
@@ -174,6 +175,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MothballDatabase>();
         services.AddSingleton<IAppStartupInitializer, SqliteStartupInitializer>();
         services.AddSingleton<IWorkspaceContext, SqliteWorkspaceContext>();
+        services.AddSingleton<CanonicalInventoryMigrationService>();
         services.AddSingleton<ISyncOperationStore, SqliteSyncOperationStore>();
         services.AddSingleton<ICanonicalInventoryMutationStore, SqliteCanonicalInventoryRepository>();
         services.AddSingleton<ICanonicalInventoryRepository>(sp => sp.GetRequiredService<ICanonicalInventoryMutationStore>());
