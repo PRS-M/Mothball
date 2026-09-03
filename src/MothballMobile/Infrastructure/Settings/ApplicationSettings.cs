@@ -87,10 +87,8 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
     {
         get
         {
-            var raw = preferences.Get(AppModeKey, nameof(AppMode.Advanced));
-            return Enum.TryParse<AppMode>(raw, out var mode)
-                ? mode
-                : AppMode.Advanced;
+            var raw = preferences.Get(AppModeKey, nameof(AppMode.PersonalStorageAdvanced));
+            return ParseAppMode(raw);
         }
         set
         {
@@ -106,8 +104,24 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
 
     public bool IsAdvancedMode
     {
-        get => AppMode == AppMode.Advanced;
-        set => AppMode = value ? AppMode.Advanced : AppMode.Simple;
+        get => AppModeCapabilities.SupportsAdvancedPersonalStorage(AppMode);
+        set => AppMode = value ? AppMode.PersonalStorageAdvanced : AppMode.PersonalStorageSimple;
+    }
+
+    public bool IsWmsExperimentalMode
+    {
+        get => AppModeCapabilities.SupportsExperimentalWms(AppMode);
+        set
+        {
+            if (value)
+            {
+                AppMode = AppMode.WmsExperimental;
+            }
+            else if (IsWmsExperimentalMode)
+            {
+                AppMode = AppMode.PersonalStorageAdvanced;
+            }
+        }
     }
 
     public bool IsBarcodeExtendedMode
@@ -121,4 +135,13 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
         get => preferences.Get(BackupSigningKeyEnabledKey, defaultValue: true);
         set => preferences.Set(BackupSigningKeyEnabledKey, value);
     }
+
+    private static AppMode ParseAppMode(string? raw)
+        => raw switch
+        {
+            nameof(AppMode.Simple) or nameof(AppMode.PersonalStorageSimple) => AppMode.PersonalStorageSimple,
+            nameof(AppMode.Advanced) or nameof(AppMode.PersonalStorageAdvanced) => AppMode.PersonalStorageAdvanced,
+            nameof(AppMode.WmsExperimental) => AppMode.WmsExperimental,
+            _ => AppMode.PersonalStorageAdvanced,
+        };
 }

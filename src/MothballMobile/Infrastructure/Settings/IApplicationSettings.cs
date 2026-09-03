@@ -17,6 +17,8 @@ public interface IApplicationSettings
 
     bool IsAdvancedMode { get; set; }
 
+    bool IsWmsExperimentalMode { get; set; }
+
     bool IsBarcodeExtendedMode { get; set; }
 
     bool IsBackupSigningKeyEnabled { get; set; }
