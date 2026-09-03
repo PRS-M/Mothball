@@ -77,7 +77,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     public bool IsViewingNotes => !IsEditingNotes;
     public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
     public bool IsViewingBarcode => !IsEditingBarcode;
-    public static ReadOnlyCollection<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> AvailableBarcodeSymbologies { get; } = EnumValues.CreateReadOnly<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology>();
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology>();
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> qrCodeOnlySymbologies = new([global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode]);
+    public IReadOnlyList<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
+        ? extendedBarcodeSymbologies
+        : qrCodeOnlySymbologies;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
     public string DisplayNotes => string.IsNullOrWhiteSpace(Notes) ? "No description." : Notes;
     public string ItemsStoredText => LocalizationManager.Current.Format("Items stored (Total): {0}", TotalItemCount);

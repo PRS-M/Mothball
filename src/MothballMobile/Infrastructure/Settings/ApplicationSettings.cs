@@ -9,6 +9,7 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
     private const string ThemeOverrideKey = "ThemeOverride";
     private const string ThemePaletteKey = "ThemePalette";
     private const string ThemePaletteConfiguredKey = "ThemePaletteConfigured";
+    private const string BarcodeExtendedModeKey = "BarcodeExtendedMode";
     private const string BackupSigningKeyEnabledKey = "BackupSigningKeyEnabled";
     private const string LanguageKey = "Language";
 
@@ -109,6 +110,12 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
     {
         get => AppMode == AppMode.Advanced;
         set => AppMode = value ? AppMode.Advanced : AppMode.Simple;
+    }
+
+    public bool IsBarcodeExtendedMode
+    {
+        get => preferences.Get(BarcodeExtendedModeKey, defaultValue: false);
+        set => preferences.Set(BarcodeExtendedModeKey, value);
     }
 
     public bool IsBackupSigningKeyEnabled

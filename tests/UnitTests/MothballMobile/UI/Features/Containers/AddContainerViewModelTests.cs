@@ -59,6 +59,7 @@ public sealed class AddContainerViewModelTests
                 Mock.Of<IInventoryCommandRepository>()),
             createContainer,
             Mock.Of<INavigationService>(),
+            Mock.Of<IApplicationSettings>(),
             Mock.Of<IPopupService>(),
             Mock.Of<IPopupDefinitionService>(),
             barcodeScanner ?? Mock.Of<IBarcodeScanSession>());

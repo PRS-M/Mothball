@@ -3,6 +3,8 @@ using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Navigation;
 using MothballMobile.Infrastructure.Scanning;
+using MothballMobile.Infrastructure.Settings;
+using MothballMobile.UI.Features.Scanning;
 
 namespace Mothball.Tests.Unit.MothballMobile.Infrastructure.Scanning;
 
@@ -53,5 +55,20 @@ public sealed class BarcodeScanSessionTests
         await completion;
 
         Assert.That(await scan, Is.EqualTo(expected));
+    }
+
+    [TestCase(false, BarcodeSymbology.QrCode, true)]
+    [TestCase(false, BarcodeSymbology.UpcE, false)]
+    [TestCase(true, BarcodeSymbology.UpcE, true)]
+    public void IsSymbologyAllowed_UsesBarcodeExtendedMode(
+        bool isBarcodeExtendedMode,
+        BarcodeSymbology symbology,
+        bool expected)
+    {
+        var settings = Mock.Of<IApplicationSettings>(value =>
+            value.IsBarcodeExtendedMode == isBarcodeExtendedMode);
+        var viewModel = new BarcodeScannerViewModel(Mock.Of<IBarcodeScanSession>(), settings);
+
+        Assert.That(viewModel.IsSymbologyAllowed(symbology), Is.EqualTo(expected));
     }
 }

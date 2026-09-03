@@ -140,7 +140,7 @@
                   <VerticalStackLayout IsVisible="{Binding IsEditingBarcode}" Spacing="8">
                       <Entry Style="{StaticResource Input}" Text="{Binding BarcodeValueDraft}" />
                       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                          <Picker ItemsSource="{x:Static Member=vm:ItemDetailsViewModel.AvailableBarcodeSymbologies}"
+                          <Picker ItemsSource="{Binding AvailableBarcodeSymbologies}"
                               SelectedItem="{Binding BarcodeSymbologyDraft}" />
                           <Button Grid.Column="1" Text="{x:Static strings:AppResources.ScanBarcode}"
                               Style="{StaticResource OutlinedButton}" Command="{Binding ScanBarcodeCommand}" />

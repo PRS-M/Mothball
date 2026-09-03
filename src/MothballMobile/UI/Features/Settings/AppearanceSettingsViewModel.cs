@@ -165,6 +165,21 @@ public partial class AppearanceSettingsViewModel : ObservableObject
         }
     }
 
+    public bool IsBarcodeExtendedMode
+    {
+        get => applicationSettings.IsBarcodeExtendedMode;
+        set
+        {
+            if (applicationSettings.IsBarcodeExtendedMode == value)
+            {
+                return;
+            }
+
+            applicationSettings.IsBarcodeExtendedMode = value;
+            OnPropertyChanged();
+        }
+    }
+
     [RelayCommand]
     private void SelectSimpleAppMode()
         => IsAdvancedAppMode = false;

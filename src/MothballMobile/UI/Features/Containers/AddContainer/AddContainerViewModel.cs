@@ -18,19 +18,26 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly PendingPhoto pendingPhoto;
     private readonly IBarcodeScanSession barcodeScanner;
+    private readonly IApplicationSettings applicationSettings;
+    private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
+    private static readonly ReadOnlyCollection<BarcodeSymbology> qrCodeOnlySymbologies = new([BarcodeSymbology.QrCode]);
 
-    public static ReadOnlyCollection<BarcodeSymbology> AvailableBarcodeSymbologies { get; } = EnumValues.CreateReadOnly<BarcodeSymbology>();
+    public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
+        ? extendedBarcodeSymbologies
+        : qrCodeOnlySymbologies;
 
     public AddContainerViewModel(
         ImageService imageService,
         ICreateContainerCommandHandler createContainer,
         INavigationService navigationService,
+        IApplicationSettings applicationSettings,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
         IBarcodeScanSession barcodeScanner)
     {
         this.createContainer = createContainer ?? throw new ArgumentNullException(nameof(createContainer));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
         this.barcodeScanner = barcodeScanner ?? throw new ArgumentNullException(nameof(barcodeScanner));

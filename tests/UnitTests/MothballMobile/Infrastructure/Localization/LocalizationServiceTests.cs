@@ -76,6 +76,23 @@ public sealed class LocalizationServiceTests
         Assert.That(settings.Language, Is.EqualTo(LanguagePreference.Spanish));
     }
 
+    [Test]
+    public void BarcodeExtendedMode_IsDisabledByDefaultAndPersistsChanges()
+    {
+        var preferences = new MemoryPreferences();
+        var settings = new ApplicationSettings(preferences);
+
+        Assert.That(settings.IsBarcodeExtendedMode, Is.False);
+
+        settings.IsBarcodeExtendedMode = true;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(preferences.Get("BarcodeExtendedMode", false), Is.True);
+            Assert.That(new ApplicationSettings(preferences).IsBarcodeExtendedMode, Is.True);
+        });
+    }
+
     private sealed class MemoryPreferences : IPreferences
     {
         private readonly Dictionary<string, string> values = [];

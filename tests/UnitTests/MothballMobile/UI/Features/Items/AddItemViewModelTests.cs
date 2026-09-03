@@ -81,6 +81,25 @@ public sealed class AddItemViewModelTests
     }
 
     [Test]
+    public void AvailableBarcodeSymbologies_WhenExtendedModeIsDisabled_ContainsOnlyQrCode()
+    {
+        var viewModel = CreateViewModel(Mock.Of<ICreateItemCommandHandler>(), false);
+
+        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.QrCode }));
+    }
+
+    [Test]
+    public void AvailableBarcodeSymbologies_WhenExtendedModeIsEnabled_ContainsAllSupportedSymbologies()
+    {
+        var viewModel = CreateViewModel(
+            Mock.Of<ICreateItemCommandHandler>(),
+            false,
+            isBarcodeExtendedMode: true);
+
+        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(Enum.GetValues<BarcodeSymbology>()));
+    }
+
+    [Test]
     public async Task ScanBarcodeCommand_WhileWaitingForScanner_ReportsBusy()
     {
         var pendingBarcode = new TaskCompletionSource<Barcode?>();
@@ -239,7 +258,8 @@ public sealed class AddItemViewModelTests
         bool isAdvancedMode,
         IBarcodeScanSession? barcodeScanner = null,
         IInventoryQueryRepository? inventoryQueries = null,
-        IItemReceiptService? itemReceipts = null)
+        IItemReceiptService? itemReceipts = null,
+        bool isBarcodeExtendedMode = false)
         => new(
             new ImageService(
                 Mock.Of<IPhotoSourceReader>(),
@@ -249,7 +269,9 @@ public sealed class AddItemViewModelTests
                 Mock.Of<IInventoryCommandRepository>()),
             createItem,
             Mock.Of<INavigationService>(),
-            Mock.Of<IApplicationSettings>(settings => settings.IsAdvancedMode == isAdvancedMode),
+            Mock.Of<IApplicationSettings>(settings =>
+                settings.IsAdvancedMode == isAdvancedMode
+                && settings.IsBarcodeExtendedMode == isBarcodeExtendedMode),
             NullLogger<AddItemViewModel>.Instance,
             Mock.Of<IPopupService>(),
             Mock.Of<IPopupDefinitionService>(),

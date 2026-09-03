@@ -56,7 +56,7 @@
                                                     ColumnSpacing="8"
                                                     IsEnabled="{Binding IsItemMetadataEditable}">
                         <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
-                            ItemsSource="{x:Static Member=vm:AddItemViewModel.AvailableBarcodeSymbologies}"
+                            ItemsSource="{Binding AvailableBarcodeSymbologies}"
                             SelectedItem="{Binding BarcodeSymbology}" />
                         <Button Grid.Column="1"
                             Text="{x:Static strings:AppResources.ScanBarcode}"

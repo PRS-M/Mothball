@@ -31,16 +31,16 @@ public partial class BarcodeScannerPage
         }
 
         var result = e.Results.FirstOrDefault();
-        if (result is null || !BarcodeFormatMapper.TryToBarcodeSymbology(result.Format, out var symbology))
+        if (result is null
+            || !BarcodeFormatMapper.TryToBarcodeSymbology(result.Format, out var symbology)
+            || BindingContext is not BarcodeScannerViewModel viewModel
+            || !viewModel.IsSymbologyAllowed(symbology))
         {
             Interlocked.Exchange(ref hasAcceptedResult, 0);
             return;
         }
 
-        if (BindingContext is BarcodeScannerViewModel viewModel)
-        {
-            await MainThread.InvokeOnMainThreadAsync(() => viewModel.CompleteAsync(new Barcode(result.Value, symbology)));
-        }
+        await MainThread.InvokeOnMainThreadAsync(() => viewModel.CompleteAsync(new Barcode(result.Value, symbology)));
     }
 
     private void OnTorchClicked(object? sender, EventArgs e)
@@ -76,6 +76,7 @@ public partial class BarcodeScannerPage
                 .Select(result => TryCreateBarcode(result))
                 .Where(barcode => barcode is not null)
                 .Cast<Barcode>()
+                .Where(barcode => viewModel.IsSymbologyAllowed(barcode.Symbology))
                 .Distinct()
                 .ToArray() ?? [];
 

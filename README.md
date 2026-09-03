@@ -4,6 +4,7 @@
 
 [![PR Tests](https://github.com/PRS-M/Mothball/actions/workflows/pr-tests.yml/badge.svg)](https://github.com/PRS-M/Mothball/actions/workflows/pr-tests.yml)
 
+## Overview
 Mothball helps you remember what you have, where you put it, and how much is left. Use it for a garage, workshop, pantry, wardrobe, storage unit, or small stockroom: create bins, shelves, drawers, or cabinets, then add the items inside.
 
 Add notes, photos, and quantities to make things easy to find later. Your inventory stays on your device and can be backed up and restored when needed.

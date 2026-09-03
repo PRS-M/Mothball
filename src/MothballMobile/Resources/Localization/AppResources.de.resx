@@ -27,6 +27,8 @@
   <data name="BackgroundOperations" xml:space="preserve"><value>Hintergrundvorgänge</value></data>
   <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Foto-Hintergrundvorgänge</value></data>
   <data name="Barcode" xml:space="preserve"><value>Barcode</value></data>
+  <data name="BarcodesExtendedMode" xml:space="preserve"><value>Erweiterter Barcode-Modus</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Zeigt zusätzliche Barcode-Typen an. QR-Code ist immer verfügbar.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Barcode-Typ</value></data>
   <data name="Backup" xml:space="preserve"><value>Sicherung</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Sicherung exportiert</value></data>
@@ -59,6 +61,7 @@
   <data name="ChooseWhetherMothballFollowsTheSystemAppearanceOrAlwaysUsesALightOrDarkMode" xml:space="preserve"><value>Wählen Sie, ob Mothball dem Systemdesign folgt oder immer den hellen bzw. dunklen Modus verwendet.</value></data>
   <data name="ChoosingAnImportMode" xml:space="preserve"><value>Importmodus auswählen</value></data>
   <data name="Container" xml:space="preserve"><value>Container</value></data>
+  <data name="EnableAdditionalBarcodeTypes" xml:space="preserve"><value>Zusätzliche Barcode-Typen aktivieren</value></data>
   <data name="Containers" xml:space="preserve"><value>Container</value></data>
   <data name="ContainersList" xml:space="preserve"><value>Containerliste</value></data>
   <data name="Continue" xml:space="preserve"><value>Fortfahren</value></data>

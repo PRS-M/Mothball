@@ -52,7 +52,7 @@
                           ColumnDefinitions="*,Auto"
                           ColumnSpacing="8">
                         <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
-                            ItemsSource="{x:Static Member=local:AddContainerViewModel.AvailableBarcodeSymbologies}"
+                            ItemsSource="{Binding AvailableBarcodeSymbologies}"
                             SelectedItem="{Binding BarcodeSymbology}" />
                         <Button Grid.Column="1"
                             Text="{x:Static strings:AppResources.ScanBarcode}"
