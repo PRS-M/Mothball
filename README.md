@@ -66,6 +66,7 @@ Use shelves, bins, cabinets, or zones as containers and treat products, spare pa
 - Use Scan from the container list, item list, or app toolbar to open the matching record.
 - Prevent duplicate barcode assignments across all containers and item types.
 - Use item barcode scans to receive more quantity for an existing item, optionally into a scanned container.
+- Share individual or batch barcode labels as printable PDF documents.
 
 See [Barcodes](docs/Barcodes.md) for barcode workflows, supported formats, and data rules.
 
