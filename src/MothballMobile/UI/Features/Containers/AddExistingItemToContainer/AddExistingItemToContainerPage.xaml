@@ -14,7 +14,7 @@
           RowDefinitions="Auto,*">
                 <controls:PageHeader Grid.Row="0"
                                                          Title="{x:Static strings:AppResources.SelectAnItem}"
-                                                         Subtitle="Only items not assigned to any container are shown"
+                                                         Subtitle="{x:Static strings:AppResources.OnlyUnassignedItemsAreShown}"
                                                          TitleFontSize="24" />
 
         <RefreshView Grid.Row="1"

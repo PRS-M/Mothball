@@ -1,6 +1,4 @@
-﻿using MothballMobile.UI.Shared;
-
-namespace MothballMobile;
+﻿namespace MothballMobile;
 
 public partial class MainPage : BasePage
 {

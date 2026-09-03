@@ -1,5 +1,3 @@
-using System;
-
 namespace CoreApp.Application.Abstractions.Platform;
 
 public enum PhotoSource

@@ -16,7 +16,7 @@
 
           <controls:PageHeader Grid.Row="0"
                          Title="{x:Static strings:AppResources.SelectContainer}"
-                         Subtitle="Tap a container to associate this item"
+                         Subtitle="{x:Static strings:AppResources.TapContainerToAssociateItem}"
                          TitleFontSize="28"
                          SubtitleFontSize="14"
                          Spacing="4"

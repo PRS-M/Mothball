@@ -15,10 +15,7 @@
                    Style="{StaticResource HeadlineSmall}"
                    TextColor="{DynamicResource OnSurface}" />
 
-            <Border Stroke="{DynamicResource OutlineVariant}"
-                    StrokeThickness="1"
-                    StrokeShape="RoundRectangle 12"
-                    Padding="12">
+            <Border Style="{StaticResource OutlinedCard}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{Binding StatusText}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
@@ -35,10 +32,7 @@
             <CollectionView ItemsSource="{Binding RecentOperations}"
                             SelectionMode="None">
                 <CollectionView.EmptyView>
-                    <Border Stroke="{DynamicResource OutlineVariant}"
-                            StrokeThickness="1"
-                            StrokeShape="RoundRectangle 12"
-                            Padding="12">
+                    <Border Style="{StaticResource OutlinedCard}">
                         <Label Text="{x:Static strings:AppResources.NoBackgroundOperationsHaveCompletedYet}"
                                TextColor="{DynamicResource OnSurfaceVariant}" />
                     </Border>
@@ -48,10 +42,7 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="backgroundOperations:PhotoBackgroundOperationEntry">
-                        <Border Stroke="{DynamicResource OutlineVariant}"
-                                StrokeThickness="1"
-                                StrokeShape="RoundRectangle 12"
-                                Padding="12">
+                        <Border Style="{StaticResource OutlinedCard}">
                             <Grid RowDefinitions="Auto,Auto"
                                   ColumnDefinitions="*,Auto"
                                   RowSpacing="4"

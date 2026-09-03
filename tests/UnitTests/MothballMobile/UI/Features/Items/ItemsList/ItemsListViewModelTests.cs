@@ -8,7 +8,7 @@ using MothballMobile.UI.Features.Items.ItemDetails;
 using MothballMobile.UI.Features.Items.Quantity;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.BarcodeDocuments;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Items.ItemsList;
 

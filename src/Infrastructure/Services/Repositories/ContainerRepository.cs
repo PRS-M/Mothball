@@ -5,7 +5,6 @@ using CoreApp.Application.Specifications;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Mappers;
 using Microsoft.Extensions.Logging;
-using CoreApp.Application.Contracts;
 
 namespace Infrastructure.Services.Repositories;
 

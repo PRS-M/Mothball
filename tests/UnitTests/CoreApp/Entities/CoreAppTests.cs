@@ -2,7 +2,7 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 ﻿using CoreApp.Domain.Entities;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Utilities;
 
 namespace Mothball.Tests.Unit.Core.Entities;
@@ -260,7 +260,7 @@ public class CoreAppTests
     {
         var container = new Container();
 
-        Assert.That(((ICollection<CoreApp.Domain.Entities.Shared.ImageItem>)container.Photos).IsReadOnly, Is.True);
+        Assert.That(((ICollection<CoreApp.Domain.ValueObjects.ImageItem>)container.Photos).IsReadOnly, Is.True);
     }
 
     [Test]

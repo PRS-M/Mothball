@@ -1,5 +1,3 @@
-using CoreApp.Application.Utilities;
-
 namespace CoreApp.Application.Features.Photos;
 
 public sealed class PhotoSourceReader : IPhotoSourceReader

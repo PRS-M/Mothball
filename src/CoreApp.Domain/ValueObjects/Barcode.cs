@@ -1,5 +1,8 @@
-namespace CoreApp.Domain.Entities.Shared;
+namespace CoreApp.Domain.ValueObjects;
 
+/// <summary>
+/// Represents a normalized barcode value and its symbology.
+/// </summary>
 public sealed record Barcode
 {
     public Barcode(string value, BarcodeSymbology symbology)
@@ -17,6 +20,9 @@ public sealed record Barcode
     public BarcodeSymbology Symbology { get; }
 }
 
+/// <summary>
+/// Identifies the encoding format of a barcode.
+/// </summary>
 public enum BarcodeSymbology
 {
     QrCode,

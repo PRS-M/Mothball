@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Specialized;
-using CoreApp.Domain.Entities.Shared;
-using Microsoft.Extensions.DependencyInjection;
+using CoreApp.Domain.ValueObjects;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace MothballMobile.UI.Controls;

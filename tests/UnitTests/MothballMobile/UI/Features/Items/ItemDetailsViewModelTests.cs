@@ -1,14 +1,11 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
-using CoreApp.Application.Contracts;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Domain.Entities.ItemAggregate;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.UI.Features.Items.Consumption;
 using MothballMobile.UI.Features.Items.Quantity;
 using Moq;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Items.ItemDetails;
 using MothballMobile.UI.Features.Items.ItemLocations;

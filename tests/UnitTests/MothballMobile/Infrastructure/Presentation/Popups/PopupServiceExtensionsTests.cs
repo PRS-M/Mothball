@@ -1,5 +1,4 @@
 using Moq;
-using MothballMobile.Infrastructure.Presentation.Popups;
 
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Presentation.Popups;
 

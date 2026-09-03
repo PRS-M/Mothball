@@ -47,3 +47,13 @@ For UI, keep feature page, XAML, code-behind, view model, and presentation-only 
 Do not reference the MAUI app project from `UnitTests`. Its mobile-only classes are deliberately listed as explicit `<Compile Include=...>` entries in `tests/UnitTests/UnitTests.csproj`; add a new entry when a test needs another mobile source file. Do not add generated `bin/`, `obj/`, IDE cache, local AdMob configuration, or design-prototype files.
 
 Read the relevant document before changing a specialized workflow: `docs/DeveloperDocumentation.md`, `docs/FeaturesAndAlgorithms.md`, `docs/BackupRestore.md`, `docs/JsonStore.md`, `docs/Seeding.md`, `docs/Localization.md`, and `docs/AdMobConfiguration.md`. Follow existing tests and preserve unrelated user changes.
+
+## Change Delivery
+
+After each step that makes a meaningful change, provide a copyable one-line commit message in a fenced code block. Use Conventional Commits with the type first, followed by a Gitmoji in colon-code text format and a concise imperative description, for example:
+
+```text
+feat: :sparkles: add barcode layout validation
+```
+
+After a large batch of work, provide a concise pull-request title and relatively short description in Markdown. Keep the description brief; a few bullet points are appropriate. Put longer explanations in the relevant documentation instead of expanding the PR description.

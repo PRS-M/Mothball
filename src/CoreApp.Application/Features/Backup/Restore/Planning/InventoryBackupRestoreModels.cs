@@ -1,5 +1,3 @@
-using CoreApp.Application.Contracts;
-
 namespace CoreApp.Application.Features.Backup.Restore.Planning;
 
 public sealed record InventoryBackupImageOwnership(Guid OwnerId, Guid ImageId);

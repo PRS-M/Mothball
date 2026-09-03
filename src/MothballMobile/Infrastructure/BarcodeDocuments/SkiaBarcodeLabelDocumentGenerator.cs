@@ -1,6 +1,4 @@
-using CoreApp.Domain.Entities.Shared;
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Storage;
+using CoreApp.Domain.ValueObjects;
 using SkiaSharp;
 using ZXing.Net.Maui;
 

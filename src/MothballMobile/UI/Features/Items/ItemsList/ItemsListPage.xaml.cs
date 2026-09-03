@@ -1,6 +1,4 @@
-﻿using MothballMobile.UI.Shared;
-
-namespace MothballMobile.UI.Features.Items.ItemsList;
+﻿namespace MothballMobile.UI.Features.Items.ItemsList;
 
 public partial class ItemsListPage : BasePage
 {

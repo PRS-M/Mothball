@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using MothballMobile.Infrastructure;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Startup;

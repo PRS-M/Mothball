@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Maui.Storage;
 using Moq;
-using MothballMobile.Infrastructure.Backup;
 using MothballMobile.UI.Features.Settings;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Settings;

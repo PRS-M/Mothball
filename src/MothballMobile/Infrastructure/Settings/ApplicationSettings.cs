@@ -1,5 +1,3 @@
-using Microsoft.Maui.Storage;
-using MothballMobile.Infrastructure.Localization;
 
 namespace MothballMobile.Infrastructure.Settings;
 

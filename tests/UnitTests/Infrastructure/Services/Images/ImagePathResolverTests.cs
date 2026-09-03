@@ -1,6 +1,5 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
-using Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 

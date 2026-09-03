@@ -1,5 +1,4 @@
 global using Microsoft.Maui.ApplicationModel;
-global using Microsoft.Maui.Controls;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -50,11 +49,17 @@ namespace Microsoft.Maui.Devices
 
 namespace Microsoft.Maui.Controls
 {
+    public class ResourceDictionary : Dictionary<string, object>
+    {
+    }
+
     public class Application
     {
         public static Application? Current { get; set; }
 
         public AppTheme UserAppTheme { get; set; }
+
+        public Microsoft.Maui.Controls.ResourceDictionary Resources { get; } = new();
     }
 
     public interface IQueryAttributable

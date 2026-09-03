@@ -1,5 +1,5 @@
 using CoreApp.Domain.Abstractions;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 
 namespace CoreApp.Domain.Entities.ItemAggregate;
 

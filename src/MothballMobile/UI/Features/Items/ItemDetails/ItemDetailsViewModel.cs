@@ -1,13 +1,11 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CoreApp.Application.Contracts;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Utilities;
 using CoreApp.Domain.Entities.ItemAggregate;
-using CoreApp.Domain.Entities.Shared;
-using Microsoft.Extensions.Logging;
+using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.BarcodeDocuments;
 
@@ -48,7 +46,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private string barcodeValueDraft = string.Empty;
 
     [ObservableProperty]
-    private global::CoreApp.Domain.Entities.Shared.BarcodeSymbology barcodeSymbologyDraft = global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+    private global::CoreApp.Domain.ValueObjects.BarcodeSymbology barcodeSymbologyDraft = global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
 
     [ObservableProperty]
     private bool isEditingBarcode;
@@ -75,9 +73,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
     public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
     public bool IsViewingBarcode => !IsEditingBarcode;
-    private static readonly ReadOnlyCollection<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> qrCodeOnlySymbologies = new([global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode]);
-    public IReadOnlyList<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<global::CoreApp.Domain.ValueObjects.BarcodeSymbology>();
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> qrCodeOnlySymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode]);
+    public IReadOnlyList<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
         : qrCodeOnlySymbologies;
     public string DisplayDescription => HasDescription ? Description : "No description.";
@@ -184,7 +182,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 BarcodeValue = string.Empty;
                 BarcodeSymbology = string.Empty;
                 BarcodeValueDraft = string.Empty;
-                BarcodeSymbologyDraft = global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+                BarcodeSymbologyDraft = global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
                 IsEditingBarcode = false;
                 IsEditingDescription = false;
                 OnPropertyChanged(nameof(HasDescription));
@@ -201,7 +199,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             BarcodeValue = item.Barcode?.Value ?? string.Empty;
             BarcodeSymbology = item.Barcode?.Symbology.ToString() ?? string.Empty;
             BarcodeValueDraft = BarcodeValue;
-            BarcodeSymbologyDraft = item.Barcode?.Symbology ?? global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+            BarcodeSymbologyDraft = item.Barcode?.Symbology ?? global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
             IsEditingBarcode = false;
             IsEditingDescription = false;
             ApplyQuantities(details.Inventory);
@@ -362,7 +360,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private void EditBarcode()
     {
         BarcodeValueDraft = BarcodeValue;
-        BarcodeSymbologyDraft = currentItem?.Barcode?.Symbology ?? global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+        BarcodeSymbologyDraft = currentItem?.Barcode?.Symbology ?? global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
         IsEditingBarcode = true;
     }
 

@@ -1,9 +1,8 @@
-using CoreApp.Application.Abstractions.Persistence;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using Moq;
 
 namespace Mothball.Tests.Unit.Core.Features.Barcodes;

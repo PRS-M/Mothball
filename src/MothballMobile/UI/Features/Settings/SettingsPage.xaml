@@ -13,17 +13,13 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
             <controls:PageHeader Title="{x:Static strings:AppResources.Settings}"
-                                 Subtitle="Maintenance and backup"
+                                 Subtitle="{x:Static strings:AppResources.MaintenanceAndBackup}"
                                  TitleFontSize="22"
                                  SubtitleFontSize="12"
                                  Spacing="2"
                                  HeaderMargin="0,0,0,6" />
 
-            <Border Padding="14"
-                    StrokeThickness="1"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeShape="RoundRectangle 16"
-                    Background="{DynamicResource SurfaceVariant}">
+            <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="{x:Static strings:AppResources.Language}"
                            Style="{StaticResource HeadlineSmall}"
@@ -38,11 +34,7 @@
                 </VerticalStackLayout>
             </Border>
 
-                        <Border Padding="14"
-                                        StrokeThickness="1"
-                                        Stroke="{DynamicResource OutlineVariant}"
-                                        StrokeShape="RoundRectangle 16"
-                                        Background="{DynamicResource SurfaceVariant}">
+                        <Border Style="{StaticResource SectionCard}">
                                 <VerticalStackLayout Spacing="10">
                                         <Label Text="{x:Static strings:AppResources.ThemeMode}"
                                                    Style="{StaticResource HeadlineSmall}"
@@ -59,11 +51,7 @@
                                 </VerticalStackLayout>
                         </Border>
 
-                        <Border Padding="14"
-                                        StrokeThickness="1"
-                                        Stroke="{DynamicResource OutlineVariant}"
-                                        StrokeShape="RoundRectangle 16"
-                                        Background="{DynamicResource SurfaceVariant}">
+                        <Border Style="{StaticResource SectionCard}">
                                 <VerticalStackLayout Spacing="10">
                                         <Label Text="{x:Static strings:AppResources.Theme}"
                                                    Style="{StaticResource HeadlineSmall}"
@@ -78,11 +66,7 @@
                                 </VerticalStackLayout>
                         </Border>
 
-            <Border Padding="14"
-                    StrokeThickness="1"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeShape="RoundRectangle 16"
-                    Background="{DynamicResource SurfaceVariant}">
+            <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="10">
                       <Label Text="{x:Static strings:AppResources.AppMode}"
                               Style="{StaticResource HeadlineSmall}"
@@ -102,11 +86,7 @@
                 </VerticalStackLayout>
             </Border>
 
-                                                 <Border Padding="14"
-                                                                                        StrokeThickness="1"
-                                                                                        Stroke="{DynamicResource OutlineVariant}"
-                                                                                        StrokeShape="RoundRectangle 16"
-                                                                                        Background="{DynamicResource SurfaceVariant}">
+                                                 <Border Style="{StaticResource SectionCard}">
                                                                         <VerticalStackLayout Spacing="10">
                                                                                         <Grid ColumnDefinitions="*,Auto"
                                                                                                                 ColumnSpacing="12">
@@ -125,11 +105,7 @@
                                                                 </VerticalStackLayout>
                                                 </Border>
 
-             <Border Padding="14"
-                      StrokeThickness="1"
-                      Stroke="{DynamicResource OutlineVariant}"
-                      StrokeShape="RoundRectangle 16"
-                      Background="{DynamicResource SurfaceVariant}">
+             <Border Style="{StaticResource SectionCard}">
                   <VerticalStackLayout Spacing="10">
                       <Grid ColumnDefinitions="*,Auto"
                             ColumnSpacing="12">
@@ -169,11 +145,7 @@
                   </VerticalStackLayout>
              </Border>
 
-            <Border Padding="14"
-                    StrokeThickness="1"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeShape="RoundRectangle 16"
-                    Background="{DynamicResource SurfaceVariant}">
+            <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="10">
                       <Label Text="{x:Static strings:AppResources.Backup}"
                               Style="{StaticResource HeadlineSmall}"
@@ -304,11 +276,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Border Padding="14"
-                    StrokeThickness="1"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeShape="RoundRectangle 16"
-                    Background="{DynamicResource SurfaceVariant}">
+            <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="{x:Static strings:AppResources.ImageProcessing}"
                            Style="{StaticResource HeadlineSmall}"

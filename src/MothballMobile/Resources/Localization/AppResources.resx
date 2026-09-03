@@ -105,6 +105,7 @@
   <data name="Description" xml:space="preserve"><value>Description</value></data>
   <data name="DismissError" xml:space="preserve"><value>Dismiss error</value></data>
   <data name="DocumentationHelp" xml:space="preserve"><value>Documentation / Help</value></data>
+  <data name="BackupImportModes" xml:space="preserve"><value>Backup import modes</value></data>
   <data name="EditDescription" xml:space="preserve"><value>Edit Description</value></data>
   <data name="EditQuantity" xml:space="preserve"><value>Edit quantity</value></data>
   <data name="EnableOrDisableBackupSigningKeyUse" xml:space="preserve"><value>Enable or disable backup signing key use</value></data>
@@ -115,6 +116,8 @@
   <data name="EnterADescriptionOrNotes" xml:space="preserve"><value>Enter a description or notes.</value></data>
   <data name="EnterANumberBetween0And1" xml:space="preserve"><value>Enter a number between {0} and {1}.</value></data>
   <data name="EnterContainerName" xml:space="preserve"><value>Enter container name</value></data>
+  <data name="EnterDetailsBelow" xml:space="preserve"><value>Enter the details below</value></data>
+  <data name="FillInFieldsBelow" xml:space="preserve"><value>Fill in the fields below</value></data>
   <data name="EnterHowManyItemsToUsePermanently" xml:space="preserve"><value>Enter how many items to use permanently.</value></data>
   <data name="EnterHowManyItemsToWithdrawFromThisContainer" xml:space="preserve"><value>Enter how many items to withdraw from this container.</value></data>
   <data name="EnterHowManyUnassignedItemsToPlaceInThisContainer" xml:space="preserve"><value>Enter how many unassigned items to place in this container.</value></data>
@@ -159,6 +162,8 @@
   <data name="MoreItemsMustBeWithdrawn" xml:space="preserve"><value>More items must be withdrawn</value></data>
   <data name="Mothball" xml:space="preserve"><value>Mothball</value></data>
   <data name="NameIsRequired" xml:space="preserve"><value>Name is required.</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notes</value></data>
   <data name="NoBackgroundOperationsHaveCompletedYet" xml:space="preserve"><value>No background operations have completed yet.</value></data>
   <data name="NoBackupFilesWereFoundInLocalBackupStorage" xml:space="preserve"><value>No backup files were found in local backup storage.</value></data>
   <data name="NoBackupsFound" xml:space="preserve"><value>No backups found</value></data>
@@ -181,6 +186,7 @@
   <data name="Polish" xml:space="preserve"><value>Polish</value></data>
   <data name="ProcessingPhoto" xml:space="preserve"><value>Processing photo...</value></data>
   <data name="QuantityMustBeAPositiveNumber" xml:space="preserve"><value>Quantity must be a positive number.</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Quantity</value></data>
   <data name="QuantityNotUpdated" xml:space="preserve"><value>Quantity not updated</value></data>
   <data name="RecentOperations" xml:space="preserve"><value>Recent operations</value></data>
   <data name="RelationsAndImageReferencesRemainAdditiveForExistingRecords" xml:space="preserve"><value>Relations and image references remain additive for existing records.</value></data>
@@ -222,12 +228,16 @@
   <data name="SetQuantity" xml:space="preserve"><value>Set quantity</value></data>
   <data name="SetTotalQuantity" xml:space="preserve"><value>Set total quantity</value></data>
   <data name="Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="MaintenanceAndBackup" xml:space="preserve"><value>Maintenance and backup</value></data>
   <data name="ShareFailed" xml:space="preserve"><value>Share Failed</value></data>
   <data name="ShareBackupJSON" xml:space="preserve"><value>Share backup JSON</value></data>
   <data name="ShareBackupZIP" xml:space="preserve"><value>Share backup ZIP</value></data>
   <data name="ShareSigningKey" xml:space="preserve"><value>Share signing key</value></data>
   <data name="ShareTheBackupSigningKeyUsingTheSystemShareSheetIncludingAirDrop" xml:space="preserve"><value>Share the backup signing key using the system share sheet, including AirDrop</value></data>
   <data name="ShortDescription" xml:space="preserve"><value>Short description</value></data>
+  <data name="OnlyUnassignedItemsAreShown" xml:space="preserve"><value>Only items not assigned to any container are shown</value></data>
+  <data name="TapContainerToAssociateItem" xml:space="preserve"><value>Tap a container to associate this item</value></data>
+  <data name="TapToAddFirstContainer" xml:space="preserve"><value>Tap + to add your first container</value></data>
   <data name="SigningKeyImported" xml:space="preserve"><value>Signing key imported</value></data>
   <data name="Simple" xml:space="preserve"><value>Simple</value></data>
   <data name="ZIP" xml:space="preserve"><value>ZIP</value></data>

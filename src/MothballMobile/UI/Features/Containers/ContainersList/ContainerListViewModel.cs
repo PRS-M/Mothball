@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Application.Utilities;
-using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.BarcodeDocuments;
 

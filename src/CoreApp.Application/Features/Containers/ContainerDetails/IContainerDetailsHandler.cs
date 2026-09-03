@@ -1,4 +1,3 @@
-using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.ContainerAggregate;
 
 namespace CoreApp.Application.Features.Containers.ContainerDetails;

@@ -1,4 +1,3 @@
-global using CoreApp.Domain.Abstractions;
 global using CoreApp.Application.Abstractions.Persistence;
 global using CoreApp.Application.Abstractions.Platform;
 global using CoreApp.Application.Abstractions.Startup;

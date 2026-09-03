@@ -2,11 +2,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Features.Barcodes.Commands;
-using CoreApp.Application.Features.Photos;
 using CoreApp.Application.Utilities;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Scanning;
-using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;
 

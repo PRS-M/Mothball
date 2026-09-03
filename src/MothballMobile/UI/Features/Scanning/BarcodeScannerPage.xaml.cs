@@ -1,5 +1,5 @@
 using System.Globalization;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using ZXing.Net.Maui;
 
 namespace MothballMobile.UI.Features.Scanning;

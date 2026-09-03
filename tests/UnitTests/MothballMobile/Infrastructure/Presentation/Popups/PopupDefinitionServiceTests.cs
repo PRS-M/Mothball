@@ -1,7 +1,5 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
-using CoreApp.Application.Contracts;
-using CoreApp.Domain.Entities.Shared;
-using MothballMobile.Infrastructure.Presentation.Popups;
+using CoreApp.Domain.ValueObjects;
 
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Presentation.Popups;
 

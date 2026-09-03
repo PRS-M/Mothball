@@ -1,5 +1,3 @@
-using CoreApp.Application.Contracts;
-using CoreApp.Application.Features.Inventory.Withdrawal;
 using CoreApp.Domain.Entities.InventoryAggregate;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;

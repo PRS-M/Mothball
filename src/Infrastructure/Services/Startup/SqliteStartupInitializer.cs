@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Infrastructure.Services.Startup;
 
 public sealed class SqliteStartupInitializer : IAppStartupInitializer

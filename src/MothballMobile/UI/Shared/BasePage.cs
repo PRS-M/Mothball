@@ -1,7 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Extensions.Logging;
-using MothballMobile.Infrastructure.BackgroundOperations.Photos;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Shapes;
+
 
 #if IOS || ANDROID
 using Plugin.AdMob;

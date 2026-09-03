@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using MothballMobile.UI.Shared;
 
 namespace MothballMobile.UI.Features.Settings;
 

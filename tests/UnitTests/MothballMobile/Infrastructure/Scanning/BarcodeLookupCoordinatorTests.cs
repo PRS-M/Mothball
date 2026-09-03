@@ -1,9 +1,6 @@
-using CoreApp.Application.Abstractions.Persistence;
 using CoreApp.Application.Contracts;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using Moq;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Navigation;
 using MothballMobile.Infrastructure.Scanning;
 
 namespace Mothball.Tests.Unit.MothballMobile.Infrastructure.Scanning;

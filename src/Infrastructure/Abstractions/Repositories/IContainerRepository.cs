@@ -1,7 +1,6 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Application.Specifications;
-using CoreApp.Application.Contracts;
 
 namespace Infrastructure.Abstractions.Repositories;
 

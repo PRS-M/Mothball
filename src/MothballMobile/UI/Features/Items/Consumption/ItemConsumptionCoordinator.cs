@@ -1,4 +1,3 @@
-using CoreApp.Application.Contracts;
 using CoreApp.Domain.Entities.InventoryAggregate;
 
 namespace MothballMobile.UI.Features.Items.Consumption;

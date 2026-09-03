@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using CoreApp.Application.Contracts;
-using CoreApp.Application.Features.Containers.ContainerDetails;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.InventoryAggregate;
 using MothballMobile.UI.Features.Items.Consumption;

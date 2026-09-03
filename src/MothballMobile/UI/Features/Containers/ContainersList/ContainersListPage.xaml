@@ -131,7 +131,7 @@
                     </CollectionView.ItemsLayout>
                     <CollectionView.EmptyView>
                         <controls:EmptyStateView Title="{x:Static strings:AppResources.NoContainersYet}"
-                                     Subtitle="Tap + to add your first container"
+                                     Subtitle="{x:Static strings:AppResources.TapToAddFirstContainer}"
                                      SubtitleFontSize="12" />
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>

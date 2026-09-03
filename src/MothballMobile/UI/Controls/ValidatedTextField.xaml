@@ -13,17 +13,17 @@
 
         <Border Padding="0"
                 WidthRequest="{Binding Source={x:Reference this}, Path=WidthRequest}">
-                     <Border.Style>
-                            <Style TargetType="Border" BasedOn="{StaticResource InputWrapper}">
-                                   <Style.Triggers>
-                                          <DataTrigger TargetType="Border"
-                                                                Binding="{Binding Source={x:Reference this}, Path=HasValidationMessage}"
-                                                                Value="True">
-                                                 <Setter Property="Stroke" Value="{DynamicResource Error}" />
-                                          </DataTrigger>
-                                   </Style.Triggers>
-                            </Style>
-                     </Border.Style>
+            <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource InputWrapper}">
+                    <Style.Triggers>
+                        <DataTrigger TargetType="Border"
+                                     Binding="{Binding Source={x:Reference this}, Path=HasValidationMessage}"
+                                     Value="True">
+                            <Setter Property="Stroke" Value="{DynamicResource Error}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
             <Entry Style="{StaticResource Input}"
                    Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
                    Text="{Binding Source={x:Reference this}, Path=Text}"

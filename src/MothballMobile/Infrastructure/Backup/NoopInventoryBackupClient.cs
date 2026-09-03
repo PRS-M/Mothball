@@ -1,5 +1,3 @@
-using CoreApp.Application.Contracts;
-
 namespace MothballMobile.Infrastructure.Backup;
 
 public sealed class NoopInventoryBackupClient : IInventoryBackupClient

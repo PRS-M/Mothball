@@ -1,5 +1,3 @@
-using Microsoft.Maui.Controls;
-
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
 public sealed class ContainerDetailsRowTemplateSelector : DataTemplateSelector

@@ -1,5 +1,5 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Features.Photos;
 

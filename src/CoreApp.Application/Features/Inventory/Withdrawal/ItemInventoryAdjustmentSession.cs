@@ -1,5 +1,4 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
-using CoreApp.Application.Contracts;
 using CoreApp.Domain.Inventory;
 
 namespace CoreApp.Application.Features.Inventory.Withdrawal;

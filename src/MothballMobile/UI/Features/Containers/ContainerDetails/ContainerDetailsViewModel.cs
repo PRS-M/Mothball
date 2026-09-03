@@ -2,8 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
-using CoreApp.Domain.Entities.Shared;
-using CoreApp.Application.Contracts;
+using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -49,7 +48,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private string barcodeValueDraft = string.Empty;
 
     [ObservableProperty]
-    private global::CoreApp.Domain.Entities.Shared.BarcodeSymbology barcodeSymbologyDraft = global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+    private global::CoreApp.Domain.ValueObjects.BarcodeSymbology barcodeSymbologyDraft = global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
 
     [ObservableProperty]
     private bool isEditingBarcode;
@@ -79,9 +78,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     public bool IsViewingNotes => !IsEditingNotes;
     public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
     public bool IsViewingBarcode => !IsEditingBarcode;
-    private static readonly ReadOnlyCollection<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> qrCodeOnlySymbologies = new([global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode]);
-    public IReadOnlyList<global::CoreApp.Domain.Entities.Shared.BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<global::CoreApp.Domain.ValueObjects.BarcodeSymbology>();
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> qrCodeOnlySymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode]);
+    public IReadOnlyList<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
         : qrCodeOnlySymbologies;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
@@ -185,7 +184,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             BarcodeValue = string.Empty;
             BarcodeSymbology = string.Empty;
             BarcodeValueDraft = string.Empty;
-            BarcodeSymbologyDraft = global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+            BarcodeSymbologyDraft = global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
             IsEditingBarcode = false;
             IsEditingNotes = false;
             TotalItemCount = 0;
@@ -202,7 +201,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         BarcodeValue = currentContainer.Barcode?.Value ?? string.Empty;
         BarcodeSymbology = currentContainer.Barcode?.Symbology.ToString() ?? string.Empty;
         BarcodeValueDraft = BarcodeValue;
-        BarcodeSymbologyDraft = currentContainer.Barcode?.Symbology ?? global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+        BarcodeSymbologyDraft = currentContainer.Barcode?.Symbology ?? global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
         IsEditingBarcode = false;
         IsEditingNotes = false;
         ItemTypesCount = summary.ItemTypesCount;
@@ -319,7 +318,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private void EditBarcode()
     {
         BarcodeValueDraft = BarcodeValue;
-        BarcodeSymbologyDraft = currentContainer?.Barcode?.Symbology ?? global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
+        BarcodeSymbologyDraft = currentContainer?.Barcode?.Symbology ?? global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
         IsEditingBarcode = true;
     }
 

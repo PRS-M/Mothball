@@ -11,17 +11,13 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
             <controls:PageHeader Title="{x:Static strings:AppResources.DocumentationHelp}"
-                                 Subtitle="Backup import modes"
+                                 Subtitle="{x:Static strings:AppResources.BackupImportModes}"
                                  TitleFontSize="22"
                                  SubtitleFontSize="12"
                                  Spacing="2"
                                  HeaderMargin="0,0,0,6" />
 
-            <Border Padding="14"
-                    StrokeThickness="1"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeShape="RoundRectangle 16"
-                    Background="{DynamicResource SurfaceVariant}">
+            <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{x:Static strings:AppResources.ChoosingAnImportMode}"
                            Style="{StaticResource HeadlineSmall}"
@@ -33,11 +29,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Border Padding="14"
-                    StrokeThickness="1"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeShape="RoundRectangle 16"
-                    Background="{DynamicResource SurfaceVariant}">
+            <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{x:Static strings:AppResources.AddOnly}"
                            Style="{StaticResource TitleMedium}"
@@ -53,11 +45,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Border Padding="14"
-                    StrokeThickness="1"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeShape="RoundRectangle 16"
-                    Background="{DynamicResource SurfaceVariant}">
+            <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{x:Static strings:AppResources.AddUpsertMetadata}"
                            Style="{StaticResource TitleMedium}"
@@ -77,11 +65,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Border Padding="14"
-                    StrokeThickness="1"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeShape="RoundRectangle 16"
-                    Background="{DynamicResource SurfaceVariant}">
+            <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{x:Static strings:AppResources.FullSyncRoots}"
                            Style="{StaticResource TitleMedium}"
@@ -101,11 +85,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Border Padding="14"
-                    StrokeThickness="1"
-                    Stroke="{DynamicResource OutlineVariant}"
-                    StrokeShape="RoundRectangle 16"
-                    Background="{DynamicResource SurfaceVariant}">
+            <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{x:Static strings:AppResources.StrictFullSync}"
                            Style="{StaticResource TitleMedium}"

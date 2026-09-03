@@ -1,6 +1,4 @@
-﻿using MothballMobile.UI.Shared;
-
-namespace MothballMobile.UI.Features.Containers.AddContainer;
+﻿namespace MothballMobile.UI.Features.Containers.AddContainer;
 
 public partial class AddContainerPage : BasePage
 {

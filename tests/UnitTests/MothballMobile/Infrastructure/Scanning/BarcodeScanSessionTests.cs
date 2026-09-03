@@ -1,9 +1,6 @@
-using CoreApp.Domain.Entities.Shared;
+using CoreApp.Domain.ValueObjects;
 using Moq;
-using MothballMobile.Infrastructure;
-using MothballMobile.Infrastructure.Navigation;
 using MothballMobile.Infrastructure.Scanning;
-using MothballMobile.Infrastructure.Settings;
 using MothballMobile.UI.Features.Scanning;
 
 namespace Mothball.Tests.Unit.MothballMobile.Infrastructure.Scanning;

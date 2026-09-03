@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Mothball.Tests.Unit.Infrastructure.Services;
