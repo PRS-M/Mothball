@@ -11,22 +11,22 @@
                 Background="{DynamicResource Surface}">
 
     <Grid>
-    <ScrollView>
-        <Grid Padding="20"
-              RowDefinitions="Auto,Auto"
-              ColumnDefinitions="*">
+        <ScrollView>
+            <Grid Padding="20"
+                  RowDefinitions="Auto,Auto"
+                  ColumnDefinitions="*">
             <controls:PageHeader Grid.Row="0"
                                  Title="{x:Static strings:AppResources.CreateANewContainer}"
                                  Subtitle="{x:Static strings:AppResources.EnterDetailsBelow}"
                                  TitleFontSize="24"
                                  HeaderMargin="0,6,0,14" />
 
-            <Border Grid.Row="1"
-                    Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="12"
-                                     HorizontalOptions="Center">
-                    <!-- Name -->
-                    <controls:ValidatedTextField Label="{x:Static strings:AppResources.Name}"
+                <Border Grid.Row="1"
+                        Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="12"
+                                         HorizontalOptions="Center">
+                        <!-- Name -->
+                        <controls:ValidatedTextField Label="{x:Static strings:AppResources.Name}"
                                                  WidthRequest="{StaticResource WidthM}"
                                                  Placeholder="{x:Static strings:AppResources.EnterContainerName}"
                                                  Text="{Binding Name}"
@@ -34,8 +34,8 @@
                                                  ReturnCommand="{Binding SaveContainerCommand}"
                                                  ValidationMessage="{Binding ValidationMessage}" />
 
-                    <!-- Notes -->
-                    <controls:LabeledEntryField Label="{x:Static strings:AppResources.Notes}"
+                        <!-- Notes -->
+                        <controls:LabeledEntryField Label="{x:Static strings:AppResources.Notes}"
                                                LabelMargin="4,8,4,0"
                                                FieldWidthRequest="{StaticResource WidthM}"
                                                UseWrapper="False"
@@ -43,21 +43,21 @@
                                                Text="{Binding Notes}" />
 
                         <controls:LabeledEntryField Label="{x:Static strings:AppResources.Barcode}"
-                                       LabelMargin="4,8,4,0"
-                                       FieldWidthRequest="{StaticResource WidthM}"
-                                       UseWrapper="False"
-                                       Text="{Binding BarcodeValue}" />
+                                                     LabelMargin="4,8,4,0"
+                                                     FieldWidthRequest="{StaticResource WidthM}"
+                                                     UseWrapper="False"
+                                                     Text="{Binding BarcodeValue}" />
 
                         <Grid WidthRequest="{StaticResource WidthM}"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="8">
-                        <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
-                            ItemsSource="{Binding AvailableBarcodeSymbologies}"
-                            SelectedItem="{Binding BarcodeSymbology}" />
-                        <Button Grid.Column="1"
-                            Text="{x:Static strings:AppResources.ScanBarcode}"
-                            Style="{StaticResource OutlinedButton}"
-                            Command="{Binding ScanBarcodeCommand}" />
+                              ColumnDefinitions="*,Auto"
+                              ColumnSpacing="8">
+                            <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
+                                    ItemsSource="{Binding AvailableBarcodeSymbologies}"
+                                    SelectedItem="{Binding BarcodeSymbology}" />
+                            <Button Grid.Column="1"
+                                    Text="{x:Static strings:AppResources.ScanBarcode}"
+                                    Style="{StaticResource OutlinedButton}"
+                                    Command="{Binding ScanBarcodeCommand}" />
                         </Grid>
 
                     <!-- Temporary photo selection -->
@@ -76,33 +76,33 @@
                     <Border Style="{StaticResource InputWrapper}"
                             WidthRequest="{StaticResource WidthM}"
                             IsVisible="{Binding IsPhotoProcessing}">
-                           <VerticalStackLayout Spacing="8"
-                                       HorizontalOptions="Center"
-                                       VerticalOptions="Center"
-                                       MinimumHeightRequest="160">
+                        <VerticalStackLayout Spacing="8"
+                                             HorizontalOptions="Center"
+                                             VerticalOptions="Center"
+                                             MinimumHeightRequest="160">
                             <ActivityIndicator IsRunning="True"
-                                         WidthRequest="32"
-                                         HeightRequest="32"
-                                         HorizontalOptions="Center" />
+                                               WidthRequest="32"
+                                               HeightRequest="32"
+                                               HorizontalOptions="Center" />
                             <Label Text="{x:Static strings:AppResources.ResizingPhoto}"
-                                Style="{StaticResource LabelSmall}"
-                                HorizontalTextAlignment="Center" />
-                           </VerticalStackLayout>
-                          </Border>
+                                   Style="{StaticResource LabelSmall}"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
 
-                          <Border Style="{StaticResource InputWrapper}"
+                    <Border Style="{StaticResource InputWrapper}"
                             WidthRequest="{StaticResource WidthM}"
                             IsVisible="{Binding ShowPhotoThumbnail}">
-                           <VerticalStackLayout Spacing="8"
-                                       HorizontalOptions="Center">
+                        <VerticalStackLayout Spacing="8"
+                                             HorizontalOptions="Center">
                             <Image Source="{Binding PhotoThumbnailPath}"
-                                HeightRequest="120"
-                                WidthRequest="120"
-                                Aspect="AspectFill" />
+                                   HeightRequest="120"
+                                   WidthRequest="120"
+                                   Aspect="AspectFill" />
                             <Label Text="{x:Static strings:AppResources.PhotoSelected}"
-                                Style="{StaticResource LabelSmall}"
-                                HorizontalTextAlignment="Center" />
-                           </VerticalStackLayout>
+                                   Style="{StaticResource LabelSmall}"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
                     </Border>
 
                     <Label Text="{Binding PhotoSelectionStatus}"
@@ -121,11 +121,11 @@
                                              Size="16" />
                         </Button.ImageSource>
                     </Button>
-                </VerticalStackLayout>
-            </Border>
-        </Grid>
-    </ScrollView>
-          <Grid IsVisible="{Binding IsBusy}">
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </ScrollView>
+        <Grid IsVisible="{Binding IsBusy}">
             <ActivityIndicator IsRunning="{Binding IsBusy}"
                                Color="{DynamicResource Primary}"
                                HeightRequest="48"
