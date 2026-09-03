@@ -126,16 +126,20 @@ public sealed partial class JsonInventoryStore
     {
         ArgumentNullException.ThrowIfNull(updater);
 
+        // Recover before taking the writer lock; TryRecoverAsync owns that lock.
+        if (await manifestManager.TryGetActiveAsync().ConfigureAwait(false) is null)
+        {
+            var recovered = await TryRecoverAsync().ConfigureAwait(false);
+            if (!recovered) throw new IOException("Failed to initialize JSON store.");
+        }
+
         await writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
             var active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
             if (active is null)
             {
-                var recovered = await TryRecoverAsync().ConfigureAwait(false);
-                if (!recovered) throw new IOException("Failed to initialize JSON store.");
-                active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
-                if (active is null) throw new IOException("Failed to initialize JSON store.");
+                throw new IOException("JSON store became unavailable during update.");
             }
 
             var state = await ReadSlotAsync(JsonStoreConstants.SlotFolder(active.Manifest.CurrentSlot)).ConfigureAwait(false);
