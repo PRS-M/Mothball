@@ -1,4 +1,5 @@
 using CoreApp.Domain.Entities.Shared;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 using SkiaSharp;
 using ZXing.Net.Maui;
@@ -124,24 +125,31 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
         var temporaryPath = Path.Combine(temporaryDirectory, $"barcode-{Guid.NewGuid():N}.png");
         try
         {
-            await BarcodeGenerator.WriteToFileAsync(
-                label.BarcodeValue,
-                temporaryPath,
-                new BarcodeGeneratorOptions
-                {
-                    Format = ToBarcodeFormat(label.Symbology),
-                    Width = Math.Max(240, (int)content.Width * 2),
-                    Height = Math.Max(100, (int)content.Height / 2),
-                    Margin = 2,
-                    ForegroundColor = Colors.Black,
-                    BackgroundColor = Colors.White,
-                }).ConfigureAwait(false);
+            // ZXing.Net.Maui's image renderer uses platform UI APIs on iOS.
+            // Keep only that call on the main thread; PDF layout and Skia drawing
+            // can continue on the worker thread.
+            var isSquareBarcode = IsSquareBarcode(label.Symbology);
+            await MainThread.InvokeOnMainThreadAsync(() =>
+                BarcodeGenerator.WriteToFileAsync(
+                    label.BarcodeValue,
+                    temporaryPath,
+                    new BarcodeGeneratorOptions
+                    {
+                        Format = ToBarcodeFormat(label.Symbology),
+                        Width = Math.Max(240, (int)content.Width * 2),
+                        Height = isSquareBarcode
+                            ? Math.Max(240, (int)content.Width * 2)
+                            : Math.Max(100, (int)content.Height / 2),
+                        Margin = 2,
+                        ForegroundColor = Colors.Black,
+                        BackgroundColor = Colors.White,
+                    })).ConfigureAwait(false);
 
             using var bitmap = SKBitmap.Decode(temporaryPath)
             ?? throw new InvalidOperationException($"Could not render barcode '{label.BarcodeValue}'.");
 
-            var imageTop = content.Top + 24;
-            var imageBottom = content.Bottom - 26;
+            var imageTop = content.Top + (isSquareBarcode ? 16 : 18);
+            var imageBottom = content.Bottom - (isSquareBarcode ? 12 : 18);
             var imageRect = FitRect(bitmap.Width, bitmap.Height, new SKRect(content.Left, imageTop, content.Right, imageBottom));
             canvas.DrawBitmap(bitmap, imageRect);
 
@@ -175,6 +183,11 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
             BarcodeSymbology.UpcE => BarcodeFormat.UpcE,
             _ => throw new ArgumentOutOfRangeException(nameof(symbology), symbology, "Unsupported barcode symbology."),
         };
+
+    private static bool IsSquareBarcode(BarcodeSymbology symbology)
+        => symbology is BarcodeSymbology.QrCode
+            or BarcodeSymbology.Aztec
+            or BarcodeSymbology.DataMatrix;
 
     private static SKRect FitRect(int width, int height, SKRect bounds)
     {

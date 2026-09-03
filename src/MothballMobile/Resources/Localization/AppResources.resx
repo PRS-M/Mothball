@@ -202,7 +202,9 @@
   <data name="Select" xml:space="preserve"><value>Select</value></data>
   <data name="SelectAllLoaded" xml:space="preserve"><value>Select all loaded</value></data>
   <data name="ClearSelection" xml:space="preserve"><value>Clear</value></data>
-  <data name="ShareAllMatching" xml:space="preserve"><value>Share all matching</value></data>
+  <data name="ShareAllMatching" xml:space="preserve"><value>Share all filtered results</value></data>
+  <data name="NumberOfSelectedContainers" xml:space="preserve"><value>Number of selected containers:</value></data>
+  <data name="NumberOfSelectedItems" xml:space="preserve"><value>Number of selected items:</value></data>
   <data name="BarcodeScannerTitle" xml:space="preserve"><value>Scan barcode</value></data>
   <data name="Torch" xml:space="preserve"><value>Torch</value></data>
   <data name="Gallery" xml:space="preserve"><value>Gallery</value></data>

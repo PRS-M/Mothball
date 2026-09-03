@@ -49,4 +49,4 @@ For contributors, barcode ownership is enforced by the Application-layer `IBarco
 
 The Share action generates a PDF containing the barcode, its human-readable value, and the item or container name. The PDF is sent through the device share sheet, which may offer printing, AirDrop, Files, Mail, and other installed activities. Single-label files use a name-based filename; batch files use a timestamped filename.
 
-List selection is limited to records currently loaded by the paged list. **Select all loaded** does not load additional pages. **Share all matching** queries the active search and filter without paging, so it can include matching records that are not currently visible.
+List selection is limited to records currently loaded by the paged list. **Select all loaded** does not load additional pages. **Share all filtered results** queries the active search and filter without paging, so it can include matching records that are not currently visible.

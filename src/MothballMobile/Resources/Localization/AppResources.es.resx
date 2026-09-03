@@ -203,7 +203,9 @@
   <data name="Select" xml:space="preserve"><value>Seleccionar</value></data>
   <data name="SelectAllLoaded" xml:space="preserve"><value>Seleccionar todos los cargados</value></data>
   <data name="ClearSelection" xml:space="preserve"><value>Limpiar</value></data>
-  <data name="ShareAllMatching" xml:space="preserve"><value>Compartir todos los coincidentes</value></data>
+  <data name="ShareAllMatching" xml:space="preserve"><value>Compartir todos los resultados filtrados</value></data>
+  <data name="NumberOfSelectedContainers" xml:space="preserve"><value>Número de contenedores seleccionados:</value></data>
+  <data name="NumberOfSelectedItems" xml:space="preserve"><value>Número de artículos seleccionados:</value></data>
   <data name="BarcodeScannerTitle" xml:space="preserve"><value>Escanear código de barras</value></data>
   <data name="Torch" xml:space="preserve"><value>Linterna</value></data>
   <data name="Gallery" xml:space="preserve"><value>Galería</value></data>
