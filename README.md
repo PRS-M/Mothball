@@ -244,3 +244,6 @@ Projects included:
 - `Infrastructure.Platform.Maui`
 - `MothballMobile`
 - `UnitTests`
+
+## Hashtags
+***Keywords**: `WMS, WarehouseManagementSystem, Warehouse, House, Organization, Catalogue, Catalog, MAUI, dotNET, .NET, iOS, Apple`*
