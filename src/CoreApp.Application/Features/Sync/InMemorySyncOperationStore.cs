@@ -7,6 +7,7 @@ public sealed class InMemorySyncOperationStore : ISyncOperationStore
     private readonly Dictionary<Guid, PendingSyncOperation> operations = [];
     private readonly Dictionary<Guid, WorkspaceSyncState> states = [];
     private readonly HashSet<Guid> appliedOperations = [];
+    private readonly List<EntityTombstone> tombstones = [];
 
     public Task<IReadOnlyList<PendingSyncOperation>> GetPendingAsync(Guid workspaceId, int maxCount, CancellationToken cancellationToken = default)
     {
@@ -18,6 +19,12 @@ public sealed class InMemorySyncOperationStore : ISyncOperationStore
     {
         ArgumentNullException.ThrowIfNull(operation);
         lock (gate) operations.TryAdd(operation.OperationId, operation);
+        return Task.CompletedTask;
+    }
+
+    public Task AddTombstoneAsync(EntityTombstone tombstone, CancellationToken cancellationToken = default)
+    {
+        lock (gate) if (tombstones.All(x => x.OperationId != tombstone.OperationId)) tombstones.Add(tombstone);
         return Task.CompletedTask;
     }
 

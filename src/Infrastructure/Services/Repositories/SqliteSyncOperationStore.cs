@@ -19,6 +19,12 @@ public sealed class SqliteSyncOperationStore(MothballDatabase database) : ISyncO
         await database.Connection.InsertOrReplaceAsync(ToRow(operation)).ConfigureAwait(false);
     }
 
+    public async Task AddTombstoneAsync(EntityTombstone tombstone, CancellationToken cancellationToken = default)
+    {
+        await database.InitializeAsync().ConfigureAwait(false);
+        await database.Connection.InsertOrReplaceAsync(new DbEntityTombstone { OperationId = tombstone.OperationId, WorkspaceId = tombstone.WorkspaceId, EntityType = tombstone.EntityType, EntityId = tombstone.EntityId, DeletedUtc = tombstone.DeletedUtc, ServerRevision = tombstone.ServerRevision }).ConfigureAwait(false);
+    }
+
     public async Task AcknowledgeAsync(Guid workspaceId, IReadOnlyCollection<Guid> operationIds, CancellationToken cancellationToken = default)
     {
         await database.InitializeAsync().ConfigureAwait(false);

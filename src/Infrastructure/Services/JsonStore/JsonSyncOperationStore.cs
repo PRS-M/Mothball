@@ -14,6 +14,9 @@ public sealed class JsonSyncOperationStore(JsonInventoryStore store) : ISyncOper
     public Task EnqueueAsync(PendingSyncOperation operation, CancellationToken cancellationToken = default)
         => store.UpdateAsync(state => { if (!state.PendingSyncOperations.Any(x => x.OperationId == operation.OperationId)) state.PendingSyncOperations.Add(operation); return Task.CompletedTask; });
 
+    public Task AddTombstoneAsync(EntityTombstone tombstone, CancellationToken cancellationToken = default)
+        => store.UpdateAsync(state => { if (state.EntityTombstones.All(x => x.OperationId != tombstone.OperationId)) state.EntityTombstones.Add(tombstone); return Task.CompletedTask; });
+
     public Task AcknowledgeAsync(Guid workspaceId, IReadOnlyCollection<Guid> operationIds, CancellationToken cancellationToken = default)
         => store.UpdateAsync(state => { state.PendingSyncOperations = state.PendingSyncOperations.Select(x => x.WorkspaceId == workspaceId && operationIds.Contains(x.OperationId) ? x with { State = SyncOperationState.Acknowledged } : x).ToList(); return Task.CompletedTask; });
 

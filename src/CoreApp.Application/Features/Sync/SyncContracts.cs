@@ -57,6 +57,7 @@ public interface ISyncOperationStore
 {
     Task<IReadOnlyList<PendingSyncOperation>> GetPendingAsync(Guid workspaceId, int maxCount, CancellationToken cancellationToken = default);
     Task EnqueueAsync(PendingSyncOperation operation, CancellationToken cancellationToken = default);
+    Task AddTombstoneAsync(EntityTombstone tombstone, CancellationToken cancellationToken = default);
     Task AcknowledgeAsync(Guid workspaceId, IReadOnlyCollection<Guid> operationIds, CancellationToken cancellationToken = default);
     Task RecordFailureAsync(Guid workspaceId, Guid operationId, string errorCode, CancellationToken cancellationToken = default);
     Task ApplyRemotePageAsync(Guid workspaceId, SyncChangePage page, CancellationToken cancellationToken = default);
