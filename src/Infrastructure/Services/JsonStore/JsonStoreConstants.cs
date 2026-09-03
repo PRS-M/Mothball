@@ -25,6 +25,8 @@ internal static class JsonStoreConstants
     public static readonly string EntityTombstonesFileName = "entityTombstones.json";
     public static readonly string WorkspaceSyncStatesFileName = "workspaceSyncStates.json";
     public static readonly string AppliedRemoteOperationsFileName = "appliedRemoteOperations.json";
+    public static readonly string CanonicalBalancesFileName = "canonicalBalances.json";
+    public static readonly string CanonicalMovementsFileName = "canonicalMovements.json";
 
     public static readonly string[] ExpectedFiles =
     [
@@ -40,6 +42,8 @@ internal static class JsonStoreConstants
         EntityTombstonesFileName,
         WorkspaceSyncStatesFileName,
         AppliedRemoteOperationsFileName,
+        CanonicalBalancesFileName,
+        CanonicalMovementsFileName,
     ];
 
     public static string SlotFolder(string slot) =>

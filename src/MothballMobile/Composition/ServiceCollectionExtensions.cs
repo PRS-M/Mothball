@@ -33,6 +33,9 @@ public static class ServiceCollectionExtensions
         return services
             .AddPresentationInfrastructure()
             .AddBackupServices()
+            .AddSingleton<SyncOrchestrator>()
+            .AddSingleton<CanonicalInventoryCommandService>()
+            .AddSingleton<ISyncClient, NoopSyncClient>()
             .AddInventoryServices()
             .AddContainerServices()
             .AddItemServices();
@@ -146,6 +149,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppStartupInitializer, JsonStoreStartupInitializer>();
         services.AddSingleton<IWorkspaceContext, JsonWorkspaceContext>();
         services.AddSingleton<ISyncOperationStore, JsonSyncOperationStore>();
+        services.AddSingleton<ICanonicalInventoryRepository, JsonCanonicalInventoryRepository>();
         services.AddSingleton<IInventoryMaintenanceService, JsonInventoryMaintenanceService>();
 
         services.AddSingleton<IContainerRepository, JsonContainerRepository>();
@@ -168,6 +172,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppStartupInitializer, SqliteStartupInitializer>();
         services.AddSingleton<IWorkspaceContext, SqliteWorkspaceContext>();
         services.AddSingleton<ISyncOperationStore, SqliteSyncOperationStore>();
+        services.AddSingleton<ICanonicalInventoryRepository, SqliteCanonicalInventoryRepository>();
         services.AddSingleton<ITransactionRunner, SqliteTransactionRunner>();
         services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
 

@@ -18,5 +18,7 @@ public sealed partial class JsonInventoryStore
         public List<EntityTombstone> EntityTombstones { get; set; } = [];
         public List<WorkspaceSyncState> WorkspaceSyncStates { get; set; } = [];
         public List<AppliedRemoteOperation> AppliedRemoteOperations { get; set; } = [];
+        public List<JsonCanonicalBalanceRow> CanonicalBalances { get; set; } = [];
+        public List<JsonCanonicalMovementRow> CanonicalMovements { get; set; } = [];
     }
 }

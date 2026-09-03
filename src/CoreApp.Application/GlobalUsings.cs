@@ -8,3 +8,4 @@ global using CoreApp.Application.Contracts.Workspace;
 global using CoreApp.Application.Features.Sync;
 global using CoreApp.Application.Features.Media;
 global using CoreApp.Application.Features.Wms;
+global using CoreApp.Application.Features.Inventory;
