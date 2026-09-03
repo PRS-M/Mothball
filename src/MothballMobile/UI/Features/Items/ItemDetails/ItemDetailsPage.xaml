@@ -5,7 +5,7 @@
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
-                xmlns:scanning="clr-namespace:MothballMobile.Infrastructure.Scanning"
+                xmlns:scanning="clr-namespace:MothballMobile.UI.Features.Scanning"
                 x:Class="MothballMobile.UI.Features.Items.ItemDetails.ItemDetailsPage"
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ItemDetailsViewModel"
