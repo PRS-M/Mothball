@@ -172,6 +172,7 @@ internal static class ResourceKeyMap
         "No backups found" => "NoBackupsFound",
         "No containers found" => "NoContainersFound",
         "No containers yet" => "NoContainersYet",
+        "No barcode labels found." => "NoBarcodeLabelsFound",
         "No items in this container" => "NoItemsInThisContainer",
         "No items yet" => "NoItemsYet",
         "No photo selected." => "NoPhotoSelected",

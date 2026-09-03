@@ -207,6 +207,7 @@
   <data name="Torch" xml:space="preserve"><value>Latarka</value></data>
   <data name="Gallery" xml:space="preserve"><value>Galeria</value></data>
   <data name="NoBarcodeFound" xml:space="preserve"><value>Nie znaleziono kodu kreskowego</value></data>
+  <data name="NoBarcodeLabelsFound" xml:space="preserve"><value>Nie znaleziono etykiet z kodami kreskowymi.</value></data>
   <data name="NoSupportedBarcodeInImage" xml:space="preserve"><value>Wybrany obraz nie zawiera obsługiwanego kodu kreskowego.</value></data>
   <data name="SelectBarcode" xml:space="preserve"><value>Wybierz kod kreskowy</value></data>
   <data name="CameraBarcodeScanningUnavailable" xml:space="preserve"><value>Skanowanie kodów kreskowych aparatem nie jest dostępne na tym urządzeniu. Wybierz obraz z galerii.</value></data>

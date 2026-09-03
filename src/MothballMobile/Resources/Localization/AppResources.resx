@@ -207,6 +207,7 @@
   <data name="Torch" xml:space="preserve"><value>Torch</value></data>
   <data name="Gallery" xml:space="preserve"><value>Gallery</value></data>
   <data name="NoBarcodeFound" xml:space="preserve"><value>No barcode found</value></data>
+  <data name="NoBarcodeLabelsFound" xml:space="preserve"><value>No barcode labels found.</value></data>
   <data name="NoSupportedBarcodeInImage" xml:space="preserve"><value>The selected image does not contain a supported barcode.</value></data>
   <data name="SelectBarcode" xml:space="preserve"><value>Select barcode</value></data>
   <data name="CameraBarcodeScanningUnavailable" xml:space="preserve"><value>Camera barcode scanning is unavailable on this device. Choose an image from the gallery instead.</value></data>

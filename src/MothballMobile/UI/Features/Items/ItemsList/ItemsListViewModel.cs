@@ -175,7 +175,14 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
                 item.Item.Barcode.Symbology))
             .ToArray();
 
-        return barcodeShare is null || labels.Length == 0
+        if (labels.Length == 0)
+        {
+            return RunCommandAsync(
+                () => Task.FromException(new InvalidOperationException(LocalizationManager.Current.Get("No barcode labels found."))),
+                rethrowOnError: false);
+        }
+
+        return barcodeShare is null
             ? Task.CompletedTask
             : RunCommandAsync(
                 () => barcodeShare.ShareAsync(labels, "Share item barcodes"),
@@ -190,7 +197,12 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
             var labels = items.Where(item => item.Item.Barcode is not null)
                 .Select(item => new BarcodeLabelData(item.Item.Name, item.Item.Barcode!.Value, item.Item.Barcode.Symbology))
                 .ToArray();
-            if (labels.Length > 0 && barcodeShare is not null)
+            if (labels.Length == 0)
+            {
+                throw new InvalidOperationException(LocalizationManager.Current.Get("No barcode labels found."));
+            }
+
+            if (barcodeShare is not null)
             {
                 await barcodeShare.ShareAsync(labels, "Share item barcodes");
             }

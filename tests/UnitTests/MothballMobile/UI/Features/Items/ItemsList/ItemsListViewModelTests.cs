@@ -183,6 +183,23 @@ public sealed class ItemsListViewModelTests
         queries.Verify(q => q.QueryAsync(ItemQueryFilter.All, "widget", null, null), Times.Once);
     }
 
+    [Test]
+    public async Task ShareSelectedCommand_WhenNoSelectedRowsHaveBarcodes_RecordsLocalizedError()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var queries = new Mock<IItemsListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(ItemQueryFilter.All, null, 0, 10))
+            .ReturnsAsync([new InventorySnapshot(item, 1, 0, [])]);
+        var viewModel = CreateViewModel(queries.Object, barcodeShare: Mock.Of<IBarcodeShareService>());
+
+        await viewModel.InitializeAsync();
+        viewModel.EnterSelectionModeCommand.Execute(null);
+        viewModel.SelectAllLoadedCommand.Execute(null);
+        await viewModel.ShareSelectedCommand.ExecuteAsync(null);
+
+        Assert.That(viewModel.ErrorMessage, Is.EqualTo("No barcode labels found."));
+    }
+
     private static ItemsListViewModel CreateViewModel(
         IItemsListQueryHandler queries,
         IPopupService? popup = null,
