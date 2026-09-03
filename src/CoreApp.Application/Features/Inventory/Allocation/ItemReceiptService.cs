@@ -54,6 +54,9 @@ public sealed class ItemReceiptService : IItemReceiptService
             await canonicalCommands.ReceiveAsync(workspaceId, itemId, new InventoryPlacementId(destination), quantity, "Personal Storage receipt", Guid.NewGuid());
             var assigned = snapshot.AssignedQuantity + (destination == defaults.UnassignedLocationId ? 0 : quantity);
             var total = snapshot.TotalQuantity + quantity;
+            await inventoryCommands.IncreaseTotalQuantityAsync(itemId, total);
+            if (destination != defaults.UnassignedLocationId)
+                await inventoryCommands.SetContainerAllocationAsync(itemId, destination, (snapshot.Allocations.FirstOrDefault(x => x.ContainerId == destination)?.Quantity ?? 0) + quantity);
             return new ItemInventoryUpdateResult(false, total, assigned, total - assigned);
         }
 

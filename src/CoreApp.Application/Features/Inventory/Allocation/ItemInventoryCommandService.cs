@@ -48,6 +48,8 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
                 totalQuantity - inventory.TotalQuantity,
                 "Personal Storage quantity increase",
                 Guid.NewGuid());
+            inventory.SetTotalQuantity(totalQuantity);
+            await inventoryCommands.SaveItemInventoryAsync(inventory);
             return new ItemInventoryUpdateResult(false, totalQuantity, inventory.AssignedQuantity, totalQuantity - inventory.AssignedQuantity);
         }
 
@@ -96,6 +98,8 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
                 await canonicalCommands.TransferAsync(workspaceId, itemId, new InventoryPlacementId(containerId), unassigned, -delta, "Personal Storage allocation reduction", Guid.NewGuid());
             }
 
+            inventory.SetContainerAllocation(containerId, containerName, quantity);
+            await inventoryCommands.SaveItemInventoryAsync(inventory);
             return new ItemInventoryUpdateResult(quantity == 0, newTotalQuantity, newAssignedQuantity, newTotalQuantity - newAssignedQuantity);
         }
 
@@ -133,6 +137,9 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
                 return new ItemInventoryUpdateResult(true, 0, 0, 0, ItemDeleted: true);
             }
 
+            var projectedInventory = ToInventory(summary);
+            projectedInventory.ApplyWithdrawal(plan);
+            await inventoryCommands.SaveItemInventoryAsync(projectedInventory);
             return new ItemInventoryUpdateResult(false, plan.TotalQuantity, plan.AssignedQuantity, plan.UnassignedQuantity);
         }
 
