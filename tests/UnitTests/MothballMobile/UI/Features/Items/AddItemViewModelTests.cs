@@ -134,6 +134,36 @@ public sealed class AddItemViewModelTests
         receipts.Verify(service => service.ReceiveAsync(itemId, 2, containerId), Times.Once);
     }
 
+    [Test]
+    public async Task ScanDestinationContainerCommand_InReceiptMode_ReceivesIntoScannedContainer()
+    {
+        var itemId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+        var scanner = new Mock<IBarcodeScanSession>();
+        scanner.SetupSequence(service => service.ScanAsync())
+            .ReturnsAsync(new Barcode("widget-01", BarcodeSymbology.Code128))
+            .ReturnsAsync(new Barcode("box-01", BarcodeSymbology.Code128));
+        var inventoryQueries = new Mock<IInventoryQueryRepository>();
+        inventoryQueries.Setup(repository => repository.FindBarcodeAsync("widget-01"))
+            .ReturnsAsync(new BarcodeLookupResult(BarcodeOwnerKind.Item, itemId, "Widget"));
+        inventoryQueries.Setup(repository => repository.FindBarcodeAsync("box-01"))
+            .ReturnsAsync(new BarcodeLookupResult(BarcodeOwnerKind.Container, containerId, "Box"));
+        var receipts = new Mock<IItemReceiptService>();
+        var viewModel = CreateViewModel(
+            Mock.Of<ICreateItemCommandHandler>(),
+            false,
+            scanner.Object,
+            inventoryQueries.Object,
+            receipts.Object);
+
+        await viewModel.ScanBarcodeCommand.ExecuteAsync(null);
+        await viewModel.ScanDestinationContainerCommand.ExecuteAsync(null);
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.That(viewModel.DestinationContainerName, Is.EqualTo("Box"));
+        receipts.Verify(service => service.ReceiveAsync(itemId, 1, containerId), Times.Once);
+    }
+
     private static AddItemViewModel CreateViewModel(
         ICreateItemCommandHandler createItem,
         bool isAdvancedMode,

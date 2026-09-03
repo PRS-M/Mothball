@@ -204,6 +204,8 @@ For a change that affects items, containers, images, or relations:
 
 Do not reference MAUI APIs from the persistence project. Conversely, do not make the UI depend on SQLite table models; use application entities, contracts, or view models instead.
 
+Barcode data follows this path: the Domain `Barcode` value object holds a trimmed decoded value and `BarcodeSymbology`; the Application exposes typed global owner lookup and assignment services; SQLite and JSON rows persist the value and nullable symbology; backup/export and restore preserve both fields. Keep matching trim-only and case-sensitive. Treat values as globally unique across container and item owners, and cover shared contract changes with SQLite/JSON parity tests. ZXing camera/gallery decoding and rendered barcode previews belong only in the MAUI project.
+
 The current SQLite schema is defined directly by the classes in `Infrastructure/DatabaseModels`. Mothball is still in development and does not maintain SQLite migration compatibility: after a schema-breaking model change, reset the local application database before testing. Do not add startup backfills or repair scans unless upgrade compatibility becomes an explicit product requirement. Constraints and indexes that belong to the current schema should be declared on the SQLite models and covered by integration tests.
 
 ## Dependency Injection and Backend Selection

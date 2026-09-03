@@ -61,6 +61,19 @@
                             Command="{Binding ScanBarcodeCommand}" />
                         </Grid>
 
+                            <VerticalStackLayout WidthRequest="{StaticResource WidthM}"
+                                     Spacing="8"
+                                     IsVisible="{Binding IsReceivingExistingItem}">
+                            <Label Text="{x:Static strings:AppResources.SelectContainer}"
+                                   Style="{StaticResource LabelSmall}" />
+                            <Button Text="{x:Static strings:AppResources.ScanBarcode}"
+                                Style="{StaticResource OutlinedButton}"
+                                Command="{Binding ScanDestinationContainerCommand}" />
+                            <Label Text="{Binding DestinationContainerName}"
+                                   Style="{StaticResource BodySmall}"
+                                   IsVisible="{Binding HasDestinationContainer}" />
+                            </VerticalStackLayout>
+
                     <controls:LabeledEntryField Label="Quantity"
                                                LabelMargin="4,8,4,0"
                                                FieldWidthRequest="{StaticResource WidthM}"

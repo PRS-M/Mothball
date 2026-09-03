@@ -37,6 +37,11 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     public bool IsItemMetadataEditable => !IsReceivingExistingItem;
 
     [ObservableProperty]
+    private string destinationContainerName = string.Empty;
+
+    public bool HasDestinationContainer => !string.IsNullOrWhiteSpace(DestinationContainerName);
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private string name = string.Empty;
 
@@ -100,6 +105,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         OnPropertyChanged(nameof(IsAddingToContainer));
         OnPropertyChanged(nameof(ShowQuantityField));
     }
+
+    partial void OnDestinationContainerNameChanged(string value)
+        => OnPropertyChanged(nameof(HasDestinationContainer));
 
     public bool HasTemporaryPhoto => !string.IsNullOrWhiteSpace(PhotoThumbnailPath);
 
@@ -189,6 +197,30 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         IsReceivingExistingItem = true;
         OnPropertyChanged(nameof(ShowQuantityField));
         OnPropertyChanged(nameof(IsItemMetadataEditable));
+    }
+
+    [RelayCommand]
+    private async Task ScanDestinationContainerAsync()
+    {
+        if (!IsReceivingExistingItem)
+        {
+            return;
+        }
+
+        var barcode = await barcodeScanner.ScanAsync();
+        if (barcode is null)
+        {
+            return;
+        }
+
+        var owner = await inventoryQueries.FindBarcodeAsync(barcode.Value);
+        if (owner?.OwnerKind != BarcodeOwnerKind.Container)
+        {
+            return;
+        }
+
+        ContainerId = owner.OwnerId.ToString();
+        DestinationContainerName = owner.OwnerName;
     }
 
     [RelayCommand(CanExecute = nameof(CanAdd))]

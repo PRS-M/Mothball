@@ -9,6 +9,7 @@ This guide maps Mothball's visible features to the code that implements them. It
 | Containers | Create, search, inspect, edit, and delete storage containers | `UI/Features/Containers` | Container command and query handlers |
 | Items | Create, search, inspect, edit, and delete items | `UI/Features/Items` | Item command and query handlers |
 | Inventory | Assign items to containers and manage quantities | Container details, item details, association pages | Inventory allocation and withdrawal services |
+| Barcodes | Scan, display, assign, and find containers and item types | Details, create forms, lists, Shell, scanner page | Barcode assignment, lookup, and receipt services |
 | Photos | Capture/select, resize, persist, display, and delete photos | Shared photo view model base | `ImageService` and photo services |
 | Backup | Export JSON or ZIP and restore it using a merge policy | Settings | Backup workflow and restore planner |
 | Settings | Select theme, backup format, advanced options, and signing | Settings | `IApplicationSettings` and backup services |
@@ -89,6 +90,12 @@ Items are catalogued things that may be stored in one or more containers. Their 
 - Details withdrawal workflow: `ItemInventoryWithdrawalCoordinator`
 
 `ItemDetailsViewModel` is presentation orchestration. Put new reusable item-detail use-case behavior in `ItemDetailsCoordinator`; keep prompt-driven state transitions in the withdrawal coordinator rather than adding more branches to the view model.
+
+## Barcodes
+
+Containers and item types can have one optional native barcode value and symbology. The app stores decoded values, never source camera or gallery images. Barcode values are globally unique across containers and items; comparisons trim surrounding whitespace but remain case-sensitive. `IInventoryQueryRepository.FindBarcodeAsync` returns the typed owner for scan-to-find and collision checks, while `IBarcodeAssignmentService` permits an owner to retain, replace, or clear its own barcode but rejects another owner's value.
+
+The scanner supports camera and gallery decoding. It is available from container and item lists, the Shell, create forms, and barcode detail editing. Scan-to-find opens the matching container or item details. In the item create flow, a scanned barcode belonging to an existing item enters receipt mode: item metadata is locked, quantity defaults to one in simple mode, and saving delegates to `IItemReceiptService`. A receipt can remain unassigned, use the container context that opened the form, or scan a container barcode as its destination. The item/container association picker can likewise scan a container barcode and executes its normal available-quantity association path.
 
 ## Assignments and Inventory Quantities
 
