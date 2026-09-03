@@ -155,6 +155,37 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
     {
         var inventory = ToInventory(summary);
 
+        if (canonicalCommands is not null && workspaceContext is not null)
+        {
+            var context = await workspaceContext.EnsureDefaultAsync();
+            var workspaceId = new InventoryWorkspaceId(context.Workspace.WorkspaceId);
+            await SeedLegacyBalancesAsync(summary, workspaceId, context.Defaults.UnassignedLocationId);
+            var targetByPlacement = plan.Allocations.ToDictionary(x => x.ContainerId, x => x.Quantity);
+            foreach (var allocation in summary.Allocations)
+            {
+                var targetQuantity = targetByPlacement.GetValueOrDefault(allocation.ContainerId);
+                if (allocation.Quantity > targetQuantity)
+                {
+                    await canonicalCommands.WithdrawAsync(workspaceId, summary.Item.ItemId, new InventoryPlacementId(allocation.ContainerId), allocation.Quantity - targetQuantity, "Personal Storage withdrawal", Guid.NewGuid());
+                }
+            }
+
+            if (summary.UnassignedQuantity > plan.UnassignedQuantity)
+            {
+                await canonicalCommands.WithdrawAsync(workspaceId, summary.Item.ItemId, new InventoryPlacementId(context.Defaults.UnassignedLocationId), summary.UnassignedQuantity - plan.UnassignedQuantity, "Personal Storage withdrawal", Guid.NewGuid());
+            }
+
+            if (plan.DeleteItem)
+            {
+                await inventoryCommands.DeleteItemAsync(summary.Item.ItemId.ToString());
+                if (photoDeletion is not null)
+                    await photoDeletion.DeleteItemPhotoFilesBestEffortAsync(summary.Item);
+                return new ItemInventoryUpdateResult(true, 0, 0, 0, ItemDeleted: true);
+            }
+
+            return new ItemInventoryUpdateResult(false, plan.TotalQuantity, plan.AssignedQuantity, plan.UnassignedQuantity);
+        }
+
         if (plan.DeleteItem)
         {
             inventory.ApplyWithdrawal(plan);
