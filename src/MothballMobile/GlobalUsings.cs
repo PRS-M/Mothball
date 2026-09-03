@@ -8,6 +8,7 @@ global using CoreApp.Application.Contracts.Items;
 global using CoreApp.Application.Contracts.Workspace;
 global using CoreApp.Application.Features.Backup.Export;
 global using CoreApp.Application.Features.Backup.Restore;
+global using CoreApp.Application.Features.Sync;
 global using CoreApp.Application.Features.Containers.Commands;
 global using CoreApp.Application.Features.Containers.Association;
 global using CoreApp.Application.Features.Containers.ContainerDetails;

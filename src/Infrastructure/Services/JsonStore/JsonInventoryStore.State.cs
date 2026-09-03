@@ -1,4 +1,5 @@
 using Infrastructure.Services.JsonStore.Models;
+using CoreApp.Application.Features.Sync;
 
 namespace Infrastructure.Services.JsonStore;
 
@@ -13,5 +14,9 @@ public sealed partial class JsonInventoryStore
         public List<JsonImageRow> Images { get; set; } = [];
         public List<JsonRelationRow> Relations { get; set; } = [];
         public List<JsonWorkspaceRow> Workspaces { get; set; } = [];
+        public List<PendingSyncOperation> PendingSyncOperations { get; set; } = [];
+        public List<EntityTombstone> EntityTombstones { get; set; } = [];
+        public List<WorkspaceSyncState> WorkspaceSyncStates { get; set; } = [];
+        public List<AppliedRemoteOperation> AppliedRemoteOperations { get; set; } = [];
     }
 }

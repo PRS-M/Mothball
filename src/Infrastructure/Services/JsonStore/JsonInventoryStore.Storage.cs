@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Infrastructure.Services.JsonStore.Models;
 using Microsoft.Extensions.Logging;
+using CoreApp.Application.Features.Sync;
 
 namespace Infrastructure.Services.JsonStore;
 
@@ -24,6 +25,10 @@ public sealed partial class JsonInventoryStore
                        ?? [];
         var workspaces = await TryReadJsonAsync<List<JsonWorkspaceRow>>(JsonStoreConstants.WorkspacesFileName, slotFolder)
                        ?? [];
+        var pendingSyncOperations = await TryReadJsonAsync<List<PendingSyncOperation>>(JsonStoreConstants.PendingSyncOperationsFileName, slotFolder) ?? [];
+        var entityTombstones = await TryReadJsonAsync<List<EntityTombstone>>(JsonStoreConstants.EntityTombstonesFileName, slotFolder) ?? [];
+        var workspaceSyncStates = await TryReadJsonAsync<List<WorkspaceSyncState>>(JsonStoreConstants.WorkspaceSyncStatesFileName, slotFolder) ?? [];
+        var appliedRemoteOperations = await TryReadJsonAsync<List<AppliedRemoteOperation>>(JsonStoreConstants.AppliedRemoteOperationsFileName, slotFolder) ?? [];
 
         // Ensure counters are sane even if metadata is missing/outdated.
         metadata.NextContainerRowId = Math.Max(metadata.NextContainerRowId, containers.Select(c => c.RowId).DefaultIfEmpty(0).Max() + 1);
@@ -40,6 +45,10 @@ public sealed partial class JsonInventoryStore
             Images = images,
             Relations = relations,
             Workspaces = workspaces,
+            PendingSyncOperations = pendingSyncOperations,
+            EntityTombstones = entityTombstones,
+            WorkspaceSyncStates = workspaceSyncStates,
+            AppliedRemoteOperations = appliedRemoteOperations,
         };
     }
 
@@ -69,6 +78,10 @@ public sealed partial class JsonInventoryStore
         await WriteJsonAsync(JsonStoreConstants.ImagesFileName, slotFolder, state.Images).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.RelationsFileName, slotFolder, state.Relations).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.WorkspacesFileName, slotFolder, state.Workspaces).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.PendingSyncOperationsFileName, slotFolder, state.PendingSyncOperations).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.EntityTombstonesFileName, slotFolder, state.EntityTombstones).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.WorkspaceSyncStatesFileName, slotFolder, state.WorkspaceSyncStates).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.AppliedRemoteOperationsFileName, slotFolder, state.AppliedRemoteOperations).ConfigureAwait(false);
 
         // Commit info written last inside the slot.
         var commitInfo = new JsonStoreCommitInfo

@@ -21,6 +21,10 @@ internal static class JsonStoreConstants
     public static readonly string ImagesFileName = "images.json";
     public static readonly string RelationsFileName = "relations.json";
     public static readonly string WorkspacesFileName = "workspaces.json";
+    public static readonly string PendingSyncOperationsFileName = "pendingSyncOperations.json";
+    public static readonly string EntityTombstonesFileName = "entityTombstones.json";
+    public static readonly string WorkspaceSyncStatesFileName = "workspaceSyncStates.json";
+    public static readonly string AppliedRemoteOperationsFileName = "appliedRemoteOperations.json";
 
     public static readonly string[] ExpectedFiles =
     [
@@ -32,6 +36,10 @@ internal static class JsonStoreConstants
         ImagesFileName,
         RelationsFileName,
         WorkspacesFileName,
+        PendingSyncOperationsFileName,
+        EntityTombstonesFileName,
+        WorkspaceSyncStatesFileName,
+        AppliedRemoteOperationsFileName,
     ];
 
     public static string SlotFolder(string slot) =>

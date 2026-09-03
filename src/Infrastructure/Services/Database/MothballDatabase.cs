@@ -63,6 +63,10 @@ public class MothballDatabase : IAsyncDisposable
         await CreateTableIfNotExistsAsync<DbItemContainerRelation>(databaseConnection);
         await CreateTableIfNotExistsAsync<DbWorkspace>(databaseConnection);
         await CreateTableIfNotExistsAsync<DbWorkspaceDefaults>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbPendingSyncOperation>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbEntityTombstone>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbWorkspaceSyncState>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbAppliedRemoteOperation>(databaseConnection);
 
         return databaseConnection;
     }
