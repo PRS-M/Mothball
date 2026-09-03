@@ -178,20 +178,26 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     [RelayCommand]
     private async Task ScanBarcodeAsync()
     {
-        var barcode = await barcodeScanner.ScanAsync();
-        if (barcode is null)
+        await RunCommandAsync(async () =>
         {
-            return;
-        }
+            var barcode = await barcodeScanner.ScanAsync();
+            if (barcode is null)
+            {
+                return;
+            }
 
-        BarcodeValue = barcode.Value;
-        BarcodeSymbology = barcode.Symbology;
+            BarcodeValue = barcode.Value;
+            BarcodeSymbology = barcode.Symbology;
 
-        await ResolveBarcodeAsync();
+            await ResolveBarcodeCoreAsync();
+        });
     }
 
     [RelayCommand]
-    private async Task ResolveBarcodeAsync()
+    private Task ResolveBarcodeAsync()
+        => RunCommandAsync(ResolveBarcodeCoreAsync);
+
+    private async Task ResolveBarcodeCoreAsync()
     {
         var normalizedBarcodeValue = BarcodeValue?.Trim() ?? string.Empty;
         ValidationMessage = null;
@@ -252,20 +258,23 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             return;
         }
 
-        var barcode = await barcodeScanner.ScanAsync();
-        if (barcode is null)
+        await RunCommandAsync(async () =>
         {
-            return;
-        }
+            var barcode = await barcodeScanner.ScanAsync();
+            if (barcode is null)
+            {
+                return;
+            }
 
-        var owner = await inventoryQueries.FindBarcodeAsync(barcode.Value);
-        if (owner?.OwnerKind != BarcodeOwnerKind.Container)
-        {
-            return;
-        }
+            var owner = await inventoryQueries.FindBarcodeAsync(barcode.Value);
+            if (owner?.OwnerKind != BarcodeOwnerKind.Container)
+            {
+                return;
+            }
 
-        ContainerId = owner.OwnerId.ToString();
-        DestinationContainerName = owner.OwnerName;
+            ContainerId = owner.OwnerId.ToString();
+            DestinationContainerName = owner.OwnerName;
+        });
     }
 
     [RelayCommand(CanExecute = nameof(CanAdd))]

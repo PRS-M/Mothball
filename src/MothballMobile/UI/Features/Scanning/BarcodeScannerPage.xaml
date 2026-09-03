@@ -10,7 +10,7 @@
                 Title="{x:Static strings:AppResources.BarcodeScannerTitle}"
                 Background="{DynamicResource Surface}">
     <Grid RowDefinitions="*,Auto"
-          Padding="16">
+            Padding="16">
          <zxing:CameraBarcodeReaderView x:Name="barcodeReader"
                                             BarcodesDetected="OnBarcodesDetected" />
          <Label x:Name="cameraUnsupportedMessage"
@@ -36,5 +36,15 @@
                     Style="{StaticResource PrimaryButton}"
                     Command="{Binding CancelCommand}" />
         </Grid>
+                <Grid Grid.RowSpan="2"
+                          BackgroundColor="#80000000"
+                          IsVisible="{Binding IsBusy}">
+                        <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                                           Color="{DynamicResource Primary}"
+                                                           HeightRequest="48"
+                                                           WidthRequest="48"
+                                                           HorizontalOptions="Center"
+                                                           VerticalOptions="Center" />
+                </Grid>
     </Grid>
 </views:BasePage>

@@ -10,6 +10,7 @@
                 Title="{x:Static strings:AppResources.AddItem}"
                 Background="{DynamicResource Surface}">
 
+    <Grid>
     <ScrollView>
         <Grid Padding="20"
               RowDefinitions="Auto,Auto"
@@ -148,4 +149,14 @@
             </Border>
         </Grid>
     </ScrollView>
+        <Grid BackgroundColor="#80000000"
+              IsVisible="{Binding IsBusy}">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               Color="{DynamicResource Primary}"
+                               HeightRequest="48"
+                               WidthRequest="48"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+        </Grid>
+    </Grid>
 </views:BasePage>

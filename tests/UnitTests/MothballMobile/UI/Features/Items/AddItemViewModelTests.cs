@@ -81,6 +81,24 @@ public sealed class AddItemViewModelTests
     }
 
     [Test]
+    public async Task ScanBarcodeCommand_WhileWaitingForScanner_ReportsBusy()
+    {
+        var pendingBarcode = new TaskCompletionSource<Barcode?>();
+        var scanner = new Mock<IBarcodeScanSession>();
+        scanner.Setup(service => service.ScanAsync()).Returns(pendingBarcode.Task);
+        var viewModel = CreateViewModel(Mock.Of<ICreateItemCommandHandler>(), false, scanner.Object);
+
+        var scan = viewModel.ScanBarcodeCommand.ExecuteAsync(null);
+
+        Assert.That(viewModel.IsBusy, Is.True);
+
+        pendingBarcode.SetResult(null);
+        await scan;
+
+        Assert.That(viewModel.IsBusy, Is.False);
+    }
+
+    [Test]
     public async Task ScanBarcodeCommand_WhenBarcodeBelongsToItem_EntersReceiptMode()
     {
         var itemId = Guid.NewGuid();

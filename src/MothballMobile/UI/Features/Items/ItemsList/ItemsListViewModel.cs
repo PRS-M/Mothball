@@ -112,7 +112,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     }
 
     [RelayCommand]
-    private Task ScanToFindAsync() => barcodeLookup.ScanAndNavigateAsync();
+    private Task ScanToFindAsync() => RunCommandAsync(barcodeLookup.ScanAndNavigateAsync);
 
     protected override Task<List<InventorySnapshot>> LoadPageAsync(string? query, int pageNumber, int pageSize)
         => itemListQueries.QueryAsync(

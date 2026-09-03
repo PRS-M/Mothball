@@ -29,6 +29,7 @@
         </ToolbarItem>
     </ContentPage.ToolbarItems>
 
+    <Grid>
     <ScrollView>
         <VerticalStackLayout Padding="16"
                              Spacing="16">
@@ -258,4 +259,14 @@
 
         </VerticalStackLayout>
     </ScrollView>
+        <Grid BackgroundColor="#80000000"
+              IsVisible="{Binding IsBusy}">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               Color="{DynamicResource Primary}"
+                               HeightRequest="48"
+                               WidthRequest="48"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+        </Grid>
+    </Grid>
 </views:BasePage>

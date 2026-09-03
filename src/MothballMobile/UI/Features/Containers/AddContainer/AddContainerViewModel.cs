@@ -131,14 +131,17 @@ public partial class AddContainerViewModel : BaseViewModel
     [RelayCommand]
     private async Task ScanBarcodeAsync()
     {
-        var barcode = await barcodeScanner.ScanAsync();
-        if (barcode is null)
+        await RunCommandAsync(async () =>
         {
-            return;
-        }
+            var barcode = await barcodeScanner.ScanAsync();
+            if (barcode is null)
+            {
+                return;
+            }
 
-        BarcodeValue = barcode.Value;
-        BarcodeSymbology = barcode.Symbology;
+            BarcodeValue = barcode.Value;
+            BarcodeSymbology = barcode.Symbology;
+        });
     }
 
     /// <summary>

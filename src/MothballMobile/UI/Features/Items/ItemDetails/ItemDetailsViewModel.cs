@@ -361,14 +361,17 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     [RelayCommand]
     private async Task ScanBarcodeAsync()
     {
-        var barcode = await barcodeScanner.ScanAsync();
-        if (barcode is null)
+        await RunCommandAsync(async () =>
         {
-            return;
-        }
+            var barcode = await barcodeScanner.ScanAsync();
+            if (barcode is null)
+            {
+                return;
+            }
 
-        BarcodeValueDraft = barcode.Value;
-        BarcodeSymbologyDraft = barcode.Symbology;
+            BarcodeValueDraft = barcode.Value;
+            BarcodeSymbologyDraft = barcode.Symbology;
+        });
     }
 
     [RelayCommand]

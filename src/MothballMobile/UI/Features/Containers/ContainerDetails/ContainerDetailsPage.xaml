@@ -255,6 +255,7 @@
         </ToolbarItem>
     </ContentPage.ToolbarItems>
 
+    <Grid>
     <CollectionView x:DataType="vm:ContainerDetailsViewModel"
                     ItemsSource="{Binding Rows}"
                     ItemTemplate="{StaticResource ContainerDetailsRowTemplateSelector}"
@@ -278,4 +279,14 @@
             </Grid>
         </CollectionView.Footer>
     </CollectionView>
+        <Grid BackgroundColor="#80000000"
+              IsVisible="{Binding IsBusy}">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               Color="{DynamicResource Primary}"
+                               HeightRequest="48"
+                               WidthRequest="48"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+        </Grid>
+    </Grid>
 </views:BasePage>

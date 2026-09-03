@@ -50,45 +50,53 @@ public partial class BarcodeScannerPage
 
     private async void OnGalleryClicked(object? sender, EventArgs e)
     {
-        var file = (await MediaPicker.PickPhotosAsync()).FirstOrDefault();
-        if (file is null)
+        if (BindingContext is not BarcodeScannerViewModel viewModel)
         {
             return;
         }
 
-        await using var stream = await file.OpenReadAsync();
-        var results = await BarcodeReader.DecodeAsync(stream, new BarcodeReaderOptions
+        await viewModel.ProcessGalleryAsync(async () =>
         {
-            Formats = BarcodeFormats.All,
-            AutoRotate = true,
-            Multiple = true,
-            TryHarder = true,
+            var file = (await MediaPicker.PickPhotosAsync()).FirstOrDefault();
+            if (file is null)
+            {
+                return;
+            }
+
+            await using var stream = await file.OpenReadAsync();
+            var results = await BarcodeReader.DecodeAsync(stream, new BarcodeReaderOptions
+            {
+                Formats = BarcodeFormats.All,
+                AutoRotate = true,
+                Multiple = true,
+                TryHarder = true,
+            });
+
+            var barcodes = results?
+                .Select(result => TryCreateBarcode(result))
+                .Where(barcode => barcode is not null)
+                .Cast<Barcode>()
+                .Distinct()
+                .ToArray() ?? [];
+
+            if (barcodes.Length == 0)
+            {
+                await DisplayAlertAsync(
+                    LocalizationManager.Current.Get("NoBarcodeFound"),
+                    LocalizationManager.Current.Get("NoSupportedBarcodeInImage"),
+                    LocalizationManager.Current.Get("OK"));
+                return;
+            }
+
+            var selected = barcodes.Length == 1
+                ? barcodes[0]
+                : await SelectBarcodeAsync(barcodes);
+
+            if (selected is not null)
+            {
+                await viewModel.CompleteAsync(selected);
+            }
         });
-
-        var barcodes = results?
-            .Select(result => TryCreateBarcode(result))
-            .Where(barcode => barcode is not null)
-            .Cast<Barcode>()
-            .Distinct()
-            .ToArray() ?? [];
-
-        if (barcodes.Length == 0)
-        {
-            await DisplayAlertAsync(
-                LocalizationManager.Current.Get("NoBarcodeFound"),
-                LocalizationManager.Current.Get("NoSupportedBarcodeInImage"),
-                LocalizationManager.Current.Get("OK"));
-            return;
-        }
-
-        var selected = barcodes.Length == 1
-            ? barcodes[0]
-            : await SelectBarcodeAsync(barcodes);
-
-        if (selected is not null && BindingContext is BarcodeScannerViewModel viewModel)
-        {
-            await viewModel.CompleteAsync(selected);
-        }
     }
 
     private async Task<Barcode?> SelectBarcodeAsync(IReadOnlyList<Barcode> barcodes)
