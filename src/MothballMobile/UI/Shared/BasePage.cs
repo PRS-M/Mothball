@@ -79,6 +79,7 @@ public class BasePage : ContentPage
             {
                 MauiLogger.For(GetType(), this)
                     ?.LogError(ex, "Page initialization failed for {PageType}.", GetType().Name);
+                await ShowGenericErrorAsync();
             }
             finally
             {
@@ -105,6 +106,17 @@ public class BasePage : ContentPage
         if (popup is not null)
         {
             await popup.ShowAlertAsync(LocalizationManager.Current.Get("Error"), message);
+        }
+    }
+
+    private static async Task ShowGenericErrorAsync()
+    {
+        var popup = IPlatformApplication.Current?.Services.GetService<IPopupService>();
+        if (popup is not null)
+        {
+            await popup.ShowAlertAsync(
+                LocalizationManager.Current.Get("Error"),
+                LocalizationManager.Current.Get("Something went wrong. Please try again."));
         }
     }
 

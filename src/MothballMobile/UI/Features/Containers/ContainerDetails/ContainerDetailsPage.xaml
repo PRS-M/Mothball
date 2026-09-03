@@ -5,6 +5,7 @@
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+                xmlns:zxingCore="clr-namespace:ZXing.Net.Maui;assembly=ZXing.Net.MAUI"
                 xmlns:scanning="clr-namespace:MothballMobile.UI.Features.Scanning"
                 x:Class="MothballMobile.UI.Features.Containers.ContainerDetails.ContainerDetailsPage"
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
@@ -97,13 +98,16 @@
                            IsVisible="{Binding HasBarcode}"
                            LineBreakMode="CharacterWrap"
                            TextColor="{DynamicResource OnSurface}" />
-                      <zxing:BarcodeGeneratorView IsVisible="{Binding HasBarcode}"
+                      <scanning:InitializedBarcodeGeneratorView IsVisible="{Binding HasBarcode}"
                           HeightRequest="116"
                           WidthRequest="240"
                           HorizontalOptions="Center"
                           ForegroundColor="{DynamicResource OnSurface}"
                           Value="{Binding BarcodeValue}"
-                          Format="{Binding BarcodeSymbology, Converter={StaticResource BarcodeFormatConverter}}" />
+                          Format="{Binding BarcodeSymbology,
+                              Converter={StaticResource BarcodeFormatConverter},
+                              TargetNullValue={x:Static zxingCore:BarcodeFormat.QrCode},
+                              FallbackValue={x:Static zxingCore:BarcodeFormat.QrCode}}" />
                       <VerticalStackLayout IsVisible="{Binding IsEditingBarcode}" Spacing="8">
                        <Entry Style="{StaticResource Input}" Text="{Binding BarcodeValueDraft}" />
                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
