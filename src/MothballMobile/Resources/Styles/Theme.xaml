@@ -59,6 +59,10 @@
         </Setter>
     </Style>
 
+    <Style TargetType="Border" x:Key="MediaCard" BasedOn="{StaticResource Card}">
+        <Setter Property="Padding" Value="12"/>
+    </Style>
+
     <Style TargetType="Border" x:Key="ElevatedCard" BasedOn="{StaticResource Card}">
         <Setter Property="Stroke" Value="Transparent"/>
         <Setter Property="Shadow">

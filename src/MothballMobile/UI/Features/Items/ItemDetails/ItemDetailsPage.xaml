@@ -65,8 +65,7 @@
             </controls:TitleActionRow.Actions>
             </controls:TitleActionRow>
 
-            <Border Style="{StaticResource Card}"
-                    Padding="12">
+            <Border Style="{StaticResource MediaCard}">
                 <VerticalStackLayout Spacing="10">
                     <controls:ImageCarousel CornerRadius="10"
                                             ShowCounter="True"

@@ -18,8 +18,7 @@
         <DataTemplate x:Key="ContainerHeaderTemplate"
                       x:DataType="vm:ContainerDetailsViewModel">
             <VerticalStackLayout Spacing="16">
-                <Border Style="{StaticResource Card}"
-                        Padding="12">
+                <Border Style="{StaticResource MediaCard}">
                     <VerticalStackLayout Spacing="10">
                         <controls:ImageCarousel CornerRadius="10"
                                                 ShowCounter="True"
