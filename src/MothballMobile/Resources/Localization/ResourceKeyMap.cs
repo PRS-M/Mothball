@@ -213,6 +213,7 @@ internal static class ResourceKeyMap
         "Set quantity" => "SetQuantity",
         "Set total quantity" => "SetTotalQuantity",
         "Settings" => "Settings",
+        "Share" => "Share",
         "Share Failed" => "ShareFailed",
         "Share backup JSON" => "ShareBackupJSON",
         "Share backup ZIP" => "ShareBackupZIP",

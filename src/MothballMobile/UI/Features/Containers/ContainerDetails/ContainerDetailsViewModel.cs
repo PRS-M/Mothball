@@ -8,6 +8,7 @@ using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure.Scanning;
+using MothballMobile.Infrastructure.BarcodeDocuments;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -23,6 +24,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly IBarcodeAssignmentService barcodeAssignments;
     private readonly IBarcodeScanSession barcodeScanner;
+    private readonly IBarcodeShareService? barcodeShare;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -113,7 +115,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IBackgroundTaskObserver backgroundTasks,
         IBarcodeAssignmentService barcodeAssignments,
         IBarcodeScanSession barcodeScanner,
-        IDebouncer? debouncer = null)
+        IDebouncer? debouncer = null,
+        IBarcodeShareService? barcodeShare = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.deleteContainerHandler = deleteContainerHandler;
@@ -124,6 +127,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.backgroundTasks = backgroundTasks;
         this.barcodeAssignments = barcodeAssignments;
         this.barcodeScanner = barcodeScanner;
+        this.barcodeShare = barcodeShare;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
         itemCoordinator.Reset(this);
     }
@@ -317,6 +321,19 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         BarcodeValueDraft = BarcodeValue;
         BarcodeSymbologyDraft = currentContainer?.Barcode?.Symbology ?? global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
         IsEditingBarcode = true;
+    }
+
+    [RelayCommand]
+    private Task ShareBarcodeAsync()
+    {
+        if (currentContainer?.Barcode is null || barcodeShare is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        return RunCommandAsync(
+            () => barcodeShare.ShareAsync(currentContainer.Name, currentContainer.Barcode),
+            rethrowOnError: false);
     }
 
     [RelayCommand]

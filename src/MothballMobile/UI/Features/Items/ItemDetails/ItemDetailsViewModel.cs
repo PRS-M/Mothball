@@ -9,6 +9,7 @@ using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.Entities.Shared;
 using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure.Scanning;
+using MothballMobile.Infrastructure.BarcodeDocuments;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;
 
@@ -20,6 +21,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly IBarcodeAssignmentService barcodeAssignments;
     private readonly IBarcodeScanSession barcodeScanner;
+    private readonly IBarcodeShareService? barcodeShare;
     private Item? currentItem;
     private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
@@ -98,7 +100,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
         IBackgroundTaskObserver backgroundTasks,
         IBarcodeAssignmentService barcodeAssignments,
-        IBarcodeScanSession barcodeScanner)
+        IBarcodeScanSession barcodeScanner,
+        IBarcodeShareService? barcodeShare = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.itemDetailsCoordinator = itemDetailsCoordinator;
@@ -107,6 +110,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         this.backgroundTasks = backgroundTasks;
         this.barcodeAssignments = barcodeAssignments;
         this.barcodeScanner = barcodeScanner;
+        this.barcodeShare = barcodeShare;
     }
 
     /// <inheritdoc />
@@ -360,6 +364,19 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         BarcodeValueDraft = BarcodeValue;
         BarcodeSymbologyDraft = currentItem?.Barcode?.Symbology ?? global::CoreApp.Domain.Entities.Shared.BarcodeSymbology.QrCode;
         IsEditingBarcode = true;
+    }
+
+    [RelayCommand]
+    private Task ShareBarcodeAsync()
+    {
+        if (currentItem?.Barcode is null || barcodeShare is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        return RunCommandAsync(
+            () => barcodeShare.ShareAsync(currentItem.Name, currentItem.Barcode),
+            rethrowOnError: false);
     }
 
     [RelayCommand]

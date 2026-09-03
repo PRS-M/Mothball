@@ -74,7 +74,7 @@
 
                   <Border Style="{StaticResource Card}">
                       <VerticalStackLayout Spacing="8">
-                      <Grid ColumnDefinitions="Auto,*,Auto"
+                      <Grid ColumnDefinitions="Auto,*,Auto,Auto"
                          ColumnSpacing="12">
                        <Label Text="{x:Static strings:AppResources.Barcode}"
                            FontAttributes="Bold"
@@ -93,6 +93,18 @@
                            Style="{StaticResource TonalButton}"
                            Command="{Binding SaveBarcodeCommand}"
                            IsVisible="{Binding IsEditingBarcode}" />
+                       <Button Grid.Column="3"
+                           Text="{x:Static strings:AppResources.Share}"
+                           Style="{StaticResource OutlinedButton}"
+                           Command="{Binding ShareBarcodeCommand}"
+                           IsVisible="{Binding HasBarcode}">
+                           <Button.ImageSource>
+                               <FontImageSource FontFamily="FontAwesomeSolid"
+                                                Glyph="&#xF1E0;"
+                                                Color="{DynamicResource Primary}"
+                                                Size="14" />
+                           </Button.ImageSource>
+                       </Button>
                       </Grid>
                        <Label Text="{Binding BarcodeValue}"
                            IsVisible="{Binding HasBarcode}"

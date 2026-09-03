@@ -1,0 +1,221 @@
+using CoreApp.Domain.Entities.Shared;
+using Microsoft.Maui.Storage;
+using SkiaSharp;
+using ZXing.Net.Maui;
+
+namespace MothballMobile.Infrastructure.BarcodeDocuments;
+
+/// <summary>
+/// Renders barcode labels into a fixed A4 PDF layout using SkiaSharp.
+/// </summary>
+public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGenerator
+{
+    private const float PointsPerInch = 72f;
+    private const float PageWidth = 8.27f * PointsPerInch;
+    private const float PageHeight = 11.69f * PointsPerInch;
+    private const float PageMargin = 28f;
+    private const float LabelGap = 10f;
+    private const int Columns = 2;
+    private const int Rows = 4;
+    private const string DocumentsFolder = "BarcodeDocuments";
+
+    private readonly IFileSystem fileSystem;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SkiaBarcodeLabelDocumentGenerator"/> class.
+    /// </summary>
+    /// <param name="fileSystem">The MAUI file-system provider.</param>
+    public SkiaBarcodeLabelDocumentGenerator(IFileSystem fileSystem)
+    {
+        this.fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+    }
+
+    /// <inheritdoc />
+    public async Task<BarcodeDocumentResult> GenerateAsync(
+        IReadOnlyCollection<BarcodeLabelData> labels,
+        string fileName,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(labels);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
+
+        if (labels.Count == 0)
+        {
+            throw new ArgumentException("At least one barcode label is required.", nameof(labels));
+        }
+
+        var directory = Path.Combine(fileSystem.AppDataDirectory, DocumentsFolder);
+        Directory.CreateDirectory(directory);
+        var safeFileName = Path.GetFileName(fileName);
+        var fullPath = Path.Combine(directory, safeFileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)
+            ? safeFileName
+            : $"{safeFileName}.pdf");
+
+        var pageCount = (int)Math.Ceiling(labels.Count / (double)(Columns * Rows));
+        await Task.Run(() => RenderAsync(labels, fullPath, pageCount, directory, cancellationToken), cancellationToken)
+            .ConfigureAwait(false);
+
+        return new BarcodeDocumentResult(Path.GetFileName(fullPath), fullPath, labels.Count, pageCount);
+    }
+
+    private static async Task RenderAsync(
+        IReadOnlyCollection<BarcodeLabelData> labels,
+        string fullPath,
+        int pageCount,
+        string temporaryDirectory,
+        CancellationToken cancellationToken)
+    {
+        using var document = SKDocument.CreatePdf(fullPath);
+        using var titlePaint = CreateTextPaint(14, SKTypeface.Default, SKColor.Parse("#1C1B1F"));
+        using var valuePaint = CreateTextPaint(9, SKTypeface.Default, SKColor.Parse("#49454F"));
+        using var borderPaint = new SKPaint
+        {
+            Color = SKColor.Parse("#79747E"),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 1,
+            IsAntialias = true,
+        };
+
+        var labelWidth = (PageWidth - (2 * PageMargin) - ((Columns - 1) * LabelGap)) / Columns;
+        var labelHeight = (PageHeight - (2 * PageMargin) - ((Rows - 1) * LabelGap)) / Rows;
+        var labelIndex = 0;
+        var labelList = labels.ToArray();
+
+        for (var pageIndex = 0; pageIndex < pageCount; pageIndex++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            using var canvas = document.BeginPage(PageWidth, PageHeight);
+            canvas.Clear(SKColors.White);
+
+            for (var row = 0; row < Rows && labelIndex < labelList.Length; row++)
+            {
+                for (var column = 0; column < Columns && labelIndex < labelList.Length; column++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var x = PageMargin + column * (labelWidth + LabelGap);
+                    var y = PageMargin + row * (labelHeight + LabelGap);
+                    await RenderLabelAsync(
+                        canvas,
+                        new SKRect(x, y, x + labelWidth, y + labelHeight),
+                        labelList[labelIndex++],
+                        borderPaint,
+                        titlePaint,
+                        valuePaint,
+                        temporaryDirectory,
+                        cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            document.EndPage();
+        }
+
+        document.Close();
+    }
+
+    private static async Task RenderLabelAsync(
+        SKCanvas canvas,
+        SKRect bounds,
+        BarcodeLabelData label,
+        SKPaint borderPaint,
+        SKPaint titlePaint,
+        SKPaint valuePaint,
+        string temporaryDirectory,
+        CancellationToken cancellationToken)
+    {
+        canvas.DrawRoundRect(bounds, 6, 6, borderPaint);
+
+        var content = new SKRect(bounds.Left + 10, bounds.Top + 10, bounds.Right - 10, bounds.Bottom - 10);
+        canvas.DrawText(TrimToWidth(label.Name, titlePaint, content.Width), content.Left, content.Top + titlePaint.TextSize, titlePaint);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var temporaryPath = Path.Combine(temporaryDirectory, $"barcode-{Guid.NewGuid():N}.png");
+        try
+        {
+            await BarcodeGenerator.WriteToFileAsync(
+                label.BarcodeValue,
+                temporaryPath,
+                new BarcodeGeneratorOptions
+                {
+                    Format = ToBarcodeFormat(label.Symbology),
+                    Width = Math.Max(240, (int)content.Width * 2),
+                    Height = Math.Max(100, (int)content.Height / 2),
+                    Margin = 2,
+                    ForegroundColor = Colors.Black,
+                    BackgroundColor = Colors.White,
+                }).ConfigureAwait(false);
+
+            using var bitmap = SKBitmap.Decode(temporaryPath)
+            ?? throw new InvalidOperationException($"Could not render barcode '{label.BarcodeValue}'.");
+
+            var imageTop = content.Top + 24;
+            var imageBottom = content.Bottom - 26;
+            var imageRect = FitRect(bitmap.Width, bitmap.Height, new SKRect(content.Left, imageTop, content.Right, imageBottom));
+            canvas.DrawBitmap(bitmap, imageRect);
+
+            var value = $"{label.BarcodeValue} ({label.Symbology})";
+            canvas.DrawText(TrimToWidth(value, valuePaint, content.Width), content.Left, content.Bottom - 4, valuePaint);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+    }
+
+    private static BarcodeFormat ToBarcodeFormat(BarcodeSymbology symbology)
+        => symbology switch
+        {
+            BarcodeSymbology.QrCode => BarcodeFormat.QrCode,
+            BarcodeSymbology.Aztec => BarcodeFormat.Aztec,
+            BarcodeSymbology.Codabar => BarcodeFormat.Codabar,
+            BarcodeSymbology.Code39 => BarcodeFormat.Code39,
+            BarcodeSymbology.Code93 => BarcodeFormat.Code93,
+            BarcodeSymbology.Code128 => BarcodeFormat.Code128,
+            BarcodeSymbology.DataMatrix => BarcodeFormat.DataMatrix,
+            BarcodeSymbology.Ean8 => BarcodeFormat.Ean8,
+            BarcodeSymbology.Ean13 => BarcodeFormat.Ean13,
+            BarcodeSymbology.Itf => BarcodeFormat.Itf,
+            BarcodeSymbology.Pdf417 => BarcodeFormat.Pdf417,
+            BarcodeSymbology.UpcA => BarcodeFormat.UpcA,
+            BarcodeSymbology.UpcE => BarcodeFormat.UpcE,
+            _ => throw new ArgumentOutOfRangeException(nameof(symbology), symbology, "Unsupported barcode symbology."),
+        };
+
+    private static SKRect FitRect(int width, int height, SKRect bounds)
+    {
+        var scale = Math.Min(bounds.Width / width, bounds.Height / height);
+        var drawWidth = width * scale;
+        var drawHeight = height * scale;
+        var left = bounds.MidX - drawWidth / 2;
+        var top = bounds.MidY - drawHeight / 2;
+        return new SKRect(left, top, left + drawWidth, top + drawHeight);
+    }
+
+    private static string TrimToWidth(string value, SKPaint paint, float width)
+    {
+        if (paint.MeasureText(value) <= width)
+        {
+            return value;
+        }
+
+        const string suffix = "…";
+        var result = value;
+        while (result.Length > 1 && paint.MeasureText(result + suffix) > width)
+        {
+            result = result[..^1];
+        }
+
+        return result + suffix;
+    }
+
+    private static SKPaint CreateTextPaint(float size, SKTypeface typeface, SKColor color)
+        => new()
+        {
+            Color = color,
+            TextSize = size,
+            Typeface = typeface,
+            IsAntialias = true,
+        };
+}

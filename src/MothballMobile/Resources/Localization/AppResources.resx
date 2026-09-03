@@ -198,6 +198,7 @@
   <data name="SearchContainers" xml:space="preserve"><value>Search containers...</value></data>
   <data name="SearchItems" xml:space="preserve"><value>Search items...</value></data>
   <data name="ScanBarcode" xml:space="preserve"><value>Scan barcode</value></data>
+  <data name="Share" xml:space="preserve"><value>Share</value></data>
   <data name="BarcodeScannerTitle" xml:space="preserve"><value>Scan barcode</value></data>
   <data name="Torch" xml:space="preserve"><value>Torch</value></data>
   <data name="Gallery" xml:space="preserve"><value>Gallery</value></data>

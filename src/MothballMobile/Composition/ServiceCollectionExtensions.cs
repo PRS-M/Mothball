@@ -15,6 +15,7 @@ using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using MothballMobile.Infrastructure.Presentation.Errors;
 using MothballMobile.Infrastructure.Scanning;
+using MothballMobile.Infrastructure.BarcodeDocuments;
 using MothballMobile.Infrastructure.Localization;
 using MothballMobile.UI.Features.Containers.AddContainer;
 using MothballMobile.UI.Features.Containers.AddExistingItemToContainer;
@@ -134,6 +135,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IBarcodeScanSession, BarcodeScanSession>();
         services.AddSingleton<BarcodeLookupCoordinator>();
+        services.AddSingleton<IBarcodeLabelDocumentGenerator, SkiaBarcodeLabelDocumentGenerator>();
+        services.AddSingleton<IBarcodeShareService, BarcodeShareService>();
         services.AddSingleton<ICameraHandler, CameraHandler>();
         services.AddSingleton<IFileHandler, MobileFileHandler>();
         services.AddSingleton<IImageMetadataReader, SkiaImageMetadataReader>();
