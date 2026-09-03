@@ -65,6 +65,12 @@
         </VerticalStackLayout>
     </Shell.TitleView>
 
+    <Shell.ToolbarItems>
+        <ToolbarItem Text="{x:Static strings:AppResources.ScanBarcode}"
+                     IconImageSource="{FontImageSource Glyph=&#xF02A;, FontFamily=FontAwesomeSolid, Size=18}"
+                     Clicked="OnBarcodeScanClicked" />
+    </Shell.ToolbarItems>
+
     <FlyoutItem Title="{x:Static strings:AppResources.Home}" Route="Home">
         <FlyoutItem.Icon>
             <FontImageSource Glyph="&#xf015;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />

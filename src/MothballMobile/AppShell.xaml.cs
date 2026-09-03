@@ -1,19 +1,23 @@
 ﻿using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure.Presentation.Errors;
+using MothballMobile.Infrastructure.Scanning;
 
 namespace MothballMobile;
 
 public partial class AppShell : Shell
 {
 	private readonly ILogger<AppShell> logger;
+	private readonly BarcodeLookupCoordinator barcodeLookupCoordinator;
 	public IAppErrorPresenter ErrorPresenter { get; }
 
 	public AppShell(
 		IPhotoBackgroundOperationTracker photoBackgroundOperationTracker,
 		IAppErrorPresenter appErrorPresenter,
-		ILogger<AppShell> logger)
+		ILogger<AppShell> logger,
+		BarcodeLookupCoordinator barcodeLookupCoordinator)
 	{
 		this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		this.barcodeLookupCoordinator = barcodeLookupCoordinator ?? throw new ArgumentNullException(nameof(barcodeLookupCoordinator));
 		ErrorPresenter = appErrorPresenter ?? throw new ArgumentNullException(nameof(appErrorPresenter));
 		InitializeComponent();
 		BindingContext = photoBackgroundOperationTracker;
@@ -23,6 +27,18 @@ public partial class AppShell : Shell
 	private void OnErrorBannerDismissed(object? sender, EventArgs e)
 	{
 		ErrorPresenter.Dismiss();
+	}
+
+	private async void OnBarcodeScanClicked(object? sender, EventArgs e)
+	{
+		try
+		{
+			await barcodeLookupCoordinator.ScanAndNavigateAsync();
+		}
+		catch (Exception ex)
+		{
+			logger.LogWarning(ex, "Global barcode scan failed.");
+		}
 	}
 
 	private async void OnBackgroundOperationsBannerTapped(object? sender, TappedEventArgs e)
