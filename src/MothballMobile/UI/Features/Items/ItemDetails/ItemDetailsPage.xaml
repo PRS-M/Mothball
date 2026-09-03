@@ -4,6 +4,7 @@
                 xmlns:vm="clr-namespace:MothballMobile.UI.Features.Items.ItemDetails"
                 xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
                 x:Class="MothballMobile.UI.Features.Items.ItemDetails.ItemDetailsPage"
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ItemDetailsViewModel"
@@ -123,6 +124,13 @@
                           IsVisible="{Binding HasBarcode}"
                           LineBreakMode="CharacterWrap"
                           TextColor="{DynamicResource OnSurface}" />
+                  <zxing:BarcodeGeneratorView IsVisible="{Binding HasBarcode}"
+                      HeightRequest="116"
+                      WidthRequest="240"
+                      HorizontalOptions="Center"
+                      ForegroundColor="{DynamicResource OnSurface}"
+                      Value="{Binding BarcodeValue}"
+                      Format="{Binding BarcodeSymbology}" />
                   <VerticalStackLayout IsVisible="{Binding IsEditingBarcode}" Spacing="8">
                       <Entry Style="{StaticResource Input}" Text="{Binding BarcodeValueDraft}" />
                       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
