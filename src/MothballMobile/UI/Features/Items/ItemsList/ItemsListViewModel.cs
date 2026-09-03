@@ -107,6 +107,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
 
     public int SelectedCount => Items.Count(item => item.IsSelected);
     public bool HasSelection => SelectedCount > 0;
+    public bool ShowDeleteActions => !IsSelectionMode;
 
     protected override void OnViewModelAdded(ItemViewModel vm)
     {
@@ -137,7 +138,11 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private Task ScanToFindAsync() => RunCommandAsync(barcodeLookup.ScanAndNavigateAsync, rethrowOnError: false);
 
     [RelayCommand]
-    private void EnterSelectionMode() => IsSelectionMode = true;
+    private void EnterSelectionMode()
+    {
+        IsSelectionMode = true;
+        OnPropertyChanged(nameof(ShowDeleteActions));
+    }
 
     [RelayCommand]
     private void SelectAllLoaded()
@@ -162,6 +167,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     {
         ClearSelection();
         IsSelectionMode = false;
+        OnPropertyChanged(nameof(ShowDeleteActions));
     }
 
     [RelayCommand]

@@ -148,7 +148,7 @@
                                                EditQuantityCommand="{Binding EditQuantityCommand}"
                                                ShowUse="{Binding ShowQuantityManagement}"
                                                UseCommand="{Binding UseCommand}"
-                                               ShowRemove="True"
+                                               ShowRemove="{Binding Source={x:Reference ItemsPage}, Path=BindingContext.ShowDeleteActions}"
                                                RemoveCommand="{Binding DeleteCommand}"
                                                ImagePaths="{Binding ImagePaths}"
                                                ImageSize="125" />
