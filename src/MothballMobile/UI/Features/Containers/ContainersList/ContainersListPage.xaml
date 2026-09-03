@@ -12,7 +12,7 @@
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="{x:Static strings:AppResources.Select}"
+        <ToolbarItem Text="{x:Static strings:AppResources.BarcodeSharing}"
                      Command="{Binding EnterSelectionModeCommand}"
                      Order="Primary" />
         <ToolbarItem Priority="1"

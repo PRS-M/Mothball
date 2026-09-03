@@ -200,6 +200,7 @@
   <data name="SearchItems" xml:space="preserve"><value>Gegenstände suchen …</value></data>
   <data name="ScanBarcode" xml:space="preserve"><value>Barcode scannen</value></data>
   <data name="Share" xml:space="preserve"><value>Teilen</value></data>
+  <data name="BarcodeSharing" xml:space="preserve"><value>Barcode teilen</value></data>
   <data name="Select" xml:space="preserve"><value>Auswählen</value></data>
   <data name="SelectAllLoaded" xml:space="preserve"><value>Alle geladenen auswählen</value></data>
   <data name="ClearSelection" xml:space="preserve"><value>Leeren</value></data>
