@@ -6,10 +6,12 @@ Mothball can identify containers and item types with barcodes. A barcode lets yo
 
 - Assign one optional barcode to a container or item type when creating it or from its details page.
 - Display an assigned barcode as a rendered label on container and item details pages.
+- Share an assigned barcode as a printable PDF label.
 - Scan a barcode with the device camera or select an image containing a barcode from the photo library.
 - Start Scan from the app toolbar, item list, or container list to open the matching item or container.
 - Scan an item barcode in the Add Item workflow to receive additional quantity for that existing item.
 - Scan a container barcode while receiving or associating an item to use that container as the destination.
+- Select loaded records or all matching records from an item/container list and share their labels as one PDF document.
 
 ## Supported Formats
 
@@ -42,3 +44,9 @@ In simple mode, the receipt quantity defaults to one. In advanced mode, enter a 
 Mothball stores the decoded barcode value and its symbology, not the camera image or source image used to scan it. Barcode values and symbologies are persisted by both the SQLite and JSON backends. Backup export and restore retain those fields, so an assigned barcode moves with its container or item when inventory data is restored.
 
 For contributors, barcode ownership is enforced by the Application-layer `IBarcodeAssignmentService` and creation handlers. Lookup uses `IInventoryQueryRepository.FindBarcodeAsync`. Preserve the trim-only, case-sensitive matching and global uniqueness rules when changing either persistence backend or backup/restore behavior. Camera/gallery decoding and barcode rendering are MAUI-only concerns.
+
+## Sharing and Batch Documents
+
+The Share action generates a PDF containing the barcode, its human-readable value, and the item or container name. The PDF is sent through the device share sheet, which may offer printing, AirDrop, Files, Mail, and other installed activities. Single-label files use a name-based filename; batch files use a timestamped filename.
+
+List selection is limited to records currently loaded by the paged list. **Select all loaded** does not load additional pages. **Share all filtered results** queries the active search and filter without paging, so it can include matching records that are not currently visible.

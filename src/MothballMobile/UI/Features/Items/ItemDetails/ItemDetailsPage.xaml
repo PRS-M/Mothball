@@ -111,26 +111,41 @@
 
                  <Border Style="{StaticResource Card}">
                   <VerticalStackLayout Spacing="8">
-                  <Grid ColumnDefinitions="Auto,*,Auto"
-                     ColumnSpacing="12">
-                      <Label Text="{x:Static strings:AppResources.Barcode}"
-                          FontAttributes="Bold"
-                          TextColor="{DynamicResource OnSurface}" />
-                      <Label Grid.Column="1"
-                          Text="{Binding BarcodeSymbology}"
-                          TextColor="{DynamicResource OnSurfaceVariant}"
-                          HorizontalOptions="End" />
-                      <Button Grid.Column="2" Text="{x:Static strings:AppResources.EditDescription}"
-                          Style="{StaticResource OutlinedButton}" Command="{Binding EditBarcodeCommand}"
-                          IsVisible="{Binding IsViewingBarcode}" />
-                      <Button Grid.Column="2" Text="{x:Static strings:AppResources.Save}"
-                          Style="{StaticResource TonalButton}" Command="{Binding SaveBarcodeCommand}"
-                          IsVisible="{Binding IsEditingBarcode}" />
-                  </Grid>
-                      <Label Text="{Binding BarcodeValue}"
+                      <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <Label Text="{x:Static strings:AppResources.Barcode}"
+                              FontAttributes="Bold"
+                              TextColor="{DynamicResource OnSurface}" />
+                          <Label Grid.Column="1"
+                              Text="{Binding BarcodeSymbology}"
+                              TextColor="{DynamicResource OnSurfaceVariant}"
+                              HorizontalOptions="End" />
+                        </Grid>
+                        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+                          <Button Text="{x:Static strings:AppResources.EditDescription}"
+                              Style="{StaticResource OutlinedButton}" Command="{Binding EditBarcodeCommand}"
+                              IsVisible="{Binding IsViewingBarcode}" />
+                          <Button Text="{x:Static strings:AppResources.Save}"
+                              Style="{StaticResource TonalButton}" Command="{Binding SaveBarcodeCommand}"
+                              IsVisible="{Binding IsEditingBarcode}" />
+                          <Button Grid.Column="1" Text="{x:Static strings:AppResources.Share}"
+                              Style="{StaticResource OutlinedButton}" Command="{Binding ShareBarcodeCommand}"
+                              IsVisible="{Binding HasBarcode}">
+                          <Button.ImageSource>
+                              <FontImageSource FontFamily="FontAwesomeSolid"
+                                               Glyph="&#xF1E0;"
+                                               Color="{DynamicResource Primary}"
+                                               Size="14" />
+                          </Button.ImageSource>
+                          </Button>
+                        </Grid>
+                      <Label Grid.Row="2" Text="{Binding BarcodeValue}"
                           IsVisible="{Binding HasBarcode}"
                           LineBreakMode="CharacterWrap"
+                          HorizontalOptions="Center"
+                          HorizontalTextAlignment="Center"
                           TextColor="{DynamicResource OnSurface}" />
+                  </Grid>
                   <scanning:InitializedBarcodeGeneratorView IsVisible="{Binding HasBarcode}"
                       HeightRequest="116"
                       WidthRequest="240"

@@ -6,6 +6,7 @@ namespace MothballMobile.Infrastructure.BackgroundOperations.Photos;
 public interface IPhotoBackgroundOperationTracker
 {
     int ActiveOperationCount { get; }
+    bool IsProcessing { get; }
     double OverallProgress { get; }
     string StatusText { get; }
     bool IsBannerVisible { get; }

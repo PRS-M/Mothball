@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 
 namespace MothballMobile.UI.Features.Containers.ContainersList;
@@ -21,6 +22,9 @@ public partial class ContainerViewModel : ContainerWithImagesViewModelBase
     }
 
     public bool ShowQuantityManagement { get; }
+
+    [ObservableProperty]
+    private bool isSelected;
 
     public string ItemTypesStoredText => LocalizationManager.Current.Format("Item types stored: {0}", Container.ItemTypeCount);
 

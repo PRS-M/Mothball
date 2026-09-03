@@ -99,6 +99,8 @@ For the full user workflow and contributor reference, see [Barcodes](Barcodes.md
 
 The scanner supports camera and gallery decoding. It is available from container and item lists, the Shell, create forms, and barcode detail editing. Scan-to-find opens the matching container or item details. In the item create flow, a scanned or typed barcode belonging to an existing item enters receipt mode: item metadata is locked, quantity defaults to one in simple mode, and saving delegates to `IItemReceiptService`. A receipt can remain unassigned, use the container context that opened the form, or scan a container barcode as its destination. The item/container association picker can likewise scan a container barcode and executes its normal available-quantity association path.
 
+Barcode labels are generated as PDFs with SkiaSharp and shared through the MAUI `IShare` abstraction. Detail-page sharing creates one label. List sharing supports selected loaded rows and an explicit all-matching query that preserves the active search and filter; it does not infer that unloaded pages are selected.
+
 ## Assignments and Inventory Quantities
 
 An item can have allocations in multiple containers. Each allocation is a container ID plus a positive quantity. The app also supports unassigned quantity, so an item can exist before a storage location is known.

@@ -198,10 +198,19 @@
   <data name="SearchContainers" xml:space="preserve"><value>Search containers...</value></data>
   <data name="SearchItems" xml:space="preserve"><value>Search items...</value></data>
   <data name="ScanBarcode" xml:space="preserve"><value>Scan barcode</value></data>
+  <data name="Share" xml:space="preserve"><value>Share</value></data>
+  <data name="BarcodeSharing" xml:space="preserve"><value>Barcode Sharing</value></data>
+  <data name="Select" xml:space="preserve"><value>Select</value></data>
+  <data name="SelectAllLoaded" xml:space="preserve"><value>Select all loaded</value></data>
+  <data name="ClearSelection" xml:space="preserve"><value>Clear</value></data>
+  <data name="ShareAllMatching" xml:space="preserve"><value>Share all filtered results</value></data>
+  <data name="NumberOfSelectedContainers" xml:space="preserve"><value>Number of selected containers:</value></data>
+  <data name="NumberOfSelectedItems" xml:space="preserve"><value>Number of selected items:</value></data>
   <data name="BarcodeScannerTitle" xml:space="preserve"><value>Scan barcode</value></data>
   <data name="Torch" xml:space="preserve"><value>Torch</value></data>
   <data name="Gallery" xml:space="preserve"><value>Gallery</value></data>
   <data name="NoBarcodeFound" xml:space="preserve"><value>No barcode found</value></data>
+  <data name="NoBarcodeLabelsFound" xml:space="preserve"><value>No barcode labels found.</value></data>
   <data name="NoSupportedBarcodeInImage" xml:space="preserve"><value>The selected image does not contain a supported barcode.</value></data>
   <data name="SelectBarcode" xml:space="preserve"><value>Select barcode</value></data>
   <data name="CameraBarcodeScanningUnavailable" xml:space="preserve"><value>Camera barcode scanning is unavailable on this device. Choose an image from the gallery instead.</value></data>

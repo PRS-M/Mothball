@@ -8,10 +8,12 @@
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:Name="ItemsPage"
                 x:DataType="vm:ItemsListViewModel"
-                Title="{x:Static strings:AppResources.Items}"
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{x:Static strings:AppResources.BarcodeSharing}"
+                     Command="{Binding EnterSelectionModeCommand}"
+                     Order="Primary" />
         <ToolbarItem x:DataType="vm:ItemsListViewModel"
                      Priority="1"
                      Order="Primary"
@@ -37,7 +39,7 @@
     </ContentPage.ToolbarItems>
 
     <Grid Padding="12"
-          RowDefinitions="Auto,Auto,*">
+          RowDefinitions="Auto,Auto,Auto,*">
         <Grid Grid.Row="0"
               ColumnDefinitions="*,Auto"
               ColumnSpacing="12">
@@ -88,7 +90,24 @@
                     Text="{Binding Query}"
                     SearchCommand="{Binding SearchCommand}" />
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,*,*,*"
+              RowDefinitions="Auto,Auto,Auto"
+              ColumnSpacing="8"
+              RowSpacing="8"
+              IsVisible="{Binding IsSelectionMode}">
+            <HorizontalStackLayout Grid.ColumnSpan="4" Margin="4,0,0,0" Spacing="4">
+                <Label Text="{x:Static strings:AppResources.NumberOfSelectedItems}" FontSize="14" TextColor="{DynamicResource OnSurfaceVariant}" />
+                <Label Text="{Binding SelectedCount}" FontSize="14" TextColor="{DynamicResource OnSurfaceVariant}" />
+            </HorizontalStackLayout>
+            <Button Grid.Row="1" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.SelectAllLoaded}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding SelectAllLoadedCommand}" />
+            <Button Grid.Row="1" Grid.Column="2" Text="{x:Static strings:AppResources.ClearSelection}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding ClearSelectionCommand}" />
+            <Button Grid.Row="1" Grid.Column="3" Text="{x:Static strings:AppResources.Share}" Padding="8,0" Style="{StaticResource TonalButton}" Command="{Binding ShareSelectedCommand}" IsEnabled="{Binding HasSelection}" />
+            <Button Grid.Row="2" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.ShareAllMatching}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding ShareAllMatchingCommand}" />
+            <Button Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.Cancel}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding CancelSelectionCommand}" />
+        </Grid>
+
+        <Grid Grid.Row="3">
             <RefreshView IsRefreshing="{Binding IsRefreshing}"
                          Command="{Binding RefreshCommand}">
                 <RefreshView.Triggers>
@@ -115,6 +134,7 @@
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="vm:ItemViewModel">
+                            <Grid>
                             <controls:ItemTile
                                                Command="{Binding NavigateToItemDetailsCommand}"
                                                Name="{Binding Name}"
@@ -127,10 +147,14 @@
                                                EditQuantityCommand="{Binding EditQuantityCommand}"
                                                ShowUse="{Binding ShowQuantityManagement}"
                                                UseCommand="{Binding UseCommand}"
-                                               ShowRemove="True"
+                                               ShowRemove="{Binding Source={x:Reference ItemsPage}, Path=BindingContext.ShowDeleteActions}"
                                                RemoveCommand="{Binding DeleteCommand}"
                                                ImagePaths="{Binding ImagePaths}"
                                                ImageSize="125" />
+                                <CheckBox IsVisible="{Binding Source={x:Reference ItemsPage}, Path=BindingContext.IsSelectionMode}"
+                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                          HorizontalOptions="End" VerticalOptions="Start" Margin="8" />
+                            </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
