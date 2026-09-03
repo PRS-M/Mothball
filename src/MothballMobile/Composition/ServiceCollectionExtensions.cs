@@ -119,38 +119,11 @@ public static class ServiceCollectionExtensions
 
         if (PersistenceConfiguration.UseJsonBackend(backend))
         {
-            services.AddSingleton<JsonInventoryStore>();
-            services.AddSingleton<IAppStartupInitializer, JsonStoreStartupInitializer>();
-            services.AddSingleton<IInventoryMaintenanceService, JsonInventoryMaintenanceService>();
-
-            services.AddSingleton<IContainerRepository, JsonContainerRepository>();
-            services.AddSingleton<IItemRepository, JsonItemRepository>();
-            services.AddSingleton<IItemInventoryRepository, JsonItemInventoryRepository>();
-            services.AddSingleton<IImageRepository, JsonImageRepository>();
-            services.AddSingleton<IRelationRepository, JsonRelationRepository>();
-
-            services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
-            services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
-            services.AddSingleton<IImagePathResolver, ImagePathResolver>();
-            services.AddSingleton<IInventoryBackupRestoreService, JsonInventoryBackupRestoreService>();
+            services.AddJsonPersistence();
         }
         else
         {
-            services.AddSingleton<MothballDatabase>();
-            services.AddSingleton<IAppStartupInitializer, SqliteStartupInitializer>();
-            services.AddSingleton<ITransactionRunner, SqliteTransactionRunner>();
-            services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
-
-            services.AddSingleton<IContainerRepository, ContainerRepository>();
-            services.AddSingleton<IItemRepository, ItemRepository>();
-            services.AddSingleton<IItemInventoryRepository, ItemInventoryRepository>();
-            services.AddSingleton<IImageRepository, ImageRepository>();
-            services.AddSingleton<IRelationRepository, RelationRepository>();
-
-            services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
-            services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
-            services.AddSingleton<IImagePathResolver, ImagePathResolver>();
-            services.AddSingleton<IInventoryBackupRestoreService, SqliteInventoryBackupRestoreService>();
+            services.AddSqlitePersistence();
         }
 
 #if DEBUG
@@ -162,10 +135,64 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddPlatformServices(this IServiceCollection services)
     {
+        return services
+            .AddBarcodeServices()
+            .AddDeviceServices();
+    }
+
+    private static IServiceCollection AddJsonPersistence(this IServiceCollection services)
+    {
+        services.AddSingleton<JsonInventoryStore>();
+        services.AddSingleton<IAppStartupInitializer, JsonStoreStartupInitializer>();
+        services.AddSingleton<IInventoryMaintenanceService, JsonInventoryMaintenanceService>();
+
+        services.AddSingleton<IContainerRepository, JsonContainerRepository>();
+        services.AddSingleton<IItemRepository, JsonItemRepository>();
+        services.AddSingleton<IItemInventoryRepository, JsonItemInventoryRepository>();
+        services.AddSingleton<IImageRepository, JsonImageRepository>();
+        services.AddSingleton<IRelationRepository, JsonRelationRepository>();
+
+        services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
+        services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
+        services.AddSingleton<IImagePathResolver, ImagePathResolver>();
+        services.AddSingleton<IInventoryBackupRestoreService, JsonInventoryBackupRestoreService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddSqlitePersistence(this IServiceCollection services)
+    {
+        services.AddSingleton<MothballDatabase>();
+        services.AddSingleton<IAppStartupInitializer, SqliteStartupInitializer>();
+        services.AddSingleton<ITransactionRunner, SqliteTransactionRunner>();
+        services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
+
+        services.AddSingleton<IContainerRepository, ContainerRepository>();
+        services.AddSingleton<IItemRepository, ItemRepository>();
+        services.AddSingleton<IItemInventoryRepository, ItemInventoryRepository>();
+        services.AddSingleton<IImageRepository, ImageRepository>();
+        services.AddSingleton<IRelationRepository, RelationRepository>();
+
+        services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
+        services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
+        services.AddSingleton<IImagePathResolver, ImagePathResolver>();
+        services.AddSingleton<IInventoryBackupRestoreService, SqliteInventoryBackupRestoreService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddBarcodeServices(this IServiceCollection services)
+    {
         services.AddSingleton<IBarcodeScanSession, BarcodeScanSession>();
         services.AddSingleton<BarcodeLookupCoordinator>();
         services.AddSingleton<IBarcodeLabelDocumentGenerator, SkiaBarcodeLabelDocumentGenerator>();
         services.AddSingleton<IBarcodeShareService, BarcodeShareService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddDeviceServices(this IServiceCollection services)
+    {
         services.AddSingleton<ICameraHandler, CameraHandler>();
         services.AddSingleton<IFileHandler, MobileFileHandler>();
         services.AddSingleton<IImageMetadataReader, SkiaImageMetadataReader>();
@@ -181,12 +208,25 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddViewModels(this IServiceCollection services)
     {
+        return services
+            .AddFeatureCoordinators()
+            .AddFeatureViewModels();
+    }
+
+    private static IServiceCollection AddFeatureCoordinators(this IServiceCollection services)
+    {
         services.AddTransient<ContainerDetailsItemsCoordinator>();
         services.AddTransient<AssociateItemWithContainerCoordinator>();
         services.AddTransient<ItemInventoryWithdrawalCoordinator>();
         services.AddTransient<UI.Features.Items.Consumption.ItemConsumptionCoordinator>();
         services.AddTransient<UI.Features.Items.Quantity.ItemQuantityEditCoordinator>();
         services.AddTransient<ItemDetailsCoordinator>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddFeatureViewModels(this IServiceCollection services)
+    {
         services.AddTransient<AddContainerViewModel>();
         services.AddTransient<ContainerListViewModel>();
         services.AddTransient<ItemsListViewModel>();
