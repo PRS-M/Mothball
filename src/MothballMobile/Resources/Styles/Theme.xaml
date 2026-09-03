@@ -143,6 +143,18 @@
         <Setter Property="BorderWidth" Value="1"/>
     </Style>
 
+    <Style TargetType="Button" x:Key="CompactTonalButton" BasedOn="{StaticResource TonalButton}">
+        <Setter Property="MinimumHeightRequest" Value="34"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Padding" Value="10,0"/>
+    </Style>
+
+    <Style TargetType="Button" x:Key="CompactOutlinedButton" BasedOn="{StaticResource OutlinedButton}">
+        <Setter Property="MinimumHeightRequest" Value="34"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Padding" Value="10,0"/>
+    </Style>
+
     <Style TargetType="Button" x:Key="TextButton" BasedOn="{StaticResource PrimaryButton}">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="TextColor" Value="{DynamicResource Primary}"/>

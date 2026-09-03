@@ -77,10 +77,7 @@
                           ColumnSpacing="8">
                         <Button Grid.Column="0"
                                 Text="{x:Static strings:AppResources.AddPhoto}"
-                                Style="{StaticResource TonalButton}"
-                                MinimumHeightRequest="34"
-                                FontSize="12"
-                                Padding="10,0"
+                                Style="{StaticResource CompactTonalButton}"
                                 Command="{Binding AddPhotoCommand}">
                             <Button.ImageSource>
                                 <FontImageSource FontFamily="FontAwesomeSolid"
@@ -92,10 +89,7 @@
 
                         <Button Grid.Column="1"
                                 Text="{x:Static strings:AppResources.DeletePhoto}"
-                                Style="{StaticResource OutlinedButton}"
-                                MinimumHeightRequest="34"
-                                FontSize="12"
-                                Padding="10,0"
+                                Style="{StaticResource CompactOutlinedButton}"
                                 Command="{Binding DeletePhotoCommand}">
                             <Button.ImageSource>
                                 <FontImageSource FontFamily="FontAwesomeSolid"
@@ -177,10 +171,7 @@
                                TextColor="{DynamicResource OnSurface}"/>
                         <Button Grid.Column="1"
                                 Text="{x:Static strings:AppResources.EditDescription}"
-                                Style="{StaticResource OutlinedButton}"
-                                MinimumHeightRequest="34"
-                                FontSize="12"
-                                Padding="10,0"
+                                Style="{StaticResource CompactOutlinedButton}"
                                 IsVisible="{Binding IsViewingDescription}"
                                 Command="{Binding EditDescriptionCommand}">
                             <Button.ImageSource>
@@ -192,10 +183,7 @@
                         </Button>
                         <Button Grid.Column="1"
                                 Text="{x:Static strings:AppResources.Save}"
-                                Style="{StaticResource TonalButton}"
-                                MinimumHeightRequest="34"
-                                FontSize="12"
-                                Padding="10,0"
+                                Style="{StaticResource CompactTonalButton}"
                                 IsVisible="{Binding IsEditingDescription}"
                                 Command="{Binding SaveDescriptionCommand}">
                             <Button.ImageSource>
