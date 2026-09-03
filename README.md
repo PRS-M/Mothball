@@ -99,7 +99,7 @@ See [Barcodes](docs/Barcodes.md) for barcode workflows, supported formats, and d
   - Maps user features to their implementation and summarizes the main inventory, persistence, backup, navigation, and UI algorithms.
 - [Barcodes](docs/Barcodes.md)
   - Describes barcode scanning, assignment, lookup, item receipts, supported formats, data rules, and persistence behavior.
-- [Overview video](<docs/MothballOverview_iPhone 16 Pro - 2026-08-14.mp4>)
+- [Overview video](https://github.com/user-attachments/assets/8ba4bd1b-96b2-406f-8455-8696ae47368d)
   - Shows the app running on an iPhone 16 Pro simulator.
 - [Backup and Restore](docs/BackupRestore.md)
   - Explains export format, restore strategies, conflict policies, integrity checks, and usage examples.

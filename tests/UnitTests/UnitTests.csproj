@@ -59,6 +59,7 @@
     <Compile Include="../../src/MothballMobile/Infrastructure/Resilience/RetryService.cs" Link="Infrastructure/Resilience/RetryService.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Startup/IAppStartupOrchestrator.cs" Link="Infrastructure/Startup/IAppStartupOrchestrator.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Startup/AppStartupOrchestrator.cs" Link="Infrastructure/Startup/AppStartupOrchestrator.cs" />
+    <Compile Include="../../src/MothballMobile/Infrastructure/Startup/AppStartupCoordinator.cs" Link="Infrastructure/Startup/AppStartupCoordinator.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IBackupSignatureSecretProvider.cs" Link="Infrastructure/Backup/IBackupSignatureSecretProvider.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Backup/BackupSignatureSecretProvider.cs" Link="Infrastructure/Backup/BackupSignatureSecretProvider.cs" />
     <Compile Include="../../src/MothballMobile/Infrastructure/Backup/IBackupSigningKeyTransferService.cs" Link="Infrastructure/Backup/IBackupSigningKeyTransferService.cs" />
