@@ -11,7 +11,7 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
             <controls:PageHeader Title="{x:Static strings:AppResources.DocumentationHelp}"
-                                 Subtitle="Backup import modes"
+                                 Subtitle="{x:Static strings:AppResources.BackupImportModes}"
                                  TitleFontSize="22"
                                  SubtitleFontSize="12"
                                  Spacing="2"

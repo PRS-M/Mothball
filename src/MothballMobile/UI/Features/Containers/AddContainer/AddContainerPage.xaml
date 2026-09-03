@@ -17,7 +17,7 @@
               ColumnDefinitions="*">
             <controls:PageHeader Grid.Row="0"
                                  Title="{x:Static strings:AppResources.CreateANewContainer}"
-                                 Subtitle="Enter the details below"
+                                 Subtitle="{x:Static strings:AppResources.EnterDetailsBelow}"
                                  TitleFontSize="24"
                                  HeaderMargin="0,6,0,14" />
 
@@ -26,7 +26,7 @@
                 <VerticalStackLayout Spacing="12"
                                      HorizontalOptions="Center">
                     <!-- Name -->
-                    <controls:ValidatedTextField Label="Name"
+                    <controls:ValidatedTextField Label="{x:Static strings:AppResources.Name}"
                                                  WidthRequest="{StaticResource WidthM}"
                                                  Placeholder="{x:Static strings:AppResources.EnterContainerName}"
                                                  Text="{Binding Name}"
@@ -35,7 +35,7 @@
                                                  ValidationMessage="{Binding ValidationMessage}" />
 
                     <!-- Notes -->
-                    <controls:LabeledEntryField Label="Notes"
+                    <controls:LabeledEntryField Label="{x:Static strings:AppResources.Notes}"
                                                LabelMargin="4,8,4,0"
                                                FieldWidthRequest="{StaticResource WidthM}"
                                                UseWrapper="False"

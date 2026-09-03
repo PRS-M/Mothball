@@ -105,6 +105,7 @@
   <data name="Description" xml:space="preserve"><value>Opis</value></data>
   <data name="DismissError" xml:space="preserve"><value>Zamknij błąd</value></data>
   <data name="DocumentationHelp" xml:space="preserve"><value>Dokumentacja / Pomoc</value></data>
+  <data name="BackupImportModes" xml:space="preserve"><value>Tryby importowania kopii zapasowej</value></data>
   <data name="EditDescription" xml:space="preserve"><value>Edytuj opis</value></data>
   <data name="EditQuantity" xml:space="preserve"><value>Edytuj ilość</value></data>
   <data name="EnableOrDisableBackupSigningKeyUse" xml:space="preserve"><value>Włącz lub wyłącz używanie klucza podpisu kopii zapasowej</value></data>
@@ -115,6 +116,8 @@
   <data name="EnterADescriptionOrNotes" xml:space="preserve"><value>Wpisz opis lub notatki.</value></data>
   <data name="EnterANumberBetween0And1" xml:space="preserve"><value>Wpisz liczbę od {0} do {1}.</value></data>
   <data name="EnterContainerName" xml:space="preserve"><value>Wpisz nazwę pojemnika</value></data>
+  <data name="EnterDetailsBelow" xml:space="preserve"><value>Wpisz dane poniżej</value></data>
+  <data name="FillInFieldsBelow" xml:space="preserve"><value>Wypełnij poniższe pola</value></data>
   <data name="EnterHowManyItemsToUsePermanently" xml:space="preserve"><value>Wpisz, ile przedmiotów zużyć bezpowrotnie.</value></data>
   <data name="EnterHowManyItemsToWithdrawFromThisContainer" xml:space="preserve"><value>Wpisz, ile przedmiotów pobrać z tego pojemnika.</value></data>
   <data name="EnterHowManyUnassignedItemsToPlaceInThisContainer" xml:space="preserve"><value>Wpisz, ile nieprzypisanych przedmiotów umieścić w tym pojemniku.</value></data>
@@ -159,6 +162,8 @@
   <data name="MoreItemsMustBeWithdrawn" xml:space="preserve"><value>Należy pobrać więcej przedmiotów</value></data>
   <data name="Mothball" xml:space="preserve"><value>Mothball</value></data>
   <data name="NameIsRequired" xml:space="preserve"><value>Nazwa jest wymagana.</value></data>
+  <data name="Name" xml:space="preserve"><value>Nazwa</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notatki</value></data>
   <data name="NoBackgroundOperationsHaveCompletedYet" xml:space="preserve"><value>Nie ukończono jeszcze żadnych operacji w tle.</value></data>
   <data name="NoBackupFilesWereFoundInLocalBackupStorage" xml:space="preserve"><value>W lokalnym magazynie nie znaleziono plików kopii zapasowych.</value></data>
   <data name="NoBackupsFound" xml:space="preserve"><value>Nie znaleziono kopii zapasowych</value></data>
@@ -181,6 +186,7 @@
   <data name="Polish" xml:space="preserve"><value>Polski</value></data>
   <data name="ProcessingPhoto" xml:space="preserve"><value>Przetwarzanie zdjęcia...</value></data>
   <data name="QuantityMustBeAPositiveNumber" xml:space="preserve"><value>Ilość musi być liczbą dodatnią.</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Ilość</value></data>
   <data name="QuantityNotUpdated" xml:space="preserve"><value>Ilość nie została zaktualizowana</value></data>
   <data name="RecentOperations" xml:space="preserve"><value>Ostatnie operacje</value></data>
   <data name="RelationsAndImageReferencesRemainAdditiveForExistingRecords" xml:space="preserve"><value>Relations and image references remain additive for existing records.</value></data>
@@ -222,12 +228,16 @@
   <data name="SetQuantity" xml:space="preserve"><value>Ustaw ilość</value></data>
   <data name="SetTotalQuantity" xml:space="preserve"><value>Ustaw łączną ilość</value></data>
   <data name="Settings" xml:space="preserve"><value>Ustawienia</value></data>
+  <data name="MaintenanceAndBackup" xml:space="preserve"><value>Konserwacja i kopie zapasowe</value></data>
   <data name="ShareFailed" xml:space="preserve"><value>Udostępnianie nie powiodło się</value></data>
   <data name="ShareBackupJSON" xml:space="preserve"><value>Udostępnij kopię JSON</value></data>
   <data name="ShareBackupZIP" xml:space="preserve"><value>Udostępnij kopię ZIP</value></data>
   <data name="ShareSigningKey" xml:space="preserve"><value>Udostępnij klucz podpisu</value></data>
   <data name="ShareTheBackupSigningKeyUsingTheSystemShareSheetIncludingAirDrop" xml:space="preserve"><value>Udostępnij klucz podpisu kopii zapasowej za pomocą systemowego panelu udostępniania, w tym AirDrop</value></data>
   <data name="ShortDescription" xml:space="preserve"><value>Krótki opis</value></data>
+  <data name="OnlyUnassignedItemsAreShown" xml:space="preserve"><value>Pokazywane są tylko przedmioty nieprzypisane do żadnego pojemnika</value></data>
+  <data name="TapContainerToAssociateItem" xml:space="preserve"><value>Dotknij pojemnika, aby przypisać ten przedmiot</value></data>
+  <data name="TapToAddFirstContainer" xml:space="preserve"><value>Dotknij +, aby dodać pierwszy pojemnik</value></data>
   <data name="SigningKeyImported" xml:space="preserve"><value>Zaimportowano klucz podpisu</value></data>
   <data name="Simple" xml:space="preserve"><value>Prosty</value></data>
   <data name="ZIP" xml:space="preserve"><value>ZIP</value></data>

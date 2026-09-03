@@ -16,7 +16,7 @@
 
         <controls:PageHeader Grid.Row="0"
                              Title="{Binding ItemName}"
-                             Subtitle="Choose a container"
+                             Subtitle="{x:Static strings:AppResources.ChooseAContainer}"
                              TitleFontSize="28"
                              SubtitleFontSize="14"
                              Spacing="4"

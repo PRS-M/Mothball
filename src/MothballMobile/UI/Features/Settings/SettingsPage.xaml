@@ -13,7 +13,7 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
             <controls:PageHeader Title="{x:Static strings:AppResources.Settings}"
-                                 Subtitle="Maintenance and backup"
+                                 Subtitle="{x:Static strings:AppResources.MaintenanceAndBackup}"
                                  TitleFontSize="22"
                                  SubtitleFontSize="12"
                                  Spacing="2"
