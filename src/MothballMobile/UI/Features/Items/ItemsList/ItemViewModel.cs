@@ -1,5 +1,6 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 ﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CoreApp.Domain.Entities.ItemAggregate;
 using System.Threading.Tasks;
 using CoreApp.Application.Contracts;
@@ -32,6 +33,9 @@ public partial class ItemViewModel : ItemWithImagesViewModelBase
     }
 
     public bool ShowQuantityManagement { get; }
+
+    [ObservableProperty]
+    private bool isSelected;
 
     [RelayCommand]
     private Task NavigateToItemDetailsAsync()

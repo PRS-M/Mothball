@@ -29,23 +29,27 @@ public sealed class BarcodeShareService : IBarcodeShareService
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(barcode);
 
-        var fileName = $"mothball-barcode-{Slugify(name)}-{Guid.NewGuid():N}.pdf";
-        var document = await documentGenerator.GenerateAsync(
-            [new BarcodeLabelData(name, barcode.Value, barcode.Symbology)],
-            fileName).ConfigureAwait(false);
+        await ShareAsync([new BarcodeLabelData(name, barcode.Value, barcode.Symbology)], $"Share barcode for {name}").ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task ShareAsync(IReadOnlyCollection<BarcodeLabelData> labels, string title)
+    {
+        ArgumentNullException.ThrowIfNull(labels);
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+
+        if (labels.Count == 0)
+        {
+            throw new ArgumentException("At least one barcode label is required.", nameof(labels));
+        }
+
+        var fileName = $"mothball-barcodes-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}Z-{Guid.NewGuid():N}.pdf";
+        var document = await documentGenerator.GenerateAsync(labels, fileName).ConfigureAwait(false);
 
         await MainThread.InvokeOnMainThreadAsync(() =>
             share.RequestAsync(new ShareFileRequest(
-                $"Share barcode for {name}",
+                title,
                 new ShareFile(document.FullPath))));
     }
 
-    private static string Slugify(string value)
-    {
-        var chars = value.Trim()
-            .Select(character => char.IsLetterOrDigit(character) ? character : '-')
-            .ToArray();
-        var slug = new string(chars).Trim('-');
-        return string.IsNullOrWhiteSpace(slug) ? "label" : slug.ToLowerInvariant();
-    }
 }

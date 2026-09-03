@@ -66,8 +66,10 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
         CancellationToken cancellationToken)
     {
         using var document = SKDocument.CreatePdf(fullPath);
-        using var titlePaint = CreateTextPaint(14, SKTypeface.Default, SKColor.Parse("#1C1B1F"));
-        using var valuePaint = CreateTextPaint(9, SKTypeface.Default, SKColor.Parse("#49454F"));
+        using var titleFont = new SKFont(SKTypeface.Default, 14);
+        using var valueFont = new SKFont(SKTypeface.Default, 9);
+        using var titlePaint = CreateTextPaint(SKColor.Parse("#1C1B1F"));
+        using var valuePaint = CreateTextPaint(SKColor.Parse("#49454F"));
         using var borderPaint = new SKPaint
         {
             Color = SKColor.Parse("#79747E"),
@@ -99,7 +101,9 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
                         new SKRect(x, y, x + labelWidth, y + labelHeight),
                         labelList[labelIndex++],
                         borderPaint,
+                        titleFont,
                         titlePaint,
+                        valueFont,
                         valuePaint,
                         temporaryDirectory,
                         cancellationToken).ConfigureAwait(false);
@@ -117,7 +121,9 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
         SKRect bounds,
         BarcodeLabelData label,
         SKPaint borderPaint,
+        SKFont titleFont,
         SKPaint titlePaint,
+        SKFont valueFont,
         SKPaint valuePaint,
         string temporaryDirectory,
         CancellationToken cancellationToken)
@@ -125,7 +131,7 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
         canvas.DrawRoundRect(bounds, 6, 6, borderPaint);
 
         var content = new SKRect(bounds.Left + 10, bounds.Top + 10, bounds.Right - 10, bounds.Bottom - 10);
-        canvas.DrawText(TrimToWidth(label.Name, titlePaint, content.Width), content.Left, content.Top + titlePaint.TextSize, titlePaint);
+        canvas.DrawText(TrimToWidth(label.Name, titleFont, titlePaint, content.Width), content.Left, content.Top + titleFont.Size, SKTextAlign.Left, titleFont, titlePaint);
 
         cancellationToken.ThrowIfCancellationRequested();
         var temporaryPath = Path.Combine(temporaryDirectory, $"barcode-{Guid.NewGuid():N}.png");
@@ -153,7 +159,7 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
             canvas.DrawBitmap(bitmap, imageRect);
 
             var value = $"{label.BarcodeValue} ({label.Symbology})";
-            canvas.DrawText(TrimToWidth(value, valuePaint, content.Width), content.Left, content.Bottom - 4, valuePaint);
+            canvas.DrawText(TrimToWidth(value, valueFont, valuePaint, content.Width), content.Left, content.Bottom - 4, SKTextAlign.Left, valueFont, valuePaint);
         }
         finally
         {
@@ -193,16 +199,16 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
         return new SKRect(left, top, left + drawWidth, top + drawHeight);
     }
 
-    private static string TrimToWidth(string value, SKPaint paint, float width)
+    private static string TrimToWidth(string value, SKFont font, SKPaint paint, float width)
     {
-        if (paint.MeasureText(value) <= width)
+        if (font.MeasureText(value, paint) <= width)
         {
             return value;
         }
 
         const string suffix = "…";
         var result = value;
-        while (result.Length > 1 && paint.MeasureText(result + suffix) > width)
+        while (result.Length > 1 && font.MeasureText(result + suffix, paint) > width)
         {
             result = result[..^1];
         }
@@ -210,12 +216,10 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
         return result + suffix;
     }
 
-    private static SKPaint CreateTextPaint(float size, SKTypeface typeface, SKColor color)
+    private static SKPaint CreateTextPaint(SKColor color)
         => new()
         {
             Color = color,
-            TextSize = size,
-            Typeface = typeface,
             IsAntialias = true,
         };
 }

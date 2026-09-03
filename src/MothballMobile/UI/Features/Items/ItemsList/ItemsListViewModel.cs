@@ -10,6 +10,7 @@ using CoreApp.Application.Specifications;
 using MothballMobile.UI.Features.Items.Consumption;
 using MothballMobile.UI.Features.Items.Quantity;
 using MothballMobile.Infrastructure.Scanning;
+using MothballMobile.Infrastructure.BarcodeDocuments;
 
 namespace MothballMobile.UI.Features.Items.ItemsList;
 
@@ -33,7 +34,11 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private readonly IPopupDefinitionService popupDefinitions;
     private readonly IInventoryChangeTracker inventoryChanges;
     private readonly BarcodeLookupCoordinator barcodeLookup;
+    private readonly IBarcodeShareService? barcodeShare;
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
+
+    [ObservableProperty]
+    private bool isSelectionMode;
 
     public static ReadOnlyCollection<ItemsListFilter> AvailableFilters { get; } = EnumValues.CreateReadOnly<ItemsListFilter>();
 
@@ -66,7 +71,8 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         BarcodeLookupCoordinator barcodeLookup,
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
-        IPagedListLoadDiagnostics? loadDiagnostics = null)
+        IPagedListLoadDiagnostics? loadDiagnostics = null,
+        IBarcodeShareService? barcodeShare = null)
         : base(backgroundTasks, debouncer, loadDiagnostics: loadDiagnostics)
     {
         this.paths = paths;
@@ -80,6 +86,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         this.popupDefinitions = popupDefinitions;
         this.inventoryChanges = inventoryChanges;
         this.barcodeLookup = barcodeLookup ?? throw new ArgumentNullException(nameof(barcodeLookup));
+        this.barcodeShare = barcodeShare;
     }
 
     protected override string SearchOperationName => "Search items";
@@ -98,6 +105,21 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
             DeleteAsync);
     }
 
+    public int SelectedCount => Items.Count(item => item.IsSelected);
+    public bool HasSelection => SelectedCount > 0;
+
+    protected override void OnViewModelAdded(ItemViewModel vm)
+    {
+        vm.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(ItemViewModel.IsSelected))
+            {
+                OnPropertyChanged(nameof(SelectedCount));
+                OnPropertyChanged(nameof(HasSelection));
+            }
+        };
+    }
+
     [RelayCommand]
     private Task NavigateToItemDetailsAsync(Guid itemId)
     {
@@ -113,6 +135,66 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
 
     [RelayCommand]
     private Task ScanToFindAsync() => RunCommandAsync(barcodeLookup.ScanAndNavigateAsync, rethrowOnError: false);
+
+    [RelayCommand]
+    private void EnterSelectionMode() => IsSelectionMode = true;
+
+    [RelayCommand]
+    private void SelectAllLoaded()
+    {
+        foreach (var item in Items)
+        {
+            item.IsSelected = true;
+        }
+    }
+
+    [RelayCommand]
+    private void ClearSelection()
+    {
+        foreach (var item in Items)
+        {
+            item.IsSelected = false;
+        }
+    }
+
+    [RelayCommand]
+    private void CancelSelection()
+    {
+        ClearSelection();
+        IsSelectionMode = false;
+    }
+
+    [RelayCommand]
+    private Task ShareSelectedAsync()
+    {
+        var labels = Items
+            .Where(item => item.IsSelected && item.Item.Barcode is not null)
+            .Select(item => new BarcodeLabelData(
+                item.Name,
+                item.Item.Barcode!.Value,
+                item.Item.Barcode.Symbology))
+            .ToArray();
+
+        return barcodeShare is null || labels.Length == 0
+            ? Task.CompletedTask
+            : RunCommandAsync(
+                () => barcodeShare.ShareAsync(labels, "Share item barcodes"),
+                rethrowOnError: false);
+    }
+
+    [RelayCommand]
+    private Task ShareAllMatchingAsync()
+        => RunCommandAsync(async () =>
+        {
+            var items = await itemListQueries.QueryAsync(GetItemQueryFilter(), Query, null, null);
+            var labels = items.Where(item => item.Item.Barcode is not null)
+                .Select(item => new BarcodeLabelData(item.Item.Name, item.Item.Barcode!.Value, item.Item.Barcode.Symbology))
+                .ToArray();
+            if (labels.Length > 0 && barcodeShare is not null)
+            {
+                await barcodeShare.ShareAsync(labels, "Share item barcodes");
+            }
+        }, rethrowOnError: false);
 
     protected override Task<List<InventorySnapshot>> LoadPageAsync(string? query, int pageNumber, int pageSize)
         => itemListQueries.QueryAsync(

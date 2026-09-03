@@ -5,12 +5,16 @@
                 xmlns:vm="clr-namespace:MothballMobile.UI.Features.Containers.ContainersList"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 x:Class="MothballMobile.UI.Features.Containers.ContainersList.ContainersListPage"
+                x:Name="ContainersPage"
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ContainerListViewModel"
                 Title="{x:Static strings:AppResources.Containers}"
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{x:Static strings:AppResources.Select}"
+                     Command="{Binding EnterSelectionModeCommand}"
+                     Order="Primary" />
         <ToolbarItem Priority="1"
                      Order="Primary"
                      Command="{Binding ScanToFindCommand}">
@@ -34,7 +38,7 @@
     </ContentPage.ToolbarItems>
 
     <Grid Padding="12"
-            RowDefinitions="Auto,Auto,*">
+            RowDefinitions="Auto,Auto,Auto,*">
         <Grid Grid.Row="0"
               ColumnDefinitions="*,Auto"
               ColumnSpacing="12">
@@ -85,7 +89,16 @@
                      Text="{Binding Query}"
                      SearchCommand="{Binding SearchCommand}" />
 
-        <Grid Grid.Row="2">
+        <HorizontalStackLayout Grid.Row="2" Spacing="8" IsVisible="{Binding IsSelectionMode}">
+            <Label Text="{Binding SelectedCount}" VerticalOptions="Center" />
+            <Button Text="{x:Static strings:AppResources.SelectAllLoaded}" Style="{StaticResource OutlinedButton}" Command="{Binding SelectAllLoadedCommand}" />
+            <Button Text="{x:Static strings:AppResources.ClearSelection}" Style="{StaticResource OutlinedButton}" Command="{Binding ClearSelectionCommand}" />
+            <Button Text="{x:Static strings:AppResources.Share}" Style="{StaticResource TonalButton}" Command="{Binding ShareSelectedCommand}" IsEnabled="{Binding HasSelection}" />
+            <Button Text="{x:Static strings:AppResources.ShareAllMatching}" Style="{StaticResource OutlinedButton}" Command="{Binding ShareAllMatchingCommand}" />
+            <Button Text="{x:Static strings:AppResources.Cancel}" Style="{StaticResource OutlinedButton}" Command="{Binding CancelSelectionCommand}" />
+        </HorizontalStackLayout>
+
+        <Grid Grid.Row="3">
             <RefreshView IsRefreshing="{Binding IsRefreshing}"
                          Command="{Binding RefreshCommand}">
                 <RefreshView.Triggers>
@@ -115,15 +128,17 @@
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="vm:ContainerViewModel">
-                            <controls:ContainerTile
-                                Command="{Binding NavigateCommand}"
-                                Name="{Binding Name}"
-                                Notes="{Binding Notes}"
-                                ItemTypesCount="{Binding ItemTypesStoredText}"
-                                ShowItemTypesCount="{Binding ShowQuantityManagement}"
-                                ItemCount="{Binding ItemsStoredText}"
-                                ImagePaths="{Binding ImagePaths}"
-                                ImageSize="125" />
+                            <Grid>
+                                <controls:ContainerTile Command="{Binding NavigateCommand}"
+                                    Name="{Binding Name}" Notes="{Binding Notes}"
+                                    ItemTypesCount="{Binding ItemTypesStoredText}"
+                                    ShowItemTypesCount="{Binding ShowQuantityManagement}"
+                                    ItemCount="{Binding ItemsStoredText}"
+                                    ImagePaths="{Binding ImagePaths}" ImageSize="125" />
+                                <CheckBox IsVisible="{Binding Source={x:Reference ContainersPage}, Path=BindingContext.IsSelectionMode}"
+                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                          HorizontalOptions="End" VerticalOptions="Start" Margin="8" />
+                            </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
