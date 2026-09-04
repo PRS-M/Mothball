@@ -35,6 +35,7 @@ public static class ServiceCollectionExtensions
             .AddPresentationInfrastructure()
             .AddBackupServices()
             .AddSingleton<SyncOrchestrator>()
+            .AddSingleton<TombstoneService>()
             .AddSingleton<CanonicalInventoryCommandService>()
             .AddSingleton<ReceiveStockHandler>()
             .AddSingleton<ISyncClient, NoopSyncClient>()

@@ -1,7 +1,7 @@
 namespace CoreApp.Application.Features.Sync;
 
 /// <summary>Coordinates durable push/pull ordering without depending on a transport.</summary>
-public sealed class SyncOrchestrator(ISyncOperationStore store, ISyncClient client)
+public sealed class SyncOrchestrator(ISyncOperationStore store, ISyncClient client, ISyncBootstrapApplier? bootstrapApplier = null)
 {
     /// <summary>Pushes pending operations, then applies remote pages before advancing the cursor.</summary>
     public async Task SynchronizeAsync(Guid workspaceId, int batchSize = 50, int pageSize = 100, CancellationToken cancellationToken = default)
@@ -12,6 +12,8 @@ public sealed class SyncOrchestrator(ISyncOperationStore store, ISyncClient clie
         if (state?.BootstrapRequired == true)
         {
             var bootstrap = await client.BootstrapAsync(workspaceId, cancellationToken).ConfigureAwait(false);
+            if (bootstrapApplier is not null)
+                await bootstrapApplier.ApplyAsync(workspaceId, bootstrap, cancellationToken).ConfigureAwait(false);
             await store.ApplyRemotePageAsync(workspaceId, new SyncChangePage([], bootstrap.ContinuationCursor, false), cancellationToken).ConfigureAwait(false);
             state = new WorkspaceSyncState(workspaceId, state.DeviceId, bootstrap.ContinuationCursor, DateTimeOffset.UtcNow, "Ready", false);
             await store.SaveSyncStateAsync(state, cancellationToken).ConfigureAwait(false);

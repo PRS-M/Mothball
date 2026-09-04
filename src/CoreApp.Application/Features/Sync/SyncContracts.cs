@@ -44,6 +44,12 @@ public sealed record SyncChangePage(IReadOnlyList<SyncChange> Changes, string? N
 /// <summary>Complete bootstrap response for a new or expired client cursor.</summary>
 public sealed record SyncBootstrapResult(string SnapshotId, long ServerRevision, string SnapshotPayload, string? ContinuationCursor);
 
+/// <summary>Applies a complete bootstrap snapshot before the local cursor advances.</summary>
+public interface ISyncBootstrapApplier
+{
+    Task ApplyAsync(Guid workspaceId, SyncBootstrapResult bootstrap, CancellationToken cancellationToken = default);
+}
+
 /// <summary>Backend-neutral synchronization transport.</summary>
 public interface ISyncClient
 {
