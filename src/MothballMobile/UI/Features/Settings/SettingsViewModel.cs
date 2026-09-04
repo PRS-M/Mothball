@@ -31,4 +31,8 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private Task NavigateToBackgroundOperationsAsync()
         => nav.GoToAsync(NavigationRoutes.BackgroundOperations);
+
+    [RelayCommand]
+    private Task NavigateToWmsAsync()
+        => nav.GoToAsync(NavigationRoutes.WmsHome);
 }

@@ -257,6 +257,16 @@ internal static class ResourceKeyMap
         "dot net bot in a hovercraft number nine" => "DotNetBotInAHovercraftNumberNine",
         "e.g. 1" => "EG1",
         "{0} ({1})" => "Text01",
+        "Experimental WMS" => "ExperimentalWms",
+        "Receive stock into a canonical warehouse location." => "ReceiveStockIntoACanonicalWarehouseLocation",
+        "Enable Experimental WMS in Settings to use this workspace." => "EnableExperimentalWmsInSettingsToUseThisWorkspace",
+        "Receive stock" => "ReceiveStock",
+        "Item ID" => "ItemId",
+        "Location ID" => "LocationId",
+        "Quantity" => "Quantity",
+        "Reason" => "Reason",
+        "Enter valid item, location, and quantity values." => "EnterValidItemLocationAndQuantityValues",
+        "Received {0} units. Operation: {1}" => "ReceivedUnitsOperation",
         _ => key,
     };
 }

@@ -34,6 +34,20 @@
                 </VerticalStackLayout>
             </Border>
 
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Experimental WMS" Style="{StaticResource HeadlineSmall}" TextColor="{DynamicResource OnSurface}" />
+                    <Label Text="Use canonical warehouse locations and receiving workflows." Style="{StaticResource BodyMedium}" TextColor="{DynamicResource OnSurfaceVariant}" />
+                    <Button Text="Enable experimental WMS"
+                            Style="{StaticResource OutlinedButton}"
+                            IsVisible="{Binding Appearance.IsWmsDisabled}"
+                            Command="{Binding Appearance.EnableWmsExperimentalModeCommand}" />
+                    <Button Text="Open WMS workspace"
+                            IsVisible="{Binding Appearance.IsWmsExperimentalMode}"
+                            Command="{Binding NavigateToWmsCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
                         <Border Style="{StaticResource SectionCard}">
                                 <VerticalStackLayout Spacing="10">
                                         <Label Text="{x:Static strings:AppResources.ThemeMode}"

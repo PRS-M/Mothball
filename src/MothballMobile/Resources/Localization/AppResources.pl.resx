@@ -302,4 +302,13 @@
   <data name="BrowseYourStorage" xml:space="preserve"><value>Przeglądaj swoje miejsca przechowywania</value></data>
   <data name="AllItemsAcrossContainers" xml:space="preserve"><value>Wszystkie przedmioty we wszystkich pojemnikach</value></data>
   <data name="RestartMothballToApplyTheNewLanguage" xml:space="preserve"><value>Uruchom ponownie Mothball, aby zastosować nowy język.</value></data>
+  <data name="ExperimentalWms" xml:space="preserve"><value>Eksperymentalny WMS</value></data>
+  <data name="ReceiveStockIntoACanonicalWarehouseLocation" xml:space="preserve"><value>Przyjmij zapas do kanonicznej lokalizacji magazynowej.</value></data>
+  <data name="EnableExperimentalWmsInSettingsToUseThisWorkspace" xml:space="preserve"><value>Włącz eksperymentalny WMS w Ustawieniach, aby używać tego obszaru roboczego.</value></data>
+  <data name="ReceiveStock" xml:space="preserve"><value>Przyjmij zapas</value></data>
+  <data name="ItemId" xml:space="preserve"><value>Identyfikator przedmiotu</value></data>
+  <data name="LocationId" xml:space="preserve"><value>Identyfikator lokalizacji</value></data>
+  <data name="Reason" xml:space="preserve"><value>Powód</value></data>
+  <data name="EnterValidItemLocationAndQuantityValues" xml:space="preserve"><value>Wprowadź prawidłowe wartości przedmiotu, lokalizacji i ilości.</value></data>
+  <data name="ReceivedUnitsOperation" xml:space="preserve"><value>Przyjęto {0} jednostek. Operacja: {1}</value></data>
 </root>

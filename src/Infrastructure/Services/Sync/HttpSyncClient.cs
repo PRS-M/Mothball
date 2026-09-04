@@ -6,7 +6,7 @@ using CoreApp.Application.Features.Sync;
 namespace Infrastructure.Services.Sync;
 
 /// <summary>Optional HTTP adapter for the backend-neutral synchronization client.</summary>
-public sealed class HttpSyncClient(HttpClient httpClient, Uri endpoint) : ISyncClient
+public sealed class HttpSyncClient(HttpClient httpClient, Uri endpoint, ISyncTokenProvider? tokenProvider = null, IDeviceIdentityProvider? deviceIdentity = null) : ISyncClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -23,6 +23,12 @@ public sealed class HttpSyncClient(HttpClient httpClient, Uri endpoint) : ISyncC
     {
         using var request = new HttpRequestMessage(method, new Uri(endpoint, path));
         request.Headers.Add("X-Correlation-Id", Guid.NewGuid().ToString("N"));
+        if (deviceIdentity is not null) request.Headers.Add("X-Device-Id", deviceIdentity.GetDeviceId().ToString("D"));
+        if (tokenProvider is not null)
+        {
+            var token = await tokenProvider.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(token)) request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
         if (body is not null) request.Content = JsonContent.Create(body, options: JsonOptions);
         try
         {

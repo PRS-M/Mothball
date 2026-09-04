@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Wms"
+                x:Class="MothballMobile.UI.Features.Wms.WmsHomePage"
+                x:DataType="vm:WmsHomeViewModel"
+                Title="{Binding WmsTitle}"
+                Background="{DynamicResource Surface}">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+            <Label Text="{Binding WmsTitle}" Style="{StaticResource HeadlineSmall}" TextColor="{DynamicResource OnSurface}" />
+            <Label Text="{Binding WmsDescription}" Style="{StaticResource BodyMedium}" TextColor="{DynamicResource OnSurfaceVariant}" />
+            <Border IsVisible="{Binding IsWmsEnabled}" Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Entry Placeholder="{Binding ItemIdLabel}" Text="{Binding ItemId}" Keyboard="Text" />
+                    <Entry Placeholder="{Binding LocationIdLabel}" Text="{Binding LocationId}" Keyboard="Text" />
+                    <Entry Placeholder="{Binding QuantityLabel}" Text="{Binding Quantity}" Keyboard="Numeric" />
+                    <Entry Placeholder="{Binding ReasonLabel}" Text="{Binding Reason}" />
+                    <Button Text="{Binding ReceiveButtonText}" Command="{Binding ReceiveCommand}" IsEnabled="{Binding IsNotBusy}" />
+                    <Label Text="{Binding Status}" TextColor="{DynamicResource OnSurfaceVariant}" />
+                </VerticalStackLayout>
+            </Border>
+            <Label Text="{Binding DisabledMessage}" IsVisible="{Binding IsWmsDisabled}" Style="{StaticResource BodyMedium}" TextColor="{DynamicResource OnSurfaceVariant}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</views:BasePage>

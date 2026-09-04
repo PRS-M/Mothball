@@ -303,4 +303,13 @@
   <data name="BrowseYourStorage" xml:space="preserve"><value>Explora tu almacenamiento</value></data>
   <data name="AllItemsAcrossContainers" xml:space="preserve"><value>Todos los artículos de los contenedores</value></data>
   <data name="RestartMothballToApplyTheNewLanguage" xml:space="preserve"><value>Reinicia Mothball para aplicar el nuevo idioma.</value></data>
+  <data name="ExperimentalWms" xml:space="preserve"><value>WMS experimental</value></data>
+  <data name="ReceiveStockIntoACanonicalWarehouseLocation" xml:space="preserve"><value>Recibe existencias en una ubicación de almacén canónica.</value></data>
+  <data name="EnableExperimentalWmsInSettingsToUseThisWorkspace" xml:space="preserve"><value>Activa el WMS experimental en Ajustes para usar este espacio de trabajo.</value></data>
+  <data name="ReceiveStock" xml:space="preserve"><value>Recibir existencias</value></data>
+  <data name="ItemId" xml:space="preserve"><value>ID del artículo</value></data>
+  <data name="LocationId" xml:space="preserve"><value>ID de ubicación</value></data>
+  <data name="Reason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="EnterValidItemLocationAndQuantityValues" xml:space="preserve"><value>Introduce valores válidos para el artículo, la ubicación y la cantidad.</value></data>
+  <data name="ReceivedUnitsOperation" xml:space="preserve"><value>Se recibieron {0} unidades. Operación: {1}</value></data>
 </root>

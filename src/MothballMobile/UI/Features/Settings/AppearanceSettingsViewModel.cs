@@ -163,6 +163,28 @@ public partial class AppearanceSettingsViewModel : ObservableObject
         }
     }
 
+    public bool IsWmsExperimentalMode
+    {
+        get => applicationSettings.IsWmsExperimentalMode;
+        set
+        {
+            if (applicationSettings.IsWmsExperimentalMode == value)
+            {
+                return;
+            }
+
+            applicationSettings.IsWmsExperimentalMode = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsWmsDisabled));
+            OnPropertyChanged(nameof(IsAdvancedAppMode));
+        }
+    }
+
+    public bool IsWmsDisabled => !IsWmsExperimentalMode;
+
+    [RelayCommand]
+    private void EnableWmsExperimentalMode() => IsWmsExperimentalMode = true;
+
     public bool IsBarcodeExtendedMode
     {
         get => applicationSettings.IsBarcodeExtendedMode;

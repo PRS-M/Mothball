@@ -22,6 +22,7 @@ using MothballMobile.UI.Features.Items.ItemLocations;
 using MothballMobile.UI.Features.Items.ItemsList;
 using MothballMobile.UI.Features.Settings;
 using MothballMobile.UI.Features.Scanning;
+using MothballMobile.UI.Features.Wms;
 using CoreApp.Application.Features.Barcodes.Commands;
 
 namespace MothballMobile.Composition;
@@ -64,6 +65,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<AppStartupCoordinator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();
         services.AddSingleton<IDeviceIdentityProvider, DeviceIdentityProvider>();
+        services.AddSingleton<ISyncTokenProvider, SecureSyncTokenProvider>();
         services.AddSingleton<ILocalizationService, LocalizationService>();
 
         return services;
@@ -258,6 +260,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<BackupSigningKeySettingsViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<BarcodeScannerViewModel>();
+        services.AddTransient<WmsHomeViewModel>();
 
         return services;
     }
