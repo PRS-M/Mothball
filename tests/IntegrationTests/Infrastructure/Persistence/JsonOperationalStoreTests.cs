@@ -119,6 +119,27 @@ public class JsonOperationalStoreTests
     }
 
     [Test]
+    public async Task UpdateAsync_FirstWriteRecoversWithoutReenteringWriteLock()
+    {
+        var files = new InMemoryFileHandler();
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        var update = store.UpdateAsync(state =>
+        {
+            state.Items.Add(new JsonItemRow { ItemId = item.ItemId, Name = item.Name });
+            return Task.CompletedTask;
+        });
+
+        var completed = await Task.WhenAny(update, Task.Delay(TimeSpan.FromSeconds(2)));
+        Assert.That(completed, Is.SameAs(update));
+        await update;
+
+        var state = await store.LoadAsync();
+        Assert.That(state.Items.Select(row => row.ItemId), Is.EquivalentTo(new[] { item.ItemId }));
+    }
+
+    [Test]
     public async Task Rollback_RevertsLastCommit_MetadataOnly()
     {
         var files = new InMemoryFileHandler();

@@ -30,12 +30,23 @@ public sealed partial class JsonInventoryStore
 
     public async Task<bool> TryRecoverAsync()
     {
+        await writeLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            return await TryRecoverUnlockedAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            writeLock.Release();
+        }
+    }
+
+    private async Task<bool> TryRecoverUnlockedAsync()
+    {
         // Ensure there is at least one valid manifest+slot.
         // If none exist, initialize empty store into slot A.
         var active = await manifestManager.TryGetActiveAsync();
         if (active is not null) return true;
-
-        await writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
             active = await manifestManager.TryGetActiveAsync();
@@ -58,10 +69,6 @@ public sealed partial class JsonInventoryStore
         {
             logger.LogWarning(ex, "JSON inventory store recovery failed.");
             return false;
-        }
-        finally
-        {
-            writeLock.Release();
         }
     }
 
@@ -132,7 +139,7 @@ public sealed partial class JsonInventoryStore
             var active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
             if (active is null)
             {
-                var recovered = await TryRecoverAsync().ConfigureAwait(false);
+                var recovered = await TryRecoverUnlockedAsync().ConfigureAwait(false);
                 if (!recovered) throw new IOException("Failed to initialize JSON store.");
                 active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
                 if (active is null) throw new IOException("Failed to initialize JSON store.");
