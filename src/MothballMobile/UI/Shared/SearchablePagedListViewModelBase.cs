@@ -13,6 +13,7 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
     protected readonly IBackgroundTaskObserver backgroundTasks;
     private readonly IDebouncer debouncer;
     private string? activeQuery;
+    private int searchRequestVersion;
     private bool disposed;
 
     [ObservableProperty]
@@ -44,12 +45,23 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
     [RelayCommand]
     protected async Task SearchAsync()
     {
+        var requestVersion = Interlocked.Increment(ref searchRequestVersion);
         var requestedQuery = string.IsNullOrWhiteSpace(Query) ? null : Query.Trim();
+        if (IsBusy)
+        {
+            return;
+        }
+
         await RunCommandAsync(async () =>
         {
             activeQuery = requestedQuery;
             await ReplaceWithFirstPagedAsync();
         });
+
+        if (requestVersion != Volatile.Read(ref searchRequestVersion))
+        {
+            await SearchAsync();
+        }
     }
 
     partial void OnQueryChanged(string value)
