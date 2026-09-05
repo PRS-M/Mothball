@@ -47,7 +47,11 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
             cancellationToken.ThrowIfCancellationRequested();
 
             var existingState = CreateExistingState(state);
-            var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState, options.ConflictPolicy);
+            var plan = InventoryBackupRestorePlanner.BuildPlan(
+                backup,
+                existingState,
+                options.ConflictPolicy,
+                options.OverwriteExistingQuantities);
             ApplyPlan(state, plan, cancellationToken);
             result = plan.Result;
 
@@ -88,7 +92,8 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                     item.Name,
                     item.Description,
                     item.BarcodeValue,
-                    item.BarcodeSymbology))
+                    item.BarcodeSymbology,
+                    state.Inventories.FirstOrDefault(i => i.ItemId == item.ItemId)?.TotalQuantity ?? 1))
                 .ToList(),
             containerImages,
             itemImages,
@@ -170,15 +175,24 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                     BarcodeValue = item.BarcodeValue,
                     BarcodeSymbology = item.BarcodeSymbology,
                 });
-                UpsertInventory(state, item.ItemId, item.TotalQuantity);
+                if (plan.ItemIdsWithQuantityOverwrite.Contains(item.ItemId))
+                {
+                    UpsertInventory(state, item.ItemId, item.TotalQuantity);
+                }
                 continue;
             }
 
-            existing.Name = item.Name;
-            existing.Description = item.Description;
-            existing.BarcodeValue = item.BarcodeValue;
-            existing.BarcodeSymbology = item.BarcodeSymbology;
-            UpsertInventory(state, item.ItemId, item.TotalQuantity);
+            if (plan.ItemIdsWithMetadataUpdate.Contains(item.ItemId))
+            {
+                existing.Name = item.Name;
+                existing.Description = item.Description;
+                existing.BarcodeValue = item.BarcodeValue;
+                existing.BarcodeSymbology = item.BarcodeSymbology;
+            }
+            if (plan.ItemIdsWithQuantityOverwrite.Contains(item.ItemId))
+            {
+                UpsertInventory(state, item.ItemId, item.TotalQuantity);
+            }
         }
 
         foreach (var relation in plan.RelationsToInsert)

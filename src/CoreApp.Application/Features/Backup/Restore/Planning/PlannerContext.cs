@@ -47,4 +47,7 @@ internal sealed class PlannerContext
     public int SkippedInvalidRelations { get; set; }
     public int SkippedImagesWithMissingOwner { get; set; }
     public int AddedRelationQuantity { get; set; }
+    public int OverwrittenItemQuantities { get; set; }
+    public HashSet<Guid> ItemIdsWithQuantityOverwrite { get; } = [];
+    public HashSet<Guid> ItemIdsWithMetadataUpdate { get; } = [];
 }

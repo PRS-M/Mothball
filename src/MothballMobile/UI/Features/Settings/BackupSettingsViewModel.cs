@@ -82,12 +82,14 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
             if (policy is null)
                 return;
 
+            var overwriteQuantities = await SelectOverwriteQuantitiesAsync();
+
             var fileName = await SelectBackupFileAsync();
             if (string.IsNullOrWhiteSpace(fileName))
                 return;
 
             await TryWithAlertAsync(
-                () => RestoreFromJsonFileNameAsync(fileName, policy.Value),
+                () => RestoreFromJsonFileNameAsync(fileName, policy.Value, overwriteQuantities),
                 "Failed to import inventory backup from JSON file {FileName}.",
                 PopupDefinitions.RestoreFailed,
                 fileName);
@@ -103,6 +105,8 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
             if (policy is null)
                 return;
 
+            var overwriteQuantities = await SelectOverwriteQuantitiesAsync();
+
             var file = await PickBackupFileAsync("Choose JSON backup", JsonBackupFileType);
             if (file is null)
                 return;
@@ -114,7 +118,7 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
                     using var reader = new StreamReader(stream);
                     var backupJson = await reader.ReadToEndAsync();
 
-                    await RestoreJsonAsync(backupJson, policy.Value, file.FileName);
+                    await RestoreJsonAsync(backupJson, policy.Value, overwriteQuantities, file.FileName);
                 },
                 "Failed to import inventory backup from external JSON file {FileName}.",
                 PopupDefinitions.RestoreFailed,
@@ -144,6 +148,8 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
             if (policy is null)
                 return;
 
+            var overwriteQuantities = await SelectOverwriteQuantitiesAsync();
+
             var fileName = await SelectZipBackupFileAsync();
             if (string.IsNullOrWhiteSpace(fileName))
                 return;
@@ -152,7 +158,7 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
                 async () =>
                 {
                     var backupZip = await backupWorkflows.ReadZipAsync(fileName);
-                    await RestoreZipAsync(backupZip, policy.Value, fileName);
+                    await RestoreZipAsync(backupZip, policy.Value, overwriteQuantities, fileName);
                 },
                 "Failed to import inventory backup from ZIP file {FileName}.",
                 PopupDefinitions.RestoreFailed,
@@ -169,6 +175,8 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
             if (policy is null)
                 return;
 
+            var overwriteQuantities = await SelectOverwriteQuantitiesAsync();
+
             var file = await PickBackupFileAsync("Choose ZIP backup", ZipBackupFileType);
             if (file is null)
                 return;
@@ -180,7 +188,7 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
                     using var memory = new MemoryStream();
                     await stream.CopyToAsync(memory);
 
-                    await RestoreZipAsync(memory.ToArray(), policy.Value, file.FileName);
+                    await RestoreZipAsync(memory.ToArray(), policy.Value, overwriteQuantities, file.FileName);
                 },
                 "Failed to import inventory backup from external ZIP file {FileName}.",
                 PopupDefinitions.RestoreFailed,
@@ -246,18 +254,22 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
     private async Task<InventoryBackupConflictPolicy?> SelectRestorePolicyAsync()
         => await Popup.SelectValueOptionAsync(PopupDefinitions.RestorePolicyPicker());
 
-    private async Task RestoreFromJsonFileNameAsync(string fileName, InventoryBackupConflictPolicy policy)
+    private Task<bool> SelectOverwriteQuantitiesAsync()
+        => Popup.ConfirmAsync(PopupDefinitions.OverwriteExistingQuantities());
+
+    private async Task RestoreFromJsonFileNameAsync(string fileName, InventoryBackupConflictPolicy policy, bool overwriteQuantities)
     {
         var backupJson = await backupWorkflows.ReadJsonAsync(fileName);
-        await RestoreJsonAsync(backupJson, policy, fileName);
+        await RestoreJsonAsync(backupJson, policy, overwriteQuantities, fileName);
     }
 
     private async Task RestoreJsonAsync(
         string backupJson,
         InventoryBackupConflictPolicy policy,
+        bool overwriteQuantities,
         string fileName)
     {
-        var result = await backupWorkflows.RestoreJsonAsync(backupJson, policy);
+        var result = await backupWorkflows.RestoreJsonAsync(backupJson, policy, overwriteQuantities);
 
         await Popup.ShowAlertAsync(PopupDefinitions.RestoreCompleted(BuildRestoreSummary(result, policy, fileName)));
     }
@@ -265,9 +277,10 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
     private async Task RestoreZipAsync(
         byte[] backupZip,
         InventoryBackupConflictPolicy policy,
+        bool overwriteQuantities,
         string fileName)
     {
-        var restore = await backupWorkflows.RestoreZipAsync(backupZip, policy);
+        var restore = await backupWorkflows.RestoreZipAsync(backupZip, policy, overwriteQuantities);
 
         await Popup.ShowAlertAsync(PopupDefinitions.RestoreCompleted(BuildRestoreSummary(restore.Result, policy, fileName, restore.RestoredPhotoFiles)));
     }
@@ -343,6 +356,7 @@ public partial class BackupSettingsViewModel : SettingsSectionViewModelBase
         return $"Mode: {policy}\nFile: {fileName}\n\n" +
                $"Added: containers {result.AddedContainers}, items {result.AddedItems}, relations {result.AddedRelations}, images {result.AddedImages}\n" +
                $"Updated: containers {result.UpdatedContainers}, items {result.UpdatedItems}\n" +
+               $"Overwritten quantities: {result.OverwrittenItemQuantities}\n" +
                $"Deleted: containers {result.DeletedContainers}, items {result.DeletedItems}, relations {result.DeletedRelations}, images {result.DeletedImages}\n" +
                $"Skipped: containers {result.SkippedExistingContainers}, items {result.SkippedExistingItems}, relations {result.SkippedExistingRelations}, images {result.SkippedExistingImages}" +
                photoSummary;

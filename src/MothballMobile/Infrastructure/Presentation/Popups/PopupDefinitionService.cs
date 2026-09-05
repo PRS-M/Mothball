@@ -80,6 +80,14 @@ public sealed class PopupDefinitionService : IPopupDefinitionService
             });
 
     /// <inheritdoc />
+    public ConfirmationPopupDefinition OverwriteExistingQuantities()
+        => new(
+            L("Overwrite existing quantities?"),
+            L("This may replace newer stock counts with values from the backup."),
+            L("Overwrite"),
+            L("Keep current"));
+
+    /// <inheritdoc />
     public AlertPopupDefinition NoBackupsFound()
         => new(
             L("No backups found"),

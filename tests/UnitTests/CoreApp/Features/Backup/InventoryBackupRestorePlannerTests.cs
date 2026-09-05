@@ -6,6 +6,72 @@ namespace Mothball.Tests.Unit.Core.Features.Backup;
 public class InventoryBackupRestorePlannerTests
 {
     [Test]
+    public void BuildPlan_ExistingQuantityIsPreservedUnlessOverwriteIsRequested()
+    {
+        var itemId = Guid.NewGuid();
+        var existing = new InventoryBackupExistingState(
+            [],
+            [new InventoryBackupExistingItem(itemId, "Item", "Description", TotalQuantity: 8)],
+            [],
+            [],
+            []);
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Items = [new InventoryBackupItem { ItemId = itemId, Name = "Item", Description = "Description", TotalQuantity = 12 }],
+            },
+        };
+
+        var preserved = InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddAndUpsertMetadata);
+        var overwritten = InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.AddOnly,
+            overwriteExistingQuantities: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(preserved.ItemsToUpdate, Is.Empty);
+            Assert.That(overwritten.ItemsToUpdate, Has.Count.EqualTo(1));
+            Assert.That(overwritten.Result.OverwrittenItemQuantities, Is.EqualTo(1));
+            Assert.That(overwritten.ItemIdsWithQuantityOverwrite, Contains.Item(itemId));
+            Assert.That(overwritten.ItemIdsWithMetadataUpdate, Does.Not.Contain(itemId));
+        });
+    }
+
+    [Test]
+    public void BuildPlan_QuantityOverwriteRejectsAssignedQuantityAboveBackupTotal()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var existing = new InventoryBackupExistingState(
+            [new InventoryBackupExistingContainer(containerId, "Container", "")],
+            [new InventoryBackupExistingItem(itemId, "Item", "", TotalQuantity: 10)],
+            [],
+            [],
+            [new InventoryBackupExistingRelation(containerId, itemId, 2)]);
+        var backup = new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = containerId, Name = "Container" }],
+                Items = [new InventoryBackupItem { ItemId = itemId, Name = "Item", TotalQuantity = 3 }],
+                Relations = [new InventoryBackupRelation { ContainerId = containerId, ItemId = itemId, Quantity = 4 }],
+            },
+        };
+
+        Assert.Throws<InvalidDataException>(() => InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existing,
+            InventoryBackupConflictPolicy.StrictFullSync,
+            overwriteExistingQuantities: true));
+    }
+
+    [Test]
     public void BuildPlan_InventoryMergePolicy_UsesFormatAgnosticPolicy()
     {
         var containerId = Guid.NewGuid();

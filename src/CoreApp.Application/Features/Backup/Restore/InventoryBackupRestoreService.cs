@@ -71,7 +71,8 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
                     i.Name,
                     i.Description,
                     i.Barcode?.Value ?? string.Empty,
-                    i.Barcode is null ? null : (int)i.Barcode.Symbology))
+                    i.Barcode is null ? null : (int)i.Barcode.Symbology,
+                    existingInventory.FirstOrDefault(snapshot => snapshot.Item.ItemId == i.ItemId)?.TotalQuantity ?? 1))
                 .ToList(),
             existingContainers
                 .SelectMany(c => c.Photos.Select(p => new InventoryBackupImageOwnership(c.ContainerId, p.ImageId)))
@@ -84,7 +85,11 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
                     new InventoryBackupExistingRelation(allocation.ContainerId, snapshot.Item.ItemId, allocation.Quantity)))
                 .ToList());
 
-        var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState, options.ConflictPolicy);
+        var plan = InventoryBackupRestorePlanner.BuildPlan(
+            backup,
+            existingState,
+            options.ConflictPolicy,
+            options.OverwriteExistingQuantities);
 
         foreach (var container in plan.ContainersToInsert)
         {
@@ -112,10 +117,16 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
         foreach (var item in plan.ItemsToUpdate)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await inventoryCommands.UpdateItemAsync(CreateItem(item))
-                .ConfigureAwait(false);
-            await inventoryCommands.SaveItemInventoryAsync(new ItemInventory(item.ItemId, item.TotalQuantity))
-                .ConfigureAwait(false);
+            if (plan.ItemIdsWithMetadataUpdate.Contains(item.ItemId))
+            {
+                await inventoryCommands.UpdateItemAsync(CreateItem(item))
+                    .ConfigureAwait(false);
+            }
+            if (plan.ItemIdsWithQuantityOverwrite.Contains(item.ItemId))
+            {
+                await inventoryCommands.SaveItemInventoryAsync(new ItemInventory(item.ItemId, item.TotalQuantity))
+                    .ConfigureAwait(false);
+            }
         }
 
         foreach (var relation in plan.RelationsToInsert)

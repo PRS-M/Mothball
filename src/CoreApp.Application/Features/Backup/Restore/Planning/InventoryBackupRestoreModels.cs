@@ -14,7 +14,8 @@ public sealed record InventoryBackupExistingItem(
     string Name,
     string Description,
     string BarcodeValue = "",
-    int? BarcodeSymbology = null);
+    int? BarcodeSymbology = null,
+    int TotalQuantity = 1);
 
 public sealed record InventoryBackupExistingRelation(Guid ContainerId, Guid ItemId, int Quantity);
 
@@ -47,4 +48,8 @@ public sealed record InventoryBackupRestorePlan(
     List<InventoryBackupPlannedRelationDelete> RelationsToDelete,
     List<InventoryBackupPlannedImageInsert> ImagesToInsert,
     List<InventoryBackupPlannedImageDelete> ImagesToDelete,
-    InventoryBackupRestoreResult Result);
+    InventoryBackupRestoreResult Result)
+{
+    public IReadOnlySet<Guid> ItemIdsWithQuantityOverwrite { get; init; } = new HashSet<Guid>();
+    public IReadOnlySet<Guid> ItemIdsWithMetadataUpdate { get; init; } = new HashSet<Guid>();
+}

@@ -13,11 +13,13 @@ public interface IInventoryBackupWorkflowService
     Task<InventoryBackupRestoreResult> RestoreJsonAsync(
         string backupJson,
         InventoryBackupConflictPolicy conflictPolicy,
+        bool overwriteExistingQuantities = false,
         CancellationToken cancellationToken = default);
 
     Task<InventoryBackupZipRestoreResult> RestoreZipAsync(
         byte[] backupZip,
         InventoryBackupConflictPolicy conflictPolicy,
+        bool overwriteExistingQuantities = false,
         CancellationToken cancellationToken = default);
 
     IReadOnlyList<string> GetBackupFileNames(string searchPattern);

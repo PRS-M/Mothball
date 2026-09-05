@@ -106,12 +106,14 @@ This removes duplicate decision logic between the generic and SQLite restore ser
 - Inserts missing relation quantity deltas.
 - Inserts missing images.
 - Existing rows are not updated.
+- Existing item quantities are preserved.
 
 ### AddAndUpsertMetadata
 
 - Same as AddOnly for inserts.
 - Updates existing container metadata (`Name`, `Notes`) when changed.
 - Updates existing item metadata (`Name`, `Description`) when changed.
+- Existing item quantities are preserved unless the user explicitly enables quantity overwrite for the restore.
 
 ### FullSync
 
@@ -130,6 +132,7 @@ This removes duplicate decision logic between the generic and SQLite restore ser
 - Reconciles surviving image references exactly:
 - Missing owner-image refs are inserted.
 - Extra owner-image refs are deleted.
+- Existing item quantities are preserved unless the user explicitly enables quantity overwrite. Quantity overwrite is validated against the resulting assigned quantities before any changes are committed.
 
 ## Integrity Verification
 

@@ -303,4 +303,8 @@
   <data name="BrowseYourStorage" xml:space="preserve"><value>Ihre Aufbewahrung durchsuchen</value></data>
   <data name="AllItemsAcrossContainers" xml:space="preserve"><value>Alle Gegenstände in allen Containern</value></data>
   <data name="RestartMothballToApplyTheNewLanguage" xml:space="preserve"><value>Mothball neu starten, um die neue Sprache anzuwenden.</value></data>
+  <data name="OverwriteExistingQuantities" xml:space="preserve"><value>Vorhandene Mengen überschreiben?</value></data>
+  <data name="ThisMayReplaceNewerStockCountsWithValuesFromTheBackup" xml:space="preserve"><value>Dadurch können neuere Bestandszahlen durch Werte aus der Sicherung ersetzt werden.</value></data>
+  <data name="Overwrite" xml:space="preserve"><value>Überschreiben</value></data>
+  <data name="KeepCurrent" xml:space="preserve"><value>Aktuelle behalten</value></data>
 </root>

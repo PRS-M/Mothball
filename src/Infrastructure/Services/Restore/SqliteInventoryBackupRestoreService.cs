@@ -58,6 +58,8 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
             var itemIdSet = existingItemIds.ToHashSet();
 
             var existingImageRows = connection.Table<DbImage>().ToList();
+            var existingQuantities = connection.Table<DbItemInventory>()
+                .ToDictionary(i => i.ItemId, i => i.TotalQuantity);
 
             var existingContainerImages = existingImageRows
                 .Where(p => containerIdSet.Contains(p.OwnerUniqueId))
@@ -84,7 +86,8 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                         i.Name,
                         i.Description,
                         i.BarcodeValue,
-                        i.BarcodeSymbology))
+                        i.BarcodeSymbology,
+                        existingQuantities.GetValueOrDefault(i.ItemId, 1)))
                     .ToList(),
                 existingContainerImages,
                 existingItemImages,
@@ -92,7 +95,11 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                     .Select(r => new InventoryBackupExistingRelation(r.ContainerId, r.ItemId, r.Quantity))
                     .ToList());
 
-            var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState, options.ConflictPolicy);
+            var plan = InventoryBackupRestorePlanner.BuildPlan(
+                backup,
+                existingState,
+                options.ConflictPolicy,
+                options.OverwriteExistingQuantities);
 
             foreach (var container in plan.ContainersToInsert)
             {
@@ -141,19 +148,25 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
             foreach (var item in plan.ItemsToUpdate)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                connection.Update(new DbItem
+                if (plan.ItemIdsWithMetadataUpdate.Contains(item.ItemId))
                 {
-                    ItemId = item.ItemId,
-                    Name = item.Name,
-                    Description = item.Description,
-                    BarcodeValue = item.BarcodeValue,
-                    BarcodeSymbology = item.BarcodeSymbology,
-                });
-                connection.InsertOrReplace(new DbItemInventory
+                    connection.Update(new DbItem
+                    {
+                        ItemId = item.ItemId,
+                        Name = item.Name,
+                        Description = item.Description,
+                        BarcodeValue = item.BarcodeValue,
+                        BarcodeSymbology = item.BarcodeSymbology,
+                    });
+                }
+                if (plan.ItemIdsWithQuantityOverwrite.Contains(item.ItemId))
                 {
-                    ItemId = item.ItemId,
-                    TotalQuantity = item.TotalQuantity,
-                });
+                    connection.InsertOrReplace(new DbItemInventory
+                    {
+                        ItemId = item.ItemId,
+                        TotalQuantity = item.TotalQuantity,
+                    });
+                }
             }
 
             foreach (var relation in plan.RelationsToInsert)

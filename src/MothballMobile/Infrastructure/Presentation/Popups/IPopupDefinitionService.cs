@@ -73,6 +73,8 @@ public interface IPopupDefinitionService
     /// </summary>
     OptionPickerPopupDefinition<InventoryBackupConflictPolicy> RestorePolicyPicker();
 
+    ConfirmationPopupDefinition OverwriteExistingQuantities();
+
     /// <summary>
     /// Creates an alert stating that no backup files are available.
     /// </summary>

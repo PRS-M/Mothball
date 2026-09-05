@@ -9,6 +9,7 @@ public sealed record InventoryBackupRestoreResult
     public int AddedImages { get; init; }
     public int UpdatedContainers { get; init; }
     public int UpdatedItems { get; init; }
+    public int OverwrittenItemQuantities { get; init; }
     public int DeletedContainers { get; init; }
     public int DeletedItems { get; init; }
     public int DeletedRelations { get; init; }

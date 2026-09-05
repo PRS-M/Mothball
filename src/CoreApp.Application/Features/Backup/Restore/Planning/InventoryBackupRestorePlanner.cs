@@ -41,10 +41,11 @@ public static class InventoryBackupRestorePlanner
     public static InventoryBackupRestorePlan BuildPlan(
         InventoryBackupEnvelope backup,
         InventoryBackupExistingState existingState,
-        InventoryBackupConflictPolicy conflictPolicy)
+        InventoryBackupConflictPolicy conflictPolicy,
+        bool overwriteExistingQuantities = false)
     {
         ValidatePayloadShape(backup);
-        return PlanBuilder.BuildPlan(backup, existingState, conflictPolicy);
+        return PlanBuilder.BuildPlan(backup, existingState, conflictPolicy, overwriteExistingQuantities);
     }
 
     /// <summary>
