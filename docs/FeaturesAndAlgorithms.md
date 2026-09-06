@@ -58,11 +58,15 @@ load next page:
   increment page number
 ```
 
-The final short page, or an empty page, marks the list as exhausted. Search text is trimmed, debounced, and retained as the active query while subsequent pages load. Clearing the query resets the collection and returns to paged browsing. The busy guard prevents overlapping requests from appending the same page twice.
+The final short page, or an empty page, marks the list as exhausted. Search text is trimmed, debounced, and retained as the active query while subsequent pages load. Clearing the query resets the collection and returns to paged browsing, including when a non-text filter remains active. The busy guard prevents overlapping requests from appending the same page twice.
 
 `ContainerListViewModel` and `ItemsListViewModel` both add debounced search on top of `PagedListViewModelBase` through `SearchablePagedListViewModelBase<TSource, TViewModel>` (`src/MothballMobile/UI/Shared/SearchablePagedListViewModelBase.cs`). It owns the `Query` property, active query, and debounce wiring. A searchable list implements `LoadPageAsync`, `SearchOperationName`, and the normal mapping members. Filter changes re-run the shared search path so the active query and paging state remain consistent.
 
+Every search request receives a monotonically increasing version. If a newer query or filter change arrives while an older request is running, the older result is discarded and the newest request is run again. This latest-request-wins rule protects the visible list from stale results when debounced text input and filters change close together. It complements cancellation: cancellation is used where the underlying operation supports it, while request versions remain the final guard for operations that cannot be interrupted.
+
 List contents survive ordinary page appearances. `IInventoryChangeTracker` advances a process-local revision after successful inventory mutations and restores; a list reloads when its cached revision is stale. Pull-to-refresh always forces a reload regardless of the revision.
+
+The SQLite repositories currently implement free-text search with case-insensitive `LIKE` predicates over the fields defined by each specification. The JSON repositories provide equivalent case-insensitive containment behavior. Any future SQLite FTS5 optimization must preserve the user-visible query contract or document an intentional change in token, phrase, prefix, and substring semantics. Structured tag filters should remain separate from free-text matching so exact tag selection can use relational indexes.
 
 Each page load emits a structured `PagedListLoadMeasurement` through `IPagedListLoadDiagnostics`. The log separates repository query time, synchronous row-population time, and total time, and identifies the list, filter/browse variant, page, page size, and result count. Query text is deliberately excluded. Image paths are resolved while each row view model is constructed, before the row is added, and are included in population time. MAUI image decoding and rendering happen later and are not included. Use these measurements to decide whether further work belongs in persistence, view-model population, or MAUI rendering.
 
