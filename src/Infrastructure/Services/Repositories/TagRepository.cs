@@ -20,6 +20,7 @@ public sealed class TagRepository : ITagRepository
         this.database = database ?? throw new ArgumentNullException(nameof(database));
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Tag>> GetAllAsync(
         CancellationToken cancellationToken = default)
     {

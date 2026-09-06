@@ -18,6 +18,7 @@ public sealed class JsonTagRepository : ITagRepository
         this.store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Tag>> GetAllAsync(
         CancellationToken cancellationToken = default)
     {
