@@ -1,5 +1,6 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Application.Specifications;
+using CoreApp.Application.Contracts.Tags;
 
 namespace CoreApp.Application.Features.Items.Queries;
 
@@ -19,5 +20,6 @@ public interface IItemsListQueryHandler
         ItemQueryFilter filter,
         string? searchTerm = null,
         int? pageNumber = null,
-        int? pageSize = null);
+        int? pageSize = null,
+        TagFilter? tagFilter = null);
 }

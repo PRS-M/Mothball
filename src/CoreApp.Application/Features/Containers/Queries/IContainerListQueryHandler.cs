@@ -1,4 +1,5 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
+using CoreApp.Application.Contracts.Tags;
 
 namespace CoreApp.Application.Features.Containers.Queries;
 
@@ -11,5 +12,5 @@ public interface IContainerListQueryHandler
     /// <param name="searchTerm">The value used by the operation.</param>
     /// <param name="pageNumber">The value used by the operation.</param>
     /// <param name="pageSize">The value used by the operation.</param>
-    Task<List<Container>> QueryAsync(bool emptyOnly, string? searchTerm = null, int? pageNumber = null, int? pageSize = null);
+    Task<List<Container>> QueryAsync(bool emptyOnly, string? searchTerm = null, int? pageNumber = null, int? pageSize = null, TagFilter? tagFilter = null);
 }
