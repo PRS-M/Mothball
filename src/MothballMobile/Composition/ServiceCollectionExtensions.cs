@@ -172,6 +172,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IItemInventoryRepository, ItemInventoryRepository>();
         services.AddSingleton<IImageRepository, ImageRepository>();
         services.AddSingleton<IRelationRepository, RelationRepository>();
+        services.AddSingleton<ITagRepository, TagRepository>();
 
         services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
         services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
