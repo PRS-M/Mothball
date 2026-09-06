@@ -18,6 +18,18 @@ public sealed class JsonTagRepository : ITagRepository
         this.store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
+    public async Task<IReadOnlyList<Tag>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return state.Tags
+            .OrderBy(tag => tag.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(ToDomain)
+            .ToList();
+    }
+
     public async Task<Tag?> FindByNormalizedNameAsync(
         string normalizedName,
         CancellationToken cancellationToken = default)

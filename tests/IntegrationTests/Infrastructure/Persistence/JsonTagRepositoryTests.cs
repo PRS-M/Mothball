@@ -47,6 +47,20 @@ public class JsonTagRepositoryTests
     }
 
     [Test]
+    public async Task GetAllAsync_ReturnsTagsInDisplayOrder()
+    {
+        var store = new JsonInventoryStore(new InMemoryFileHandler(), NullLogger<JsonInventoryStore>.Instance);
+        var repository = new JsonTagRepository(store);
+
+        await repository.GetOrCreateAsync(new TagName("zebra"));
+        await repository.GetOrCreateAsync(new TagName("Alpha"));
+
+        var tags = await repository.GetAllAsync();
+
+        Assert.That(tags.Select(tag => tag.Name.Value), Is.EqualTo(new[] { "Alpha", "zebra" }));
+    }
+
+    [Test]
     public async Task RestoreAsync_RestoresTagDefinitionsAndAssignments()
     {
         var store = new JsonInventoryStore(new InMemoryFileHandler(), NullLogger<JsonInventoryStore>.Instance);

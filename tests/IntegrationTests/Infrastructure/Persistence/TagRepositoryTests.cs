@@ -41,6 +41,18 @@ public class TagRepositoryTests
     }
 
     [Test]
+    public async Task GetAllAsync_ReturnsTagsInDisplayOrder()
+    {
+        var repository = new TagRepository(database);
+        await repository.GetOrCreateAsync(new TagName("zebra"));
+        await repository.GetOrCreateAsync(new TagName("Alpha"));
+
+        var tags = await repository.GetAllAsync();
+
+        Assert.That(tags.Select(tag => tag.Name.Value), Is.EqualTo(new[] { "Alpha", "zebra" }));
+    }
+
+    [Test]
     public async Task AssignAndRemoveAsync_ManagesItemAssignmentIdempotently()
     {
         var repository = new TagRepository(database);

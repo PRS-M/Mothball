@@ -20,6 +20,22 @@ public sealed class TagRepository : ITagRepository
         this.database = database ?? throw new ArgumentNullException(nameof(database));
     }
 
+    public async Task<IReadOnlyList<Tag>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await database.InitializeAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var rows = await database.Connection
+            .Table<DbTag>()
+            .OrderBy(tag => tag.Name)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return rows.Select(row => row.ToDomain()).ToList();
+    }
+
     public async Task<Tag?> FindByNormalizedNameAsync(
         string normalizedName,
         CancellationToken cancellationToken = default)

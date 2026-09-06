@@ -10,6 +10,12 @@ namespace CoreApp.Application.Abstractions.Persistence;
 public interface ITagRepository
 {
     /// <summary>
+    /// Gets all persisted tags ordered by display name.
+    /// </summary>
+    Task<IReadOnlyList<Tag>> GetAllAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Finds a tag by its normalized name.
     /// </summary>
     Task<Tag?> FindByNormalizedNameAsync(
