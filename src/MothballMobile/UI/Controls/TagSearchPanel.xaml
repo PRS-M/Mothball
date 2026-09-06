@@ -6,6 +6,26 @@
              x:Class="MothballMobile.UI.Controls.TagSearchPanel"
              x:Name="this"
              x:DataType="controls:TagSearchPanel">
+    <ContentView.Resources>
+        <DataTemplate x:Key="TagSuggestionTemplate" x:DataType="{x:Null}">
+            <Grid Padding="10,8"
+                  ColumnDefinitions="Auto,*"
+                  ColumnSpacing="10">
+                <Label Text="#"
+                       TextColor="{DynamicResource Primary}"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center" />
+                <Label Grid.Column="1"
+                       Text="{Binding Name}"
+                       TextColor="{DynamicResource OnSurface}"
+                       VerticalOptions="Center" />
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type controls:TagSearchPanel}}, Path=AddTagCommand}"
+                                            CommandParameter="{Binding .}" />
+                </Grid.GestureRecognizers>
+            </Grid>
+        </DataTemplate>
+    </ContentView.Resources>
     <VerticalStackLayout Spacing="4">
         <controls:SearchBarCard Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
                                 Text="{Binding Source={x:Reference this}, Path=Text}"
@@ -50,31 +70,8 @@
                 Padding="4"
                 Margin="0,0,0,4"
                 StrokeShape="RoundRectangle 14">
-            <CollectionView ItemsSource="{Binding Source={x:Reference this}, Path=SuggestedTags}"
-                            SelectionMode="None"
-                            MaximumHeightRequest="260">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="{x:Null}">
-                        <Grid Padding="10,8"
-                              ColumnDefinitions="Auto,*"
-                              ColumnSpacing="10">
-                            <Label Text="#"
-                                   TextColor="{DynamicResource Primary}"
-                                   FontAttributes="Bold"
-                                   VerticalOptions="Center" />
-                            <Label Grid.Column="1"
-                                   Text="{Binding Name}"
-                                   TextColor="{DynamicResource OnSurface}"
-                                   VerticalOptions="Center">
-                            </Label>
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type controls:TagSearchPanel}}, Path=AddTagCommand}"
-                                                        CommandParameter="{Binding .}" />
-                            </Grid.GestureRecognizers>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Source={x:Reference this}, Path=SuggestedTags}"
+                                 BindableLayout.ItemTemplate="{StaticResource TagSuggestionTemplate}" />
         </Border>
     </VerticalStackLayout>
 </ContentView>
