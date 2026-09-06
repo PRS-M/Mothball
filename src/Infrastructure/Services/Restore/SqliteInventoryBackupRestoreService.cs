@@ -1,4 +1,7 @@
 using Infrastructure.Services.DatabaseModels;
+using CoreApp.Application.Contracts.Backup;
+using CoreApp.Application.Contracts.Tags;
+using CoreApp.Domain.ValueObjects;
 
 namespace Infrastructure.Services.Restore;
 
@@ -243,11 +246,76 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                 connection.Execute($"DELETE FROM {nameof(DbContainer)} WHERE {nameof(DbContainer.ContainerId)} = ?", containerId);
             }
 
+            ApplyTags(connection, backup.Data, cancellationToken);
+
             result = plan.Result;
         }).ConfigureAwait(false);
 
         inventoryChanges?.MarkChanged();
         return result;
+    }
+
+    private static void ApplyTags(
+        SQLite.SQLiteConnection connection,
+        InventoryBackupData data,
+        CancellationToken cancellationToken)
+    {
+        var tagIdMap = new Dictionary<Guid, Guid>();
+        foreach (var backupTag in data.Tags)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (backupTag.TagId == Guid.Empty || string.IsNullOrWhiteSpace(backupTag.Name))
+            {
+                continue;
+            }
+
+            var tagName = new TagName(backupTag.Name);
+            var existing = connection.Table<DbTag>()
+                .FirstOrDefault(tag => tag.NormalizedName == tagName.NormalizedValue);
+            if (existing is null)
+            {
+                existing = new DbTag
+                {
+                    TagId = backupTag.TagId,
+                    Name = tagName.Value,
+                    NormalizedName = tagName.NormalizedValue,
+                };
+                connection.Insert(existing);
+            }
+
+            tagIdMap[backupTag.TagId] = existing.TagId;
+        }
+
+        var itemIds = connection.Table<DbItem>().Select(item => item.ItemId).ToHashSet();
+        var containerIds = connection.Table<DbContainer>().Select(container => container.ContainerId).ToHashSet();
+        connection.Execute(
+            $"DELETE FROM {nameof(DbItemTag)} WHERE NOT EXISTS (SELECT 1 FROM {nameof(DbItem)} i WHERE i.ItemId = {nameof(DbItemTag)}.ItemId)");
+        connection.Execute(
+            $"DELETE FROM {nameof(DbContainerTag)} WHERE NOT EXISTS (SELECT 1 FROM {nameof(DbContainer)} c WHERE c.ContainerId = {nameof(DbContainerTag)}.ContainerId)");
+        foreach (var assignment in data.TagAssignments)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!tagIdMap.TryGetValue(assignment.TagId, out var tagId))
+            {
+                continue;
+            }
+
+            switch (assignment.TargetType)
+            {
+                case TagTargetType.Item when itemIds.Contains(assignment.TargetId):
+                    connection.Execute(
+                        $"INSERT OR IGNORE INTO {nameof(DbItemTag)} (ItemId, TagId) VALUES (?, ?)",
+                        assignment.TargetId,
+                        tagId);
+                    break;
+                case TagTargetType.Container when containerIds.Contains(assignment.TargetId):
+                    connection.Execute(
+                        $"INSERT OR IGNORE INTO {nameof(DbContainerTag)} (ContainerId, TagId) VALUES (?, ?)",
+                        assignment.TargetId,
+                        tagId);
+                    break;
+            }
+        }
     }
 
     private static void InsertOrIncreaseRelation(
