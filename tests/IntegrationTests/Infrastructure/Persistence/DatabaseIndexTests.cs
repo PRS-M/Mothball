@@ -96,6 +96,7 @@ public class DatabaseIndexTests
         Assert.That(await ColumnHasIndexAsync(nameof(DbImage), nameof(DbImage.OwnerUniqueId)), Is.True, "Missing index: images.OwnerUniqueId");
         Assert.That(await ColumnHasIndexAsync(nameof(DbItem), nameof(DbItem.Name)), Is.True, "Missing index: items.Name");
         Assert.That(await ColumnHasIndexAsync(nameof(DbContainer), nameof(DbContainer.Name)), Is.True, "Missing index: containers.Name");
+        Assert.That(await ColumnHasIndexAsync(nameof(DbTag), nameof(DbTag.NormalizedName)), Is.True, "Missing index: tags.NormalizedName");
         Assert.That(
             await HasUniqueIndexAsync(
                 nameof(DbItemContainerRelation),
@@ -103,5 +104,13 @@ public class DatabaseIndexTests
                 nameof(DbItemContainerRelation.ContainerId)),
             Is.True,
             "Missing unique index: relations.ItemId + relations.ContainerId");
+        Assert.That(
+            await HasUniqueIndexAsync(nameof(DbItemTag), nameof(DbItemTag.ItemId), nameof(DbItemTag.TagId)),
+            Is.True,
+            "Missing unique index: item tags.ItemId + TagId");
+        Assert.That(
+            await HasUniqueIndexAsync(nameof(DbContainerTag), nameof(DbContainerTag.ContainerId), nameof(DbContainerTag.TagId)),
+            Is.True,
+            "Missing unique index: container tags.ContainerId + TagId");
     }
 }
