@@ -22,12 +22,17 @@ public sealed partial class JsonInventoryStore
                     ?? [];
         var relations = await TryReadJsonAsync<List<JsonRelationRow>>(JsonStoreConstants.RelationsFileName, slotFolder)
                        ?? [];
+        var tags = await TryReadJsonAsync<List<JsonTagRow>>(JsonStoreConstants.TagsFileName, slotFolder)
+                   ?? [];
+        var tagAssignments = await TryReadJsonAsync<List<JsonTagAssignmentRow>>(JsonStoreConstants.TagAssignmentsFileName, slotFolder)
+                            ?? [];
 
         // Ensure counters are sane even if metadata is missing/outdated.
         metadata.NextContainerRowId = Math.Max(metadata.NextContainerRowId, containers.Select(c => c.RowId).DefaultIfEmpty(0).Max() + 1);
         metadata.NextItemRowId = Math.Max(metadata.NextItemRowId, items.Select(i => i.RowId).DefaultIfEmpty(0).Max() + 1);
         metadata.NextImageRowId = Math.Max(metadata.NextImageRowId, images.Select(p => p.RowId).DefaultIfEmpty(0).Max() + 1);
         metadata.NextRelationId = Math.Max(metadata.NextRelationId, relations.Select(r => r.Id).DefaultIfEmpty(0).Max() + 1);
+        metadata.NextTagAssignmentId = Math.Max(metadata.NextTagAssignmentId, tagAssignments.Select(a => a.Id).DefaultIfEmpty(0).Max() + 1);
 
         return new StoreState
         {
@@ -37,6 +42,8 @@ public sealed partial class JsonInventoryStore
             Inventories = inventories,
             Images = images,
             Relations = relations,
+            Tags = tags,
+            TagAssignments = tagAssignments,
         };
     }
 
@@ -65,6 +72,8 @@ public sealed partial class JsonInventoryStore
         await WriteJsonAsync(JsonStoreConstants.InventoriesFileName, slotFolder, state.Inventories).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.ImagesFileName, slotFolder, state.Images).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.RelationsFileName, slotFolder, state.Relations).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.TagsFileName, slotFolder, state.Tags).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.TagAssignmentsFileName, slotFolder, state.TagAssignments).ConfigureAwait(false);
 
         // Commit info written last inside the slot.
         var commitInfo = new JsonStoreCommitInfo
