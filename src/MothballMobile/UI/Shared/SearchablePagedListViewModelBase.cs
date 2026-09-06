@@ -19,6 +19,7 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
     private int searchRequestVersion;
     private bool disposed;
     private readonly ITagRepository? tagRepository;
+    private CancellationTokenSource? tagSuggestionCancellation;
 
     [ObservableProperty]
     private string query = string.Empty;
@@ -135,8 +136,14 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
 
     private async Task RefreshTagSuggestionsAsync(string value)
     {
+        var cancellation = new CancellationTokenSource();
+        var previousCancellation = Interlocked.Exchange(ref tagSuggestionCancellation, cancellation);
+        previousCancellation?.Cancel();
+        previousCancellation?.Dispose();
+
         if (tagRepository is null)
         {
+            cancellation.Dispose();
             return;
         }
 
@@ -145,13 +152,22 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
         {
             SuggestedTags.Clear();
             OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+            cancellation.Dispose();
             return;
         }
 
         var selectedIds = SelectedTags.Select(tag => tag.TagId).ToHashSet();
-        var tags = await tagRepository.GetAllAsync().ConfigureAwait(false);
+        try
+        {
+            var tags = await tagRepository.GetAllAsync(cancellation.Token).ConfigureAwait(false);
+            cancellation.Token.ThrowIfCancellationRequested();
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            if (cancellation.IsCancellationRequested)
+            {
+                return;
+            }
+
             SuggestedTags.Clear();
             foreach (var tag in tags
                 .Where(tag => !selectedIds.Contains(tag.TagId)
@@ -163,6 +179,15 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
 
             OnPropertyChanged(nameof(IsTagSuggestionsVisible));
         });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            // A newer query owns the suggestion surface.
+        }
+        finally
+        {
+            cancellation.Dispose();
+        }
     }
 
     private static string? ExtractTagToken(string value)
@@ -205,6 +230,13 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
         if (disposing && debouncer is IDisposable d)
         {
             d.Dispose();
+        }
+
+        if (disposing)
+        {
+            tagSuggestionCancellation?.Cancel();
+            tagSuggestionCancellation?.Dispose();
+            tagSuggestionCancellation = null;
         }
 
         disposed = true;

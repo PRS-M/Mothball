@@ -27,6 +27,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IBarcodeShareService? barcodeShare;
     private readonly ITagRepository? tagRepository;
+    private CancellationTokenSource? tagSuggestionCancellation;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -184,27 +185,50 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     private async Task RefreshTagSuggestionsAsync(string value)
     {
-        if (tagRepository is null) return;
+        var cancellation = new CancellationTokenSource();
+        var previousCancellation = Interlocked.Exchange(ref tagSuggestionCancellation, cancellation);
+        previousCancellation?.Cancel();
+        previousCancellation?.Dispose();
+
+        if (tagRepository is null)
+        {
+            cancellation.Dispose();
+            return;
+        }
         var tokenStart = value.LastIndexOf('#');
         if (tokenStart < 0 || (tokenStart > 0 && !char.IsWhiteSpace(value[tokenStart - 1])))
         {
             SuggestedTags.Clear();
             OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+            cancellation.Dispose();
             return;
         }
 
         var token = value[(tokenStart + 1)..];
         if (token.Any(char.IsWhiteSpace)) return;
         var selectedIds = SelectedTags.Select(tag => tag.TagId).ToHashSet();
-        var tags = await tagRepository.GetAllAsync().ConfigureAwait(false);
-        MainThread.BeginInvokeOnMainThread(() =>
+        try
         {
-            SuggestedTags.Clear();
-            foreach (var tag in tags.Where(tag => !selectedIds.Contains(tag.TagId)
-                && tag.Name.Value.StartsWith(token, StringComparison.OrdinalIgnoreCase)).Take(5))
-                SuggestedTags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
-            OnPropertyChanged(nameof(IsTagSuggestionsVisible));
-        });
+            var tags = await tagRepository.GetAllAsync(cancellation.Token).ConfigureAwait(false);
+            cancellation.Token.ThrowIfCancellationRequested();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (cancellation.IsCancellationRequested) return;
+                SuggestedTags.Clear();
+                foreach (var tag in tags.Where(tag => !selectedIds.Contains(tag.TagId)
+                    && tag.Name.Value.StartsWith(token, StringComparison.OrdinalIgnoreCase)).Take(5))
+                    SuggestedTags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+                OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+            });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            // A newer query owns the suggestion surface.
+        }
+        finally
+        {
+            cancellation.Dispose();
+        }
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -554,6 +578,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         if (disposing && debouncer is IDisposable d)
         {
             d.Dispose();
+        }
+        if (disposing)
+        {
+            tagSuggestionCancellation?.Cancel();
+            tagSuggestionCancellation?.Dispose();
+            tagSuggestionCancellation = null;
         }
         disposed = true;
     }
