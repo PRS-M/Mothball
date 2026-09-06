@@ -23,12 +23,16 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
     [ObservableProperty]
     private string query = string.Empty;
 
+    /// <summary>Gets the exact tags currently applied to the list query.</summary>
     public ObservableCollection<TagDescriptor> SelectedTags { get; } = [];
 
+    /// <summary>Gets the tag suggestions matching the active hash token.</summary>
     public ObservableCollection<TagDescriptor> SuggestedTags { get; } = [];
 
+    /// <summary>Gets a value indicating whether at least one tag filter is active.</summary>
     public bool HasSelectedTags => SelectedTags.Count > 0;
 
+    /// <summary>Gets a value indicating whether the suggestion surface should be shown.</summary>
     public bool IsTagSuggestionsVisible => SuggestedTags.Count > 0;
 
     protected SearchablePagedListViewModelBase(
@@ -95,6 +99,8 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
             .FireAndForget(backgroundTasks, $"{SearchOperationName} tag suggestions");
     }
 
+    /// <summary>Adds a suggestion as an exact tag filter and refreshes the first page.</summary>
+    /// <param name="tag">The tag selected by the user.</param>
     [RelayCommand]
     public void AddTag(TagDescriptor? tag)
     {
@@ -112,6 +118,8 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
             .FireAndForget(backgroundTasks, SearchOperationName);
     }
 
+    /// <summary>Removes an active tag filter and refreshes the first page.</summary>
+    /// <param name="tag">The active tag to remove.</param>
     [RelayCommand]
     public void RemoveTag(TagDescriptor? tag)
     {
