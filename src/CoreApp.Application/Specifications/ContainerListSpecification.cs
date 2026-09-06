@@ -1,3 +1,5 @@
+using CoreApp.Application.Contracts.Tags;
+
 namespace CoreApp.Application.Specifications;
 
 public enum ContainerQueryFilter
@@ -9,10 +11,11 @@ public enum ContainerQueryFilter
 /// <summary>
 /// Defines container list query semantics shared by all persistence backends.
 /// All-container queries are ordered by insertion order. Search and empty-container
-/// queries are ordered by name case-insensitively.
+/// queries are ordered by name case-insensitively. Tag criteria use exact normalized names.
 /// </summary>
 public sealed record ContainerListSpecification(
     ContainerQueryFilter Filter,
     string? SearchTerm = null,
     int? PageNumber = null,
-    int? PageSize = null);
+    int? PageSize = null,
+    TagFilter? TagCriteria = null);
