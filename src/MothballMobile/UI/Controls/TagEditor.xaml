@@ -31,14 +31,22 @@
                                 <Label Text="{Binding Name}"
                                        TextColor="{DynamicResource OnPrimaryContainer}"
                                        VerticalOptions="Center" />
-                                <Button Text="×"
-                                        FontSize="16"
-                                        Padding="2,0"
-                                        BackgroundColor="Transparent"
-                                        TextColor="{DynamicResource OnPrimaryContainer}"
+                                <Button Padding="0"
+                                        Background="Transparent"
+                                        WidthRequest="32"
+                                        HeightRequest="32"
+                                        MinimumWidthRequest="32"
+                                        MinimumHeightRequest="32"
                                         Command="{Binding Source={RelativeSource AncestorType={x:Type controls:TagEditor}}, Path=RemoveCommand}"
                                         CommandParameter="{Binding .}"
-                                        SemanticProperties.Description="Remove tag" />
+                                        SemanticProperties.Description="Remove tag">
+                                        <Button.ImageSource>
+                                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                                             Glyph="&#xF00D;"
+                                                             Color="{DynamicResource OnPrimaryContainer}"
+                                                             Size="14" />
+                                        </Button.ImageSource>
+                                </Button>
                             </HorizontalStackLayout>
                         </Border>
                     </DataTemplate>
