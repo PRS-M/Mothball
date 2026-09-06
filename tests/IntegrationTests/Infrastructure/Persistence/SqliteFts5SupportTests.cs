@@ -44,6 +44,14 @@ public class SqliteFts5SupportTests
                 "storage");
 
             Assert.That(matches.Select(match => match.Content), Is.EqualTo(new[] { "storage box" }));
+
+            // FTS5 matches tokens; it does not preserve the substring semantics
+            // currently exposed by the inventory LIKE-based search.
+            var substringMatches = await database.Connection.QueryAsync<FtsProbeRow>(
+                $"SELECT Content FROM {tableName} WHERE {tableName} MATCH ?",
+                "tor");
+
+            Assert.That(substringMatches, Is.Empty);
         }
         catch (SQLiteException exception) when (exception.Message.Contains("no such module", StringComparison.OrdinalIgnoreCase))
         {
