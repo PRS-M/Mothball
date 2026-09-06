@@ -13,6 +13,9 @@
   <data name="AddAnExistingItem" xml:space="preserve"><value>Añadir un artículo existente</value></data>
   <data name="AddOnly" xml:space="preserve"><value>Solo añadir</value></data>
   <data name="AddPhoto" xml:space="preserve"><value>Añadir foto</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Añadir etiqueta</value></data>
+  <data name="Tags" xml:space="preserve"><value>Etiquetas</value></data>
+  <data name="TagNamePlaceholder" xml:space="preserve"><value>Introducir etiqueta</value></data>
   <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Añade contenedores, artículos, cambios de cantidad de relaciones e imágenes que están presentes en la copia de seguridad pero faltan en la aplicación.</value></data>
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Añade los registros que faltan, igual que «Solo añadir».</value></data>
   <data name="Advanced" xml:space="preserve"><value>Avanzado</value></data>

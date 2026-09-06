@@ -67,6 +67,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private int itemTypesCount = 0;
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
+    /// <summary>Gets the tags assigned to the current container.</summary>
+    public ObservableCollection<TagDescriptor> Tags { get; } = [];
+
+    /// <summary>Gets or sets the tag name currently being entered.</summary>
+    [ObservableProperty]
+    private string newTagText = string.Empty;
     public ObservableCollection<ItemWithPhotosViewModel> Items => itemCoordinator.Items;
     public ObservableCollection<object> Rows => itemCoordinator.Rows;
     /// <summary>Gets the exact tags applied to the container contents query.</summary>
@@ -263,6 +269,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         ContainerId = containerId;
         SearchQuery = string.Empty;
+        Tags.Clear();
+        NewTagText = string.Empty;
         SelectedTags.Clear();
         OnPropertyChanged(nameof(HasSelectedTags));
         SuggestedTags.Clear();
@@ -293,6 +301,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
 
         currentContainer = summary.Container;
+        await LoadTagsAsync(currentContainer.ContainerId);
         Name = currentContainer.Name;
         Notes = currentContainer.Notes;
         NotesDraft = currentContainer.Notes;
@@ -328,6 +337,41 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             IsLoadingItems = false;
         }
+    }
+
+    private async Task LoadTagsAsync(Guid containerId)
+    {
+        if (tagRepository is null) return;
+        var tags = await tagRepository.GetForTargetAsync(TagTargetType.Container, containerId);
+        ReplaceWith(Tags, tags.Select(tag => new TagDescriptor(tag.TagId, tag.Name.Value)));
+    }
+
+    /// <summary>Creates or reuses the entered tag and assigns it to the container.</summary>
+    [RelayCommand]
+    public async Task CreateTagAsync()
+    {
+        if (tagRepository is null || currentContainer is null || string.IsNullOrWhiteSpace(NewTagText)) return;
+        await RunCommandAsync(async () =>
+        {
+            var tag = await tagRepository.GetOrCreateAsync(new TagName(NewTagText));
+            await tagRepository.AssignAsync(tag.TagId, TagTargetType.Container, currentContainer.ContainerId);
+            if (Tags.All(existing => existing.TagId != tag.TagId))
+                Tags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+            NewTagText = string.Empty;
+        });
+    }
+
+    /// <summary>Removes a container-to-tag assignment without deleting the shared tag.</summary>
+    /// <param name="tag">The assigned tag to remove.</param>
+    [RelayCommand]
+    public async Task UnassignTagAsync(TagDescriptor? tag)
+    {
+        if (tagRepository is null || currentContainer is null || tag is null) return;
+        await RunCommandAsync(async () =>
+        {
+            await tagRepository.RemoveAsync(tag.TagId, TagTargetType.Container, currentContainer.ContainerId);
+            Tags.Remove(tag);
+        });
     }
 
     [RelayCommand]

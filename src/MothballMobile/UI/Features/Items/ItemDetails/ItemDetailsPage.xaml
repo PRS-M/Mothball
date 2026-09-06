@@ -208,6 +208,11 @@
                 </VerticalStackLayout>
             </Border>
 
+            <controls:TagEditor Tags="{Binding Tags}"
+                                NewTagText="{Binding NewTagText}"
+                                AddCommand="{Binding AddTagCommand}"
+                                RemoveCommand="{Binding RemoveTagCommand}" />
+
                  <Border Style="{StaticResource Card}"
                          IsVisible="{Binding ShowQuantityManagement}">
                   <VerticalStackLayout Spacing="8">

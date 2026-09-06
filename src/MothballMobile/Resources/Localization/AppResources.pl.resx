@@ -12,6 +12,9 @@
   <data name="AddAnExistingItem" xml:space="preserve"><value>Dodaj istniejący przedmiot</value></data>
   <data name="AddOnly" xml:space="preserve"><value>Tylko dodaj</value></data>
   <data name="AddPhoto" xml:space="preserve"><value>Dodaj zdjęcie</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Dodaj tag</value></data>
+  <data name="Tags" xml:space="preserve"><value>Tagi</value></data>
+  <data name="TagNamePlaceholder" xml:space="preserve"><value>Wpisz tag</value></data>
   <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Dodaje pojemniki, przedmioty, różnice ilości powiązań i obrazy obecne w kopii, ale brakujące w aplikacji.</value></data>
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Dodaje brakujące rekordy tak jak tryb Tylko dodaj.</value></data>
   <data name="Advanced" xml:space="preserve"><value>Zaawansowany</value></data>

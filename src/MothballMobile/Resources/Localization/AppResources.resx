@@ -12,6 +12,9 @@
   <data name="AddAnExistingItem" xml:space="preserve"><value>Add an existing item</value></data>
   <data name="AddOnly" xml:space="preserve"><value>Add only</value></data>
   <data name="AddPhoto" xml:space="preserve"><value>Add photo</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Add tag</value></data>
+  <data name="Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="TagNamePlaceholder" xml:space="preserve"><value>Enter a tag</value></data>
   <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Adds containers, items, relation quantity deltas, and images that are present in the backup but missing from the app.</value></data>
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Adds missing records just like Add only.</value></data>
   <data name="Advanced" xml:space="preserve"><value>Advanced</value></data>

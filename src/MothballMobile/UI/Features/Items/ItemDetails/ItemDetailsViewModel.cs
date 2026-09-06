@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Utilities;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Scanning;
@@ -20,6 +22,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IBarcodeAssignmentService barcodeAssignments;
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IBarcodeShareService? barcodeShare;
+    private readonly ITagRepository? tagRepository;
     private Item? currentItem;
     private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
@@ -86,6 +89,12 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             || !string.Equals(ContainerId, sourceContainerId, StringComparison.OrdinalIgnoreCase));
 
     public ObservableCollection<string> ImagePaths { get; } = new();
+    /// <summary>Gets the tags assigned to the current item.</summary>
+    public ObservableCollection<TagDescriptor> Tags { get; } = [];
+
+    /// <summary>Gets or sets the tag name currently being entered.</summary>
+    [ObservableProperty]
+    private string newTagText = string.Empty;
 
     public ItemDetailsViewModel(
         ItemDetailsCoordinator itemDetailsCoordinator,
@@ -99,7 +108,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IBackgroundTaskObserver backgroundTasks,
         IBarcodeAssignmentService barcodeAssignments,
         IBarcodeScanSession barcodeScanner,
-        IBarcodeShareService? barcodeShare = null)
+        IBarcodeShareService? barcodeShare = null,
+        ITagRepository? tagRepository = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.itemDetailsCoordinator = itemDetailsCoordinator;
@@ -109,6 +119,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         this.barcodeAssignments = barcodeAssignments;
         this.barcodeScanner = barcodeScanner;
         this.barcodeShare = barcodeShare;
+        this.tagRepository = tagRepository;
     }
 
     /// <inheritdoc />
@@ -170,6 +181,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         {
             ItemId = itemId;
             ImagePaths.Clear();
+            Tags.Clear();
+            NewTagText = string.Empty;
             ContainerId = null;
             NotifyContainerRelationStateChanged();
 
@@ -192,6 +205,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
             var item = details.Inventory.Item;
             currentItem = item;
+            await LoadTagsAsync(item.ItemId);
             currentAllocations = details.Inventory.Allocations;
             Name = item.Name;
             Description = item.Description;
@@ -209,6 +223,41 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
             ContainerId = details.Inventory.Allocations.FirstOrDefault()?.ContainerId.ToString();
             NotifyContainerRelationStateChanged();
+        });
+    }
+
+    private async Task LoadTagsAsync(Guid itemId)
+    {
+        if (tagRepository is null) return;
+        var tags = await tagRepository.GetForTargetAsync(TagTargetType.Item, itemId);
+        ReplaceWith(Tags, tags.Select(tag => new TagDescriptor(tag.TagId, tag.Name.Value)));
+    }
+
+    /// <summary>Creates or reuses the entered tag and assigns it to the item.</summary>
+    [RelayCommand]
+    public async Task AddTagAsync()
+    {
+        if (tagRepository is null || currentItem is null || string.IsNullOrWhiteSpace(NewTagText)) return;
+        await RunCommandAsync(async () =>
+        {
+            var tag = await tagRepository.GetOrCreateAsync(new TagName(NewTagText));
+            await tagRepository.AssignAsync(tag.TagId, TagTargetType.Item, currentItem.ItemId);
+            if (Tags.All(existing => existing.TagId != tag.TagId))
+                Tags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+            NewTagText = string.Empty;
+        });
+    }
+
+    /// <summary>Removes an item-to-tag assignment without deleting the shared tag.</summary>
+    /// <param name="tag">The assigned tag to remove.</param>
+    [RelayCommand]
+    public async Task RemoveTagAsync(TagDescriptor? tag)
+    {
+        if (tagRepository is null || currentItem is null || tag is null) return;
+        await RunCommandAsync(async () =>
+        {
+            await tagRepository.RemoveAsync(tag.TagId, TagTargetType.Item, currentItem.ItemId);
+            Tags.Remove(tag);
         });
     }
 

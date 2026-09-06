@@ -175,6 +175,11 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <controls:TagEditor Tags="{Binding Tags}"
+                                    NewTagText="{Binding NewTagText}"
+                                    AddCommand="{Binding CreateTagCommand}"
+                                    RemoveCommand="{Binding UnassignTagCommand}" />
+
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{x:Static strings:AppResources.ItemsInThisContainer}"
                            FontSize="18"

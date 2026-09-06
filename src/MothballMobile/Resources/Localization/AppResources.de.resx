@@ -13,6 +13,9 @@
   <data name="AddAnExistingItem" xml:space="preserve"><value>Vorhandenen Gegenstand hinzufügen</value></data>
   <data name="AddOnly" xml:space="preserve"><value>Nur hinzufügen</value></data>
   <data name="AddPhoto" xml:space="preserve"><value>Foto hinzufügen</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Tag hinzufügen</value></data>
+  <data name="Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="TagNamePlaceholder" xml:space="preserve"><value>Tag eingeben</value></data>
   <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Fügt Container, Gegenstände, Änderungen der Zuordnungsmengen und Bilder hinzu, die in der Sicherung vorhanden sind, aber in der App fehlen.</value></data>
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Fügt fehlende Einträge wie bei „Nur hinzufügen“ hinzu.</value></data>
   <data name="Advanced" xml:space="preserve"><value>Erweitert</value></data>
