@@ -1,4 +1,5 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts.Tags;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
 
@@ -10,6 +11,7 @@ internal sealed class ContainerItemPagingController
     private bool hasMoreItems = true;
     private int loadVersion;
     private string? activeSearchTerm;
+    private TagFilter? activeTagFilter;
 
     public ContainerItemPagingController(IContainerDetailsQueryHandler containerDetailsQueries)
     {
@@ -21,6 +23,7 @@ internal sealed class ContainerItemPagingController
         currentPage = 0;
         hasMoreItems = true;
         activeSearchTerm = null;
+        activeTagFilter = null;
         loadVersion++;
     }
 
@@ -29,14 +32,15 @@ internal sealed class ContainerItemPagingController
         hasMoreItems = false;
     }
 
-    public async Task<ContainerItemPageLoad> ReloadAsync(string containerId, string? searchTerm)
+    public async Task<ContainerItemPageLoad> ReloadAsync(string containerId, string? searchTerm, TagFilter? tagFilter = null)
     {
         var version = ++loadVersion;
         currentPage = 0;
         hasMoreItems = false;
         activeSearchTerm = searchTerm;
+        activeTagFilter = tagFilter;
 
-        var items = await QueryAsync(containerId, currentPage, searchTerm);
+        var items = await QueryAsync(containerId, currentPage, searchTerm, tagFilter);
         if (version != loadVersion)
         {
             return new ContainerItemPageLoad([], IsStale: true);
@@ -55,7 +59,7 @@ internal sealed class ContainerItemPagingController
 
         var version = loadVersion;
         var pageToLoad = currentPage + 1;
-        var items = await QueryAsync(containerId, pageToLoad, activeSearchTerm);
+        var items = await QueryAsync(containerId, pageToLoad, activeSearchTerm, activeTagFilter);
 
         if (version != loadVersion)
         {
@@ -70,6 +74,7 @@ internal sealed class ContainerItemPagingController
     private Task<List<ContainerItemInventoryEntry>> QueryAsync(
         string containerId,
         int pageNumber,
-        string? searchTerm)
-        => containerDetailsQueries.QueryItemsAsync(containerId, searchTerm, pageNumber, PageSize);
+        string? searchTerm,
+        TagFilter? tagFilter = null)
+        => containerDetailsQueries.QueryItemsAsync(containerId, searchTerm, pageNumber, PageSize, tagFilter);
 }

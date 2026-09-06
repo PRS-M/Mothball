@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure.Scanning;
@@ -24,6 +26,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IBarcodeAssignmentService barcodeAssignments;
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IBarcodeShareService? barcodeShare;
+    private readonly ITagRepository? tagRepository;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -65,6 +68,17 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
     public ObservableCollection<ItemWithPhotosViewModel> Items => itemCoordinator.Items;
     public ObservableCollection<object> Rows => itemCoordinator.Rows;
+    /// <summary>Gets the exact tags applied to the container contents query.</summary>
+    public ObservableCollection<TagDescriptor> SelectedTags { get; } = [];
+    /// <summary>Gets the tag suggestions matching the active hash token.</summary>
+    public ObservableCollection<TagDescriptor> SuggestedTags { get; } = [];
+    /// <summary>Gets a value indicating whether a tag filter is active.</summary>
+    public bool HasSelectedTags => SelectedTags.Count > 0;
+    /// <summary>Gets a value indicating whether tag suggestions should be shown.</summary>
+    public bool IsTagSuggestionsVisible => SuggestedTags.Count > 0;
+    private TagFilter? CurrentTagFilter => SelectedTags.Count == 0
+        ? null
+        : new TagFilter(TagTargetType.Item, SelectedTags.Select(tag => tag.Name).ToArray());
 
     [ObservableProperty]
     private string searchQuery = string.Empty;
@@ -115,7 +129,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IBarcodeAssignmentService barcodeAssignments,
         IBarcodeScanSession barcodeScanner,
         IDebouncer? debouncer = null,
-        IBarcodeShareService? barcodeShare = null)
+        IBarcodeShareService? barcodeShare = null,
+        ITagRepository? tagRepository = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.deleteContainerHandler = deleteContainerHandler;
@@ -127,6 +142,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.barcodeAssignments = barcodeAssignments;
         this.barcodeScanner = barcodeScanner;
         this.barcodeShare = barcodeShare;
+        this.tagRepository = tagRepository;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
         itemCoordinator.Reset(this);
     }
@@ -135,6 +151,60 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync))
             .FireAndForget(backgroundTasks, "Search container items");
+        RefreshTagSuggestionsAsync(value)
+            .FireAndForget(backgroundTasks, "Search container item tag suggestions");
+    }
+
+    /// <summary>Adds a tag filter to the container contents query.</summary>
+    /// <param name="tag">The selected tag suggestion.</param>
+    [RelayCommand]
+    public void AddTag(TagDescriptor? tag)
+    {
+        if (tag is null || SelectedTags.Any(selected => selected.TagId == tag.TagId)) return;
+        SelectedTags.Add(tag);
+        OnPropertyChanged(nameof(HasSelectedTags));
+        var tokenStart = SearchQuery.LastIndexOf('#');
+        if (tokenStart >= 0) SearchQuery = SearchQuery.Remove(tokenStart).TrimEnd();
+        SuggestedTags.Clear();
+        OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+        MainThread.InvokeOnMainThreadAsync(PerformSearchAsync)
+            .FireAndForget(backgroundTasks, "Search container items");
+    }
+
+    /// <summary>Removes a tag filter from the container contents query.</summary>
+    /// <param name="tag">The active tag to remove.</param>
+    [RelayCommand]
+    public void RemoveTag(TagDescriptor? tag)
+    {
+        if (tag is null || !SelectedTags.Remove(tag)) return;
+        OnPropertyChanged(nameof(HasSelectedTags));
+        MainThread.InvokeOnMainThreadAsync(PerformSearchAsync)
+            .FireAndForget(backgroundTasks, "Search container items");
+    }
+
+    private async Task RefreshTagSuggestionsAsync(string value)
+    {
+        if (tagRepository is null) return;
+        var tokenStart = value.LastIndexOf('#');
+        if (tokenStart < 0 || (tokenStart > 0 && !char.IsWhiteSpace(value[tokenStart - 1])))
+        {
+            SuggestedTags.Clear();
+            OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+            return;
+        }
+
+        var token = value[(tokenStart + 1)..];
+        if (token.Any(char.IsWhiteSpace)) return;
+        var selectedIds = SelectedTags.Select(tag => tag.TagId).ToHashSet();
+        var tags = await tagRepository.GetAllAsync().ConfigureAwait(false);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            SuggestedTags.Clear();
+            foreach (var tag in tags.Where(tag => !selectedIds.Contains(tag.TagId)
+                && tag.Name.Value.StartsWith(token, StringComparison.OrdinalIgnoreCase)).Take(5))
+                SuggestedTags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+            OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+        });
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -169,6 +239,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         ContainerId = containerId;
         SearchQuery = string.Empty;
+        SelectedTags.Clear();
+        OnPropertyChanged(nameof(HasSelectedTags));
+        SuggestedTags.Clear();
+        OnPropertyChanged(nameof(IsTagSuggestionsVisible));
 
         IsItemListEmpty = true;
         IsLoadingItems = false;
@@ -220,7 +294,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                     ContainerId,
                     currentContainer,
                     searchTerm: null,
-                    ShowQuantityManagement))
+                    ShowQuantityManagement,
+                    CurrentTagFilter))
             {
                 IsItemListEmpty = itemCoordinator.IsEmpty;
             }
@@ -266,7 +341,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                     ContainerId,
                     currentContainer,
                     searchTerm,
-                    ShowQuantityManagement))
+                    ShowQuantityManagement,
+                    CurrentTagFilter))
             {
                 IsItemListEmpty = itemCoordinator.IsEmpty;
             }

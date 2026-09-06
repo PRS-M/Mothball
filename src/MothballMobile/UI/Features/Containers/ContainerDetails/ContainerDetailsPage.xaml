@@ -216,9 +216,14 @@
                     </Grid>
                 </VerticalStackLayout>
 
-                <controls:SearchBarCard Placeholder="{x:Static strings:AppResources.SearchWithinContainer}"
-                                        Text="{Binding SearchQuery}"
-                                        SearchCommand="{Binding ApplySearchCommand}" />
+                <controls:TagSearchPanel Placeholder="{x:Static strings:AppResources.SearchWithinContainer}"
+                                         Text="{Binding SearchQuery}"
+                                         SearchCommand="{Binding ApplySearchCommand}"
+                                         SelectedTags="{Binding SelectedTags}"
+                                         SuggestedTags="{Binding SuggestedTags}"
+                                         IsTagSuggestionsVisible="{Binding IsTagSuggestionsVisible}"
+                                         AddTagCommand="{Binding AddTagCommand}"
+                                         RemoveTagCommand="{Binding RemoveTagCommand}" />
             </VerticalStackLayout>
         </DataTemplate>
 
