@@ -144,7 +144,7 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
 
         var placeholders = string.Join(",", Enumerable.Repeat("?", list.Count));
         var table = GetTableName();
-        var query = $"SELECT * FROM {table} WHERE {safePropertyName} IN ({placeholders})";
+        var query = $"SELECT * FROM {table} WHERE {safePropertyName} IN ({placeholders}) ORDER BY rowid";
 
         return await Connection.QueryAsync<T>(query, list.ToArray());
     }

@@ -349,7 +349,8 @@ public class BackendParityTests
 
         var container = new Container(Guid.NewGuid(), "Box", "");
         var item = new Item(Guid.NewGuid(), "Widget", "");
-        var photoId = Guid.NewGuid();
+        var firstPhotoId = Guid.NewGuid();
+        var secondPhotoId = Guid.NewGuid();
 
         foreach (var command in new[] { sqlite.Command, json.Command })
         {
@@ -357,7 +358,8 @@ public class BackendParityTests
             await command.InsertItemAsync(item);
             await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 2);
             await command.InsertItemContainerRelation(item.ItemId, container.ContainerId, 3);
-            await command.InsertImageItemAsync(new ImageItem(photoId), container.ContainerId);
+            await command.InsertImageItemAsync(new ImageItem(firstPhotoId), container.ContainerId);
+            await command.InsertImageItemAsync(new ImageItem(secondPhotoId), container.ContainerId);
         }
 
         var sqliteContainer = await sqlite.Query.GetContainerAsync(container.ContainerId.ToString());
@@ -369,8 +371,8 @@ public class BackendParityTests
             Assert.That(jsonContainer, Is.Not.Null);
             Assert.That(sqliteContainer!.TotalItemQuantity, Is.EqualTo(5));
             Assert.That(jsonContainer!.TotalItemQuantity, Is.EqualTo(5));
-            Assert.That(sqliteContainer.Photos.Select(p => p.ImageId), Is.EqualTo(new[] { photoId }));
-            Assert.That(jsonContainer.Photos.Select(p => p.ImageId), Is.EqualTo(new[] { photoId }));
+            Assert.That(sqliteContainer!.Photos.Select(p => p.ImageId), Is.EqualTo(new[] { firstPhotoId, secondPhotoId }));
+            Assert.That(jsonContainer!.Photos.Select(p => p.ImageId), Is.EqualTo(new[] { firstPhotoId, secondPhotoId }));
         });
     }
 

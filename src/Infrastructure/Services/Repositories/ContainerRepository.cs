@@ -342,7 +342,9 @@ public class ContainerRepository : IContainerRepository
     private async Task<(IEnumerable<DbImage> photos, IEnumerable<DbItemContainerRelation> relations)>
         LoadContainerPhotosAndRelationsAsync(Guid containerId)
     {
-        IEnumerable<DbImage> dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == containerId);
+        IEnumerable<DbImage> dbPhotos = await photos.QueryAsync(
+            $"SELECT * FROM {nameof(DbImage)} WHERE {nameof(DbImage.OwnerUniqueId)} = ? ORDER BY rowid",
+            containerId);
         IEnumerable<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == containerId);
         return (dbPhotos, relations);
     }
