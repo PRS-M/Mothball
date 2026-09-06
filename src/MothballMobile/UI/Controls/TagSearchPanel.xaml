@@ -16,7 +16,7 @@
                                Spacing="8"
                                Margin="4,4,4,0">
             <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="tags:TagDescriptor">
+                <DataTemplate x:DataType="{x:Null}">
                     <Border Background="{DynamicResource PrimaryContainer}"
                             Stroke="{DynamicResource OutlineVariant}"
                             StrokeThickness="1"
@@ -54,7 +54,7 @@
                             SelectionMode="None"
                             MaximumHeightRequest="260">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="tags:TagDescriptor">
+                    <DataTemplate x:DataType="{x:Null}">
                         <Grid Padding="10,8"
                               ColumnDefinitions="Auto,*"
                               ColumnSpacing="10">
