@@ -6,7 +6,8 @@
              x:Name="this"
              x:DataType="self:SearchBarCard">
 
-    <SearchBar Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
+    <SearchBar x:Name="searchBar"
+               Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
                Text="{Binding Source={x:Reference this}, Path=Text}"
                SearchCommand="{Binding Source={x:Reference this}, Path=SearchCommand}"
                Background="{DynamicResource SurfaceVariant}"
@@ -14,5 +15,7 @@
                FontSize="14"
                TextColor="{DynamicResource OnSurface}"
                PlaceholderColor="{DynamicResource OnSurfaceVariant}"
-               CancelButtonColor="{DynamicResource OnSurfaceVariant}" />
+               CancelButtonColor="{DynamicResource OnSurfaceVariant}"
+               Focused="OnSearchBarFocused"
+               Unfocused="OnSearchBarUnfocused" />
 </ContentView>

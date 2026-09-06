@@ -8,28 +8,45 @@
              x:DataType="controls:TagSearchPanel">
     <ContentView.Resources>
         <DataTemplate x:Key="TagSuggestionTemplate" x:DataType="{x:Null}">
-            <Grid Padding="10,8"
-                  ColumnDefinitions="Auto,*"
-                  ColumnSpacing="10">
-                <Label Text="#"
-                       TextColor="{DynamicResource Primary}"
-                       FontAttributes="Bold"
-                       VerticalOptions="Center" />
-                <Label Grid.Column="1"
-                       Text="{Binding Name}"
-                       TextColor="{DynamicResource OnSurface}"
-                       VerticalOptions="Center" />
-                <Grid.GestureRecognizers>
+            <Border Padding="12,8"
+                    Background="Transparent"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 10"
+                    SemanticProperties.Description="Tag suggestion">
+                <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type controls:TagSearchPanel}}, Path=AddTagCommand}"
-                                            CommandParameter="{Binding .}" />
-                </Grid.GestureRecognizers>
-            </Grid>
+                                          CommandParameter="{Binding .}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="32,*"
+                      ColumnSpacing="10"
+                      MinimumHeightRequest="40">
+                    <Border Background="{DynamicResource SecondaryContainer}"
+                            StrokeThickness="0"
+                            WidthRequest="28"
+                            HeightRequest="28"
+                            HorizontalOptions="Start"
+                            VerticalOptions="Center"
+                            StrokeShape="RoundRectangle 14">
+                        <Label Text="#"
+                               TextColor="{DynamicResource OnSecondaryContainer}"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center" />
+                    </Border>
+                    <Label Grid.Column="1"
+                           Text="{Binding Name}"
+                           TextColor="{DynamicResource OnSurface}"
+                           FontSize="15"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
         </DataTemplate>
     </ContentView.Resources>
     <VerticalStackLayout Spacing="4">
         <controls:SearchBarCard Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
                                 Text="{Binding Source={x:Reference this}, Path=Text}"
                                 SearchCommand="{Binding Source={x:Reference this}, Path=SearchCommand}"
+                                HasSearchFocus="{Binding Source={x:Reference this}, Path=IsSearchFocused, Mode=OneWayToSource}"
                                 Margin="0" />
 
         <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Source={x:Reference this}, Path=SelectedTags}"
@@ -71,13 +88,19 @@
             </BindableLayout.ItemTemplate>
         </HorizontalStackLayout>
 
-        <Border IsVisible="{Binding Source={x:Reference this}, Path=IsTagSuggestionsVisible}"
+        <Border IsVisible="{Binding Source={x:Reference this}, Path=IsSuggestionSurfaceVisible}"
                 Background="{DynamicResource Surface}"
                 Stroke="{DynamicResource OutlineVariant}"
                 StrokeThickness="1"
-                Padding="4"
-                Margin="0,0,0,4"
-                StrokeShape="RoundRectangle 14">
+                Padding="4,6"
+                Margin="0,2,0,6"
+                StrokeShape="RoundRectangle 16">
+            <Border.Shadow>
+                <Shadow Brush="{StaticResource Shadow}"
+                        Opacity="0.14"
+                        Radius="10"
+                        Offset="0,3" />
+            </Border.Shadow>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Source={x:Reference this}, Path=SuggestedTags}"
                                  BindableLayout.ItemTemplate="{StaticResource TagSuggestionTemplate}" />
         </Border>
