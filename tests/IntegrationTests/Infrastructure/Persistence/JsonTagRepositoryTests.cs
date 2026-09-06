@@ -3,6 +3,9 @@ using CoreApp.Application.Abstractions.Platform;
 using CoreApp.Domain.ValueObjects;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
+using Infrastructure.Services.Restore;
+using CoreApp.Application.Contracts.Backup;
+using CoreApp.Application.Features.Backup.Restore.Planning;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Mothball.Tests.Integration.Infrastructure.Persistence;
@@ -41,5 +44,43 @@ public class JsonTagRepositoryTests
 
         Assert.That(second.TagId, Is.EqualTo(first.TagId));
         Assert.That(assigned.Select(tag => tag.TagId), Is.EqualTo(new[] { first.TagId }));
+    }
+
+    [Test]
+    public async Task RestoreAsync_RestoresTagDefinitionsAndAssignments()
+    {
+        var store = new JsonInventoryStore(new InMemoryFileHandler(), NullLogger<JsonInventoryStore>.Instance);
+        var service = new JsonInventoryBackupRestoreService(store);
+        var tagId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers =
+                [
+                    new InventoryBackupContainer { ContainerId = containerId, Name = "Garage" },
+                ],
+                Tags =
+                [
+                    new InventoryBackupTag { TagId = tagId, Name = "#Winter" },
+                ],
+                TagAssignments =
+                [
+                    new InventoryBackupTagAssignment
+                    {
+                        TagId = tagId,
+                        TargetId = containerId,
+                        TargetType = TagTargetType.Container,
+                    },
+                ],
+            },
+        });
+
+        await service.RestoreAsync(backup);
+
+        var repository = new JsonTagRepository(store);
+        var assigned = await repository.GetForTargetAsync(TagTargetType.Container, containerId);
+        Assert.That(assigned.Select(tag => tag.Name.Value), Is.EqualTo(new[] { "Winter" }));
     }
 }
