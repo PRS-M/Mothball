@@ -50,7 +50,7 @@ Read the relevant document before changing a specialized workflow: `docs/Develop
 
 ## Change Delivery
 
-After each step that makes a meaningful change, provide a copyable one-line commit message in a fenced code block. Use Conventional Commits with the type first, followed by a Gitmoji in colon-code text format and a concise imperative description, for example:
+After each step that makes a meaningful change, provide a copyable one-line commit message in a fenced code block. Use Conventional Commits with the type first, followed by a Gitmoji in colon-code text format and a concise imperative description. Use only Gitmojis listed on [gitmoji.dev](https://gitmoji.dev/); do not invent aliases or use emoji names from another catalog. For example:
 
 ```text
 feat: :sparkles: add barcode layout validation

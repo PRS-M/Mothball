@@ -129,13 +129,21 @@ public sealed partial class JsonInventoryStore
         return await ReadSlotAsync(slotFolder).ConfigureAwait(false);
     }
 
-    public async Task UpdateAsync(Func<StoreState, Task> updater)
+    /// <summary>
+    /// Applies an update to the active state and commits it as the next JSON store snapshot.
+    /// </summary>
+    /// <param name="updater">Mutates the in-memory state before it is persisted.</param>
+    /// <param name="cancellationToken">Cancels before the next persistence boundary.</param>
+    public async Task UpdateAsync(
+        Func<StoreState, Task> updater,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(updater);
 
-        await writeLock.WaitAsync().ConfigureAwait(false);
+        await writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var active = await manifestManager.TryGetActiveAsync().ConfigureAwait(false);
             if (active is null)
             {
@@ -146,11 +154,13 @@ public sealed partial class JsonInventoryStore
             }
 
             var state = await ReadSlotAsync(JsonStoreConstants.SlotFolder(active.Manifest.CurrentSlot)).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
             await updater(state).ConfigureAwait(false);
 
             string nextSlot = JsonStoreConstants.OtherSlot(active.Manifest.CurrentSlot);
             int nextGeneration = active.Manifest.Generation + 1;
 
+            cancellationToken.ThrowIfCancellationRequested();
             await WriteSlotAsync(nextSlot, state, nextGeneration).ConfigureAwait(false);
 
             var nextManifest = new JsonStoreManifest
@@ -161,6 +171,7 @@ public sealed partial class JsonInventoryStore
                 SchemaVersion = state.Metadata.SchemaVersion,
             };
 
+            cancellationToken.ThrowIfCancellationRequested();
             await manifestManager.WriteAsync(active.InactiveManifestFileName, nextManifest).ConfigureAwait(false);
         }
         finally

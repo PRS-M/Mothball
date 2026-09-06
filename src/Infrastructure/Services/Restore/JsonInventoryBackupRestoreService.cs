@@ -56,7 +56,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
             result = plan.Result;
 
             return Task.CompletedTask;
-        }).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
 
         inventoryChanges?.MarkChanged();
         return result;
