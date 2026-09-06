@@ -1,3 +1,5 @@
+using CoreApp.Domain.ValueObjects;
+
 namespace CoreApp.Application.Contracts.Tags;
 
 /// <summary>
@@ -6,4 +8,15 @@ namespace CoreApp.Application.Contracts.Tags;
 public sealed record TagFilter(
     TagTargetType TargetType,
     IReadOnlyCollection<string> Names,
-    bool MatchAll = true);
+    bool MatchAll = true)
+{
+    /// <summary>
+    /// Gets distinct normalized names for exact backend filtering.
+    /// </summary>
+    public IReadOnlyList<string> NormalizedNames
+        => Names
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => new TagName(name).NormalizedValue)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+}
