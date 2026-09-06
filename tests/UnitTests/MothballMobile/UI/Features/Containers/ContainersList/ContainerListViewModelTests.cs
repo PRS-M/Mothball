@@ -4,6 +4,7 @@ using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Containers.ContainersList;
 using MothballMobile.Infrastructure.BarcodeDocuments;
 using CoreApp.Domain.ValueObjects;
+using CoreApp.Application.Contracts.Tags;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Containers.ContainersList;
 
@@ -57,6 +58,36 @@ public sealed class ContainerListViewModelTests
         await viewModel.SearchCommand.ExecuteAsync(null);
 
         Assert.That(viewModel.Containers, Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public async Task SearchCommand_WithSelectedTag_PassesExactTagFilter()
+    {
+        var tag = new TagDescriptor(Guid.NewGuid(), "winter");
+        var queries = new Mock<IContainerListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(false, null, 0, 10, null)).ReturnsAsync([]);
+        queries.Setup(q => q.QueryAsync(
+                false,
+                "gloves",
+                0,
+                10,
+                It.Is<TagFilter>(filter => filter.TargetType == TagTargetType.Container
+                    && filter.Names.SequenceEqual(new[] { "winter" }))))
+            .ReturnsAsync([]);
+        var viewModel = CreateViewModel(queries.Object);
+        await viewModel.InitializeAsync();
+
+        viewModel.SelectedTags.Add(tag);
+        viewModel.Query = "gloves";
+        await viewModel.SearchCommand.ExecuteAsync(null);
+
+        queries.Verify(q => q.QueryAsync(
+            false,
+            "gloves",
+            0,
+            10,
+            It.Is<TagFilter>(filter => filter.TargetType == TagTargetType.Container
+                && filter.Names.SequenceEqual(new[] { "winter" }))), Times.Once);
     }
 
     [Test]
