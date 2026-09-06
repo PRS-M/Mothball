@@ -3,6 +3,7 @@ using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Application.Specifications;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Contracts.Tags;
 
 namespace Infrastructure.Services.Repositories;
 
@@ -14,15 +15,18 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     private readonly IContainerRepository containerRepo;
     private readonly IItemRepository itemRepo;
     private readonly IItemInventoryRepository itemInventoryRepo;
+    private readonly ITagRepository? tagRepository;
 
     public InventoryQueryRepository(
         IContainerRepository containerRepo,
         IItemRepository itemRepo,
-        IItemInventoryRepository itemInventoryRepo)
+        IItemInventoryRepository itemInventoryRepo,
+        ITagRepository? tagRepository = null)
     {
         this.containerRepo = containerRepo;
         this.itemRepo = itemRepo;
         this.itemInventoryRepo = itemInventoryRepo;
+        this.tagRepository = tagRepository;
     }
 
     /// <inheritdoc />
@@ -86,16 +90,38 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         return inventory is null ? null : CreateSnapshot(item, inventory);
     }
 
-    public Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification)
-        => containerRepo.QueryAsync(specification);
+    public async Task<List<Container>> QueryContainersAsync(ContainerListSpecification specification)
+    {
+        if (specification.TagCriteria is null)
+        {
+            return await containerRepo.QueryAsync(specification).ConfigureAwait(false);
+        }
 
-    public Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification)
-        => itemRepo.QueryWithPhotosAsync(specification);
+        var unpaged = await containerRepo.QueryAsync(specification with { PageNumber = null, PageSize = null })
+            .ConfigureAwait(false);
+        var filtered = await FilterByTagsAsync(unpaged, TagTargetType.Container, specification.TagCriteria)
+            .ConfigureAwait(false);
+        return ApplyPaging(filtered, specification.PageNumber, specification.PageSize);
+    }
+
+    public async Task<List<Item>> QueryItemsWithPhotosAsync(ItemListSpecification specification)
+    {
+        if (specification.TagCriteria is null)
+        {
+            return await itemRepo.QueryWithPhotosAsync(specification).ConfigureAwait(false);
+        }
+
+        var unpaged = await itemRepo.QueryWithPhotosAsync(specification with { PageNumber = null, PageSize = null })
+            .ConfigureAwait(false);
+        var filtered = await FilterByTagsAsync(unpaged, TagTargetType.Item, specification.TagCriteria)
+            .ConfigureAwait(false);
+        return ApplyPaging(filtered, specification.PageNumber, specification.PageSize);
+    }
 
     public async Task<List<InventorySnapshot>> QueryInventorySnapshotsAsync(
         ItemListSpecification specification)
     {
-        var items = await itemRepo.QueryWithPhotosAsync(specification);
+        var items = await QueryItemsWithPhotosAsync(specification).ConfigureAwait(false);
         var inventories = await itemInventoryRepo.GetManyAsync(items.Select(item => item.ItemId).ToList());
         var summaries = new List<InventorySnapshot>(items.Count);
         foreach (var item in items)
@@ -109,13 +135,24 @@ public class InventoryQueryRepository : IInventoryQueryRepository
         return summaries;
     }
 
-    public Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
-        => itemRepo.QueryContainerItemsWithPhotosAsync(specification);
+    public async Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification)
+    {
+        if (specification.TagCriteria is null)
+        {
+            return await itemRepo.QueryContainerItemsWithPhotosAsync(specification).ConfigureAwait(false);
+        }
+
+        var unpaged = await itemRepo.QueryContainerItemsWithPhotosAsync(specification with { PageNumber = null, PageSize = null })
+            .ConfigureAwait(false);
+        var filtered = await FilterByTagsAsync(unpaged, TagTargetType.Item, specification.TagCriteria)
+            .ConfigureAwait(false);
+        return ApplyPaging(filtered, specification.PageNumber, specification.PageSize);
+    }
 
     public async Task<List<ContainerItemInventoryEntry>> QueryContainerItemInventoryAsync(
         ContainerItemsSpecification specification)
     {
-        var items = await itemRepo.QueryContainerItemsWithPhotosAsync(specification);
+        var items = await QueryContainerItemsWithPhotosAsync(specification).ConfigureAwait(false);
         if (!Guid.TryParse(specification.ContainerId, out var containerId))
         {
             return [];
@@ -141,4 +178,61 @@ public class InventoryQueryRepository : IInventoryQueryRepository
 
     private static InventorySnapshot CreateSnapshot(Item item, ItemInventory inventory)
         => new(item, inventory.TotalQuantity, inventory.AssignedQuantity, inventory.Allocations);
+
+    private async Task<List<T>> FilterByTagsAsync<T>(
+        IReadOnlyCollection<T> entities,
+        TagTargetType targetType,
+        TagFilter criteria)
+        where T : class
+    {
+        if (tagRepository is null || criteria.TargetType != targetType)
+        {
+            return criteria.TargetType == targetType ? [] : [];
+        }
+
+        var normalizedNames = criteria.NormalizedNames;
+        if (normalizedNames.Count == 0)
+        {
+            return [];
+        }
+
+        var result = new List<T>();
+        foreach (var entity in entities)
+        {
+            Guid targetId = entity switch
+            {
+                Container container => container.ContainerId,
+                Item item => item.ItemId,
+                _ => throw new NotSupportedException($"Unsupported tag query entity '{typeof(T).Name}'."),
+            };
+
+            var names = (await tagRepository.GetForTargetAsync(targetType, targetId).ConfigureAwait(false))
+                .Select(tag => tag.Name.NormalizedValue)
+                .ToHashSet(StringComparer.Ordinal);
+            bool matches = criteria.MatchAll
+                ? normalizedNames.All(names.Contains)
+                : normalizedNames.Any(names.Contains);
+            if (matches)
+            {
+                result.Add(entity);
+            }
+        }
+
+        return result;
+    }
+
+    private static List<T> ApplyPaging<T>(IReadOnlyList<T> values, int? pageNumber, int? pageSize)
+    {
+        if (pageNumber is null && pageSize is null)
+        {
+            return values.ToList();
+        }
+
+        if (pageNumber is not int page || pageSize is not int size || page < 0 || size <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be non-negative and page size must be positive.");
+        }
+
+        return values.Skip(checked(page * size)).Take(size).ToList();
+    }
 }
