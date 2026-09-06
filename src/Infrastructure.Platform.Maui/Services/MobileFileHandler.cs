@@ -18,12 +18,20 @@ public class MobileFileHandler : IFileHandler
     public string AppDataPath => appDataRootPath;
 
     /// <inheritdoc />
-    public async Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
+    public async Task<string> SaveFileAsync(
+        string fileName,
+        string folderPath,
+        byte[] data,
+        CancellationToken cancellationToken = default)
     {
         string fullPath = GetWriteFullPath(fileName, folderPath);
-        await File.WriteAllBytesAsync(fullPath, data).ConfigureAwait(false);
+        await File.WriteAllBytesAsync(fullPath, data, cancellationToken).ConfigureAwait(false);
         return fullPath;
     }
+
+    /// <inheritdoc />
+    public bool FileExists(string fileName, string folderPath)
+        => File.Exists(GetFullPath(fileName, folderPath));
 
     /// <inheritdoc />
     public async Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath)
@@ -59,8 +67,12 @@ public class MobileFileHandler : IFileHandler
     }
 
     /// <inheritdoc />
-    public Task DeleteFileAsync(string fileName, string folderPath)
+    public Task DeleteFileAsync(
+        string fileName,
+        string folderPath,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         string fullPath = GetFullPath(fileName, folderPath);
         ThrowIfFileNotExists(fullPath);
 

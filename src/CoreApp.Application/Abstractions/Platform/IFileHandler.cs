@@ -21,7 +21,16 @@ public interface IFileHandler
     /// <param name="folderPath">The relative folder path within the app data directory.</param>
     /// <param name="data">The binary data to write to the file.</param>
     /// <returns>The full path to the saved file.</returns>
-    Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data);
+    Task<string> SaveFileAsync(
+        string fileName,
+        string folderPath,
+        byte[] data,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Determines whether a file exists in the specified application folder.
+    /// </summary>
+    bool FileExists(string fileName, string folderPath);
 
     /// <summary>
     /// Copies a file from the application package (raw resources) to the app data directory.
@@ -47,7 +56,10 @@ public interface IFileHandler
     /// <param name="fileName">The name of the file to delete.</param>
     /// <param name="folderPath">The folder path within the app data directory.</param>
     /// <exception cref="FileNotFoundException">Thrown when the file does not exist.</exception>
-    Task DeleteFileAsync(string fileName, string folderPath);
+    Task DeleteFileAsync(
+        string fileName,
+        string folderPath,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Saves text content to a file in the specified folder.

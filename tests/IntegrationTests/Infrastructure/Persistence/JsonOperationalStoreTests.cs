@@ -26,8 +26,10 @@ public class JsonOperationalStoreTests
 
         public string AppDataPath => "/appdata";
 
-        public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
+        public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
+
+        public bool FileExists(string fileName, string folderPath) => false;
 
         public Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath)
             => throw new NotSupportedException();
@@ -35,7 +37,7 @@ public class JsonOperationalStoreTests
         public Task<byte[]> ReadFileAsync(string fileName, string folderPath)
             => throw new NotSupportedException();
 
-        public Task DeleteFileAsync(string fileName, string folderPath)
+        public Task DeleteFileAsync(string fileName, string folderPath, CancellationToken cancellationToken = default)
         {
             textFiles.Remove((folderPath, fileName));
             return Task.CompletedTask;
@@ -80,8 +82,10 @@ public class JsonOperationalStoreTests
     {
         public string AppDataPath => "/appdata";
 
-        public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
+        public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
+
+        public bool FileExists(string fileName, string folderPath) => false;
 
         public Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath)
             => throw new NotSupportedException();
@@ -89,7 +93,7 @@ public class JsonOperationalStoreTests
         public Task<byte[]> ReadFileAsync(string fileName, string folderPath)
             => throw new NotSupportedException();
 
-        public Task DeleteFileAsync(string fileName, string folderPath)
+        public Task DeleteFileAsync(string fileName, string folderPath, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
         public Task<string> SaveTextFileAsync(string fileName, string folderPath, string content)
