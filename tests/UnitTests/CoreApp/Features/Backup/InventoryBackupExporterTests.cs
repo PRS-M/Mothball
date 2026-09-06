@@ -73,7 +73,7 @@ public class InventoryBackupExporterTests
         queries.Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Application.Specifications.ContainerListSpecification>())).ReturnsAsync([container]);
         queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>())).ReturnsAsync([item]);
         queries.Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>())).ReturnsAsync([
-            new InventorySnapshot(item, 1, 1, [])]);
+            new InventorySnapshot(item, 1, 0, [])]);
 
         var tags = new Mock<ITagRepository>();
         tags.Setup(r => r.GetForTargetAsync(TagTargetType.Container, container.ContainerId, It.IsAny<CancellationToken>()))

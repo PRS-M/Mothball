@@ -29,7 +29,7 @@ public class JsonHandlerBehaviorTests
                 return Task.FromResult(content);
             });
         fileHandler.Setup(f => f.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns<string, string>((fileName, folderPath) =>
+            .Returns<string, string, CancellationToken>((fileName, folderPath, _) =>
             {
                 store.Remove((folderPath, fileName));
                 return Task.CompletedTask;

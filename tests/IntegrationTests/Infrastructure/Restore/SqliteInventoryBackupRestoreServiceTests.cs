@@ -1,6 +1,7 @@
 using Infrastructure.Services.Restore;
 using Infrastructure.Services.DatabaseModels;
 using Infrastructure.Services.Repositories;
+using CoreApp.Application.Contracts.Tags;
 
 namespace Mothball.Tests.Integration.Infrastructure.Restore;
 

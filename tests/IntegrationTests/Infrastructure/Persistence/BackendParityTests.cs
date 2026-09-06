@@ -1045,7 +1045,7 @@ public class BackendParityTests
             .Throws(new NotSupportedException());
 
         mock.Setup(m => m.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns((string fileName, string folderPath) =>
+            .Returns((string fileName, string folderPath, CancellationToken _) =>
             {
                 textFiles.Remove((folderPath, fileName));
                 return Task.CompletedTask;
