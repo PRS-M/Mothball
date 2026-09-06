@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Application.Utilities;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.BarcodeDocuments;
 
@@ -56,8 +58,9 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         IPagedListLoadDiagnostics? loadDiagnostics = null,
-        IBarcodeShareService? barcodeShare = null)
-        : base(backgroundTasks, debouncer, pageSize: 10, loadDiagnostics: loadDiagnostics)
+        IBarcodeShareService? barcodeShare = null,
+        ITagRepository? tagRepository = null)
+        : base(backgroundTasks, debouncer, pageSize: 10, loadDiagnostics: loadDiagnostics, tagRepository: tagRepository)
     {
         this.imagePaths = imagePaths;
         this.containerListQueries = containerListQueries;
@@ -69,6 +72,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     }
 
     protected override string SearchOperationName => "Search containers";
+    protected override TagTargetType TagTargetType => TagTargetType.Container;
     protected override long DataRevision => inventoryChanges.Revision;
     protected override string LoadVariant => $"{SelectedFilter}:{base.LoadVariant}";
 
@@ -82,7 +86,8 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
             IsEmptyFilterSelected(),
             query,
             pageNumber,
-            pageSize);
+            pageSize,
+            CurrentTagFilter);
 
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav, applicationSettings.IsAdvancedMode);
