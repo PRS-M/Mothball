@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+             xmlns:tags="clr-namespace:CoreApp.Application.Contracts.Tags;assembly=CoreApp.Application"
+             x:Class="MothballMobile.UI.Controls.TagSearchPanel"
+             x:Name="this"
+             x:DataType="controls:TagSearchPanel">
+    <VerticalStackLayout Spacing="4">
+        <controls:SearchBarCard Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
+                                Text="{Binding Source={x:Reference this}, Path=Text}"
+                                SearchCommand="{Binding Source={x:Reference this}, Path=SearchCommand}"
+                                Margin="0" />
+
+        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Source={x:Reference this}, Path=SelectedTags}"
+                               Spacing="8"
+                               Margin="4,4,4,0">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="tags:TagDescriptor">
+                    <Border Background="{DynamicResource PrimaryContainer}"
+                            Stroke="{DynamicResource OutlineVariant}"
+                            StrokeThickness="1"
+                            Padding="10,5"
+                            StrokeShape="RoundRectangle 10">
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="#"
+                                   TextColor="{DynamicResource OnPrimaryContainer}"
+                                   VerticalOptions="Center" />
+                            <Label Text="{Binding Name}"
+                                   TextColor="{DynamicResource OnPrimaryContainer}"
+                                   VerticalOptions="Center" />
+                            <Button Text="×"
+                                    FontSize="16"
+                                    Padding="2,0"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{DynamicResource OnPrimaryContainer}"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type controls:TagSearchPanel}}, Path=RemoveTagCommand}"
+                                    CommandParameter="{Binding .}"
+                                    SemanticProperties.Description="Remove tag" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </HorizontalStackLayout>
+
+        <Border IsVisible="{Binding Source={x:Reference this}, Path=IsTagSuggestionsVisible}"
+                Background="{DynamicResource Surface}"
+                Stroke="{DynamicResource OutlineVariant}"
+                StrokeThickness="1"
+                Padding="4"
+                Margin="0,0,0,4"
+                StrokeShape="RoundRectangle 14">
+            <CollectionView ItemsSource="{Binding Source={x:Reference this}, Path=SuggestedTags}"
+                            SelectionMode="None"
+                            MaximumHeightRequest="260">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="tags:TagDescriptor">
+                        <Grid Padding="10,8"
+                              ColumnDefinitions="Auto,*"
+                              ColumnSpacing="10">
+                            <Label Text="#"
+                                   TextColor="{DynamicResource Primary}"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding Name}"
+                                   TextColor="{DynamicResource OnSurface}"
+                                   VerticalOptions="Center">
+                            </Label>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type controls:TagSearchPanel}}, Path=AddTagCommand}"
+                                                        CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Border>
+    </VerticalStackLayout>
+</ContentView>
