@@ -132,17 +132,30 @@ public sealed class ContainerListViewModelTests
     {
         var container = new Container(Guid.NewGuid(), "Garage", "Notes");
         container.UpdateBarcode(new Barcode("GARAGE-01", BarcodeSymbology.Code128));
+        var tag = new TagDescriptor(Guid.NewGuid(), "winter");
         var queries = new Mock<IContainerListQueryHandler>();
         queries.Setup(q => q.QueryAsync(false, null, 0, 10)).ReturnsAsync([]);
-        queries.Setup(q => q.QueryAsync(false, "garage", null, null)).ReturnsAsync([container]);
+        queries.Setup(q => q.QueryAsync(
+                false,
+                "garage",
+                null,
+                null,
+                It.Is<TagFilter>(filter => filter.Names.SequenceEqual(new[] { "winter" }))))
+            .ReturnsAsync([container]);
         var share = new Mock<IBarcodeShareService>();
         var viewModel = CreateViewModel(queries.Object, barcodeShare: share.Object);
         await viewModel.InitializeAsync();
         viewModel.Query = "garage";
+        viewModel.SelectedTags.Add(tag);
 
         await viewModel.ShareAllMatchingCommand.ExecuteAsync(null);
 
-        queries.Verify(q => q.QueryAsync(false, "garage", null, null), Times.Once);
+        queries.Verify(q => q.QueryAsync(
+            false,
+            "garage",
+            null,
+            null,
+            It.Is<TagFilter>(filter => filter.Names.SequenceEqual(new[] { "winter" }))), Times.Once);
         share.Verify(service => service.ShareAsync(
             It.Is<IReadOnlyCollection<BarcodeLabelData>>(labels => labels.Single().BarcodeValue == "GARAGE-01"),
             "Share container barcodes"), Times.Once);

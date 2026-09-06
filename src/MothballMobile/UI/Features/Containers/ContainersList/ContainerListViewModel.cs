@@ -167,7 +167,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
     private Task ShareAllMatchingAsync()
         => RunCommandAsync(async () =>
         {
-            var containers = await containerListQueries.QueryAsync(IsEmptyFilterSelected(), Query, null, null);
+            var containers = await containerListQueries.QueryAsync(IsEmptyFilterSelected(), Query, null, null, CurrentTagFilter);
             var labels = containers.Where(container => container.Barcode is not null)
                 .Select(container => new BarcodeLabelData(container.Name, container.Barcode!.Value, container.Barcode.Symbology))
                 .ToArray();

@@ -200,7 +200,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private Task ShareAllMatchingAsync()
         => RunCommandAsync(async () =>
         {
-            var items = await itemListQueries.QueryAsync(GetItemQueryFilter(), Query, null, null);
+            var items = await itemListQueries.QueryAsync(GetItemQueryFilter(), Query, null, null, CurrentTagFilter);
             var labels = items.Where(item => item.Item.Barcode is not null)
                 .Select(item => new BarcodeLabelData(item.Item.Name, item.Item.Barcode!.Value, item.Item.Barcode.Symbology))
                 .ToArray();
