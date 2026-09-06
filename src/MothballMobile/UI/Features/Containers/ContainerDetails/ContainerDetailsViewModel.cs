@@ -195,26 +195,38 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         var previousCancellation = Interlocked.Exchange(ref tagSuggestionCancellation, cancellation);
         previousCancellation?.Cancel();
         previousCancellation?.Dispose();
-
-        if (tagRepository is null)
-        {
-            cancellation.Dispose();
-            return;
-        }
-        var tokenStart = value.LastIndexOf('#');
-        if (tokenStart < 0 || (tokenStart > 0 && !char.IsWhiteSpace(value[tokenStart - 1])))
-        {
-            SuggestedTags.Clear();
-            OnPropertyChanged(nameof(IsTagSuggestionsVisible));
-            cancellation.Dispose();
-            return;
-        }
-
-        var token = value[(tokenStart + 1)..];
-        if (token.Any(char.IsWhiteSpace)) return;
-        var selectedIds = SelectedTags.Select(tag => tag.TagId).ToHashSet();
         try
         {
+            if (tagRepository is null)
+            {
+                return;
+            }
+
+            var tokenStart = value.LastIndexOf('#');
+            string? token;
+            if (tokenStart < 0)
+            {
+                var plainToken = value.Trim();
+                token = plainToken.Length > 0 && !plainToken.Any(char.IsWhiteSpace) ? plainToken : null;
+            }
+            else if (tokenStart > 0 && !char.IsWhiteSpace(value[tokenStart - 1]))
+            {
+                token = null;
+            }
+            else
+            {
+                token = value[(tokenStart + 1)..];
+                if (token.Any(char.IsWhiteSpace)) token = null;
+            }
+
+            if (token is null)
+            {
+                SuggestedTags.Clear();
+                OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+                return;
+            }
+
+            var selectedIds = SelectedTags.Select(tag => tag.TagId).ToHashSet();
             var tags = await tagRepository.GetAllAsync(cancellation.Token).ConfigureAwait(false);
             cancellation.Token.ThrowIfCancellationRequested();
             MainThread.BeginInvokeOnMainThread(() =>
@@ -233,7 +245,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
         finally
         {
-            cancellation.Dispose();
+            if (ReferenceEquals(Interlocked.CompareExchange(ref tagSuggestionCancellation, null, cancellation), cancellation))
+            {
+                cancellation.Dispose();
+            }
         }
     }
 

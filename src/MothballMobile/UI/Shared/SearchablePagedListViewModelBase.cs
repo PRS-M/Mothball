@@ -140,25 +140,22 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
         var previousCancellation = Interlocked.Exchange(ref tagSuggestionCancellation, cancellation);
         previousCancellation?.Cancel();
         previousCancellation?.Dispose();
-
-        if (tagRepository is null)
-        {
-            cancellation.Dispose();
-            return;
-        }
-
-        var token = ExtractTagToken(value);
-        if (token is null)
-        {
-            SuggestedTags.Clear();
-            OnPropertyChanged(nameof(IsTagSuggestionsVisible));
-            cancellation.Dispose();
-            return;
-        }
-
-        var selectedIds = SelectedTags.Select(tag => tag.TagId).ToHashSet();
         try
         {
+            if (tagRepository is null)
+            {
+                return;
+            }
+
+            var token = ExtractTagToken(value);
+            if (token is null)
+            {
+                SuggestedTags.Clear();
+                OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+                return;
+            }
+
+            var selectedIds = SelectedTags.Select(tag => tag.TagId).ToHashSet();
             var tags = await tagRepository.GetAllAsync(cancellation.Token).ConfigureAwait(false);
             cancellation.Token.ThrowIfCancellationRequested();
         MainThread.BeginInvokeOnMainThread(() =>
@@ -186,14 +183,23 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
         }
         finally
         {
-            cancellation.Dispose();
+            if (ReferenceEquals(Interlocked.CompareExchange(ref tagSuggestionCancellation, null, cancellation), cancellation))
+            {
+                cancellation.Dispose();
+            }
         }
     }
 
     private static string? ExtractTagToken(string value)
     {
         var tokenStart = value.LastIndexOf('#');
-        if (tokenStart < 0 || (tokenStart > 0 && !char.IsWhiteSpace(value[tokenStart - 1])))
+        if (tokenStart < 0)
+        {
+            var plainToken = value.Trim();
+            return plainToken.Length > 0 && !plainToken.Any(char.IsWhiteSpace) ? plainToken : null;
+        }
+
+        if (tokenStart > 0 && !char.IsWhiteSpace(value[tokenStart - 1]))
         {
             return null;
         }
@@ -207,6 +213,10 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
         var tokenStart = Query.LastIndexOf('#');
         if (tokenStart < 0)
         {
+            if (string.Equals(Query.Trim(), tagName, StringComparison.OrdinalIgnoreCase))
+            {
+                Query = string.Empty;
+            }
             return;
         }
 

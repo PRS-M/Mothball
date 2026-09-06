@@ -5,6 +5,8 @@ using MothballMobile.UI.Features.Containers.ContainersList;
 using MothballMobile.Infrastructure.BarcodeDocuments;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Contracts.Tags;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Domain.Entities.TagAggregate;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Containers.ContainersList;
 
@@ -91,6 +93,24 @@ public sealed class ContainerListViewModelTests
     }
 
     [Test]
+    public void Query_WithPlainTagPrefix_LoadsSuggestions()
+    {
+        var queries = new Mock<IContainerListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(false, null, 0, 10)).ReturnsAsync([]);
+        var tagRepository = new Mock<ITagRepository>();
+        tagRepository.Setup(repository => repository.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new Tag(Guid.NewGuid(), "ExampleTag")]);
+        var viewModel = CreateViewModel(queries.Object, tagRepository: tagRepository.Object);
+
+        viewModel.Query = "Ex";
+        Assert.That(SpinWait.SpinUntil(() => tagRepository.Invocations.Count > 0, TimeSpan.FromSeconds(2)), Is.True);
+        viewModel.Query = "Example";
+
+        Assert.That(SpinWait.SpinUntil(() => viewModel.SuggestedTags.Count == 1, TimeSpan.FromSeconds(2)), Is.True);
+        Assert.That(viewModel.SuggestedTags[0].Name, Is.EqualTo("ExampleTag"));
+    }
+
+    [Test]
     public async Task LoadNextPageCommand_DuringSearch_AppendsNextFilteredPage()
     {
         var firstPage = Enumerable.Range(1, 10)
@@ -164,7 +184,8 @@ public sealed class ContainerListViewModelTests
     private static ContainerListViewModel CreateViewModel(
         IContainerListQueryHandler queries,
         IImagePathResolver? paths = null,
-        IBarcodeShareService? barcodeShare = null)
+        IBarcodeShareService? barcodeShare = null,
+        ITagRepository? tagRepository = null)
     {
         if (paths is null)
         {
@@ -185,6 +206,7 @@ public sealed class ContainerListViewModelTests
                 Mock.Of<IInventoryQueryRepository>(),
                 Mock.Of<INavigationService>()),
             Mock.Of<IBackgroundTaskObserver>(),
-            barcodeShare: barcodeShare);
+            barcodeShare: barcodeShare,
+            tagRepository: tagRepository);
     }
 }
