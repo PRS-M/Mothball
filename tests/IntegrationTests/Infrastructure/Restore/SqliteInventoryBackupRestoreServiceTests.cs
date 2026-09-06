@@ -337,4 +337,44 @@ public class SqliteInventoryBackupRestoreServiceTests
             Assert.That(result.DeletedImages, Is.EqualTo(0));
         });
     }
+
+    [Test]
+    public async Task RestoreAsync_RestoresTagDefinitionsAndAssignments()
+    {
+        var containerId = Guid.NewGuid();
+        var tagId = Guid.NewGuid();
+        var backup = InventoryBackupRestorePlanner.AttachIntegrity(new InventoryBackupEnvelope
+        {
+            Data = new InventoryBackupData
+            {
+                Containers = [new InventoryBackupContainer { ContainerId = containerId, Name = "Garage" }],
+                Tags = [new InventoryBackupTag { TagId = tagId, Name = "#Winter" }],
+                TagAssignments =
+                [
+                    new InventoryBackupTagAssignment
+                    {
+                        TagId = tagId,
+                        TargetId = containerId,
+                        TargetType = TagTargetType.Container,
+                    },
+                ],
+            },
+        });
+
+        var service = new SqliteInventoryBackupRestoreService(db);
+        await service.RestoreAsync(backup);
+
+        var tags = new Repository<DbTag>(db);
+        var assignments = new Repository<DbContainerTag>(db);
+        var storedTag = await tags.GetAsync(tagId);
+        var storedAssignment = (await assignments.GetAllAsync()).Single();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(storedTag.Name, Is.EqualTo("Winter"));
+            Assert.That(storedTag.NormalizedName, Is.EqualTo("WINTER"));
+            Assert.That(storedAssignment.ContainerId, Is.EqualTo(containerId));
+            Assert.That(storedAssignment.TagId, Is.EqualTo(tagId));
+        });
+    }
 }
