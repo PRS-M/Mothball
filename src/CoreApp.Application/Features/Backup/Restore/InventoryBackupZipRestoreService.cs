@@ -44,7 +44,6 @@ public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestor
 
         var restoredPhotoFiles = await RestorePhotoFilesAsync(archive, backup, cancellationToken)
             .ConfigureAwait(false);
-
         return new InventoryBackupZipRestoreResult(result, restoredPhotoFiles);
     }
 
@@ -86,12 +85,31 @@ public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestor
                 continue;
             }
 
-            await using var entryStream = await entry.OpenAsync(cancellationToken).ConfigureAwait(false);
-            await using var photoStream = new MemoryStream();
-            await entryStream.CopyToAsync(photoStream, cancellationToken).ConfigureAwait(false);
-            await fileHandler
-                .SaveFileAsync(fileName, InventoryBackupZipArchive.GetPhotoFolder(ownerType), photoStream.ToArray())
-                .ConfigureAwait(false);
+            string photoFolder = InventoryBackupZipArchive.GetPhotoFolder(ownerType);
+            bool fileExistedBeforeRestore = fileHandler.FileExists(fileName, photoFolder);
+
+            try
+            {
+                await using var entryStream = await entry.OpenAsync(cancellationToken).ConfigureAwait(false);
+                await using var photoStream = new MemoryStream();
+                await entryStream.CopyToAsync(photoStream, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                await fileHandler
+                    .SaveFileAsync(fileName, photoFolder, photoStream.ToArray(), cancellationToken)
+                    .ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            catch (OperationCanceledException)
+            {
+                // Do not remove a file that existed before restore; cancellation must
+                // not destroy the user's previous photo when a restore overwrote it.
+                if (!fileExistedBeforeRestore && fileHandler.FileExists(fileName, photoFolder))
+                {
+                    await fileHandler.DeleteFileAsync(fileName, photoFolder).ConfigureAwait(false);
+                }
+
+                throw;
+            }
 
             restored++;
         }

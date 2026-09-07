@@ -48,7 +48,6 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
 
         var relationRows = await LoadPositiveRelationsAsync(boxedItemIds);
         var allocationsByItem = await BuildAllocationsByItemAsync(relationRows);
-
         return MapInventories(inventoryRows, allocationsByItem);
     }
 
@@ -73,7 +72,6 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
         IReadOnlyCollection<DbItemContainerRelation> relationRows)
     {
         var containersById = await LoadContainersByIdAsync(relationRows);
-
         return relationRows
             .GroupBy(relation => new { relation.ItemId, relation.ContainerId })
             .Where(group => containersById.ContainsKey(group.Key.ContainerId))
@@ -105,7 +103,6 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
         var rows = await containers
             .WhereInAsync(nameof(DbContainer.ContainerId), BoxIds(containerIds))
             .ConfigureAwait(false);
-
         return rows.ToDictionary(container => container.ContainerId);
     }
 
@@ -130,7 +127,6 @@ public sealed class ItemInventoryRepository : IItemInventoryRepository
     public Task SaveAsync(ItemInventory inventory)
     {
         ArgumentNullException.ThrowIfNull(inventory);
-
         return transactionRunner.RunAsync(scope =>
         {
             scope.InsertOrReplaceItemInventory(new DbItemInventory

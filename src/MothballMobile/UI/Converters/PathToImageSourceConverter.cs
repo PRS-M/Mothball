@@ -25,6 +25,7 @@ public class PathToImageSourceConverter : IValueConverter
                     // Prefer local path for file URIs
                     return ImageSource.FromFile(uri.LocalPath);
                 }
+
                 // Remote http/https â use FromUri with caching enabled
                 if (uri.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase) ||
                     uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))

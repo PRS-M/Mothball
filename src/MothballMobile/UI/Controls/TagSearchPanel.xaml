@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+             xmlns:tags="clr-namespace:CoreApp.Application.Contracts.Tags;assembly=CoreApp.Application"
+             x:Class="MothballMobile.UI.Controls.TagSearchPanel"
+             x:Name="this"
+             x:DataType="controls:TagSearchPanel">
+    <ContentView.Resources>
+        <DataTemplate x:Key="TagSuggestionTemplate" x:DataType="{x:Null}">
+            <Border Padding="12,8"
+                    Background="Transparent"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 10"
+                    SemanticProperties.Description="Tag suggestion">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type controls:TagSearchPanel}}, Path=AddTagCommand}"
+                                          CommandParameter="{Binding .}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="32,*"
+                      ColumnSpacing="10"
+                      MinimumHeightRequest="40">
+                    <Border Background="{DynamicResource SecondaryContainer}"
+                            StrokeThickness="0"
+                            WidthRequest="28"
+                            HeightRequest="28"
+                            HorizontalOptions="Start"
+                            VerticalOptions="Center"
+                            StrokeShape="RoundRectangle 14">
+                        <Label Text="#"
+                               TextColor="{DynamicResource OnSecondaryContainer}"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center" />
+                    </Border>
+                    <Label Grid.Column="1"
+                           Text="{Binding Name}"
+                           TextColor="{DynamicResource OnSurface}"
+                           FontSize="15"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </ContentView.Resources>
+    <VerticalStackLayout Spacing="4">
+        <controls:SearchBarCard Placeholder="{Binding Source={x:Reference this}, Path=Placeholder}"
+                                Text="{Binding Source={x:Reference this}, Path=Text}"
+                                SearchCommand="{Binding Source={x:Reference this}, Path=SearchCommand}"
+                                HasSearchFocus="{Binding Source={x:Reference this}, Path=IsSearchFocused, Mode=OneWayToSource}"
+                                Margin="0" />
+
+        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Source={x:Reference this}, Path=SelectedTags}"
+                               Spacing="8"
+                               Margin="4,4,4,0">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="{x:Null}">
+                    <Border Background="{DynamicResource PrimaryContainer}"
+                            Stroke="{DynamicResource OutlineVariant}"
+                            StrokeThickness="1"
+                            Padding="10,5"
+                            StrokeShape="RoundRectangle 10">
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="#"
+                                   TextColor="{DynamicResource OnPrimaryContainer}"
+                                   VerticalOptions="Center" />
+                            <Label Text="{Binding Name}"
+                                   TextColor="{DynamicResource OnPrimaryContainer}"
+                                   VerticalOptions="Center" />
+                            <Button Padding="0"
+                                    Background="Transparent"
+                                    WidthRequest="32"
+                                    HeightRequest="32"
+                                    MinimumWidthRequest="32"
+                                    MinimumHeightRequest="32"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type controls:TagSearchPanel}}, Path=RemoveTagCommand}"
+                                    CommandParameter="{Binding .}"
+                                    SemanticProperties.Description="Remove tag">
+                                    <Button.ImageSource>
+                                        <FontImageSource FontFamily="FontAwesomeSolid"
+                                                         Glyph="&#xF00D;"
+                                                         Color="{DynamicResource OnPrimaryContainer}"
+                                                         Size="14" />
+                                    </Button.ImageSource>
+                            </Button>
+                        </HorizontalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </HorizontalStackLayout>
+
+        <Border IsVisible="{Binding Source={x:Reference this}, Path=IsSuggestionSurfaceVisible}"
+                Background="{DynamicResource Surface}"
+                Stroke="{DynamicResource OutlineVariant}"
+                StrokeThickness="1"
+                Padding="4,6"
+                Margin="0,2,0,6"
+                StrokeShape="RoundRectangle 16">
+            <Border.Shadow>
+                <Shadow Brush="{StaticResource Shadow}"
+                        Opacity="0.14"
+                        Radius="10"
+                        Offset="0,3" />
+            </Border.Shadow>
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Source={x:Reference this}, Path=SuggestedTags}"
+                                 BindableLayout.ItemTemplate="{StaticResource TagSuggestionTemplate}" />
+        </Border>
+    </VerticalStackLayout>
+</ContentView>

@@ -37,7 +37,6 @@ public class ContainerRepository : IContainerRepository
 
         DbContainer? dbContainer = await containers.GetAsync(containerId);
         if (dbContainer is null) return null;
-
         return await MapContainerWithPhotosAndRelationsAsync(dbContainer);
     }
 
@@ -128,6 +127,7 @@ public class ContainerRepository : IContainerRepository
         {
             RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
         }
+
         string pagingClause = hasPaging ? " LIMIT ? OFFSET ?" : string.Empty;
         object[] args = hasPaging
             ? [pattern, pattern, pageSizeValue, RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue)]
@@ -158,6 +158,7 @@ public class ContainerRepository : IContainerRepository
         {
             RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
         }
+
         string pagingClause = hasPaging ? " LIMIT ? OFFSET ?" : string.Empty;
         object[] args = hasPaging
             ? [pattern, pattern, pageSizeValue, RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue)]
@@ -215,7 +216,6 @@ public class ContainerRepository : IContainerRepository
 
         DbContainer? dbContainer = await containers.GetAsync(relation.ContainerId.ToString());
         if (dbContainer is null) return null;
-
         return await MapContainerWithPhotosAndRelationsAsync(dbContainer);
     }
 
@@ -342,8 +342,11 @@ public class ContainerRepository : IContainerRepository
     private async Task<(IEnumerable<DbImage> photos, IEnumerable<DbItemContainerRelation> relations)>
         LoadContainerPhotosAndRelationsAsync(Guid containerId)
     {
-        IEnumerable<DbImage> dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == containerId);
+        IEnumerable<DbImage> dbPhotos = await photos.QueryAsync(
+            $"SELECT * FROM {nameof(DbImage)} WHERE {nameof(DbImage.OwnerUniqueId)} = ? ORDER BY rowid",
+            containerId);
         IEnumerable<DbItemContainerRelation> relations = await itemContainerRelations.WhereAsync(r => r.ContainerId == containerId);
+
         return (dbPhotos, relations);
     }
 

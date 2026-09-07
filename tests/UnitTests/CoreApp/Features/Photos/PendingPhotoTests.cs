@@ -10,6 +10,7 @@ public class PendingPhotoTests
     private static ImageService CreateImageService(Mock<IFileHandler> files, Mock<ICameraHandler> camera)
     {
         var photoSourceReader = new PhotoSourceReader(camera.Object);
+
         return new ImageService(
             photoSourceReader,
             Mock.Of<IPhotoFilePersistenceService>(),
@@ -25,7 +26,7 @@ public class PendingPhotoTests
         var camera = new Mock<ICameraHandler>();
         camera.Setup(c => c.CapturePhotoAsync(It.IsAny<IProgress<double>?>())).ReturnsAsync([1, 2, 3]);
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToTemporaryPhotos, It.IsAny<byte[]>()))
-            .ReturnsAsync((string name, string folder, byte[] _) => $"/tmp/{folder}/{name}");
+            .ReturnsAsync((string name, string folder, byte[] _, CancellationToken _) => $"/tmp/{folder}/{name}");
         var pendingPhoto = new PendingPhoto(CreateImageService(files, camera));
 
         var captured = await pendingPhoto.CaptureAsync(PhotoSource.Camera);
@@ -66,7 +67,7 @@ public class PendingPhotoTests
         camera.Setup(c => c.CapturePhotoAsync(It.IsAny<IProgress<double>?>()))
             .ReturnsAsync(() => callCount++ == 0 ? new byte[] { 1 } : [2]);
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToTemporaryPhotos, It.IsAny<byte[]>()))
-            .ReturnsAsync((string name, string folder, byte[] _) => $"/tmp/{name}");
+            .ReturnsAsync((string name, string folder, byte[] _, CancellationToken _) => $"/tmp/{name}");
         var pendingPhoto = new PendingPhoto(CreateImageService(files, camera));
 
         await pendingPhoto.CaptureAsync(PhotoSource.Camera);
@@ -84,7 +85,7 @@ public class PendingPhotoTests
         var camera = new Mock<ICameraHandler>();
         camera.Setup(c => c.CapturePhotoAsync(It.IsAny<IProgress<double>?>())).ReturnsAsync([1]);
         files.Setup(f => f.SaveFileAsync(It.IsAny<string>(), Constants.PathToTemporaryPhotos, It.IsAny<byte[]>()))
-            .ReturnsAsync((string name, string folder, byte[] _) => $"/tmp/{name}");
+            .ReturnsAsync((string name, string folder, byte[] _, CancellationToken _) => $"/tmp/{name}");
         var pendingPhoto = new PendingPhoto(CreateImageService(files, camera));
         await pendingPhoto.CaptureAsync(PhotoSource.Camera);
         var fileName = Path.GetFileName(pendingPhoto.FullPath);

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.InventoryAggregate;
+using CoreApp.Application.Contracts.Tags;
 using MothballMobile.UI.Features.Items.Consumption;
 
 namespace MothballMobile.UI.Features.Containers.ContainerDetails;
@@ -72,12 +73,13 @@ public sealed class ContainerDetailsItemsCoordinator
         string containerId,
         Container container,
         string? searchTerm,
-        bool showQuantityManagement)
+        bool showQuantityManagement,
+        TagFilter? tagFilter = null)
     {
         var rows = GetRows();
         rows.ClearItems();
 
-        var page = await itemPaging.ReloadAsync(containerId, searchTerm);
+        var page = await itemPaging.ReloadAsync(containerId, searchTerm, tagFilter);
         if (page.IsStale)
         {
             return false;
@@ -206,6 +208,7 @@ public sealed class ContainerDetailsItemsCoordinator
                 showQuantityManagement),
             SkipNextInitialization);
         itemViewModel.LoadImagesAsync().FireAndForget(backgroundTasks, "Load container item images");
+
         return itemViewModel;
     }
 

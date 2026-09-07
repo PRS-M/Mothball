@@ -36,6 +36,8 @@ Use focused tests for planner/domain/application changes, integration tests for 
 
 Include concise XML documentation comments for public API classes, interfaces, methods, properties, and parameters, with priority on Domain, Application, and infrastructure contracts. Explain contract meaning, invariants, side effects, exceptions, and backend/platform differences where relevant. Keep comments accurate as behavior changes and avoid comments that only narrate obvious code.
 
+For readable formatting, keep related code in short logical blocks and use blank lines only between genuinely independent steps. A short linear sequence of roughly three or four lines may remain compact; do not split a small setup-and-return/throw sequence with a blank line. Leave a blank line after `}` when an independent statement or comment follows, but keep structural continuations such as `else` and `catch` attached. Do not add spacing solely before `{` or control-flow keywords. When an XML comment follows an opening `{` or a regular `//` comment in the same comment group, no separating blank line is needed.
+
 ## Change Delivery
 
 After each step that makes a meaningful change, provide a copyable one-line commit message in a fenced code block. Use Conventional Commits with the type first, followed by a Gitmoji in colon-code text format and a concise imperative description, for example:

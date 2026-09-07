@@ -102,6 +102,7 @@ public sealed class ItemQuantityEditCoordinator
                 ItemInventoryConsumptionSource.FromUnassigned(),
                 unassignedWithdrawal);
             var update = await inventoryCommands.ApplyWithdrawalAsync(inventory.Item.ItemId, plan);
+
             return new ItemInventoryWithdrawalExecutionResult(plan, update);
         }
 

@@ -7,6 +7,7 @@ public sealed class NoopInventoryBackupClient : IInventoryBackupClient
     {
         ArgumentNullException.ThrowIfNull(backup);
         cancellationToken.ThrowIfCancellationRequested();
+
         return Task.CompletedTask;
     }
 }

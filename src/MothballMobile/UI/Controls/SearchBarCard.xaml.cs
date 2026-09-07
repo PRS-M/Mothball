@@ -18,6 +18,10 @@ public partial class SearchBarCard : ContentView
 	public static readonly BindableProperty SearchCommandProperty =
 		BindableProperty.Create(nameof(SearchCommand), typeof(ICommand), typeof(SearchBarCard), null);
 
+    /// <summary>Identifies the <see cref="HasSearchFocus"/> bindable property.</summary>
+    public static readonly BindableProperty HasSearchFocusProperty =
+        BindableProperty.Create(nameof(HasSearchFocus), typeof(bool), typeof(SearchBarCard), false);
+
 	public string Placeholder
 	{
 		get => (string)GetValue(PlaceholderProperty);
@@ -35,4 +39,15 @@ public partial class SearchBarCard : ContentView
 		get => (ICommand?)GetValue(SearchCommandProperty);
 		set => SetValue(SearchCommandProperty, value);
 	}
+
+    /// <summary>Gets a value indicating whether the native search field currently has focus.</summary>
+    public bool HasSearchFocus
+    {
+        get => (bool)GetValue(HasSearchFocusProperty);
+        private set => SetValue(HasSearchFocusProperty, value);
+    }
+
+    private void OnSearchBarFocused(object? sender, FocusEventArgs e) => HasSearchFocus = true;
+
+    private void OnSearchBarUnfocused(object? sender, FocusEventArgs e) => HasSearchFocus = false;
 }

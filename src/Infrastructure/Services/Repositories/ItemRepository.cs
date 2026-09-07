@@ -42,7 +42,9 @@ public class ItemRepository : IItemRepository
         DbItem? dbItem = (await items.WhereAsync(item => item.ItemId == iid)).FirstOrDefault();
         if (dbItem is null) return null;
 
-        IEnumerable<DbImage> dbPhotos = await photos.WhereAsync(p => p.OwnerUniqueId == dbItem.ItemId);
+        IEnumerable<DbImage> dbPhotos = await photos.QueryAsync(
+            $"SELECT * FROM {nameof(DbImage)} WHERE {nameof(DbImage.OwnerUniqueId)} = ? ORDER BY rowid",
+            dbItem.ItemId);
         return dbItem.ToDomain(dbPhotos);
     }
 
@@ -61,7 +63,9 @@ public class ItemRepository : IItemRepository
             return null;
         }
 
-        var dbPhotos = await photos.WhereAsync(photo => photo.OwnerUniqueId == dbItem.ItemId);
+        var dbPhotos = await photos.QueryAsync(
+            $"SELECT * FROM {nameof(DbImage)} WHERE {nameof(DbImage.OwnerUniqueId)} = ? ORDER BY rowid",
+            dbItem.ItemId);
         return dbItem.ToDomain(dbPhotos);
     }
 
@@ -404,7 +408,6 @@ public class ItemRepository : IItemRepository
         logger.LogInformation(
             "SearchItemsInContainerAsync: containerId={ContainerId}, term='{SearchTerm}', page={PageNumber}, size={PageSize}, matched={Count}, elapsedMs={Elapsed}",
             containerId, searchTerm, pageNumber, pageSize, result.Count, sw.ElapsedMilliseconds);
-
         return result;
     }
 
@@ -493,6 +496,7 @@ public class ItemRepository : IItemRepository
         return dbItems.Select(dbItem =>
         {
             photosByItem.TryGetValue(dbItem.ItemId, out var itemPhotos);
+
             return dbItem.ToDomain(itemPhotos);
         }).ToList();
     }

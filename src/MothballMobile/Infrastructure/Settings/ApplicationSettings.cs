@@ -19,10 +19,12 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
         get
         {
             var raw = preferences.Get(LanguageKey, nameof(LanguagePreference.System));
+
             return Enum.TryParse<LanguagePreference>(raw, out var language)
                 ? language
                 : LanguagePreference.System;
         }
+
         set
         {
             if (Language == value)
@@ -39,10 +41,12 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
         get
         {
             var raw = preferences.Get(ThemeOverrideKey, nameof(AppTheme.Unspecified));
+
             return Enum.TryParse<AppTheme>(raw, out var theme)
                 ? theme
                 : AppTheme.Unspecified;
         }
+
         set
         {
             if (ThemeOverride == value)
@@ -62,6 +66,7 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
             {
                 preferences.Set(ThemePaletteKey, nameof(ThemePalette.BlueprintLedger));
                 preferences.Set(ThemePaletteConfiguredKey, true);
+
                 return ThemePalette.BlueprintLedger;
             }
 
@@ -70,6 +75,7 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
                 ? palette
                 : ThemePalette.BlueprintLedger;
         }
+
         set
         {
             if (ThemePalette == value)
@@ -88,10 +94,12 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
         get
         {
             var raw = preferences.Get(AppModeKey, nameof(AppMode.Advanced));
+
             return Enum.TryParse<AppMode>(raw, out var mode)
                 ? mode
                 : AppMode.Advanced;
         }
+
         set
         {
             if (AppMode == value)

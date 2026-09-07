@@ -37,6 +37,26 @@ public sealed class BaseViewModelTests
         });
     }
 
+    [Test]
+    public async Task RunCommandAsync_WhenActionIsCanceled_DoesNotPublishAnError()
+    {
+        var viewModel = new TestViewModel();
+        var errorRaised = false;
+        viewModel.ErrorOccurred += _ => errorRaised = true;
+
+        var exception = Assert.ThrowsAsync<OperationCanceledException>(
+            async () => await viewModel.RunAsync(() => Task.FromException(new OperationCanceledException("Superseded."))));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(exception, Is.Not.Null);
+            Assert.That(errorRaised, Is.False);
+            Assert.That(viewModel.ErrorMessage, Is.Null);
+            Assert.That(viewModel.HasError, Is.False);
+            Assert.That(viewModel.IsBusy, Is.False);
+        });
+    }
+
     private sealed class TestViewModel : BaseViewModel
     {
         public Task RunAsync(Func<Task> action) => RunCommandAsync(action);

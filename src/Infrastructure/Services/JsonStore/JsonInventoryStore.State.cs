@@ -12,5 +12,7 @@ public sealed partial class JsonInventoryStore
         public List<JsonInventoryRow> Inventories { get; set; } = [];
         public List<JsonImageRow> Images { get; set; } = [];
         public List<JsonRelationRow> Relations { get; set; } = [];
+        public List<JsonTagRow> Tags { get; set; } = [];
+        public List<JsonTagAssignmentRow> TagAssignments { get; set; } = [];
     }
 }

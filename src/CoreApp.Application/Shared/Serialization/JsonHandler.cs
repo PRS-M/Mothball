@@ -41,7 +41,6 @@ public class JsonHandler
 
         var json = await fileHandler.ReadTextFileAsync(fileName, folderName);
         var result = JsonSerializer.Deserialize<T>(json);
-
         return result ?? throw new JsonException($"Failed to deserialize JSON from file: {fileName}");
     }
 }

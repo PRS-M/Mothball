@@ -11,6 +11,7 @@ public enum InventoryBackupConflictPolicy
 public sealed record InventoryBackupRestoreOptions
 {
     public InventoryBackupConflictPolicy ConflictPolicy { get; init; } = InventoryBackupConflictPolicy.AddOnly;
+    public bool OverwriteExistingQuantities { get; init; }
     public bool RequireIntegrityValidation { get; init; } = true;
     public string? SignatureSecret { get; init; }
 }

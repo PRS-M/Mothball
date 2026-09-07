@@ -75,3 +75,13 @@ public sealed record AddExistingItemToContainerNavigationRequest(Guid ContainerI
             [NavigationParams.ContainerId] = ContainerId.ToString(),
         };
 }
+
+public sealed record TagResultsNavigationRequest(Guid TagId, string TagName) : INavigationRequest
+{
+    public IDictionary<string, object> ToParameters()
+        => new Dictionary<string, object>
+        {
+            [NavigationParams.TagId] = TagId.ToString(),
+            [NavigationParams.TagName] = TagName,
+        };
+}

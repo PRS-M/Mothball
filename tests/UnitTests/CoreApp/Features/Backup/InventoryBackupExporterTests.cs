@@ -3,6 +3,7 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Utilities;
+using CoreApp.Application.Contracts.Tags;
 using Moq;
 using System.IO.Compression;
 
@@ -57,6 +58,37 @@ public class InventoryBackupExporterTests
             Assert.That(backup.Data.Containers[0].BarcodeSymbology, Is.EqualTo((int)BarcodeSymbology.Code128));
             Assert.That(backup.Data.Items[0].BarcodeValue, Is.EqualTo("1234567890123"));
             Assert.That(backup.Data.Items[0].BarcodeSymbology, Is.EqualTo((int)BarcodeSymbology.Ean13));
+        });
+    }
+
+    [Test]
+    public async Task ExportAsync_IncludesDeduplicatedTagsAndAssignments()
+    {
+        var container = new Container(Guid.NewGuid(), "Garage", "Shelf A");
+        var item = new Item("Zip Ties", "Black 8 inch");
+        var winter = new CoreApp.Domain.Entities.TagAggregate.Tag(Guid.NewGuid(), "winter");
+        var fragile = new CoreApp.Domain.Entities.TagAggregate.Tag(Guid.NewGuid(), "fragile");
+
+        var queries = new Mock<IInventoryQueryRepository>();
+        queries.Setup(q => q.QueryContainersAsync(It.IsAny<CoreApp.Application.Specifications.ContainerListSpecification>())).ReturnsAsync([container]);
+        queries.Setup(q => q.QueryItemsWithPhotosAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>())).ReturnsAsync([item]);
+        queries.Setup(q => q.QueryInventorySnapshotsAsync(It.IsAny<CoreApp.Application.Specifications.ItemListSpecification>())).ReturnsAsync([
+            new InventorySnapshot(item, 1, 0, [])]);
+
+        var tags = new Mock<ITagRepository>();
+        tags.Setup(r => r.GetForTargetAsync(TagTargetType.Container, container.ContainerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([winter]);
+        tags.Setup(r => r.GetForTargetAsync(TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([winter, fragile]);
+
+        var sut = new InventoryBackupExporter(queries.Object, Mock.Of<IFileHandler>(), tags.Object);
+        var backup = await sut.ExportAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(backup.Data.Tags.Select(tag => tag.Name), Is.EqualTo(new[] { "fragile", "winter" }));
+            Assert.That(backup.Data.TagAssignments, Has.Count.EqualTo(3));
+            Assert.That(backup.Data.TagAssignments.Count(a => a.TagId == winter.TagId), Is.EqualTo(2));
         });
     }
 

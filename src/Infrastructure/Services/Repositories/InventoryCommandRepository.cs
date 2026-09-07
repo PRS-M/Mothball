@@ -93,6 +93,7 @@ public class InventoryCommandRepository : IInventoryCommandRepository
         {
             await relationRepo.DeleteItemContainerRelationAsync(itemId, containerId);
             inventoryChanges?.MarkChanged();
+
             return;
         }
 

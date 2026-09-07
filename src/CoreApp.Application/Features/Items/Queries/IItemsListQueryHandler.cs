@@ -1,5 +1,6 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Application.Specifications;
+using CoreApp.Application.Contracts.Tags;
 
 namespace CoreApp.Application.Features.Items.Queries;
 
@@ -15,9 +16,11 @@ public interface IItemsListQueryHandler
     /// <param name="searchTerm">Optional text used to filter items.</param>
     /// <param name="pageNumber">The optional zero-based page number.</param>
     /// <param name="pageSize">The optional number of items per page.</param>
+    /// <param name="tagFilter">Optional exact tag criteria applied alongside the text query.</param>
     Task<List<InventorySnapshot>> QueryAsync(
         ItemQueryFilter filter,
         string? searchTerm = null,
         int? pageNumber = null,
-        int? pageSize = null);
+        int? pageSize = null,
+        TagFilter? tagFilter = null);
 }

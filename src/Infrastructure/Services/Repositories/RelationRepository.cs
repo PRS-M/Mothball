@@ -16,6 +16,7 @@ public interface IRelationRepository
     /// <param name="containerId">The identifier of the receiving container.</param>
     /// <param name="quantity">The quantity to allocate.</param>
     Task InsertItemContainerRelationAsync(Guid itemId, Guid containerId, int quantity);
+
     /// <summary>
     /// Replaces the quantity assigned to an item in a container.
     /// </summary>
@@ -23,6 +24,7 @@ public interface IRelationRepository
     /// <param name="containerId">The identifier of the container.</param>
     /// <param name="quantity">The replacement allocation quantity.</param>
     Task ReplaceItemContainerRelationQuantityAsync(Guid itemId, Guid containerId, int quantity);
+
     /// <summary>
     /// Updates an item and sets its allocation in a container.
     /// </summary>
@@ -30,6 +32,7 @@ public interface IRelationRepository
     /// <param name="containerId">The identifier of the container.</param>
     /// <param name="quantity">The allocation quantity.</param>
     Task SetItemContainerAllocationAsync(Item item, Guid containerId, int quantity);
+
     /// <summary>
     /// Persists an item's allocations after an inventory withdrawal.
     /// </summary>
@@ -38,6 +41,7 @@ public interface IRelationRepository
     Task ApplyItemInventoryWithdrawalAsync(
         Item item,
         IReadOnlyCollection<CoreApp.Domain.Entities.InventoryAggregate.ItemContainerAllocation> allocations);
+
     /// <summary>
     /// Removes the allocation between an item and a container.
     /// </summary>

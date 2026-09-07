@@ -18,6 +18,7 @@ public sealed class InventoryBackupService : IInventoryBackupService
     {
         var backup = await backupExporter.ExportAsync(cancellationToken).ConfigureAwait(false);
         await backupClient.UploadAsync(backup, cancellationToken).ConfigureAwait(false);
+
         return backup;
     }
 }

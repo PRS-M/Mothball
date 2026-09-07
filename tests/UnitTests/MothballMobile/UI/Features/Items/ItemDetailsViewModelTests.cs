@@ -2,6 +2,8 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.UI.Features.Items.Consumption;
 using MothballMobile.UI.Features.Items.Quantity;
@@ -15,6 +17,65 @@ namespace Mothball.Tests.Unit.Mobile.UI.Features.Items;
 [TestFixture]
 public sealed class ItemDetailsViewModelTests
 {
+    [Test]
+    public async Task TagCommands_CreateAssignAndRemoveTag()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var details = new ItemDetailsResult(new InventorySnapshot(item, 1, 0, []));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+        var tag = new CoreApp.Domain.Entities.TagAggregate.Tag(Guid.NewGuid(), "winter");
+        var tags = new Mock<ITagRepository>();
+        tags.Setup(repository => repository.GetForTargetAsync(TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+        tags.Setup(repository => repository.GetOrCreateAsync(It.IsAny<TagName>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tag);
+
+        var viewModel = CreateViewModel(itemDetails.Object, Mock.Of<IItemInventoryCommandService>(), Mock.Of<IPopupService>(), tagRepository: tags.Object);
+        await viewModel.InitializeAsync(item.ItemId.ToString());
+        viewModel.NewTagText = "#winter";
+
+        await viewModel.AddTagCommand.ExecuteAsync(null);
+
+        var descriptor = viewModel.Tags.Single();
+        Assert.That(descriptor.Name, Is.EqualTo("winter"));
+        tags.Verify(repository => repository.AssignAsync(tag.TagId, TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()), Times.Once);
+
+        await viewModel.RemoveTagCommand.ExecuteAsync(descriptor);
+
+        Assert.That(viewModel.Tags, Is.Empty);
+        tags.Verify(repository => repository.RemoveAsync(tag.TagId, TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task TagEditorSuggestions_SelectingExistingTagAssignsItToTheItem()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var details = new ItemDetailsResult(new InventorySnapshot(item, 1, 0, []));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+        var suggestedTag = new CoreApp.Domain.Entities.TagAggregate.Tag(Guid.NewGuid(), "winter");
+        var tags = new Mock<ITagRepository>();
+        tags.Setup(repository => repository.GetForTargetAsync(TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+        tags.Setup(repository => repository.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([suggestedTag]);
+
+        var viewModel = CreateViewModel(
+            itemDetails.Object,
+            Mock.Of<IItemInventoryCommandService>(),
+            Mock.Of<IPopupService>(),
+            tagRepository: tags.Object);
+        await viewModel.InitializeAsync(item.ItemId.ToString());
+
+        viewModel.NewTagText = "#wi";
+
+        Assert.That(SpinWait.SpinUntil(() => viewModel.SuggestedTags.Count == 1, TimeSpan.FromSeconds(2)), Is.True);
+        await viewModel.AddSuggestedTagCommand.ExecuteAsync(viewModel.SuggestedTags[0]);
+
+        Assert.That(viewModel.Tags.Select(tag => tag.TagId), Is.EqualTo(new[] { suggestedTag.TagId }));
+        tags.Verify(repository => repository.AssignAsync(
+            suggestedTag.TagId, TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Test]
     public void DisplayDescription_UsesPlaceholderForEmptyDescription()
     {
@@ -372,6 +433,7 @@ public sealed class ItemDetailsViewModelTests
             .Returns(() =>
             {
                 viewModel!.TotalQuantity = 0;
+
                 return Task.FromResult<int?>(5);
             });
         popup.Setup(p => p.PickNumberAsync(It.Is<NumberPickerPopupDefinition>(
@@ -454,7 +516,8 @@ public sealed class ItemDetailsViewModelTests
         IPopupService popup,
         INavigationService? nav = null,
         IBarcodeAssignmentService? barcodeAssignments = null,
-        IBarcodeScanSession? barcodeScanner = null)
+        IBarcodeScanSession? barcodeScanner = null,
+        ITagRepository? tagRepository = null)
         => new(
             CreateCoordinator(itemDetails, inventoryCommands, popup),
             nav ?? Mock.Of<INavigationService>(),
@@ -466,7 +529,8 @@ public sealed class ItemDetailsViewModelTests
             Mock.Of<IPhotoBackgroundOperationTracker>(),
             Mock.Of<IBackgroundTaskObserver>(),
             barcodeAssignments ?? Mock.Of<IBarcodeAssignmentService>(),
-            barcodeScanner ?? Mock.Of<IBarcodeScanSession>());
+            barcodeScanner ?? Mock.Of<IBarcodeScanSession>(),
+            tagRepository: tagRepository);
 
     private static ItemDetailsCoordinator CreateCoordinator(
         IItemDetailsQueryHandler itemDetails,

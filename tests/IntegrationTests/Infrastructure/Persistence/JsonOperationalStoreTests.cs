@@ -26,8 +26,10 @@ public class JsonOperationalStoreTests
 
         public string AppDataPath => "/appdata";
 
-        public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
+        public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
+
+        public bool FileExists(string fileName, string folderPath) => false;
 
         public Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath)
             => throw new NotSupportedException();
@@ -35,7 +37,7 @@ public class JsonOperationalStoreTests
         public Task<byte[]> ReadFileAsync(string fileName, string folderPath)
             => throw new NotSupportedException();
 
-        public Task DeleteFileAsync(string fileName, string folderPath)
+        public Task DeleteFileAsync(string fileName, string folderPath, CancellationToken cancellationToken = default)
         {
             textFiles.Remove((folderPath, fileName));
             return Task.CompletedTask;
@@ -80,8 +82,10 @@ public class JsonOperationalStoreTests
     {
         public string AppDataPath => "/appdata";
 
-        public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data)
+        public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
+
+        public bool FileExists(string fileName, string folderPath) => false;
 
         public Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath)
             => throw new NotSupportedException();
@@ -89,7 +93,7 @@ public class JsonOperationalStoreTests
         public Task<byte[]> ReadFileAsync(string fileName, string folderPath)
             => throw new NotSupportedException();
 
-        public Task DeleteFileAsync(string fileName, string folderPath)
+        public Task DeleteFileAsync(string fileName, string folderPath, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
         public Task<string> SaveTextFileAsync(string fileName, string folderPath, string content)
@@ -116,6 +120,27 @@ public class JsonOperationalStoreTests
         Assert.That(state.Items, Is.Empty);
         Assert.That(state.Images, Is.Empty);
         Assert.That(state.Relations, Is.Empty);
+    }
+
+    [Test]
+    public async Task UpdateAsync_FirstWriteRecoversWithoutReenteringWriteLock()
+    {
+        var files = new InMemoryFileHandler();
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+
+        var update = store.UpdateAsync(state =>
+        {
+            state.Items.Add(new JsonItemRow { ItemId = item.ItemId, Name = item.Name });
+            return Task.CompletedTask;
+        });
+
+        var completed = await Task.WhenAny(update, Task.Delay(TimeSpan.FromSeconds(2)));
+        Assert.That(completed, Is.SameAs(update));
+        await update;
+
+        var state = await store.LoadAsync();
+        Assert.That(state.Items.Select(row => row.ItemId), Is.EquivalentTo(new[] { item.ItemId }));
     }
 
     [Test]
@@ -398,6 +423,8 @@ public class JsonOperationalStoreTests
         await files.WriteRawAsync(JsonStoreConstants.InventoriesFileName, JsonStoreConstants.SlotA, Serialize(inventories));
         await files.WriteRawAsync(JsonStoreConstants.ImagesFileName, JsonStoreConstants.SlotA, Serialize(images));
         await files.WriteRawAsync(JsonStoreConstants.RelationsFileName, JsonStoreConstants.SlotA, Serialize(relations));
+        await files.WriteRawAsync(JsonStoreConstants.TagsFileName, JsonStoreConstants.SlotA, Serialize(Array.Empty<JsonTagRow>()));
+        await files.WriteRawAsync(JsonStoreConstants.TagAssignmentsFileName, JsonStoreConstants.SlotA, Serialize(Array.Empty<JsonTagAssignmentRow>()));
         await files.WriteRawAsync(JsonStoreConstants.CommitInfoFileName, JsonStoreConstants.SlotA, Serialize(commitInfo));
 
         var manifestA = new JsonStoreManifest

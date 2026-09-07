@@ -20,6 +20,8 @@ internal static class JsonStoreConstants
     public static readonly string InventoriesFileName = "inventories.json";
     public static readonly string ImagesFileName = "images.json";
     public static readonly string RelationsFileName = "relations.json";
+    public static readonly string TagsFileName = "tags.json";
+    public static readonly string TagAssignmentsFileName = "tagAssignments.json";
 
     public static readonly string[] ExpectedFiles =
     [
@@ -30,6 +32,8 @@ internal static class JsonStoreConstants
         InventoriesFileName,
         ImagesFileName,
         RelationsFileName,
+        TagsFileName,
+        TagAssignmentsFileName,
     ];
 
     public static string SlotFolder(string slot) =>

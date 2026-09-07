@@ -138,6 +138,7 @@ public partial class ImageCarousel
 		{
 			CounterLabel.IsVisible = false;
 			CounterLabel.Text = string.Empty;
+
 			return;
 		}
 
@@ -222,6 +223,7 @@ public partial class ImageCarousel
 			{
 				Carousel.AbortAnimation(HeightAnimationName);
 				Carousel.HeightRequest = height;
+
 				return;
 			}
 

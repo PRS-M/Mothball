@@ -45,7 +45,6 @@ public sealed class ItemReceiptService : IItemReceiptService
 
         var existingDestinationQuantity = snapshot.Allocations
             .FirstOrDefault(allocation => allocation.ContainerId == destinationContainerId)?.Quantity ?? 0;
-
         return await inventoryCommands.SetContainerAllocationAsync(
             itemId,
             destinationContainerId,

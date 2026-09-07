@@ -24,7 +24,6 @@ public sealed class JsonItemRepository : IItemRepository
         var state = await store.LoadAsync().ConfigureAwait(false);
         var row = state.Items.FirstOrDefault(i => i.ItemId == iid);
         if (row is null) return null;
-
         return MapItem(state, row);
     }
 
@@ -158,7 +157,6 @@ public sealed class JsonItemRepository : IItemRepository
         var itemsById = state.Items
             .Where(i => ids.Contains(i.ItemId))
             .ToDictionary(i => i.ItemId);
-
         return ids
             .Where(itemsById.ContainsKey)
             .Select(i => MapItem(state, itemsById[i]))
@@ -309,7 +307,6 @@ public sealed class JsonItemRepository : IItemRepository
     public Task InsertAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
-
         return store.UpdateAsync(state =>
         {
             var existing = state.Items.FirstOrDefault(i => i.ItemId == item.ItemId);
@@ -319,6 +316,7 @@ public sealed class JsonItemRepository : IItemRepository
                 existing.Description = item.Description;
                 existing.BarcodeValue = item.Barcode?.Value ?? string.Empty;
                 existing.BarcodeSymbology = item.Barcode is null ? null : (int)item.Barcode.Symbology;
+
                 return Task.CompletedTask;
             }
 
@@ -340,7 +338,6 @@ public sealed class JsonItemRepository : IItemRepository
     public Task UpdateAsync(Item item)
     {
         ArgumentNullException.ThrowIfNull(item);
-
         return store.UpdateAsync(state =>
         {
             var existing = state.Items.FirstOrDefault(i => i.ItemId == item.ItemId);
@@ -372,7 +369,6 @@ public sealed class JsonItemRepository : IItemRepository
     public Task DeletePhotoAsync(Item item, Guid imageId)
     {
         ArgumentNullException.ThrowIfNull(item);
-
         return store.UpdateAsync(state =>
         {
             state.Images.RemoveAll(i => i.ImageId == imageId && i.OwnerUniqueId == item.ItemId);
@@ -406,13 +402,13 @@ public sealed class JsonItemRepository : IItemRepository
     public Task DeleteAsync(string itemId)
     {
         if (!Guid.TryParse(itemId, out var iid)) return Task.CompletedTask;
-
         return store.UpdateAsync(state =>
         {
             state.Images.RemoveAll(p => p.OwnerUniqueId == iid);
             state.Relations.RemoveAll(r => r.ItemId == iid);
             state.Inventories.RemoveAll(i => i.ItemId == iid);
             state.Items.RemoveAll(i => i.ItemId == iid);
+
             return Task.CompletedTask;
         });
     }

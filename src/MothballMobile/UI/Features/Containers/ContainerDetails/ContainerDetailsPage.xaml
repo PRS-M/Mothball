@@ -175,6 +175,14 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <controls:TagEditor Tags="{Binding Tags}"
+                                    NewTagText="{Binding NewTagText}"
+                                    SuggestedTags="{Binding SuggestedAssignmentTags}"
+                                    IsSuggestionsVisible="{Binding IsAssignmentTagSuggestionsVisible}"
+                                    AddCommand="{Binding CreateTagCommand}"
+                                    RemoveCommand="{Binding UnassignTagCommand}"
+                                    SuggestionCommand="{Binding AddSuggestedAssignmentTagCommand}" />
+
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{x:Static strings:AppResources.ItemsInThisContainer}"
                            FontSize="18"
@@ -216,9 +224,14 @@
                     </Grid>
                 </VerticalStackLayout>
 
-                <controls:SearchBarCard Placeholder="{x:Static strings:AppResources.SearchWithinContainer}"
-                                        Text="{Binding SearchQuery}"
-                                        SearchCommand="{Binding ApplySearchCommand}" />
+                <controls:TagSearchPanel Placeholder="{x:Static strings:AppResources.SearchWithinContainer}"
+                                         Text="{Binding SearchQuery}"
+                                         SearchCommand="{Binding ApplySearchCommand}"
+                                         SelectedTags="{Binding SelectedTags}"
+                                         SuggestedTags="{Binding SuggestedTags}"
+                                         IsTagSuggestionsVisible="{Binding IsTagSuggestionsVisible}"
+                                         AddTagCommand="{Binding AddTagCommand}"
+                                         RemoveTagCommand="{Binding RemoveTagCommand}" />
             </VerticalStackLayout>
         </DataTemplate>
 

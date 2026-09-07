@@ -136,6 +136,7 @@ public partial class AssociateItemWithContainerViewModel : PagedListViewModelBas
                 {
                     await nav.GoBackAsync();
                 }
+
                 return;
             }
 

@@ -47,7 +47,6 @@ internal sealed class JsonStoreManifestManager
         var effectiveManifest = best.CurrentSlotComplete
             ? best.Manifest
             : SynthesizeRollback(best.Manifest);
-
         return new JsonStoreActiveManifest(
             effectiveManifest,
             best.FileName,
@@ -67,7 +66,6 @@ internal sealed class JsonStoreManifestManager
 
         var currentSlotComplete = await isSlotComplete(manifest.CurrentSlot).ConfigureAwait(false);
         var previousSlotComplete = await isSlotComplete(manifest.PreviousSlot).ConfigureAwait(false);
-
         return new ManifestCandidate(manifest, manifestFileName, currentSlotComplete, previousSlotComplete);
     }
 

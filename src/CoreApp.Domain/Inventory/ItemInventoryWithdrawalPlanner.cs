@@ -68,7 +68,6 @@ public static class ItemInventoryWithdrawalPlanner
             targetTotal,
             targetTotal - assignedQuantity,
             unassignedWithdrawals);
-
         return new ItemInventoryWithdrawalPlan(
             totalQuantity,
             assignedQuantity,

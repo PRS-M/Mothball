@@ -7,12 +7,16 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="AddUpsertMetadata" xml:space="preserve"><value>Metadaten hinzufügen + aktualisieren</value></data>
   <data name="AddContainer" xml:space="preserve"><value>Container hinzufügen</value></data>
+  <data name="AddExistingContainer" xml:space="preserve"><value>Vorhandenen Container hinzufügen</value></data>
   <data name="AddExistingItem" xml:space="preserve"><value>Vorhandenen Gegenstand hinzufügen</value></data>
   <data name="AddItem" xml:space="preserve"><value>Gegenstand hinzufügen</value></data>
   <data name="AddANewItem" xml:space="preserve"><value>Neuen Gegenstand hinzufügen</value></data>
   <data name="AddAnExistingItem" xml:space="preserve"><value>Vorhandenen Gegenstand hinzufügen</value></data>
   <data name="AddOnly" xml:space="preserve"><value>Nur hinzufügen</value></data>
   <data name="AddPhoto" xml:space="preserve"><value>Foto hinzufügen</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Tag hinzufügen</value></data>
+  <data name="Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="TagNamePlaceholder" xml:space="preserve"><value>Tag eingeben</value></data>
   <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Fügt Container, Gegenstände, Änderungen der Zuordnungsmengen und Bilder hinzu, die in der Sicherung vorhanden sind, aber in der App fehlen.</value></data>
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Fügt fehlende Einträge wie bei „Nur hinzufügen“ hinzu.</value></data>
   <data name="Advanced" xml:space="preserve"><value>Erweitert</value></data>
@@ -303,4 +307,17 @@
   <data name="BrowseYourStorage" xml:space="preserve"><value>Ihre Aufbewahrung durchsuchen</value></data>
   <data name="AllItemsAcrossContainers" xml:space="preserve"><value>Alle Gegenstände in allen Containern</value></data>
   <data name="RestartMothballToApplyTheNewLanguage" xml:space="preserve"><value>Mothball neu starten, um die neue Sprache anzuwenden.</value></data>
+  <data name="OverwriteExistingQuantities" xml:space="preserve"><value>Vorhandene Mengen überschreiben?</value></data>
+  <data name="ThisMayReplaceNewerStockCountsWithValuesFromTheBackup" xml:space="preserve"><value>Dadurch können neuere Bestandszahlen durch Werte aus der Sicherung ersetzt werden.</value></data>
+  <data name="Overwrite" xml:space="preserve"><value>Überschreiben</value></data>
+  <data name="KeepCurrent" xml:space="preserve"><value>Aktuelle behalten</value></data>
+  <data name="BrowseYourTags" xml:space="preserve"><value>Tags durchsuchen</value></data>
+  <data name="SearchTags" xml:space="preserve"><value>Tags suchen ...</value></data>
+  <data name="NoTagsFound" xml:space="preserve"><value>Keine Tags gefunden</value></data>
+  <data name="OpenTheTagsView" xml:space="preserve"><value>Tag-Ansicht öffnen</value></data>
+  <data name="TaggedResultsSubtitle" xml:space="preserve"><value>Gegenstände und Container mit diesem Tag</value></data>
+  <data name="SearchTaggedResults" xml:space="preserve"><value>Getaggte Ergebnisse suchen ...</value></data>
+  <data name="NoTaggedResults" xml:space="preserve"><value>Keine passenden Gegenstände oder Container</value></data>
+  <data name="ClearTag" xml:space="preserve"><value>Ausgewählten Tag löschen</value></data>
+  <data name="TagUsageFormat" xml:space="preserve"><value>{0} Gegenstände · {1} Container</value></data>
 </root>

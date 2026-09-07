@@ -53,7 +53,6 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
         inventory.SetContainerAllocation(containerId, containerName, quantity);
 
         await inventoryCommands.SaveItemInventoryAsync(inventory);
-
         return CreateResult(inventory, removedFromContainer: quantity == 0);
     }
 
@@ -65,6 +64,7 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
     {
         var summary = await GetSummaryAsync(itemId);
         var plan = ItemInventoryConsumptionPlanner.Plan(summary, source, quantity);
+
         return await ApplyWithdrawalAsync(summary, plan);
     }
 
@@ -75,6 +75,7 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
     {
         ArgumentNullException.ThrowIfNull(plan);
         var summary = await GetSummaryAsync(itemId);
+
         return await ApplyWithdrawalAsync(summary, plan);
     }
 
@@ -92,6 +93,7 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
             {
                 await photoDeletion.DeleteItemPhotoFilesBestEffortAsync(summary.Item);
             }
+
             return new ItemInventoryUpdateResult(true, 0, 0, 0, ItemDeleted: true);
         }
 

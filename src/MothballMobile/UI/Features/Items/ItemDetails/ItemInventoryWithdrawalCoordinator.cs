@@ -111,6 +111,7 @@ public sealed class ItemInventoryWithdrawalCoordinator
     {
         var plan = session.BuildPlan();
         var update = await inventoryCommands.ApplyWithdrawalAsync(itemId, plan);
+
         return new ItemInventoryWithdrawalExecutionResult(plan, update);
     }
 }

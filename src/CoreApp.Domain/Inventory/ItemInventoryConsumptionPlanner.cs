@@ -76,6 +76,7 @@ public static class ItemInventoryConsumptionPlanner
     {
         int assignedQuantity = allocations.Sum(allocation => allocation.Quantity);
         int unassignedQuantity = totalQuantity - assignedQuantity;
+
         return new ItemInventoryWithdrawalPlan(
             totalQuantity,
             assignedQuantity,

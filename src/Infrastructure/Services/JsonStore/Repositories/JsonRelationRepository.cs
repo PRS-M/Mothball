@@ -17,11 +17,9 @@ public sealed class JsonRelationRepository : IRelationRepository
     public Task InsertItemContainerRelationAsync(Guid itemId, Guid containerId, int quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
-
         return store.UpdateAsync(state =>
         {
             InsertOrIncreaseRelation(state, itemId, containerId, quantity);
-
             return Task.CompletedTask;
         });
     }
@@ -30,7 +28,6 @@ public sealed class JsonRelationRepository : IRelationRepository
     public Task ReplaceItemContainerRelationQuantityAsync(Guid itemId, Guid containerId, int quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(quantity);
-
         return store.UpdateAsync(state =>
         {
             state.Relations.RemoveAll(r => r.ItemId == itemId && r.ContainerId == containerId);
@@ -118,6 +115,7 @@ public sealed class JsonRelationRepository : IRelationRepository
         return store.UpdateAsync(state =>
         {
             state.Relations.RemoveAll(r => r.ItemId == itemId && r.ContainerId == containerId);
+
             return Task.CompletedTask;
         });
     }

@@ -35,6 +35,7 @@ public class CameraHandler : ICameraHandler
         => await GetPhotoBytesAsync(async () =>
         {
             IReadOnlyList<FileResult>? photos = await mediaPicker.PickPhotosAsync();
+
             return photos?.FirstOrDefault();
         }, "Photo selection", resizeProgress);
 
@@ -74,6 +75,7 @@ public class CameraHandler : ICameraHandler
         using Stream originalStream = await photo.OpenReadAsync();
         byte[] bytes = await ReadAllBytesAsync(originalStream);
         resizeProgress?.Report(1);
+
         return bytes;
     }
 
@@ -88,6 +90,7 @@ public class CameraHandler : ICameraHandler
             {
                 using var oversized = new MemoryStream();
                 await stream.CopyToAsync(oversized);
+
                 return oversized.ToArray();
             }
 
@@ -153,6 +156,7 @@ public class CameraHandler : ICameraHandler
                 {
                     // Guard the thumbnail pipeline; any SkiaSharp issue should fall back to original image bytes.
                     logger.LogWarning(ex, "SkiaSharp thumbnail generation failed; falling back to original image bytes.");
+
                     return null;
                 }
             });
@@ -161,6 +165,7 @@ public class CameraHandler : ICameraHandler
         {
             // If thumbnail generation fails for any reason, fall back to the original bytes.
             logger.LogWarning(ex, "Thumbnail generation task failed; falling back to original image bytes.");
+
             return null;
         }
     }
@@ -200,6 +205,7 @@ public class CameraHandler : ICameraHandler
             sampling,
             paint);
         canvas.Flush();
+
         return destination;
     }
 

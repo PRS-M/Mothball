@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Tags.TagAssignment"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
+                x:Class="MothballMobile.UI.Features.Tags.TagAssignment.TagContainerPickerPage"
+                x:DataType="vm:TagContainerPickerViewModel"
+                Title="{x:Static strings:AppResources.AddExistingContainer}"
+                Background="{DynamicResource Surface}">
+    <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+        <controls:PageHeader Title="{Binding Title}"
+                             Subtitle="{x:Static strings:AppResources.SelectContainer}"
+                             TitleFontSize="24" />
+        <SearchBar Grid.Row="1"
+                   Placeholder="{x:Static strings:AppResources.SearchContainers}"
+                   Text="{Binding SearchQuery}"
+                   SearchCommand="{Binding ApplySearchCommand}"
+                   CancelButtonColor="{DynamicResource Primary}" />
+        <Grid Grid.Row="2">
+            <RefreshView IsRefreshing="{Binding IsRefreshing}"
+                         Command="{Binding RefreshCommand}">
+                <CollectionView ItemsSource="{Binding Items}"
+                                RemainingItemsThreshold="3"
+                                RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}"
+                                SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <controls:EmptyStateView Title="{x:Static strings:AppResources.NoContainersYet}" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TagContainerPickerRowViewModel">
+                            <controls:ContainerTile Command="{Binding SelectCommand}"
+                                                     Name="{Binding Name}"
+                                                     Notes="{Binding Notes}"
+                                                     ItemCount="{Binding ItemCount}"
+                                                     ItemTypesCount="{Binding ItemTypesCount}"
+                                                     ShowItemCount="{Binding ShowItemCount}"
+                                                     ShowItemTypesCount="{Binding ShowItemTypesCount}"
+                                                     ImagePaths="{Binding ImagePaths}"
+                                                     ImageSize="72" />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+            <controls:ListLoadingView IsVisible="False"
+                                      IsLoading="{Binding IsRefreshing}"
+                                      LoadingText="{x:Static strings:AppResources.LoadingContainers}">
+                <controls:ListLoadingView.Triggers>
+                    <DataTrigger TargetType="controls:ListLoadingView"
+                                 Binding="{Binding IsRefreshing}"
+                                 Value="True">
+                        <Setter Property="IsVisible" Value="True" />
+                    </DataTrigger>
+                </controls:ListLoadingView.Triggers>
+            </controls:ListLoadingView>
+        </Grid>
+    </Grid>
+</views:BasePage>

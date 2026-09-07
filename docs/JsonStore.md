@@ -111,8 +111,10 @@ Each slot contains:
 - `items.json`
 - `images.json`
 - `relations.json`
+- `tags.json`
+- `tagAssignments.json`
 
-Expected completeness rule: a slot is considered complete only if all files above are readable.
+Expected completeness rule: a slot is considered complete only if all files above are readable. The tag files are part of the current slot format, so older manually seeded slots must be migrated or rewritten before they can be selected as active.
 
 ---
 

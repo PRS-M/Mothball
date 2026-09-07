@@ -39,6 +39,7 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
             cancellationToken).ConfigureAwait(false);
         var fileName = BuildBackupFileName("json");
         var fullPath = await fileHandler.SaveTextFileAsync(fileName, BackupsFolder, backupJson).ConfigureAwait(false);
+
         return new InventoryBackupExportResult(fileName, fullPath);
     }
 
@@ -51,6 +52,7 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
             cancellationToken).ConfigureAwait(false);
         var fileName = BuildBackupFileName("zip");
         var fullPath = await fileHandler.SaveFileAsync(fileName, BackupsFolder, backupZip).ConfigureAwait(false);
+
         return new InventoryBackupExportResult(fileName, fullPath);
     }
 
@@ -71,18 +73,20 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
     public async Task<InventoryBackupRestoreResult> RestoreJsonAsync(
         string backupJson,
         InventoryBackupConflictPolicy conflictPolicy,
+        bool overwriteExistingQuantities = false,
         CancellationToken cancellationToken = default)
     {
-        var options = await CreateRestoreOptionsAsync(conflictPolicy, cancellationToken).ConfigureAwait(false);
+        var options = await CreateRestoreOptionsAsync(conflictPolicy, overwriteExistingQuantities, cancellationToken).ConfigureAwait(false);
         return await backupRestoreService.RestoreFromJsonAsync(backupJson, options, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<InventoryBackupZipRestoreResult> RestoreZipAsync(
         byte[] backupZip,
         InventoryBackupConflictPolicy conflictPolicy,
+        bool overwriteExistingQuantities = false,
         CancellationToken cancellationToken = default)
     {
-        var options = await CreateRestoreOptionsAsync(conflictPolicy, cancellationToken).ConfigureAwait(false);
+        var options = await CreateRestoreOptionsAsync(conflictPolicy, overwriteExistingQuantities, cancellationToken).ConfigureAwait(false);
         return await backupZipRestoreService.RestoreFromZipAsync(backupZip, options, cancellationToken).ConfigureAwait(false);
     }
 
@@ -111,10 +115,12 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
 
     private async Task<InventoryBackupRestoreOptions> CreateRestoreOptionsAsync(
         InventoryBackupConflictPolicy conflictPolicy,
+        bool overwriteExistingQuantities,
         CancellationToken cancellationToken)
         => new()
         {
             ConflictPolicy = conflictPolicy,
+            OverwriteExistingQuantities = overwriteExistingQuantities,
             SignatureSecret = await GetSignatureSecretAsync(cancellationToken).ConfigureAwait(false),
         };
 

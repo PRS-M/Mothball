@@ -4,6 +4,7 @@ using System.Text.Json;
 using CoreApp.Application.Features.Backup.Archive;
 using CoreApp.Application.Features.Backup.Restore.Planning;
 using CoreApp.Application.Specifications;
+using CoreApp.Application.Contracts.Tags;
 
 namespace CoreApp.Application.Features.Backup.Export;
 
@@ -11,6 +12,7 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
 {
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IFileHandler fileHandler;
+    private readonly ITagRepository? tagRepository;
 
     private static readonly JsonSerializerOptions BackupJsonOptions = new()
     {
@@ -20,10 +22,12 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
 
     public InventoryBackupExporter(
         IInventoryQueryRepository inventoryQueries,
-        IFileHandler fileHandler)
+        IFileHandler fileHandler,
+        ITagRepository? tagRepository = null)
     {
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
         this.fileHandler = fileHandler ?? throw new ArgumentNullException(nameof(fileHandler));
+        this.tagRepository = tagRepository;
     }
 
     /// <inheritdoc />
@@ -110,6 +114,11 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
             .ThenBy(i => i.ImageId)
             .ToList();
 
+        var (backupTags, backupTagAssignments) = await ExportTagsAsync(
+            containers.Select(container => (container.ContainerId, TagTargetType.Container))
+                .Concat(items.Select(item => (item.ItemId, TagTargetType.Item))),
+            cancellationToken).ConfigureAwait(false);
+
         var backup = new InventoryBackupEnvelope
         {
             CreatedUtc = DateTimeOffset.UtcNow,
@@ -119,10 +128,59 @@ public sealed class InventoryBackupExporter : IInventoryBackupExporter
                 Items = backupItems,
                 Relations = backupRelations,
                 Images = backupImages,
+                Tags = backupTags,
+                TagAssignments = backupTagAssignments,
             },
         };
 
         return InventoryBackupRestorePlanner.AttachIntegrity(backup, signatureSecret, keyId);
+    }
+
+    private async Task<(List<InventoryBackupTag> Tags, List<InventoryBackupTagAssignment> Assignments)> ExportTagsAsync(
+        IEnumerable<(Guid TargetId, TagTargetType TargetType)> targets,
+        CancellationToken cancellationToken)
+    {
+        if (tagRepository is null)
+        {
+            return ([], []);
+        }
+
+        var tagsById = new Dictionary<Guid, InventoryBackupTag>();
+        var assignments = new List<InventoryBackupTagAssignment>();
+
+        foreach (var target in targets)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var tags = await tagRepository
+                .GetForTargetAsync(target.TargetType, target.TargetId, cancellationToken)
+                .ConfigureAwait(false);
+
+            foreach (var tag in tags)
+            {
+                tagsById.TryAdd(tag.TagId, new InventoryBackupTag
+                {
+                    TagId = tag.TagId,
+                    Name = tag.Name.Value,
+                });
+                assignments.Add(new InventoryBackupTagAssignment
+                {
+                    TagId = tag.TagId,
+                    TargetId = target.TargetId,
+                    TargetType = target.TargetType,
+                });
+            }
+        }
+
+        return (
+            tagsById.Values
+                .OrderBy(tag => tag.Name, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(tag => tag.TagId)
+                .ToList(),
+            assignments
+                .OrderBy(assignment => assignment.TargetType)
+                .ThenBy(assignment => assignment.TargetId)
+                .ThenBy(assignment => assignment.TagId)
+                .ToList());
     }
 
     /// <inheritdoc />

@@ -41,6 +41,7 @@ public sealed class AssociateItemWithContainerCoordinator : IDisposable
             associateAsync,
             applicationSettings.IsAdvancedMode);
         viewModel.LoadImagesAsync().FireAndForget(backgroundTasks, "Load selectable container images");
+
         return viewModel;
     }
 

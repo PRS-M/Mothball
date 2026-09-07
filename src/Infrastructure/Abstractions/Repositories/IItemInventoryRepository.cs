@@ -24,11 +24,13 @@ public interface IItemInventoryRepository
     /// </summary>
     /// <param name="inventory">The value used by the operation.</param>
     Task InsertAsync(ItemInventory inventory);
+
     /// <summary>
     /// Saves changes to an item inventory record.
     /// </summary>
     /// <param name="inventory">The value used by the operation.</param>
     Task SaveAsync(ItemInventory inventory);
+
     /// <summary>
     /// Deletes an item's inventory record.
     /// </summary>

@@ -68,6 +68,76 @@ public class InventoryBackupZipRestoreServiceTests
     }
 
     [Test]
+    public void RestoreFromZipAsync_WhenCancellationFollowsNewPhotoSave_DeletesTheNewFile()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var photoId = Guid.NewGuid();
+        var backup = CreateBackup(containerId, itemId, photoId, itemPhotoId: null);
+        var zipBytes = CreateZip(backup, ($"images/containers/{photoId}.jpg", [1, 2, 3]));
+        using var cancellation = new CancellationTokenSource();
+        bool filePresent = false;
+
+        var restoreService = new Mock<IInventoryBackupRestoreService>();
+        restoreService
+            .Setup(s => s.RestoreAsync(It.IsAny<InventoryBackupEnvelope>(), It.IsAny<InventoryBackupRestoreOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new InventoryBackupRestoreResult());
+
+        var fileHandler = new Mock<IFileHandler>();
+        fileHandler
+            .Setup(f => f.FileExists($"{photoId}.jpg", Constants.PathToContainerPhotos))
+            .Returns(() => filePresent);
+        fileHandler
+            .Setup(f => f.SaveFileAsync($"{photoId}.jpg", Constants.PathToContainerPhotos, It.IsAny<byte[]>(), It.IsAny<CancellationToken>()))
+            .Callback(() =>
+            {
+                filePresent = true;
+                cancellation.Cancel();
+            })
+            .ReturnsAsync("/tmp/container.jpg");
+        fileHandler
+            .Setup(f => f.DeleteFileAsync($"{photoId}.jpg", Constants.PathToContainerPhotos, It.IsAny<CancellationToken>()))
+            .Callback(() => filePresent = false)
+            .Returns(Task.CompletedTask);
+
+        var sut = new InventoryBackupZipRestoreService(restoreService.Object, fileHandler.Object);
+
+        Assert.ThrowsAsync<OperationCanceledException>(() => sut.RestoreFromZipAsync(zipBytes, cancellationToken: cancellation.Token));
+        fileHandler.Verify(f => f.DeleteFileAsync($"{photoId}.jpg", Constants.PathToContainerPhotos, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.That(filePresent, Is.False);
+    }
+
+    [Test]
+    public void RestoreFromZipAsync_WhenCancellationFollowsExistingPhotoOverwrite_PreservesTheFile()
+    {
+        var containerId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var photoId = Guid.NewGuid();
+        var backup = CreateBackup(containerId, itemId, photoId, itemPhotoId: null);
+        var zipBytes = CreateZip(backup, ($"images/containers/{photoId}.jpg", [1, 2, 3]));
+        using var cancellation = new CancellationTokenSource();
+
+        var restoreService = new Mock<IInventoryBackupRestoreService>();
+        restoreService
+            .Setup(s => s.RestoreAsync(It.IsAny<InventoryBackupEnvelope>(), It.IsAny<InventoryBackupRestoreOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new InventoryBackupRestoreResult());
+
+        var fileHandler = new Mock<IFileHandler>();
+        fileHandler
+            .Setup(f => f.FileExists($"{photoId}.jpg", Constants.PathToContainerPhotos))
+            .Returns(true);
+        fileHandler
+            .Setup(f => f.SaveFileAsync($"{photoId}.jpg", Constants.PathToContainerPhotos, It.IsAny<byte[]>(), It.IsAny<CancellationToken>()))
+            .Callback(() => cancellation.Cancel())
+            .ReturnsAsync("/tmp/container.jpg");
+
+        var sut = new InventoryBackupZipRestoreService(restoreService.Object, fileHandler.Object);
+
+        Assert.ThrowsAsync<OperationCanceledException>(() => sut.RestoreFromZipAsync(zipBytes, cancellationToken: cancellation.Token));
+        fileHandler.Verify(f => f.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
     public async Task RestoreFromZipAsync_SkipsPhotoEntryWithoutBackupOwner()
     {
         var containerId = Guid.NewGuid();

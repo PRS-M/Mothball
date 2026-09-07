@@ -42,6 +42,8 @@ Put behavior in the lowest layer that can own it. For stored data, update the Ap
 
 Document public APIs with concise XML comments, especially public classes, interfaces, methods, properties, and parameters in Domain, Application, and infrastructure contracts. Keep comments focused on the contract, invariants, side effects, failure behavior, and backend/platform differences; update them when behavior changes. Do not add noisy comments that merely restate obvious implementation code.
 
+When an XML comment documents a declaration, leave a blank line before the comment for readability, except when the comment immediately follows an opening `{` or a regular `//` comment that belongs to the same comment group. Declarations without comments may remain stacked without blank lines between them. Group related code into short logical blocks and use blank lines to separate genuinely independent steps. A short linear sequence of roughly three or four lines may remain compact; do not add a blank line merely to split a small setup-and-return/throw sequence. Add a blank line after `}` when an independent statement or comment follows, while keeping structural continuations such as `else` and `catch` attached. Do not add spacing solely before `{` or control-flow keywords.
+
 For UI, keep feature page, XAML, code-behind, view model, and presentation-only models together under `src/MothballMobile/UI/Features`. Prefer compiled bindings (`x:DataType`), CommunityToolkit MVVM attributes, `CollectionView` for lists, and navigation through `INavigationService`. User-facing strings belong in all localization `.resx` files and may also require `ResourceKeyMap.cs`.
 
 Do not reference the MAUI app project from `UnitTests`. Its mobile-only classes are deliberately listed as explicit `<Compile Include=...>` entries in `tests/UnitTests/UnitTests.csproj`; add a new entry when a test needs another mobile source file. Do not add generated `bin/`, `obj/`, IDE cache, local AdMob configuration, or design-prototype files.
@@ -50,7 +52,7 @@ Read the relevant document before changing a specialized workflow: `docs/Develop
 
 ## Change Delivery
 
-After each step that makes a meaningful change, provide a copyable one-line commit message in a fenced code block. Use Conventional Commits with the type first, followed by a Gitmoji in colon-code text format and a concise imperative description, for example:
+After each step that makes a meaningful change, provide a copyable one-line commit message in a fenced code block. Use Conventional Commits with the type first, followed by a Gitmoji in colon-code text format and a concise imperative description. Use only Gitmojis listed on [gitmoji.dev](https://gitmoji.dev/); do not invent aliases or use emoji names from another catalog. For example:
 
 ```text
 feat: :sparkles: add barcode layout validation

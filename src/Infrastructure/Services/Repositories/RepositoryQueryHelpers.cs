@@ -16,6 +16,7 @@ internal static class RepositoryQueryHelpers
         {
             pageNumberValue = pageNumber.Value;
             pageSizeValue = pageSize.Value;
+
             return true;
         }
 
@@ -61,6 +62,7 @@ internal static class RepositoryQueryHelpers
         {
             ValidatePaging(pageNumberValue, pageSizeValue);
             int offset = CalculateOffset(pageNumberValue, pageSizeValue);
+
             return repository.QueryAsync(
                 $"SELECT * FROM {typeof(T).Name} ORDER BY rowid LIMIT ? OFFSET ?",
                 pageSizeValue,

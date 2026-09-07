@@ -1,5 +1,8 @@
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Models;
+using CoreApp.Application.Contracts.Backup;
+using CoreApp.Application.Contracts.Tags;
+using CoreApp.Domain.ValueObjects;
 
 namespace Infrastructure.Services.Restore;
 
@@ -47,16 +50,96 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
             cancellationToken.ThrowIfCancellationRequested();
 
             var existingState = CreateExistingState(state);
-            var plan = InventoryBackupRestorePlanner.BuildPlan(backup, existingState, options.ConflictPolicy);
+            var plan = InventoryBackupRestorePlanner.BuildPlan(
+                backup,
+                existingState,
+                options.ConflictPolicy,
+                options.OverwriteExistingQuantities);
             ApplyPlan(state, plan, cancellationToken);
+            ApplyTags(state, backup.Data, cancellationToken);
             result = plan.Result;
 
             return Task.CompletedTask;
-        }).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
 
         inventoryChanges?.MarkChanged();
         return result;
     }
+
+    private static void ApplyTags(
+        JsonInventoryStore.StoreState state,
+        InventoryBackupData data,
+        CancellationToken cancellationToken)
+    {
+        var tagIdMap = new Dictionary<Guid, Guid>();
+
+        foreach (var backupTag in data.Tags)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (backupTag.TagId == Guid.Empty || string.IsNullOrWhiteSpace(backupTag.Name))
+            {
+                continue;
+            }
+
+            var tagName = new TagName(backupTag.Name);
+            var existing = state.Tags.FirstOrDefault(tag => tag.NormalizedName == tagName.NormalizedValue);
+            if (existing is null)
+            {
+                existing = new JsonTagRow
+                {
+                    TagId = backupTag.TagId,
+                    Name = tagName.Value,
+                    NormalizedName = tagName.NormalizedValue,
+                };
+                state.Tags.Add(existing);
+            }
+
+            tagIdMap[backupTag.TagId] = existing.TagId;
+        }
+
+        var itemIds = state.Items.Select(item => item.ItemId).ToHashSet();
+        var containerIds = state.Containers.Select(container => container.ContainerId).ToHashSet();
+        state.TagAssignments.RemoveAll(assignment =>
+            (assignment.TargetType == TagTargetType.Item && !itemIds.Contains(assignment.TargetId))
+            || (assignment.TargetType == TagTargetType.Container && !containerIds.Contains(assignment.TargetId)));
+
+        foreach (var assignment in data.TagAssignments)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!tagIdMap.TryGetValue(assignment.TagId, out var tagId)
+                || !IsValidTarget(assignment, itemIds, containerIds))
+            {
+                continue;
+            }
+
+            if (state.TagAssignments.Any(existing =>
+                    existing.TagId == tagId
+                    && existing.TargetId == assignment.TargetId
+                    && existing.TargetType == assignment.TargetType))
+            {
+                continue;
+            }
+
+            state.TagAssignments.Add(new JsonTagAssignmentRow
+            {
+                Id = state.Metadata.NextTagAssignmentId++,
+                TagId = tagId,
+                TargetId = assignment.TargetId,
+                TargetType = assignment.TargetType,
+            });
+        }
+    }
+
+    private static bool IsValidTarget(
+        InventoryBackupTagAssignment assignment,
+        IReadOnlySet<Guid> itemIds,
+        IReadOnlySet<Guid> containerIds)
+        => assignment.TargetType switch
+        {
+            TagTargetType.Item => itemIds.Contains(assignment.TargetId),
+            TagTargetType.Container => containerIds.Contains(assignment.TargetId),
+            _ => false,
+        };
 
     private static InventoryBackupExistingState CreateExistingState(JsonInventoryStore.StoreState state)
     {
@@ -72,7 +155,6 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
             .Where(image => itemIds.Contains(image.OwnerUniqueId))
             .Select(image => new InventoryBackupImageOwnership(image.OwnerUniqueId, image.ImageId))
             .ToList();
-
         return new InventoryBackupExistingState(
             state.Containers
                 .Select(container => new InventoryBackupExistingContainer(
@@ -88,7 +170,8 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                     item.Name,
                     item.Description,
                     item.BarcodeValue,
-                    item.BarcodeSymbology))
+                    item.BarcodeSymbology,
+                    state.Inventories.FirstOrDefault(i => i.ItemId == item.ItemId)?.TotalQuantity ?? 1))
                 .ToList(),
             containerImages,
             itemImages,
@@ -170,15 +253,26 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                     BarcodeValue = item.BarcodeValue,
                     BarcodeSymbology = item.BarcodeSymbology,
                 });
-                UpsertInventory(state, item.ItemId, item.TotalQuantity);
+                if (plan.ItemIdsWithQuantityOverwrite.Contains(item.ItemId))
+                {
+                    UpsertInventory(state, item.ItemId, item.TotalQuantity);
+                }
+
                 continue;
             }
 
-            existing.Name = item.Name;
-            existing.Description = item.Description;
-            existing.BarcodeValue = item.BarcodeValue;
-            existing.BarcodeSymbology = item.BarcodeSymbology;
-            UpsertInventory(state, item.ItemId, item.TotalQuantity);
+            if (plan.ItemIdsWithMetadataUpdate.Contains(item.ItemId))
+            {
+                existing.Name = item.Name;
+                existing.Description = item.Description;
+                existing.BarcodeValue = item.BarcodeValue;
+                existing.BarcodeSymbology = item.BarcodeSymbology;
+            }
+
+            if (plan.ItemIdsWithQuantityOverwrite.Contains(item.ItemId))
+            {
+                UpsertInventory(state, item.ItemId, item.TotalQuantity);
+            }
         }
 
         foreach (var relation in plan.RelationsToInsert)
@@ -260,6 +354,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                 ItemId = itemId,
                 TotalQuantity = totalQuantity,
             });
+
             return;
         }
 

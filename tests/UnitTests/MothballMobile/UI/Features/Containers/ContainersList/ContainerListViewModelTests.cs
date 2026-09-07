@@ -4,6 +4,9 @@ using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Containers.ContainersList;
 using MothballMobile.Infrastructure.BarcodeDocuments;
 using CoreApp.Domain.ValueObjects;
+using CoreApp.Application.Contracts.Tags;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Domain.Entities.TagAggregate;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Containers.ContainersList;
 
@@ -60,6 +63,54 @@ public sealed class ContainerListViewModelTests
     }
 
     [Test]
+    public async Task SearchCommand_WithSelectedTag_PassesExactTagFilter()
+    {
+        var tag = new TagDescriptor(Guid.NewGuid(), "winter");
+        var queries = new Mock<IContainerListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(false, null, 0, 10, null)).ReturnsAsync([]);
+        queries.Setup(q => q.QueryAsync(
+                false,
+                "gloves",
+                0,
+                10,
+                It.Is<TagFilter>(filter => filter.TargetType == TagTargetType.Container
+                    && filter.Names.SequenceEqual(new[] { "winter" }))))
+            .ReturnsAsync([]);
+        var viewModel = CreateViewModel(queries.Object);
+        await viewModel.InitializeAsync();
+
+        viewModel.SelectedTags.Add(tag);
+        viewModel.Query = "gloves";
+        await viewModel.SearchCommand.ExecuteAsync(null);
+
+        queries.Verify(q => q.QueryAsync(
+            false,
+            "gloves",
+            0,
+            10,
+            It.Is<TagFilter>(filter => filter.TargetType == TagTargetType.Container
+                && filter.Names.SequenceEqual(new[] { "winter" }))), Times.Once);
+    }
+
+    [Test]
+    public void Query_WithPlainTagPrefix_LoadsSuggestions()
+    {
+        var queries = new Mock<IContainerListQueryHandler>();
+        queries.Setup(q => q.QueryAsync(false, null, 0, 10)).ReturnsAsync([]);
+        var tagRepository = new Mock<ITagRepository>();
+        tagRepository.Setup(repository => repository.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new Tag(Guid.NewGuid(), "ExampleTag")]);
+        var viewModel = CreateViewModel(queries.Object, tagRepository: tagRepository.Object);
+
+        viewModel.Query = "Ex";
+        Assert.That(SpinWait.SpinUntil(() => tagRepository.Invocations.Count > 0, TimeSpan.FromSeconds(2)), Is.True);
+        viewModel.Query = "Example";
+
+        Assert.That(SpinWait.SpinUntil(() => viewModel.SuggestedTags.Count == 1, TimeSpan.FromSeconds(2)), Is.True);
+        Assert.That(viewModel.SuggestedTags[0].Name, Is.EqualTo("ExampleTag"));
+    }
+
+    [Test]
     public async Task LoadNextPageCommand_DuringSearch_AppendsNextFilteredPage()
     {
         var firstPage = Enumerable.Range(1, 10)
@@ -101,17 +152,30 @@ public sealed class ContainerListViewModelTests
     {
         var container = new Container(Guid.NewGuid(), "Garage", "Notes");
         container.UpdateBarcode(new Barcode("GARAGE-01", BarcodeSymbology.Code128));
+        var tag = new TagDescriptor(Guid.NewGuid(), "winter");
         var queries = new Mock<IContainerListQueryHandler>();
         queries.Setup(q => q.QueryAsync(false, null, 0, 10)).ReturnsAsync([]);
-        queries.Setup(q => q.QueryAsync(false, "garage", null, null)).ReturnsAsync([container]);
+        queries.Setup(q => q.QueryAsync(
+                false,
+                "garage",
+                null,
+                null,
+                It.Is<TagFilter>(filter => filter.Names.SequenceEqual(new[] { "winter" }))))
+            .ReturnsAsync([container]);
         var share = new Mock<IBarcodeShareService>();
         var viewModel = CreateViewModel(queries.Object, barcodeShare: share.Object);
         await viewModel.InitializeAsync();
         viewModel.Query = "garage";
+        viewModel.SelectedTags.Add(tag);
 
         await viewModel.ShareAllMatchingCommand.ExecuteAsync(null);
 
-        queries.Verify(q => q.QueryAsync(false, "garage", null, null), Times.Once);
+        queries.Verify(q => q.QueryAsync(
+            false,
+            "garage",
+            null,
+            null,
+            It.Is<TagFilter>(filter => filter.Names.SequenceEqual(new[] { "winter" }))), Times.Once);
         share.Verify(service => service.ShareAsync(
             It.Is<IReadOnlyCollection<BarcodeLabelData>>(labels => labels.Single().BarcodeValue == "GARAGE-01"),
             "Share container barcodes"), Times.Once);
@@ -120,7 +184,8 @@ public sealed class ContainerListViewModelTests
     private static ContainerListViewModel CreateViewModel(
         IContainerListQueryHandler queries,
         IImagePathResolver? paths = null,
-        IBarcodeShareService? barcodeShare = null)
+        IBarcodeShareService? barcodeShare = null,
+        ITagRepository? tagRepository = null)
     {
         if (paths is null)
         {
@@ -141,6 +206,7 @@ public sealed class ContainerListViewModelTests
                 Mock.Of<IInventoryQueryRepository>(),
                 Mock.Of<INavigationService>()),
             Mock.Of<IBackgroundTaskObserver>(),
-            barcodeShare: barcodeShare);
+            barcodeShare: barcodeShare,
+            tagRepository: tagRepository);
     }
 }

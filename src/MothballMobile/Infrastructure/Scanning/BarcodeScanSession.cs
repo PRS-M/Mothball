@@ -20,6 +20,7 @@ public sealed class BarcodeScanSession : IBarcodeScanSession
         {
             pendingResult = new TaskCompletionSource<Barcode?>(TaskCreationOptions.RunContinuationsAsynchronously);
             await navigation.GoToAsync(NavigationRoutes.BarcodeScanner).ConfigureAwait(false);
+
             return await pendingResult.Task.ConfigureAwait(false);
         }
         finally

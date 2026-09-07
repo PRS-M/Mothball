@@ -7,13 +7,15 @@ internal sealed class InventoryBackupRestorePlanBuilder
     public InventoryBackupRestorePlan BuildPlan(
         InventoryBackupEnvelope backup,
         InventoryBackupExistingState existingState,
-        InventoryBackupConflictPolicy conflictPolicy)
-        => BuildPlan(backup, existingState, MapConflictPolicy(conflictPolicy));
+        InventoryBackupConflictPolicy conflictPolicy,
+        bool overwriteExistingQuantities = false)
+        => BuildPlan(backup, existingState, MapConflictPolicy(conflictPolicy), overwriteExistingQuantities);
 
     public InventoryBackupRestorePlan BuildPlan(
         InventoryBackupEnvelope backup,
         InventoryBackupExistingState existingState,
-        InventoryMergePolicy mergePolicy)
+        InventoryMergePolicy mergePolicy,
+        bool overwriteExistingQuantities = false)
     {
         ArgumentNullException.ThrowIfNull(backup);
         ArgumentNullException.ThrowIfNull(backup.Data);
@@ -23,7 +25,7 @@ internal sealed class InventoryBackupRestorePlanBuilder
         var context = new PlannerContext(existingState);
 
         PlanContainerInsertOrUpdate(backup.Data.Containers, context, mergePolicy);
-        PlanItemInsertOrUpdate(backup.Data.Items, context, mergePolicy);
+        PlanItemInsertOrUpdate(backup.Data.Items, context, mergePolicy, overwriteExistingQuantities);
         PlanRootDeletesForSync(context, mergePolicy);
 
         var normalized = NormalizeBackupData(backup.Data, context);
@@ -34,6 +36,7 @@ internal sealed class InventoryBackupRestorePlanBuilder
         reconciliationStrategy.PlanRelations(context, normalized.ValidRelations);
         reconciliationStrategy.PlanImages(context, normalized.ValidContainerImages, normalized.ValidItemImages);
 
+        ValidateOverwrittenQuantities(backup.Data.Items, context, normalized.ValidRelations, mergePolicy);
         return BuildPlanResult(context);
     }
 
@@ -95,7 +98,8 @@ internal sealed class InventoryBackupRestorePlanBuilder
     private static void PlanItemInsertOrUpdate(
         IReadOnlyCollection<InventoryBackupItem> items,
         PlannerContext context,
-        InventoryMergePolicy mergePolicy)
+        InventoryMergePolicy mergePolicy,
+        bool overwriteExistingQuantities)
     {
         foreach (var item in items)
         {
@@ -109,9 +113,22 @@ internal sealed class InventoryBackupRestorePlanBuilder
                     || !string.Equals(existing.BarcodeValue, item.BarcodeValue, StringComparison.Ordinal)
                     || existing.BarcodeSymbology != item.BarcodeSymbology);
 
-                if (shouldUpdate)
+                bool shouldOverwriteQuantity = overwriteExistingQuantities
+                    && existing.TotalQuantity != item.TotalQuantity;
+
+                if (shouldUpdate || shouldOverwriteQuantity)
                 {
                     context.ItemsToUpdate.Add(item);
+                    if (shouldUpdate)
+                    {
+                        context.ItemIdsWithMetadataUpdate.Add(item.ItemId);
+                    }
+
+                    if (shouldOverwriteQuantity)
+                    {
+                        context.OverwrittenItemQuantities++;
+                        context.ItemIdsWithQuantityOverwrite.Add(item.ItemId);
+                    }
                 }
                 else
                 {
@@ -233,10 +250,40 @@ internal sealed class InventoryBackupRestorePlanBuilder
             skippedImagesWithMissingOwner);
     }
 
+    private static void ValidateOverwrittenQuantities(
+        IReadOnlyCollection<InventoryBackupItem> backupItems,
+        PlannerContext context,
+        IReadOnlyCollection<InventoryBackupRelation> validRelations,
+        InventoryMergePolicy mergePolicy)
+    {
+        if (context.ItemIdsWithQuantityOverwrite.Count == 0)
+        {
+            return;
+        }
+
+        var assignedByItem = mergePolicy.ChildReconciliationMode == InventoryChildReconciliationMode.Exact
+            ? validRelations
+                .GroupBy(relation => relation.ItemId)
+                .ToDictionary(group => group.Key, group => group.Sum(relation => relation.Quantity))
+            : context.KnownRelationQuantityByPair
+                .GroupBy(pair => pair.Key.ItemId)
+                .ToDictionary(group => group.Key, group => group.Sum(pair => pair.Value));
+
+        foreach (var item in backupItems.Where(item => context.ItemIdsWithQuantityOverwrite.Contains(item.ItemId)))
+        {
+            assignedByItem.TryGetValue(item.ItemId, out var assignedQuantity);
+            if (assignedQuantity > item.TotalQuantity)
+            {
+                throw new InvalidDataException(
+                    $"Cannot overwrite quantity for item '{item.ItemId}' because assigned quantity " +
+                    $"{assignedQuantity} exceeds backup total quantity {item.TotalQuantity}.");
+            }
+        }
+    }
+
     private static InventoryBackupRestorePlan BuildPlanResult(PlannerContext context)
     {
         var result = CreateRestoreResult(context);
-
         return new InventoryBackupRestorePlan(
             context.ContainersToInsert,
             context.ContainersToUpdate,
@@ -249,7 +296,11 @@ internal sealed class InventoryBackupRestorePlanBuilder
             context.RelationsToDelete,
             context.ImagesToInsert,
             context.ImagesToDelete,
-            result);
+            result)
+        {
+            ItemIdsWithQuantityOverwrite = context.ItemIdsWithQuantityOverwrite,
+            ItemIdsWithMetadataUpdate = context.ItemIdsWithMetadataUpdate,
+        };
     }
 
     private static InventoryBackupRestoreResult CreateRestoreResult(PlannerContext context)
@@ -263,6 +314,7 @@ internal sealed class InventoryBackupRestorePlanBuilder
             AddedImages = context.ImagesToInsert.Count,
             UpdatedContainers = context.ContainersToUpdate.Count,
             UpdatedItems = context.ItemsToUpdate.Count,
+            OverwrittenItemQuantities = context.OverwrittenItemQuantities,
             DeletedContainers = context.ContainerIdsToDelete.Count,
             DeletedItems = context.ItemIdsToDelete.Count,
             DeletedRelations = context.RelationsToDelete.Count,

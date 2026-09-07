@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Utilities;
 using CoreApp.Application.Specifications;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using MothballMobile.UI.Features.Items.Consumption;
 using MothballMobile.UI.Features.Items.Quantity;
 using MothballMobile.Infrastructure.Scanning;
@@ -69,8 +71,9 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         IBackgroundTaskObserver backgroundTasks,
         IDebouncer? debouncer = null,
         IPagedListLoadDiagnostics? loadDiagnostics = null,
-        IBarcodeShareService? barcodeShare = null)
-        : base(backgroundTasks, debouncer, loadDiagnostics: loadDiagnostics)
+        IBarcodeShareService? barcodeShare = null,
+        ITagRepository? tagRepository = null)
+        : base(backgroundTasks, debouncer, loadDiagnostics: loadDiagnostics, tagRepository: tagRepository)
     {
         this.paths = paths;
         this.itemListQueries = itemListQueries;
@@ -87,6 +90,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     }
 
     protected override string SearchOperationName => "Search items";
+    protected override TagTargetType TagTargetType => TagTargetType.Item;
     protected override long DataRevision => inventoryChanges.Revision;
     protected override string LoadVariant => $"{SelectedFilter}:{base.LoadVariant}";
 
@@ -196,7 +200,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private Task ShareAllMatchingAsync()
         => RunCommandAsync(async () =>
         {
-            var items = await itemListQueries.QueryAsync(GetItemQueryFilter(), Query, null, null);
+            var items = await itemListQueries.QueryAsync(GetItemQueryFilter(), Query, null, null, CurrentTagFilter);
             var labels = items.Where(item => item.Item.Barcode is not null)
                 .Select(item => new BarcodeLabelData(item.Item.Name, item.Item.Barcode!.Value, item.Item.Barcode.Symbology))
                 .ToArray();
@@ -216,7 +220,8 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
             GetItemQueryFilter(),
             query,
             pageNumber,
-            pageSize);
+            pageSize,
+            CurrentTagFilter);
 
     private ItemQueryFilter GetItemQueryFilter()
         => SelectedFilter switch

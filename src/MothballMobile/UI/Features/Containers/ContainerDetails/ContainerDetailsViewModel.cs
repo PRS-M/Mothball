@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure.Scanning;
@@ -24,6 +26,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IBarcodeAssignmentService barcodeAssignments;
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IBarcodeShareService? barcodeShare;
+    private readonly ITagRepository? tagRepository;
+    private CancellationTokenSource? tagSuggestionCancellation;
+    private int tagSuggestionVersion;
+    private CancellationTokenSource? assignmentTagSuggestionCancellation;
+    private int assignmentTagSuggestionVersion;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -63,8 +70,36 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private int itemTypesCount = 0;
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
+
+    /// <summary>Gets the tags assigned to the current container.</summary>
+    public ObservableCollection<TagDescriptor> Tags { get; } = [];
+
+    /// <summary>Gets or sets the tag name currently being entered.</summary>
+    [ObservableProperty]
+    private string newTagText = string.Empty;
     public ObservableCollection<ItemWithPhotosViewModel> Items => itemCoordinator.Items;
     public ObservableCollection<object> Rows => itemCoordinator.Rows;
+
+    /// <summary>Gets the exact tags applied to the container contents query.</summary>
+    public ObservableCollection<TagDescriptor> SelectedTags { get; } = [];
+
+    /// <summary>Gets the tag suggestions matching the active hash token.</summary>
+    public ObservableCollection<TagDescriptor> SuggestedTags { get; } = [];
+
+    /// <summary>Gets the tag suggestions for the container tag editor.</summary>
+    public ObservableCollection<TagDescriptor> SuggestedAssignmentTags { get; } = [];
+
+    /// <summary>Gets a value indicating whether a tag filter is active.</summary>
+    public bool HasSelectedTags => SelectedTags.Count > 0;
+
+    /// <summary>Gets a value indicating whether tag suggestions should be shown.</summary>
+    public bool IsTagSuggestionsVisible => SuggestedTags.Count > 0;
+
+    /// <summary>Gets a value indicating whether assignment suggestions should be shown.</summary>
+    public bool IsAssignmentTagSuggestionsVisible => SuggestedAssignmentTags.Count > 0;
+    private TagFilter? CurrentTagFilter => SelectedTags.Count == 0
+        ? null
+        : new TagFilter(TagTargetType.Item, SelectedTags.Select(tag => tag.Name).ToArray());
 
     [ObservableProperty]
     private string searchQuery = string.Empty;
@@ -115,7 +150,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IBarcodeAssignmentService barcodeAssignments,
         IBarcodeScanSession barcodeScanner,
         IDebouncer? debouncer = null,
-        IBarcodeShareService? barcodeShare = null)
+        IBarcodeShareService? barcodeShare = null,
+        ITagRepository? tagRepository = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.deleteContainerHandler = deleteContainerHandler;
@@ -127,6 +163,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.barcodeAssignments = barcodeAssignments;
         this.barcodeScanner = barcodeScanner;
         this.barcodeShare = barcodeShare;
+        this.tagRepository = tagRepository;
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
         itemCoordinator.Reset(this);
     }
@@ -135,6 +172,154 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     {
         debouncer.DebounceAsync(_ => MainThread.InvokeOnMainThreadAsync(PerformSearchAsync))
             .FireAndForget(backgroundTasks, "Search container items");
+        RefreshTagSuggestionsAsync(value)
+            .FireAndForget(backgroundTasks, "Search container item tag suggestions");
+    }
+
+    partial void OnNewTagTextChanged(string value)
+        => RefreshAssignmentTagSuggestionsAsync(value)
+            .FireAndForget(backgroundTasks, "Container tag suggestions");
+
+    /// <summary>Adds a tag filter to the container contents query.</summary>
+    /// <param name="tag">The selected tag suggestion.</param>
+    [RelayCommand]
+    public void AddTag(TagDescriptor? tag)
+    {
+        if (tag is null || SelectedTags.Any(selected => selected.TagId == tag.TagId)) return;
+        SelectedTags.Add(tag);
+        OnPropertyChanged(nameof(HasSelectedTags));
+        var tokenStart = SearchQuery.LastIndexOf('#');
+        if (tokenStart >= 0) SearchQuery = SearchQuery.Remove(tokenStart).TrimEnd();
+        SuggestedTags.Clear();
+        OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+        MainThread.InvokeOnMainThreadAsync(PerformSearchAsync)
+            .FireAndForget(backgroundTasks, "Search container items");
+    }
+
+    /// <summary>Removes a tag filter from the container contents query.</summary>
+    /// <param name="tag">The active tag to remove.</param>
+    [RelayCommand]
+    public void RemoveTag(TagDescriptor? tag)
+    {
+        if (tag is null || !SelectedTags.Remove(tag)) return;
+        OnPropertyChanged(nameof(HasSelectedTags));
+        MainThread.InvokeOnMainThreadAsync(PerformSearchAsync)
+            .FireAndForget(backgroundTasks, "Search container items");
+    }
+
+    private async Task RefreshTagSuggestionsAsync(string value)
+    {
+        var version = Interlocked.Increment(ref tagSuggestionVersion);
+        var cancellation = new CancellationTokenSource();
+        var previousCancellation = Interlocked.Exchange(ref tagSuggestionCancellation, cancellation);
+        previousCancellation?.Cancel();
+        try
+        {
+            if (tagRepository is null)
+            {
+                return;
+            }
+
+            var tokenStart = value.LastIndexOf('#');
+            string? token;
+            if (tokenStart < 0)
+            {
+                var plainToken = value.Trim();
+                token = plainToken.Length > 0 && !plainToken.Any(char.IsWhiteSpace) ? plainToken : null;
+            }
+            else if (tokenStart > 0 && !char.IsWhiteSpace(value[tokenStart - 1]))
+            {
+                token = null;
+            }
+            else
+            {
+                token = value[(tokenStart + 1)..];
+                if (token.Any(char.IsWhiteSpace)) token = null;
+            }
+
+            if (token is null)
+            {
+                SuggestedTags.Clear();
+                OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+                return;
+            }
+
+            var selectedIds = SelectedTags.Select(tag => tag.TagId).ToHashSet();
+            var tags = await tagRepository.GetAllAsync(cancellation.Token).ConfigureAwait(false);
+            cancellation.Token.ThrowIfCancellationRequested();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (version != Volatile.Read(ref tagSuggestionVersion)) return;
+                SuggestedTags.Clear();
+                foreach (var tag in tags.Where(tag => !selectedIds.Contains(tag.TagId)
+                    && tag.Name.Value.StartsWith(token, StringComparison.OrdinalIgnoreCase)).Take(5))
+                    SuggestedTags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+                OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+            });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            // A newer query owns the suggestion surface.
+        }
+        finally
+        {
+            Interlocked.CompareExchange(ref tagSuggestionCancellation, null, cancellation);
+            cancellation.Dispose();
+        }
+    }
+
+    private async Task RefreshAssignmentTagSuggestionsAsync(string value)
+    {
+        var version = Interlocked.Increment(ref assignmentTagSuggestionVersion);
+        var cancellation = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref assignmentTagSuggestionCancellation, cancellation);
+        previous?.Cancel();
+
+        try
+        {
+            if (tagRepository is null)
+            {
+                return;
+            }
+
+            var token = value.Trim().TrimStart('#');
+            if (token.Length == 0 || token.Any(char.IsWhiteSpace))
+            {
+                SuggestedAssignmentTags.Clear();
+                OnPropertyChanged(nameof(IsAssignmentTagSuggestionsVisible));
+                return;
+            }
+
+            var selectedIds = Tags.Select(tag => tag.TagId).ToHashSet();
+            var tags = await tagRepository.GetAllAsync(cancellation.Token).ConfigureAwait(false);
+            cancellation.Token.ThrowIfCancellationRequested();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (version != Volatile.Read(ref assignmentTagSuggestionVersion))
+                {
+                    return;
+                }
+
+                SuggestedAssignmentTags.Clear();
+                foreach (var tag in tags
+                    .Where(tag => !selectedIds.Contains(tag.TagId)
+                        && tag.Name.Value.StartsWith(token, StringComparison.OrdinalIgnoreCase))
+                    .Take(5))
+                {
+                    SuggestedAssignmentTags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+                }
+
+                OnPropertyChanged(nameof(IsAssignmentTagSuggestionsVisible));
+            });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            Interlocked.CompareExchange(ref assignmentTagSuggestionCancellation, null, cancellation);
+            cancellation.Dispose();
+        }
     }
 
     // Let Shell pass query params directly to the ViewModel.
@@ -169,6 +354,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         ContainerId = containerId;
         SearchQuery = string.Empty;
+        Tags.Clear();
+        NewTagText = string.Empty;
+        SelectedTags.Clear();
+        OnPropertyChanged(nameof(HasSelectedTags));
+        SuggestedTags.Clear();
+        OnPropertyChanged(nameof(IsTagSuggestionsVisible));
 
         IsItemListEmpty = true;
         IsLoadingItems = false;
@@ -191,10 +382,12 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             ItemTypesCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
             IsItemListEmpty = true;
+
             return;
         }
 
         currentContainer = summary.Container;
+        await LoadTagsAsync(currentContainer.ContainerId);
         Name = currentContainer.Name;
         Notes = currentContainer.Notes;
         NotesDraft = currentContainer.Notes;
@@ -220,7 +413,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                     ContainerId,
                     currentContainer,
                     searchTerm: null,
-                    ShowQuantityManagement))
+                    ShowQuantityManagement,
+                    CurrentTagFilter))
             {
                 IsItemListEmpty = itemCoordinator.IsEmpty;
             }
@@ -229,6 +423,63 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             IsLoadingItems = false;
         }
+    }
+
+    private async Task LoadTagsAsync(Guid containerId)
+    {
+        if (tagRepository is null) return;
+        var tags = await tagRepository.GetForTargetAsync(TagTargetType.Container, containerId);
+        ReplaceWith(Tags, tags.Select(tag => new TagDescriptor(tag.TagId, tag.Name.Value)));
+    }
+
+    /// <summary>Creates or reuses the entered tag and assigns it to the container.</summary>
+    [RelayCommand]
+    public async Task CreateTagAsync()
+    {
+        if (tagRepository is null || currentContainer is null || string.IsNullOrWhiteSpace(NewTagText)) return;
+        await RunCommandAsync(async () =>
+        {
+            var tag = await tagRepository.GetOrCreateAsync(new TagName(NewTagText));
+            await tagRepository.AssignAsync(tag.TagId, TagTargetType.Container, currentContainer.ContainerId);
+            if (Tags.All(existing => existing.TagId != tag.TagId))
+                Tags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+            NewTagText = string.Empty;
+        });
+    }
+
+    /// <summary>Assigns an existing tag selected from the suggestions.</summary>
+    /// <param name="tag">The suggested tag to assign.</param>
+    [RelayCommand]
+    public async Task AddSuggestedAssignmentTagAsync(TagDescriptor? tag)
+    {
+        if (tagRepository is null || currentContainer is null || tag is null)
+        {
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            await tagRepository.AssignAsync(tag.TagId, TagTargetType.Container, currentContainer.ContainerId);
+            if (Tags.All(existing => existing.TagId != tag.TagId))
+            {
+                Tags.Add(tag);
+            }
+
+            NewTagText = string.Empty;
+        });
+    }
+
+    /// <summary>Removes a container-to-tag assignment without deleting the shared tag.</summary>
+    /// <param name="tag">The assigned tag to remove.</param>
+    [RelayCommand]
+    public async Task UnassignTagAsync(TagDescriptor? tag)
+    {
+        if (tagRepository is null || currentContainer is null || tag is null) return;
+        await RunCommandAsync(async () =>
+        {
+            await tagRepository.RemoveAsync(tag.TagId, TagTargetType.Container, currentContainer.ContainerId);
+            Tags.Remove(tag);
+        });
     }
 
     [RelayCommand]
@@ -266,7 +517,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
                     ContainerId,
                     currentContainer,
                     searchTerm,
-                    ShowQuantityManagement))
+                    ShowQuantityManagement,
+                    CurrentTagFilter))
             {
                 IsItemListEmpty = itemCoordinator.IsEmpty;
             }
@@ -435,7 +687,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private Task DeletePhotoAsync()
     {
         if (currentContainer is null) return Task.CompletedTask;
-
         return DeleteSelectedPhotoAsync(
             hasPhotos: currentContainer.Photos.Count > 0,
             noPhotosPopup: popupDefinitions.NoContainerPhotos(),
@@ -449,7 +700,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private Task NavigateToAddExistingItemAsync()
     {
         if (!Guid.TryParse(ContainerId, out var containerId)) return Task.CompletedTask;
-
         return nav.GoToAsync(NavigationRoutes.AddExistingItemToContainer,
             new Infrastructure.Navigation.AddExistingItemToContainerNavigationRequest(containerId));
     }
@@ -458,7 +708,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private Task NavigateToAddNewItemAsync()
     {
         if (!Guid.TryParse(ContainerId, out var containerId)) return Task.CompletedTask;
-
         return nav.GoToAsync(NavigationRoutes.AddItem,
             new Infrastructure.Navigation.AddItemNavigationRequest(containerId));
     }
@@ -479,6 +728,17 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             d.Dispose();
         }
+
+        if (disposing)
+        {
+            Interlocked.Increment(ref tagSuggestionVersion);
+            tagSuggestionCancellation?.Cancel();
+            Interlocked.Exchange(ref tagSuggestionCancellation, null);
+            Interlocked.Increment(ref assignmentTagSuggestionVersion);
+            assignmentTagSuggestionCancellation?.Cancel();
+            Interlocked.Exchange(ref assignmentTagSuggestionCancellation, null);
+        }
+
         disposed = true;
     }
 }

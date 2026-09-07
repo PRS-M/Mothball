@@ -35,6 +35,7 @@ public sealed class ItemWithPhotosViewModelTests
             {
                 consumedItemId = itemId;
                 preferredContainerId = preferredId;
+
                 return Task.CompletedTask;
             },
             () => { });

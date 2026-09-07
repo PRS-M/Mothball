@@ -22,6 +22,9 @@ using MothballMobile.UI.Features.Items.ItemLocations;
 using MothballMobile.UI.Features.Items.ItemsList;
 using MothballMobile.UI.Features.Settings;
 using MothballMobile.UI.Features.Scanning;
+using MothballMobile.UI.Features.Tags.TagsList;
+using MothballMobile.UI.Features.Tags.TagResults;
+using MothballMobile.UI.Features.Tags.TagAssignment;
 using CoreApp.Application.Features.Barcodes.Commands;
 
 namespace MothballMobile.Composition;
@@ -129,7 +132,6 @@ public static class ServiceCollectionExtensions
 #if DEBUG
         services.AddSingleton<DemoDataSeeder>();
 #endif
-
         return services;
     }
 
@@ -151,12 +153,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IItemInventoryRepository, JsonItemInventoryRepository>();
         services.AddSingleton<IImageRepository, JsonImageRepository>();
         services.AddSingleton<IRelationRepository, JsonRelationRepository>();
+        services.AddSingleton<ITagRepository, JsonTagRepository>();
 
         services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
         services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
         services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         services.AddSingleton<IInventoryBackupRestoreService, JsonInventoryBackupRestoreService>();
-
         return services;
     }
 
@@ -172,12 +174,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IItemInventoryRepository, ItemInventoryRepository>();
         services.AddSingleton<IImageRepository, ImageRepository>();
         services.AddSingleton<IRelationRepository, RelationRepository>();
+        services.AddSingleton<ITagRepository, TagRepository>();
 
         services.AddSingleton<IInventoryQueryRepository, InventoryQueryRepository>();
         services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
         services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         services.AddSingleton<IInventoryBackupRestoreService, SqliteInventoryBackupRestoreService>();
-
         return services;
     }
 
@@ -230,6 +232,10 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AddContainerViewModel>();
         services.AddTransient<ContainerListViewModel>();
         services.AddTransient<ItemsListViewModel>();
+        services.AddTransient<TagsListViewModel>();
+        services.AddTransient<TagResultsViewModel>();
+        services.AddTransient<TagItemPickerViewModel>();
+        services.AddTransient<TagContainerPickerViewModel>();
         services.AddTransient<ContainerDetailsViewModel>();
         services.AddTransient<ItemDetailsViewModel>();
         services.AddTransient<ItemLocationsViewModel>();

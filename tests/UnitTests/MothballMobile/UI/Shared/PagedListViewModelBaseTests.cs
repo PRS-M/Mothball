@@ -104,6 +104,7 @@ public sealed class PagedListViewModelBaseTests
             LoadCallCount++;
             loadStarted.TrySetResult();
             await releaseLoad.Task;
+
             return [1];
         }
 

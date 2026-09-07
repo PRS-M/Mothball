@@ -84,11 +84,15 @@
             </Border>
         </Grid>
 
-        <controls:SearchBarCard Grid.Row="1"
-            Margin="0"
+        <controls:TagSearchPanel Grid.Row="1"
                     Placeholder="{x:Static strings:AppResources.SearchItems}"
                     Text="{Binding Query}"
-                    SearchCommand="{Binding SearchCommand}" />
+                    SearchCommand="{Binding SearchCommand}"
+                    SelectedTags="{Binding SelectedTags}"
+                    SuggestedTags="{Binding SuggestedTags}"
+                    IsTagSuggestionsVisible="{Binding IsTagSuggestionsVisible}"
+                    AddTagCommand="{Binding AddTagCommand}"
+                    RemoveTagCommand="{Binding RemoveTagCommand}" />
 
         <Grid Grid.Row="2"
               ColumnDefinitions="*,*,*,*"

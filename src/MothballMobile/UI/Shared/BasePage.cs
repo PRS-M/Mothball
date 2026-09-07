@@ -224,7 +224,6 @@ public class BasePage : ContentPage
 
         bannerHost.Add(adContent);
         bannerHost.Add(progressContent);
-
         return bannerHost;
     }
 

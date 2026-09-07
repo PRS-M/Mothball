@@ -7,12 +7,16 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="AddUpsertMetadata" xml:space="preserve"><value>Añadir + actualizar metadatos</value></data>
   <data name="AddContainer" xml:space="preserve"><value>Añadir contenedor</value></data>
+  <data name="AddExistingContainer" xml:space="preserve"><value>Añadir contenedor existente</value></data>
   <data name="AddExistingItem" xml:space="preserve"><value>Añadir artículo existente</value></data>
   <data name="AddItem" xml:space="preserve"><value>Añadir artículo</value></data>
   <data name="AddANewItem" xml:space="preserve"><value>Añadir un artículo nuevo</value></data>
   <data name="AddAnExistingItem" xml:space="preserve"><value>Añadir un artículo existente</value></data>
   <data name="AddOnly" xml:space="preserve"><value>Solo añadir</value></data>
   <data name="AddPhoto" xml:space="preserve"><value>Añadir foto</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Añadir etiqueta</value></data>
+  <data name="Tags" xml:space="preserve"><value>Etiquetas</value></data>
+  <data name="TagNamePlaceholder" xml:space="preserve"><value>Introducir etiqueta</value></data>
   <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Añade contenedores, artículos, cambios de cantidad de relaciones e imágenes que están presentes en la copia de seguridad pero faltan en la aplicación.</value></data>
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Añade los registros que faltan, igual que «Solo añadir».</value></data>
   <data name="Advanced" xml:space="preserve"><value>Avanzado</value></data>
@@ -303,4 +307,17 @@
   <data name="BrowseYourStorage" xml:space="preserve"><value>Explora tu almacenamiento</value></data>
   <data name="AllItemsAcrossContainers" xml:space="preserve"><value>Todos los artículos de los contenedores</value></data>
   <data name="RestartMothballToApplyTheNewLanguage" xml:space="preserve"><value>Reinicia Mothball para aplicar el nuevo idioma.</value></data>
+  <data name="OverwriteExistingQuantities" xml:space="preserve"><value>¿Sobrescribir las cantidades existentes?</value></data>
+  <data name="ThisMayReplaceNewerStockCountsWithValuesFromTheBackup" xml:space="preserve"><value>Esto puede reemplazar cantidades de stock más recientes con valores de la copia de seguridad.</value></data>
+  <data name="Overwrite" xml:space="preserve"><value>Sobrescribir</value></data>
+  <data name="KeepCurrent" xml:space="preserve"><value>Mantener actuales</value></data>
+  <data name="BrowseYourTags" xml:space="preserve"><value>Explora tus etiquetas</value></data>
+  <data name="SearchTags" xml:space="preserve"><value>Buscar etiquetas...</value></data>
+  <data name="NoTagsFound" xml:space="preserve"><value>No se encontraron etiquetas</value></data>
+  <data name="OpenTheTagsView" xml:space="preserve"><value>Abrir la vista de etiquetas</value></data>
+  <data name="TaggedResultsSubtitle" xml:space="preserve"><value>Artículos y contenedores con esta etiqueta</value></data>
+  <data name="SearchTaggedResults" xml:space="preserve"><value>Buscar resultados etiquetados...</value></data>
+  <data name="NoTaggedResults" xml:space="preserve"><value>No hay artículos ni contenedores coincidentes</value></data>
+  <data name="ClearTag" xml:space="preserve"><value>Borrar etiqueta seleccionada</value></data>
+  <data name="TagUsageFormat" xml:space="preserve"><value>{0} artículos · {1} contenedores</value></data>
 </root>

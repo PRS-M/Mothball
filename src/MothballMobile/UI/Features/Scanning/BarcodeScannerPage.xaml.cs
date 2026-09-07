@@ -109,6 +109,7 @@ public partial class BarcodeScannerPage
             null,
             options);
         var index = Array.IndexOf(options, selected);
+
         return index >= 0 ? barcodes[index] : null;
     }
 
@@ -163,6 +164,7 @@ internal static class BarcodeFormatMapper
         {
             case BarcodeFormat.QrCode:
                 symbology = BarcodeSymbology.QrCode;
+
                 return true;
             case BarcodeFormat.Aztec:
                 symbology = BarcodeSymbology.Aztec;

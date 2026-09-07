@@ -215,6 +215,7 @@ public sealed class ItemsListViewModelTests
                 .Returns(Array.Empty<string>());
             paths = pathMock.Object;
         }
+
         popup ??= Mock.Of<IPopupService>();
         var details = Mock.Of<IItemDetailsQueryHandler>();
         var inventoryCommands = Mock.Of<IItemInventoryCommandService>();

@@ -17,6 +17,7 @@ public sealed class PopupServiceExtensionsTests
             () =>
             {
                 ran = true;
+
                 return Task.CompletedTask;
             });
 
@@ -39,6 +40,7 @@ public sealed class PopupServiceExtensionsTests
             () =>
             {
                 ran = true;
+
                 return Task.CompletedTask;
             });
 
