@@ -35,7 +35,6 @@ public sealed class Debouncer : IDebouncer, IDisposable
             }
 
             cts?.Cancel();
-            cts?.Dispose();
             cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             localCts = cts;
         }
@@ -68,10 +67,11 @@ public sealed class Debouncer : IDebouncer, IDisposable
             {
                 if (ReferenceEquals(cts, localCts))
                 {
-                    cts.Dispose();
                     cts = null;
                 }
             }
+
+            localCts.Dispose();
         }
     }
 
@@ -99,10 +99,6 @@ public sealed class Debouncer : IDebouncer, IDisposable
         {
             logger.LogDebug(ex, "Debouncer cancellation token source was already disposed.");
             // already disposed
-        }
-        finally
-        {
-            toDispose?.Dispose();
         }
     }
 }

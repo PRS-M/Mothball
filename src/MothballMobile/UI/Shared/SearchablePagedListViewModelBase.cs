@@ -20,6 +20,7 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
     private bool disposed;
     private readonly ITagRepository? tagRepository;
     private CancellationTokenSource? tagSuggestionCancellation;
+    private int tagSuggestionVersion;
 
     [ObservableProperty]
     private string query = string.Empty;
@@ -136,10 +137,10 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
 
     private async Task RefreshTagSuggestionsAsync(string value)
     {
+        var version = Interlocked.Increment(ref tagSuggestionVersion);
         var cancellation = new CancellationTokenSource();
         var previousCancellation = Interlocked.Exchange(ref tagSuggestionCancellation, cancellation);
         previousCancellation?.Cancel();
-        previousCancellation?.Dispose();
         try
         {
             if (tagRepository is null)
@@ -161,7 +162,7 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
             cancellation.Token.ThrowIfCancellationRequested();
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            if (cancellation.IsCancellationRequested)
+            if (version != Volatile.Read(ref tagSuggestionVersion))
             {
                 return;
             }
@@ -184,10 +185,8 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
         }
         finally
         {
-            if (ReferenceEquals(Interlocked.CompareExchange(ref tagSuggestionCancellation, null, cancellation), cancellation))
-            {
-                cancellation.Dispose();
-            }
+            Interlocked.CompareExchange(ref tagSuggestionCancellation, null, cancellation);
+            cancellation.Dispose();
         }
     }
 
@@ -246,9 +245,9 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
 
         if (disposing)
         {
+            Interlocked.Increment(ref tagSuggestionVersion);
             tagSuggestionCancellation?.Cancel();
-            tagSuggestionCancellation?.Dispose();
-            tagSuggestionCancellation = null;
+            Interlocked.Exchange(ref tagSuggestionCancellation, null);
         }
 
         disposed = true;

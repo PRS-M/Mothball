@@ -28,6 +28,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IBarcodeShareService? barcodeShare;
     private readonly ITagRepository? tagRepository;
     private CancellationTokenSource? tagSuggestionCancellation;
+    private int tagSuggestionVersion;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -196,10 +197,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     private async Task RefreshTagSuggestionsAsync(string value)
     {
+        var version = Interlocked.Increment(ref tagSuggestionVersion);
         var cancellation = new CancellationTokenSource();
         var previousCancellation = Interlocked.Exchange(ref tagSuggestionCancellation, cancellation);
         previousCancellation?.Cancel();
-        previousCancellation?.Dispose();
         try
         {
             if (tagRepository is null)
@@ -236,7 +237,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             cancellation.Token.ThrowIfCancellationRequested();
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                if (cancellation.IsCancellationRequested) return;
+                if (version != Volatile.Read(ref tagSuggestionVersion)) return;
                 SuggestedTags.Clear();
                 foreach (var tag in tags.Where(tag => !selectedIds.Contains(tag.TagId)
                     && tag.Name.Value.StartsWith(token, StringComparison.OrdinalIgnoreCase)).Take(5))
@@ -250,10 +251,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
         finally
         {
-            if (ReferenceEquals(Interlocked.CompareExchange(ref tagSuggestionCancellation, null, cancellation), cancellation))
-            {
-                cancellation.Dispose();
-            }
+            Interlocked.CompareExchange(ref tagSuggestionCancellation, null, cancellation);
+            cancellation.Dispose();
         }
     }
 
@@ -644,9 +643,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         if (disposing)
         {
+            Interlocked.Increment(ref tagSuggestionVersion);
             tagSuggestionCancellation?.Cancel();
-            tagSuggestionCancellation?.Dispose();
-            tagSuggestionCancellation = null;
+            Interlocked.Exchange(ref tagSuggestionCancellation, null);
         }
 
         disposed = true;
