@@ -10,10 +10,11 @@ using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.BarcodeDocuments;
+using MothballMobile.Infrastructure.Utilities;
 
 namespace MothballMobile.UI.Features.Items.ItemDetails;
 
-public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable
+public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAttributable, IInitializable, IDisposable
 {
     private readonly ItemDetailsCoordinator itemDetailsCoordinator;
     private readonly INavigationService nav;
@@ -23,6 +24,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IBarcodeShareService? barcodeShare;
     private readonly ITagRepository? tagRepository;
+    private CancellationTokenSource? tagSuggestionCancellation;
+    private int tagSuggestionVersion;
+    private bool disposed;
     private Item? currentItem;
     private IReadOnlyList<ItemContainerAllocation> currentAllocations = [];
     private string? sourceContainerId;
@@ -93,9 +97,19 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     /// <summary>Gets the tags assigned to the current item.</summary>
     public ObservableCollection<TagDescriptor> Tags { get; } = [];
 
+    /// <summary>Gets the tag suggestions matching the pending tag name.</summary>
+    public ObservableCollection<TagDescriptor> SuggestedTags { get; } = [];
+
+    /// <summary>Gets a value indicating whether tag suggestions should be shown.</summary>
+    public bool IsTagSuggestionsVisible => SuggestedTags.Count > 0;
+
     /// <summary>Gets or sets the tag name currently being entered.</summary>
     [ObservableProperty]
     private string newTagText = string.Empty;
+
+    partial void OnNewTagTextChanged(string value)
+        => RefreshTagSuggestionsAsync(value)
+            .FireAndForget(backgroundTasks, "Item tag suggestions");
 
     public ItemDetailsViewModel(
         ItemDetailsCoordinator itemDetailsCoordinator,
@@ -235,6 +249,60 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         ReplaceWith(Tags, tags.Select(tag => new TagDescriptor(tag.TagId, tag.Name.Value)));
     }
 
+    private async Task RefreshTagSuggestionsAsync(string value)
+    {
+        var version = Interlocked.Increment(ref tagSuggestionVersion);
+        var cancellation = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref tagSuggestionCancellation, cancellation);
+        previous?.Cancel();
+
+        try
+        {
+            if (tagRepository is null)
+            {
+                return;
+            }
+
+            var token = value.Trim().TrimStart('#');
+            if (token.Length == 0 || token.Any(char.IsWhiteSpace))
+            {
+                SuggestedTags.Clear();
+                OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+                return;
+            }
+
+            var selectedIds = Tags.Select(tag => tag.TagId).ToHashSet();
+            var tags = await tagRepository.GetAllAsync(cancellation.Token).ConfigureAwait(false);
+            cancellation.Token.ThrowIfCancellationRequested();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (version != Volatile.Read(ref tagSuggestionVersion))
+                {
+                    return;
+                }
+
+                SuggestedTags.Clear();
+                foreach (var tag in tags
+                    .Where(tag => !selectedIds.Contains(tag.TagId)
+                        && tag.Name.Value.StartsWith(token, StringComparison.OrdinalIgnoreCase))
+                    .Take(5))
+                {
+                    SuggestedTags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+                }
+
+                OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+            });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            Interlocked.CompareExchange(ref tagSuggestionCancellation, null, cancellation);
+            cancellation.Dispose();
+        }
+    }
+
     /// <summary>Creates or reuses the entered tag and assigns it to the item.</summary>
     [RelayCommand]
     public async Task AddTagAsync()
@@ -250,6 +318,28 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         });
     }
 
+    /// <summary>Assigns an existing tag selected from the suggestions.</summary>
+    /// <param name="tag">The suggested tag to assign.</param>
+    [RelayCommand]
+    public async Task AddSuggestedTagAsync(TagDescriptor? tag)
+    {
+        if (tagRepository is null || currentItem is null || tag is null)
+        {
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            await tagRepository.AssignAsync(tag.TagId, TagTargetType.Item, currentItem.ItemId);
+            if (Tags.All(existing => existing.TagId != tag.TagId))
+            {
+                Tags.Add(tag);
+            }
+
+            NewTagText = string.Empty;
+        });
+    }
+
     /// <summary>Removes an item-to-tag assignment without deleting the shared tag.</summary>
     /// <param name="tag">The assigned tag to remove.</param>
     [RelayCommand]
@@ -261,6 +351,20 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             await tagRepository.RemoveAsync(tag.TagId, TagTargetType.Item, currentItem.ItemId);
             Tags.Remove(tag);
         });
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        Interlocked.Increment(ref tagSuggestionVersion);
+        var cancellation = Interlocked.Exchange(ref tagSuggestionCancellation, null);
+        cancellation?.Cancel();
+        disposed = true;
     }
 
     private void NotifyContainerRelationStateChanged()

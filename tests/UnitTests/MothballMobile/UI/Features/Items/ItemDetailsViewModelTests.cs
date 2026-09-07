@@ -47,6 +47,36 @@ public sealed class ItemDetailsViewModelTests
     }
 
     [Test]
+    public async Task TagEditorSuggestions_SelectingExistingTagAssignsItToTheItem()
+    {
+        var item = new Item(Guid.NewGuid(), "Widget", "");
+        var details = new ItemDetailsResult(new InventorySnapshot(item, 1, 0, []));
+        var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
+        var suggestedTag = new CoreApp.Domain.Entities.TagAggregate.Tag(Guid.NewGuid(), "winter");
+        var tags = new Mock<ITagRepository>();
+        tags.Setup(repository => repository.GetForTargetAsync(TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+        tags.Setup(repository => repository.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([suggestedTag]);
+
+        var viewModel = CreateViewModel(
+            itemDetails.Object,
+            Mock.Of<IItemInventoryCommandService>(),
+            Mock.Of<IPopupService>(),
+            tagRepository: tags.Object);
+        await viewModel.InitializeAsync(item.ItemId.ToString());
+
+        viewModel.NewTagText = "#wi";
+
+        Assert.That(SpinWait.SpinUntil(() => viewModel.SuggestedTags.Count == 1, TimeSpan.FromSeconds(2)), Is.True);
+        await viewModel.AddSuggestedTagCommand.ExecuteAsync(viewModel.SuggestedTags[0]);
+
+        Assert.That(viewModel.Tags.Select(tag => tag.TagId), Is.EqualTo(new[] { suggestedTag.TagId }));
+        tags.Verify(repository => repository.AssignAsync(
+            suggestedTag.TagId, TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
     public void DisplayDescription_UsesPlaceholderForEmptyDescription()
     {
         var viewModel = CreateViewModel(
