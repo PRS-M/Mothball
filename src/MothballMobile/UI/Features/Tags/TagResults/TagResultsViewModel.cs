@@ -19,6 +19,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
     private readonly IContainerListQueryHandler containerQueries;
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService navigation;
+    private readonly SemaphoreSlim reloadGate = new(1, 1);
     private CancellationTokenSource? loadCancellation;
     private bool initialized;
     private int requestVersion;
@@ -108,6 +109,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
 
         try
         {
+            await reloadGate.WaitAsync(cancellation.Token);
             await RunCommandAsync(async () =>
             {
                 var itemFilter = new TagFilter(TagTargetType.Item, [tagName]);
@@ -151,6 +153,11 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         }
         finally
         {
+            if (reloadGate.CurrentCount == 0)
+            {
+                reloadGate.Release();
+            }
+
             if (ReferenceEquals(Interlocked.CompareExchange(ref loadCancellation, null, cancellation), cancellation))
             {
                 cancellation.Dispose();
