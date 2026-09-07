@@ -44,22 +44,31 @@ public partial class TagSearchPanel : ContentView
 
     /// <summary>Gets or sets the localized search placeholder.</summary>
     public string Placeholder { get => (string)GetValue(PlaceholderProperty); set => SetValue(PlaceholderProperty, value); }
+
     /// <summary>Gets or sets the free-text query.</summary>
     public string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
+
     /// <summary>Gets or sets the command submitted by the search field.</summary>
     public ICommand? SearchCommand { get => (ICommand?)GetValue(SearchCommandProperty); set => SetValue(SearchCommandProperty, value); }
+
     /// <summary>Gets or sets the active exact tag filters.</summary>
     public ObservableCollection<TagDescriptor>? SelectedTags { get => (ObservableCollection<TagDescriptor>?)GetValue(SelectedTagsProperty); set => SetValue(SelectedTagsProperty, value); }
+
     /// <summary>Gets or sets the suggestions displayed below the search field.</summary>
     public ObservableCollection<TagDescriptor>? SuggestedTags { get => (ObservableCollection<TagDescriptor>?)GetValue(SuggestedTagsProperty); set => SetValue(SuggestedTagsProperty, value); }
+
     /// <summary>Gets or sets whether the suggestion surface is visible.</summary>
     public bool IsTagSuggestionsVisible { get => (bool)GetValue(IsTagSuggestionsVisibleProperty); set => SetValue(IsTagSuggestionsVisibleProperty, value); }
+
     /// <summary>Gets or sets whether the search field currently has focus.</summary>
     public bool IsSearchFocused { get => (bool)GetValue(IsSearchFocusedProperty); set => SetValue(IsSearchFocusedProperty, value); }
+
     /// <summary>Gets a value indicating whether the suggestion surface should be displayed.</summary>
     public bool IsSuggestionSurfaceVisible => IsSearchFocused && IsTagSuggestionsVisible;
+
     /// <summary>Gets or sets the command that adds a selected suggestion.</summary>
     public ICommand? AddTagCommand { get => (ICommand?)GetValue(AddTagCommandProperty); set => SetValue(AddTagCommandProperty, value); }
+
     /// <summary>Gets or sets the command that removes an active tag.</summary>
     public ICommand? RemoveTagCommand { get => (ICommand?)GetValue(RemoveTagCommandProperty); set => SetValue(RemoveTagCommandProperty, value); }
 

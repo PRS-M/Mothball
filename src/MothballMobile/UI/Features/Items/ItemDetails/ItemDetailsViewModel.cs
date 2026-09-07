@@ -89,6 +89,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             || !string.Equals(ContainerId, sourceContainerId, StringComparison.OrdinalIgnoreCase));
 
     public ObservableCollection<string> ImagePaths { get; } = new();
+
     /// <summary>Gets the tags assigned to the current item.</summary>
     public ObservableCollection<TagDescriptor> Tags { get; } = [];
 

@@ -11,6 +11,7 @@ internal interface IConflictPolicyStrategy
     /// <param name="context">The value used by the operation.</param>
     /// <param name="validRelations">The value used by the operation.</param>
     void PlanRelations(PlannerContext context, IReadOnlyList<InventoryBackupRelation> validRelations);
+
     /// <summary>
     /// Adds image changes to the restore plan according to the conflict policy.
     /// </summary>

@@ -17,12 +17,14 @@ public interface IPhotoBackgroundOperationTracker
     /// </summary>
     /// <param name="operationDescription">The value used by the operation.</param>
     Guid Start(string operationDescription);
+
     /// <summary>
     /// Reports the .
     /// </summary>
     /// <param name="operationId">The identifier used by the operation.</param>
     /// <param name="progress">The value used by the operation.</param>
     void Report(Guid operationId, double progress);
+
     /// <summary>
     /// Completes the .
     /// </summary>

@@ -67,6 +67,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private int itemTypesCount = 0;
 
     public ObservableCollection<string> ContainerImagePaths { get; } = new();
+
     /// <summary>Gets the tags assigned to the current container.</summary>
     public ObservableCollection<TagDescriptor> Tags { get; } = [];
 
@@ -75,12 +76,16 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private string newTagText = string.Empty;
     public ObservableCollection<ItemWithPhotosViewModel> Items => itemCoordinator.Items;
     public ObservableCollection<object> Rows => itemCoordinator.Rows;
+
     /// <summary>Gets the exact tags applied to the container contents query.</summary>
     public ObservableCollection<TagDescriptor> SelectedTags { get; } = [];
+
     /// <summary>Gets the tag suggestions matching the active hash token.</summary>
     public ObservableCollection<TagDescriptor> SuggestedTags { get; } = [];
+
     /// <summary>Gets a value indicating whether a tag filter is active.</summary>
     public bool HasSelectedTags => SelectedTags.Count > 0;
+
     /// <summary>Gets a value indicating whether tag suggestions should be shown.</summary>
     public bool IsTagSuggestionsVisible => SuggestedTags.Count > 0;
     private TagFilter? CurrentTagFilter => SelectedTags.Count == 0
@@ -638,12 +643,14 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         {
             d.Dispose();
         }
+
         if (disposing)
         {
             tagSuggestionCancellation?.Cancel();
             tagSuggestionCancellation?.Dispose();
             tagSuggestionCancellation = null;
         }
+
         disposed = true;
     }
 }
