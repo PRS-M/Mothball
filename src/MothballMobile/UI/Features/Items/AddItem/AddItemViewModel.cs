@@ -2,10 +2,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Utilities;
 using CoreApp.Domain.ValueObjects;
+using CoreApp.Domain.Entities.ItemAggregate;
 using Microsoft.Extensions.Logging;
+using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Scanning;
 
 namespace MothballMobile.UI.Features.Items.AddItem;
@@ -23,6 +27,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IItemReceiptService itemReceipts;
+    private readonly ITagRepository? tagRepository;
+    private Guid? tagId;
 
     private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
     private static readonly ReadOnlyCollection<BarcodeSymbology> qrCodeOnlySymbologies = new([BarcodeSymbology.QrCode]);
@@ -80,7 +86,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         IPopupDefinitionService popupDefinitions,
         IBarcodeScanSession barcodeScanner,
         IInventoryQueryRepository inventoryQueries,
-        IItemReceiptService itemReceipts)
+        IItemReceiptService itemReceipts,
+        ITagRepository? tagRepository = null)
     {
         this.createItem = createItem ?? throw new ArgumentNullException(nameof(createItem));
         this.nav = nav ?? throw new ArgumentNullException(nameof(nav));
@@ -91,6 +98,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         this.barcodeScanner = barcodeScanner ?? throw new ArgumentNullException(nameof(barcodeScanner));
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
         this.itemReceipts = itemReceipts ?? throw new ArgumentNullException(nameof(itemReceipts));
+        this.tagRepository = tagRepository;
         pendingPhoto = new PendingPhoto(imageService ?? throw new ArgumentNullException(nameof(imageService)));
     }
 
@@ -101,6 +109,13 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         if (query.TryGetValue(NavigationParams.ContainerId, out var value) && value is string id)
         {
             ContainerId = id;
+        }
+
+        if (query.TryGetValue(NavigationParams.TagId, out var tagValue)
+            && tagValue is string tagText
+            && Guid.TryParse(tagText, out var parsedTagId))
+        {
+            tagId = parsedTagId;
         }
     }
 
@@ -307,12 +322,14 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
             if (IsReceivingExistingItem)
             {
-                await ReceiveExistingItemAsync(parsedQuantity, destinationContainerId);
+                var existingItemId = await ReceiveExistingItemAsync(parsedQuantity, destinationContainerId);
+                await AssignTagAsync(existingItemId);
                 await nav.GoBackAsync();
                 return;
             }
 
-            await CreateItemAsync(trimmed, parsedQuantity, destinationContainerId);
+            var item = await CreateItemAsync(trimmed, parsedQuantity, destinationContainerId);
+            await AssignTagAsync(item.ItemId);
 
             await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;
@@ -331,7 +348,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             ? parsedContainerId
             : null;
 
-    private async Task ReceiveExistingItemAsync(int quantity, Guid? containerId)
+    private async Task<Guid> ReceiveExistingItemAsync(int quantity, Guid? containerId)
     {
         var existingItem = await inventoryQueries.FindBarcodeAsync(BarcodeValue);
         if (existingItem?.OwnerKind != BarcodeOwnerKind.Item)
@@ -340,9 +357,10 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         }
 
         await itemReceipts.ReceiveAsync(existingItem.OwnerId, quantity, containerId);
+        return existingItem.OwnerId;
     }
 
-    private async Task CreateItemAsync(string name, int quantity, Guid? containerId)
+    private async Task<Item> CreateItemAsync(string name, int quantity, Guid? containerId)
     {
         var normalizedBarcodeValue = BarcodeValue?.Trim();
         var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
@@ -351,7 +369,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         try
         {
-            await createItem.CreateAsync(
+            return await createItem.CreateAsync(
                 name,
                 Description?.Trim() ?? string.Empty,
                 containerId,
@@ -366,4 +384,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             throw;
         }
     }
+
+    private Task AssignTagAsync(Guid targetId)
+        => tagRepository is not null && tagId is { } selectedTagId
+            ? tagRepository.AssignAsync(selectedTagId, TagTargetType.Item, targetId)
+            : Task.CompletedTask;
 }

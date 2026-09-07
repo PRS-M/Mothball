@@ -2,14 +2,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Utilities;
 using CoreApp.Domain.ValueObjects;
+using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Scanning;
 
 namespace MothballMobile.UI.Features.Containers.AddContainer;
 
 
-public partial class AddContainerViewModel : BaseViewModel
+public partial class AddContainerViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly ICreateContainerCommandHandler createContainer;
     private readonly INavigationService navigationService;
@@ -18,6 +21,8 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly PendingPhoto pendingPhoto;
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IApplicationSettings applicationSettings;
+    private readonly ITagRepository? tagRepository;
+    private Guid? tagId;
     private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
     private static readonly ReadOnlyCollection<BarcodeSymbology> qrCodeOnlySymbologies = new([BarcodeSymbology.QrCode]);
 
@@ -32,7 +37,8 @@ public partial class AddContainerViewModel : BaseViewModel
         IApplicationSettings applicationSettings,
         IPopupService popup,
         IPopupDefinitionService popupDefinitions,
-        IBarcodeScanSession barcodeScanner)
+        IBarcodeScanSession barcodeScanner,
+        ITagRepository? tagRepository = null)
     {
         this.createContainer = createContainer ?? throw new ArgumentNullException(nameof(createContainer));
         this.navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
@@ -40,7 +46,19 @@ public partial class AddContainerViewModel : BaseViewModel
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.popupDefinitions = popupDefinitions ?? throw new ArgumentNullException(nameof(popupDefinitions));
         this.barcodeScanner = barcodeScanner ?? throw new ArgumentNullException(nameof(barcodeScanner));
+        this.tagRepository = tagRepository;
         pendingPhoto = new PendingPhoto(imageService ?? throw new ArgumentNullException(nameof(imageService)));
+    }
+
+    /// <inheritdoc />
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.TryGetValue(NavigationParams.TagId, out var value)
+            && value is string text
+            && Guid.TryParse(text, out var parsedTagId))
+        {
+            tagId = parsedTagId;
+        }
     }
 
     [ObservableProperty]
@@ -169,11 +187,15 @@ public partial class AddContainerViewModel : BaseViewModel
             var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
                 ? null
                 : new Barcode(normalizedBarcodeValue, BarcodeSymbology);
-            await createContainer.CreateAsync(
+            var container = await createContainer.CreateAsync(
                 trimmedName,
                 string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim(),
                 pendingPhoto.Bytes,
                 barcode);
+            if (tagRepository is not null && tagId is { } selectedTagId)
+            {
+                await tagRepository.AssignAsync(selectedTagId, TagTargetType.Container, container.ContainerId);
+            }
 
             await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;

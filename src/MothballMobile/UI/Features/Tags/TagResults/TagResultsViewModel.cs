@@ -104,6 +104,20 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
     private Task RefreshAsync()
         => IsBusy ? Task.CompletedTask : ReloadAsync();
 
+    /// <summary>Opens the item form with the selected tag ready to be assigned.</summary>
+    [RelayCommand]
+    private Task AddItemAsync()
+        => navigation.GoToAsync(
+            NavigationRoutes.AddItem,
+            new Infrastructure.Navigation.AddItemNavigationRequest(TagId: tagId, TagName: tagName));
+
+    /// <summary>Opens the container form with the selected tag ready to be assigned.</summary>
+    [RelayCommand]
+    private Task AddContainerAsync()
+        => navigation.GoToAsync(
+            NavigationRoutes.AddContainer,
+            new Infrastructure.Navigation.AddContainerNavigationRequest(tagId, tagName));
+
     private void ReloadInBackground()
     {
         if (!initialized || !HasTag)
