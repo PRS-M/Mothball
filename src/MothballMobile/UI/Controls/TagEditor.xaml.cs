@@ -25,6 +25,18 @@ public partial class TagEditor : ContentView
     public static readonly BindableProperty RemoveCommandProperty =
         BindableProperty.Create(nameof(RemoveCommand), typeof(ICommand), typeof(TagEditor));
 
+    /// <summary>Identifies the <see cref="SuggestedTags"/> bindable property.</summary>
+    public static readonly BindableProperty SuggestedTagsProperty =
+        BindableProperty.Create(nameof(SuggestedTags), typeof(ObservableCollection<TagDescriptor>), typeof(TagEditor));
+
+    /// <summary>Identifies the <see cref="IsSuggestionsVisible"/> bindable property.</summary>
+    public static readonly BindableProperty IsSuggestionsVisibleProperty =
+        BindableProperty.Create(nameof(IsSuggestionsVisible), typeof(bool), typeof(TagEditor), false);
+
+    /// <summary>Identifies the <see cref="SuggestionCommand"/> bindable property.</summary>
+    public static readonly BindableProperty SuggestionCommandProperty =
+        BindableProperty.Create(nameof(SuggestionCommand), typeof(ICommand), typeof(TagEditor));
+
     /// <summary>Gets or sets the assigned tags.</summary>
     public ObservableCollection<TagDescriptor>? Tags { get => (ObservableCollection<TagDescriptor>?)GetValue(TagsProperty); set => SetValue(TagsProperty, value); }
 
@@ -36,4 +48,13 @@ public partial class TagEditor : ContentView
 
     /// <summary>Gets or sets the command that removes a tag assignment.</summary>
     public ICommand? RemoveCommand { get => (ICommand?)GetValue(RemoveCommandProperty); set => SetValue(RemoveCommandProperty, value); }
+
+    /// <summary>Gets or sets the available tag suggestions.</summary>
+    public ObservableCollection<TagDescriptor>? SuggestedTags { get => (ObservableCollection<TagDescriptor>?)GetValue(SuggestedTagsProperty); set => SetValue(SuggestedTagsProperty, value); }
+
+    /// <summary>Gets or sets whether tag suggestions are visible.</summary>
+    public bool IsSuggestionsVisible { get => (bool)GetValue(IsSuggestionsVisibleProperty); set => SetValue(IsSuggestionsVisibleProperty, value); }
+
+    /// <summary>Gets or sets the command invoked when a suggestion is selected.</summary>
+    public ICommand? SuggestionCommand { get => (ICommand?)GetValue(SuggestionCommandProperty); set => SetValue(SuggestionCommandProperty, value); }
 }

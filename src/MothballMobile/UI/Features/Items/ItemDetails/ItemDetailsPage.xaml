@@ -210,8 +210,11 @@
 
             <controls:TagEditor Tags="{Binding Tags}"
                                 NewTagText="{Binding NewTagText}"
+                                SuggestedTags="{Binding SuggestedTags}"
+                                IsSuggestionsVisible="{Binding IsTagSuggestionsVisible}"
                                 AddCommand="{Binding AddTagCommand}"
-                                RemoveCommand="{Binding RemoveTagCommand}" />
+                                RemoveCommand="{Binding RemoveTagCommand}"
+                                SuggestionCommand="{Binding AddSuggestedTagCommand}" />
 
                  <Border Style="{StaticResource Card}"
                          IsVisible="{Binding ShowQuantityManagement}">

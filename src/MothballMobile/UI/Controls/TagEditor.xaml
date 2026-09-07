@@ -64,6 +64,52 @@
                         Style="{StaticResource TonalButton}"
                         Command="{Binding Source={x:Reference this}, Path=AddCommand}" />
             </Grid>
+
+            <Border IsVisible="{Binding Source={x:Reference this}, Path=IsSuggestionsVisible}"
+                    Background="{DynamicResource Surface}"
+                    Stroke="{DynamicResource OutlineVariant}"
+                    StrokeThickness="1"
+                    Padding="4,6"
+                    StrokeShape="RoundRectangle 16">
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Source={x:Reference this}, Path=SuggestedTags}"
+                                     Spacing="0">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="{x:Null}">
+                            <Border Padding="12,8"
+                                    Background="Transparent"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 10">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type controls:TagEditor}}, Path=SuggestionCommand}"
+                                                          CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="32,*"
+                                      ColumnSpacing="10"
+                                      MinimumHeightRequest="40">
+                                    <Border Background="{DynamicResource SecondaryContainer}"
+                                            StrokeThickness="0"
+                                            WidthRequest="28"
+                                            HeightRequest="28"
+                                            HorizontalOptions="Start"
+                                            VerticalOptions="Center"
+                                            StrokeShape="RoundRectangle 14">
+                                        <Label Text="#"
+                                               TextColor="{DynamicResource OnSecondaryContainer}"
+                                               FontAttributes="Bold"
+                                               HorizontalTextAlignment="Center"
+                                               VerticalTextAlignment="Center" />
+                                    </Border>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Name}"
+                                           TextColor="{DynamicResource OnSurface}"
+                                           FontSize="15"
+                                           VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </Border>
         </VerticalStackLayout>
     </Border>
 </ContentView>

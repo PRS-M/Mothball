@@ -177,8 +177,11 @@
 
                 <controls:TagEditor Tags="{Binding Tags}"
                                     NewTagText="{Binding NewTagText}"
+                                    SuggestedTags="{Binding SuggestedAssignmentTags}"
+                                    IsSuggestionsVisible="{Binding IsAssignmentTagSuggestionsVisible}"
                                     AddCommand="{Binding CreateTagCommand}"
-                                    RemoveCommand="{Binding UnassignTagCommand}" />
+                                    RemoveCommand="{Binding UnassignTagCommand}"
+                                    SuggestionCommand="{Binding AddSuggestedAssignmentTagCommand}" />
 
                 <VerticalStackLayout Spacing="8">
                     <Label Text="{x:Static strings:AppResources.ItemsInThisContainer}"
