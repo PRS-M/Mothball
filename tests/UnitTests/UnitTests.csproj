@@ -94,6 +94,9 @@
     <Compile Include="../../src/MothballMobile/UI/Features/Items/ItemsList/ItemsListViewModel.cs" Link="UI/Features/Items/ItemsList/ItemsListViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainersList/ContainerViewModel.cs" Link="UI/Features/Containers/ContainersList/ContainerViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainersList/ContainerListViewModel.cs" Link="UI/Features/Containers/ContainersList/ContainerListViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Tags/TagTargetFilter.cs" Link="UI/Features/Tags/TagTargetFilter.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Tags/TagResults/TagResultViewModel.cs" Link="UI/Features/Tags/TagResults/TagResultViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Tags/TagResults/TagResultsViewModel.cs" Link="UI/Features/Tags/TagResults/TagResultsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ItemWithPhotosViewModel.cs" Link="UI/Features/Containers/ContainerDetails/ItemWithPhotosViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/IContainerDetailsHeader.cs" Link="UI/Features/Containers/ContainerDetails/IContainerDetailsHeader.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Containers/ContainerDetails/ContainerItemPageLoad.cs" Link="UI/Features/Containers/ContainerDetails/ContainerItemPageLoad.cs" />

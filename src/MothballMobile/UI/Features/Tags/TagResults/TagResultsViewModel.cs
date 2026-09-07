@@ -22,6 +22,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
     private readonly SemaphoreSlim reloadGate = new(1, 1);
     private CancellationTokenSource? loadCancellation;
     private bool initialized;
+    private bool initializationAttempted;
     private int requestVersion;
     private Guid tagId;
     private string tagName = string.Empty;
@@ -54,6 +55,8 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
 
     public void ApplyQueryAttributes(IDictionary<string, object> queryParameters)
     {
+        var wasInitialized = initialized;
+
         if (queryParameters.TryGetValue(NavigationParams.TagId, out var idValue)
             && idValue is string id
             && Guid.TryParse(id, out var parsedId))
@@ -72,10 +75,24 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         OnPropertyChanged(nameof(SelectedTag));
         OnPropertyChanged(nameof(HasTag));
         initialized = false;
+
+        var activeLoad = Volatile.Read(ref loadCancellation);
+        if (activeLoad is not null)
+        {
+            Interlocked.Increment(ref requestVersion);
+        }
+
+        if ((wasInitialized || initializationAttempted || activeLoad is not null) && HasTag)
+        {
+            _ = ReloadAsync();
+        }
     }
 
     public Task InitializeAsync()
-        => initialized ? Task.CompletedTask : ReloadAsync();
+    {
+        initializationAttempted = true;
+        return !HasTag || initialized ? Task.CompletedTask : ReloadAsync();
+    }
 
     partial void OnSelectedFilterChanged(TagTargetFilter value)
         => ReloadInBackground();
