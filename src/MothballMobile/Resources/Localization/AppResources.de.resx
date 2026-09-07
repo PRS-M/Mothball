@@ -37,8 +37,8 @@
   <data name="Error" xml:space="preserve"><value>Fehler</value></data>
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Dieser Barcode wird bereits verwendet.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.</value></data>
-  <data name="BarcodesExtendedMode" xml:space="preserve"><value>Erweiterter Barcode-Modus</value></data>
-  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Zeigt zusätzliche Barcode-Typen an. QR-Code ist immer verfügbar.</value></data>
+  <data name="BarcodesExtendedMode" xml:space="preserve"><value>Erweiterter Barcode-Modus (experimentell)</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Der experimentelle Modus zeigt zusätzliche Barcode-Typen an. Im einfachen Modus sind EAN-13 und QR-Code verfügbar.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Barcode-Typ</value></data>
   <data name="Backup" xml:space="preserve"><value>Sicherung</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Sicherung exportiert</value></data>

@@ -81,10 +81,10 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
     public bool IsViewingBarcode => !IsEditingBarcode;
     private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<global::CoreApp.Domain.ValueObjects.BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> qrCodeOnlySymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode]);
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> simpleBarcodeSymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean13, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode]);
     public IReadOnlyList<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
-        : qrCodeOnlySymbologies;
+        : simpleBarcodeSymbologies;
     public string DisplayDescription => HasDescription ? Description : "No description.";
     public bool IsViewingDescription => !IsEditingDescription;
     public bool ShowGoToContainerButton => HasContainerRelation

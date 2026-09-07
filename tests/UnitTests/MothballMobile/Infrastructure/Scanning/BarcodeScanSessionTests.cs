@@ -55,6 +55,7 @@ public sealed class BarcodeScanSessionTests
     }
 
     [TestCase(false, BarcodeSymbology.QrCode, true)]
+    [TestCase(false, BarcodeSymbology.Ean13, true)]
     [TestCase(false, BarcodeSymbology.UpcE, false)]
     [TestCase(true, BarcodeSymbology.UpcE, true)]
     public void IsSymbologyAllowed_UsesBarcodeExtendedMode(

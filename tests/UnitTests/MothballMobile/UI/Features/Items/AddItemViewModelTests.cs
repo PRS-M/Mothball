@@ -78,11 +78,11 @@ public sealed class AddItemViewModelTests
     }
 
     [Test]
-    public void AvailableBarcodeSymbologies_WhenExtendedModeIsDisabled_ContainsOnlyQrCode()
+    public void AvailableBarcodeSymbologies_WhenExtendedModeIsDisabled_ContainsSimpleBarcodeTypes()
     {
         var viewModel = CreateViewModel(Mock.Of<ICreateItemCommandHandler>(), false);
 
-        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.QrCode }));
+        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.Ean13, BarcodeSymbology.QrCode }));
     }
 
     [Test]
