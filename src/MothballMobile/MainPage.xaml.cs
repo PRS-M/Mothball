@@ -21,4 +21,9 @@ public partial class MainPage : BasePage
 	{
 		await Shell.Current.GoToAsync(Infrastructure.NavigationRoutes.Settings);
 	}
+
+	private async void OnTagsClicked(object? sender, EventArgs e)
+	{
+		await Shell.Current.GoToAsync(Infrastructure.NavigationRoutes.Tags);
+	}
 }

@@ -54,6 +54,19 @@
             </Button>
 
             <Button
+                Text="{x:Static strings:AppResources.Tags}"
+                SemanticProperties.Hint="{x:Static strings:AppResources.OpenTheTagsView}"
+                Clicked="OnTagsClicked"
+                HorizontalOptions="Fill">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid"
+                                     Glyph="&#xF02B;"
+                                     Color="{DynamicResource OnPrimary}"
+                                     Size="16" />
+                </Button.ImageSource>
+            </Button>
+
+            <Button
                 Text="{x:Static strings:AppResources.Settings}"
                 SemanticProperties.Hint="{x:Static strings:AppResources.OpenTheSettingsView}"
                 Clicked="OnSettingsClicked"

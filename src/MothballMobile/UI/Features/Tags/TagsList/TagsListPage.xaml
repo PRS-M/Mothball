@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Tags.TagsList"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
+                x:Class="MothballMobile.UI.Features.Tags.TagsList.TagsListPage"
+                x:DataType="vm:TagsListViewModel"
+                Background="{DynamicResource Surface}"
+                Title="{x:Static strings:AppResources.Tags}">
+    <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+        <controls:PageHeader Title="{x:Static strings:AppResources.Tags}"
+                             Subtitle="{x:Static strings:AppResources.BrowseYourTags}"
+                             TitleFontSize="22"
+                             SubtitleFontSize="12" />
+
+        <SearchBar Grid.Row="1"
+                   Placeholder="{x:Static strings:AppResources.SearchTags}"
+                   Text="{Binding Query, Mode=TwoWay}"
+                   CancelButtonColor="{DynamicResource Primary}" />
+
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Tags}"
+                            SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <controls:EmptyStateView Title="{x:Static strings:AppResources.NoTagsFound}" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TagViewModel">
+                        <Border Margin="0,0,0,8"
+                                Padding="16,12"
+                                Style="{StaticResource Card}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding OpenCommand}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                <Label Text="{Binding Name}"
+                                       FontSize="17"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Row="1"
+                                       Text="{Binding UsageText}"
+                                       TextColor="{DynamicResource OnSurfaceVariant}"
+                                       FontSize="13" />
+                                <Label Grid.Column="1"
+                                       Grid.RowSpan="2"
+                                       Text="&#xF054;"
+                                       FontFamily="FontAwesomeSolid"
+                                       FontSize="16"
+                                       VerticalOptions="Center"
+                                       TextColor="{DynamicResource OnSurfaceVariant}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</views:BasePage>

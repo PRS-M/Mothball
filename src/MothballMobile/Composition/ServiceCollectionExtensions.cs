@@ -22,6 +22,8 @@ using MothballMobile.UI.Features.Items.ItemLocations;
 using MothballMobile.UI.Features.Items.ItemsList;
 using MothballMobile.UI.Features.Settings;
 using MothballMobile.UI.Features.Scanning;
+using MothballMobile.UI.Features.Tags.TagsList;
+using MothballMobile.UI.Features.Tags.TagResults;
 using CoreApp.Application.Features.Barcodes.Commands;
 
 namespace MothballMobile.Composition;
@@ -229,6 +231,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AddContainerViewModel>();
         services.AddTransient<ContainerListViewModel>();
         services.AddTransient<ItemsListViewModel>();
+        services.AddTransient<TagsListViewModel>();
+        services.AddTransient<TagResultsViewModel>();
         services.AddTransient<ContainerDetailsViewModel>();
         services.AddTransient<ItemDetailsViewModel>();
         services.AddTransient<ItemLocationsViewModel>();

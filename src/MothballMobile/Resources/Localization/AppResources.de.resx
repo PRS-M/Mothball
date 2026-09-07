@@ -310,4 +310,13 @@
   <data name="ThisMayReplaceNewerStockCountsWithValuesFromTheBackup" xml:space="preserve"><value>Dadurch können neuere Bestandszahlen durch Werte aus der Sicherung ersetzt werden.</value></data>
   <data name="Overwrite" xml:space="preserve"><value>Überschreiben</value></data>
   <data name="KeepCurrent" xml:space="preserve"><value>Aktuelle behalten</value></data>
+  <data name="BrowseYourTags" xml:space="preserve"><value>Tags durchsuchen</value></data>
+  <data name="SearchTags" xml:space="preserve"><value>Tags suchen ...</value></data>
+  <data name="NoTagsFound" xml:space="preserve"><value>Keine Tags gefunden</value></data>
+  <data name="OpenTheTagsView" xml:space="preserve"><value>Tag-Ansicht öffnen</value></data>
+  <data name="TaggedResultsSubtitle" xml:space="preserve"><value>Gegenstände und Container mit diesem Tag</value></data>
+  <data name="SearchTaggedResults" xml:space="preserve"><value>Getaggte Ergebnisse suchen ...</value></data>
+  <data name="NoTaggedResults" xml:space="preserve"><value>Keine passenden Gegenstände oder Container</value></data>
+  <data name="ClearTag" xml:space="preserve"><value>Ausgewählten Tag löschen</value></data>
+  <data name="TagUsageFormat" xml:space="preserve"><value>{0} Gegenstände · {1} Container</value></data>
 </root>

@@ -310,4 +310,13 @@
   <data name="ThisMayReplaceNewerStockCountsWithValuesFromTheBackup" xml:space="preserve"><value>Esto puede reemplazar cantidades de stock más recientes con valores de la copia de seguridad.</value></data>
   <data name="Overwrite" xml:space="preserve"><value>Sobrescribir</value></data>
   <data name="KeepCurrent" xml:space="preserve"><value>Mantener actuales</value></data>
+  <data name="BrowseYourTags" xml:space="preserve"><value>Explora tus etiquetas</value></data>
+  <data name="SearchTags" xml:space="preserve"><value>Buscar etiquetas...</value></data>
+  <data name="NoTagsFound" xml:space="preserve"><value>No se encontraron etiquetas</value></data>
+  <data name="OpenTheTagsView" xml:space="preserve"><value>Abrir la vista de etiquetas</value></data>
+  <data name="TaggedResultsSubtitle" xml:space="preserve"><value>Artículos y contenedores con esta etiqueta</value></data>
+  <data name="SearchTaggedResults" xml:space="preserve"><value>Buscar resultados etiquetados...</value></data>
+  <data name="NoTaggedResults" xml:space="preserve"><value>No hay artículos ni contenedores coincidentes</value></data>
+  <data name="ClearTag" xml:space="preserve"><value>Borrar etiqueta seleccionada</value></data>
+  <data name="TagUsageFormat" xml:space="preserve"><value>{0} artículos · {1} contenedores</value></data>
 </root>
