@@ -28,27 +28,27 @@ public partial class AppShell : Shell
 #if IOS || MACCATALYST
         var tabBar = new TabBar
         {
-            Route = "MainTabs",
+            Route = Infrastructure.NavigationRoutes.TopLevel.MainTabs,
         };
 
-        tabBar.Items.Add(CreateTab(localization.Get("Home"), "Home", "\uF015", typeof(MainPage)));
-        tabBar.Items.Add(CreateTab(localization.Get("Containers"), "Containers", "\uF080", typeof(UI.Features.Containers.ContainersList.ContainersListPage)));
-        tabBar.Items.Add(CreateTab(localization.Get("Items"), "Items", "\uF02C", typeof(UI.Features.Items.ItemsList.ItemsListPage)));
-        tabBar.Items.Add(CreateTab(localization.Get("Tags"), "Tags", "\uF02B", typeof(UI.Features.Tags.TagsList.TagsListPage)));
-        tabBar.Items.Add(CreateTab(localization.Get("Settings"), "Settings", "\uF013", typeof(UI.Features.Settings.SettingsPage)));
+        tabBar.Items.Add(CreateTab(localization.Get("Home"), Infrastructure.NavigationRoutes.TopLevel.Home, Infrastructure.NavigationRoutes.TopLevel.HomePage, "\uF015", typeof(MainPage)));
+        tabBar.Items.Add(CreateTab(localization.Get("Containers"), Infrastructure.NavigationRoutes.TopLevel.Containers, Infrastructure.NavigationRoutes.TopLevel.ContainersPage, "\uF080", typeof(UI.Features.Containers.ContainersList.ContainersListPage)));
+        tabBar.Items.Add(CreateTab(localization.Get("Items"), Infrastructure.NavigationRoutes.TopLevel.Items, Infrastructure.NavigationRoutes.TopLevel.ItemsPage, "\uF02C", typeof(UI.Features.Items.ItemsList.ItemsListPage)));
+        tabBar.Items.Add(CreateTab(localization.Get("Tags"), Infrastructure.NavigationRoutes.TopLevel.Tags, Infrastructure.NavigationRoutes.TopLevel.TagsPage, "\uF02B", typeof(UI.Features.Tags.TagsList.TagsListPage)));
+        tabBar.Items.Add(CreateTab(localization.Get("Settings"), Infrastructure.NavigationRoutes.TopLevel.Settings, Infrastructure.NavigationRoutes.TopLevel.SettingsPage, "\uF013", typeof(UI.Features.Settings.SettingsPage)));
 
         Items.Add(tabBar);
 #else
-        Items.Add(CreateFlyoutItem(localization.Get("Home"), "Home", "\uF015", typeof(MainPage), "MainPage"));
-        Items.Add(CreateFlyoutItem(localization.Get("Containers"), "Containers", "\uF080", typeof(UI.Features.Containers.ContainersList.ContainersListPage), "ContainersList"));
-        Items.Add(CreateFlyoutItem(localization.Get("Items"), "Items", "\uF02C", typeof(UI.Features.Items.ItemsList.ItemsListPage), "ItemsList"));
-        Items.Add(CreateFlyoutItem(localization.Get("Tags"), "Tags", "\uF02B", typeof(UI.Features.Tags.TagsList.TagsListPage), "TagsList"));
-        Items.Add(CreateFlyoutItem(localization.Get("Settings"), "Settings", "\uF013", typeof(UI.Features.Settings.SettingsPage), "SettingsPage"));
+        Items.Add(CreateFlyoutItem(localization.Get("Home"), Infrastructure.NavigationRoutes.TopLevel.Home, "\uF015", typeof(MainPage), Infrastructure.NavigationRoutes.TopLevel.HomePage));
+        Items.Add(CreateFlyoutItem(localization.Get("Containers"), Infrastructure.NavigationRoutes.TopLevel.Containers, "\uF080", typeof(UI.Features.Containers.ContainersList.ContainersListPage), Infrastructure.NavigationRoutes.TopLevel.ContainersPage));
+        Items.Add(CreateFlyoutItem(localization.Get("Items"), Infrastructure.NavigationRoutes.TopLevel.Items, "\uF02C", typeof(UI.Features.Items.ItemsList.ItemsListPage), Infrastructure.NavigationRoutes.TopLevel.ItemsPage));
+        Items.Add(CreateFlyoutItem(localization.Get("Tags"), Infrastructure.NavigationRoutes.TopLevel.Tags, "\uF02B", typeof(UI.Features.Tags.TagsList.TagsListPage), Infrastructure.NavigationRoutes.TopLevel.TagsPage));
+        Items.Add(CreateFlyoutItem(localization.Get("Settings"), Infrastructure.NavigationRoutes.TopLevel.Settings, "\uF013", typeof(UI.Features.Settings.SettingsPage), Infrastructure.NavigationRoutes.TopLevel.SettingsPage));
 #endif
     }
 
 #if IOS || MACCATALYST
-    private static Tab CreateTab(string title, string route, string glyph, Type pageType)
+    private static Tab CreateTab(string title, string route, string pageRoute, string glyph, Type pageType)
     {
         var tab = new Tab
         {
@@ -58,7 +58,7 @@ public partial class AppShell : Shell
         };
         tab.Items.Add(new ShellContent
         {
-            Route = route + "Page",
+            Route = pageRoute,
             ContentTemplate = new DataTemplate(pageType),
         });
         return tab;

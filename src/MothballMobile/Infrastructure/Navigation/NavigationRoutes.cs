@@ -2,6 +2,21 @@ namespace MothballMobile.Infrastructure;
 
 public static class NavigationRoutes
 {
+    public static class TopLevel
+    {
+        public const string MainTabs = "MainTabs";
+        public const string Home = "Home";
+        public const string HomePage = "HomePage";
+        public const string Containers = "Containers";
+        public const string ContainersPage = "ContainersPage";
+        public const string Items = "Items";
+        public const string ItemsPage = "ItemsPage";
+        public const string Tags = "Tags";
+        public const string TagsPage = "TagsPage";
+        public const string Settings = "Settings";
+        public const string SettingsPage = "SettingsPage";
+    }
+
     public const string HomeContainers = "HomeContainersView";
     public const string HomeItems = "HomeItemsView";
     public const string Settings = "SettingsView";
