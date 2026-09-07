@@ -16,6 +16,12 @@ public interface ITagRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all tags with counts of their item and container assignments.
+    /// </summary>
+    Task<IReadOnlyList<TagUsageSummary>> GetUsageSummariesAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Finds a tag by its normalized name.
     /// </summary>
     Task<Tag?> FindByNormalizedNameAsync(

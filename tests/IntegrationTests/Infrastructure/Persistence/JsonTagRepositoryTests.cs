@@ -61,6 +61,23 @@ public class JsonTagRepositoryTests
     }
 
     [Test]
+    public async Task GetUsageSummariesAsync_ReturnsItemAndContainerCounts()
+    {
+        var store = new JsonInventoryStore(new InMemoryFileHandler(), NullLogger<JsonInventoryStore>.Instance);
+        var repository = new JsonTagRepository(store);
+        var tag = await repository.GetOrCreateAsync(new TagName("winter"));
+
+        await repository.AssignAsync(tag.TagId, TagTargetType.Item, Guid.NewGuid());
+        await repository.AssignAsync(tag.TagId, TagTargetType.Container, Guid.NewGuid());
+
+        var summary = (await repository.GetUsageSummariesAsync()).Single();
+
+        Assert.That(summary.ItemCount, Is.EqualTo(1));
+        Assert.That(summary.ContainerCount, Is.EqualTo(1));
+        Assert.That(summary.TotalCount, Is.EqualTo(2));
+    }
+
+    [Test]
     public async Task RestoreAsync_RestoresTagDefinitionsAndAssignments()
     {
         var store = new JsonInventoryStore(new InMemoryFileHandler(), NullLogger<JsonInventoryStore>.Instance);

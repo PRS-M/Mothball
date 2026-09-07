@@ -31,6 +31,31 @@ public sealed class JsonTagRepository : ITagRepository
             .ToList();
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TagUsageSummary>> GetUsageSummariesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var assignments = state.TagAssignments
+            .GroupBy(assignment => assignment.TagId)
+            .ToDictionary(
+                group => group.Key,
+                group => (
+                    ItemCount: group.Count(assignment => assignment.TargetType == TagTargetType.Item),
+                    ContainerCount: group.Count(assignment => assignment.TargetType == TagTargetType.Container)));
+
+        return state.Tags
+            .OrderBy(tag => tag.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(tag =>
+            {
+                assignments.TryGetValue(tag.TagId, out var counts);
+                return new TagUsageSummary(tag.TagId, tag.Name, counts.ItemCount, counts.ContainerCount);
+            })
+            .ToList();
+    }
+
     public async Task<Tag?> FindByNormalizedNameAsync(
         string normalizedName,
         CancellationToken cancellationToken = default)

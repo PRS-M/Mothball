@@ -37,6 +37,29 @@ public sealed class TagRepository : ITagRepository
         return rows.Select(row => row.ToDomain()).ToList();
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TagUsageSummary>> GetUsageSummariesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await database.InitializeAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var rows = await database.Connection.QueryAsync<TagUsageSummaryRow>(
+            $"""
+            SELECT t.TagId,
+                   t.Name,
+                   (SELECT COUNT(*) FROM {nameof(DbItemTag)} i WHERE i.TagId = t.TagId) AS ItemCount,
+                   (SELECT COUNT(*) FROM {nameof(DbContainerTag)} c WHERE c.TagId = t.TagId) AS ContainerCount
+            FROM {nameof(DbTag)} t
+            ORDER BY t.Name COLLATE NOCASE
+            """).ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return rows
+            .Select(row => new TagUsageSummary(row.TagId, row.Name, row.ItemCount, row.ContainerCount))
+            .ToList();
+    }
+
     public async Task<Tag?> FindByNormalizedNameAsync(
         string normalizedName,
         CancellationToken cancellationToken = default)
@@ -166,5 +189,13 @@ public sealed class TagRepository : ITagRepository
         {
             throw new ArgumentException("Tag target ID cannot be empty.", nameof(targetId));
         }
+    }
+
+    private sealed class TagUsageSummaryRow
+    {
+        public Guid TagId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int ItemCount { get; set; }
+        public int ContainerCount { get; set; }
     }
 }
