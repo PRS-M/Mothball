@@ -74,6 +74,13 @@ public abstract class BaseViewModel : ObservableObject
         {
             await action();
         }
+        catch (OperationCanceledException)
+        {
+            if (rethrowOnError)
+            {
+                throw;
+            }
+        }
         catch (Exception ex)
         {
             var message = errorMessageFactory?.Invoke(ex) ?? ex.Message;
