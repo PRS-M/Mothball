@@ -18,30 +18,42 @@
                    Text="{Binding SearchQuery}"
                    SearchCommand="{Binding ApplySearchCommand}"
                    CancelButtonColor="{DynamicResource Primary}" />
-        <RefreshView Grid.Row="2"
-                     IsRefreshing="{Binding IsRefreshing}"
-                     Command="{Binding RefreshCommand}">
-            <CollectionView ItemsSource="{Binding Items}"
-                            RemainingItemsThreshold="3"
-                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}"
-                            SelectionMode="None">
-                <CollectionView.EmptyView>
-                    <controls:EmptyStateView Title="{x:Static strings:AppResources.NoContainersYet}" />
-                </CollectionView.EmptyView>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:TagContainerPickerRowViewModel">
-                        <controls:ContainerTile Command="{Binding SelectCommand}"
-                                                 Name="{Binding Name}"
-                                                 Notes="{Binding Notes}"
-                                                 ItemCount="{Binding ItemCount}"
-                                                 ItemTypesCount="{Binding ItemTypesCount}"
-                                                 ShowItemCount="{Binding ShowItemCount}"
-                                                 ShowItemTypesCount="{Binding ShowItemTypesCount}"
-                                                 ImagePaths="{Binding ImagePaths}"
-                                                 ImageSize="72" />
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </RefreshView>
+        <Grid Grid.Row="2">
+            <RefreshView IsRefreshing="{Binding IsRefreshing}"
+                         Command="{Binding RefreshCommand}">
+                <CollectionView ItemsSource="{Binding Items}"
+                                RemainingItemsThreshold="3"
+                                RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}"
+                                SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <controls:EmptyStateView Title="{x:Static strings:AppResources.NoContainersYet}" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TagContainerPickerRowViewModel">
+                            <controls:ContainerTile Command="{Binding SelectCommand}"
+                                                     Name="{Binding Name}"
+                                                     Notes="{Binding Notes}"
+                                                     ItemCount="{Binding ItemCount}"
+                                                     ItemTypesCount="{Binding ItemTypesCount}"
+                                                     ShowItemCount="{Binding ShowItemCount}"
+                                                     ShowItemTypesCount="{Binding ShowItemTypesCount}"
+                                                     ImagePaths="{Binding ImagePaths}"
+                                                     ImageSize="72" />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+            <controls:ListLoadingView IsVisible="False"
+                                      IsLoading="{Binding IsRefreshing}"
+                                      LoadingText="{x:Static strings:AppResources.LoadingContainers}">
+                <controls:ListLoadingView.Triggers>
+                    <DataTrigger TargetType="controls:ListLoadingView"
+                                 Binding="{Binding IsRefreshing}"
+                                 Value="True">
+                        <Setter Property="IsVisible" Value="True" />
+                    </DataTrigger>
+                </controls:ListLoadingView.Triggers>
+            </controls:ListLoadingView>
+        </Grid>
     </Grid>
 </views:BasePage>
