@@ -62,7 +62,11 @@
                 <Button Grid.Column="1"
                         Text="{x:Static strings:AppResources.AddTag}"
                         Style="{StaticResource TonalButton}"
-                        Command="{Binding Source={x:Reference this}, Path=AddCommand}" />
+                        Command="{Binding Source={x:Reference this}, Path=AddCommand}">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF067;" Color="{DynamicResource OnSecondaryContainer}" Size="16" />
+                    </Button.ImageSource>
+                </Button>
             </Grid>
 
             <Border IsVisible="{Binding Source={x:Reference this}, Path=IsSuggestionsVisible}"

@@ -61,7 +61,11 @@
                             <Button Grid.Column="1"
                                     Text="{x:Static strings:AppResources.ScanBarcode}"
                                     Style="{StaticResource OutlinedButton}"
-                                    Command="{Binding ScanBarcodeCommand}" />
+                                    Command="{Binding ScanBarcodeCommand}">
+                                <Button.ImageSource>
+                                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF02A;" Color="{DynamicResource Primary}" Size="16" />
+                                </Button.ImageSource>
+                            </Button>
                         </Grid>
 
                         <VerticalStackLayout WidthRequest="{StaticResource WidthM}"
@@ -71,7 +75,11 @@
                                    Style="{StaticResource LabelSmall}" />
                             <Button Text="{x:Static strings:AppResources.ScanBarcode}"
                                 Style="{StaticResource OutlinedButton}"
-                                Command="{Binding ScanDestinationContainerCommand}" />
+                                Command="{Binding ScanDestinationContainerCommand}">
+                                <Button.ImageSource>
+                                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF02A;" Color="{DynamicResource Primary}" Size="16" />
+                                </Button.ImageSource>
+                            </Button>
                             <Label Text="{Binding DestinationContainerName}"
                                    Style="{StaticResource BodySmall}"
                                    IsVisible="{Binding HasDestinationContainer}" />

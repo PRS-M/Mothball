@@ -14,7 +14,11 @@
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="{x:Static strings:AppResources.BarcodeSharing}"
                      Command="{Binding EnterSelectionModeCommand}"
-                     Order="Primary" />
+                     Order="Primary">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Color="{DynamicResource OnSurface}" Size="22" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
         <ToolbarItem Priority="1"
                      Order="Primary"
                      Command="{Binding ScanToFindCommand}">

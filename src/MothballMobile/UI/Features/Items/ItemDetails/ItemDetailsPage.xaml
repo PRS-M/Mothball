@@ -117,10 +117,18 @@
                         <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
                           <Button Text="{x:Static strings:AppResources.EditDescription}"
                               Style="{StaticResource OutlinedButton}" Command="{Binding EditBarcodeCommand}"
-                              IsVisible="{Binding IsViewingBarcode}" />
+                              IsVisible="{Binding IsViewingBarcode}">
+                              <Button.ImageSource>
+                                  <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF044;" Color="{DynamicResource Primary}" Size="14" />
+                              </Button.ImageSource>
+                          </Button>
                           <Button Text="{x:Static strings:AppResources.Save}"
                               Style="{StaticResource TonalButton}" Command="{Binding SaveBarcodeCommand}"
-                              IsVisible="{Binding IsEditingBarcode}" />
+                              IsVisible="{Binding IsEditingBarcode}">
+                              <Button.ImageSource>
+                                  <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF0C7;" Color="{DynamicResource OnSecondaryContainer}" Size="14" />
+                              </Button.ImageSource>
+                          </Button>
                           <Button Grid.Column="1" Text="{x:Static strings:AppResources.Share}"
                               Style="{StaticResource OutlinedButton}" Command="{Binding ShareBarcodeCommand}"
                               IsVisible="{Binding HasBarcode}">
@@ -155,7 +163,11 @@
                           <Picker ItemsSource="{Binding AvailableBarcodeSymbologies}"
                               SelectedItem="{Binding BarcodeSymbologyDraft}" />
                           <Button Grid.Column="1" Text="{x:Static strings:AppResources.ScanBarcode}"
-                              Style="{StaticResource OutlinedButton}" Command="{Binding ScanBarcodeCommand}" />
+                              Style="{StaticResource OutlinedButton}" Command="{Binding ScanBarcodeCommand}">
+                              <Button.ImageSource>
+                                  <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF02A;" Color="{DynamicResource Primary}" Size="14" />
+                              </Button.ImageSource>
+                          </Button>
                       </Grid>
                   </VerticalStackLayout>
                   </VerticalStackLayout>

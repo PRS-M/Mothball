@@ -31,7 +31,11 @@
               Text="{x:Static strings:AppResources.ScanBarcode}"
               Style="{StaticResource OutlinedButton}"
               Margin="0,8,0,0"
-              Command="{Binding ScanContainerCommand}" />
+              Command="{Binding ScanContainerCommand}">
+              <Button.ImageSource>
+                  <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF02A;" Color="{DynamicResource Primary}" Size="16" />
+              </Button.ImageSource>
+          </Button>
 
           <CollectionView Grid.Row="3"
                         ItemsSource="{Binding Containers}"

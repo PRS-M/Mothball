@@ -15,13 +15,21 @@
                              SubtitleFontSize="12" />
 
         <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
-            <Button Text="{x:Static strings:AppResources.AddExistingItem}"
+            <Button Text="{x:Static strings:AppResources.Item}"
                     Style="{StaticResource TonalButton}"
-                    Command="{Binding AddItemCommand}" />
+                    Command="{Binding AddItemCommand}">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF067;" Color="{DynamicResource OnSecondaryContainer}" Size="16" />
+                </Button.ImageSource>
+            </Button>
             <Button Grid.Column="1"
-                    Text="{x:Static strings:AppResources.AddExistingContainer}"
+                    Text="{x:Static strings:AppResources.Container}"
                     Style="{StaticResource OutlinedButton}"
-                    Command="{Binding AddContainerCommand}" />
+                    Command="{Binding AddContainerCommand}">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF067;" Color="{DynamicResource Primary}" Size="16" />
+                </Button.ImageSource>
+            </Button>
         </Grid>
 
         <Grid Grid.Row="2">

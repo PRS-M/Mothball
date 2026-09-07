@@ -81,11 +81,19 @@
                          <Button Text="{x:Static strings:AppResources.EditDescription}"
                              Style="{StaticResource OutlinedButton}"
                              Command="{Binding EditBarcodeCommand}"
-                             IsVisible="{Binding IsViewingBarcode}" />
+                             IsVisible="{Binding IsViewingBarcode}">
+                             <Button.ImageSource>
+                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF044;" Color="{DynamicResource Primary}" Size="16" />
+                             </Button.ImageSource>
+                         </Button>
                          <Button Text="{x:Static strings:AppResources.Save}"
                              Style="{StaticResource TonalButton}"
                              Command="{Binding SaveBarcodeCommand}"
-                             IsVisible="{Binding IsEditingBarcode}" />
+                             IsVisible="{Binding IsEditingBarcode}">
+                             <Button.ImageSource>
+                                 <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF0C7;" Color="{DynamicResource OnSecondaryContainer}" Size="16" />
+                             </Button.ImageSource>
+                         </Button>
                          <Button Grid.Column="1"
                              Text="{x:Static strings:AppResources.Share}"
                              Style="{StaticResource OutlinedButton}"
@@ -122,7 +130,11 @@
                         <Picker ItemsSource="{Binding AvailableBarcodeSymbologies}"
                             SelectedItem="{Binding BarcodeSymbologyDraft}" />
                         <Button Grid.Column="1" Text="{x:Static strings:AppResources.ScanBarcode}"
-                            Style="{StaticResource OutlinedButton}" Command="{Binding ScanBarcodeCommand}" />
+                            Style="{StaticResource OutlinedButton}" Command="{Binding ScanBarcodeCommand}">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF02A;" Color="{DynamicResource Primary}" Size="16" />
+                            </Button.ImageSource>
+                        </Button>
                        </Grid>
                       </VerticalStackLayout>
                       </VerticalStackLayout>
