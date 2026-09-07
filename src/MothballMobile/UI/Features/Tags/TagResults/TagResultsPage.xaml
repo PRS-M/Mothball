@@ -15,11 +15,11 @@
                              SubtitleFontSize="12" />
 
         <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
-            <Button Text="{x:Static strings:AppResources.AddANewItem}"
+            <Button Text="{x:Static strings:AppResources.AddExistingItem}"
                     Style="{StaticResource TonalButton}"
                     Command="{Binding AddItemCommand}" />
             <Button Grid.Column="1"
-                    Text="{x:Static strings:AppResources.AddContainer}"
+                    Text="{x:Static strings:AppResources.AddExistingContainer}"
                     Style="{StaticResource OutlinedButton}"
                     Command="{Binding AddContainerCommand}" />
         </Grid>

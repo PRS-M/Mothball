@@ -6,6 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="AddUpsertMetadata" xml:space="preserve"><value>Dodaj + aktualizuj metadane</value></data>
   <data name="AddContainer" xml:space="preserve"><value>Dodaj pojemnik</value></data>
+  <data name="AddExistingContainer" xml:space="preserve"><value>Dodaj istniejący pojemnik</value></data>
   <data name="AddExistingItem" xml:space="preserve"><value>Dodaj istniejący przedmiot</value></data>
   <data name="AddItem" xml:space="preserve"><value>Dodaj przedmiot</value></data>
   <data name="AddANewItem" xml:space="preserve"><value>Dodaj nowy przedmiot</value></data>

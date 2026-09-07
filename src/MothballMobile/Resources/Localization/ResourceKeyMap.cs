@@ -33,6 +33,7 @@ internal static class ResourceKeyMap
         "Add + upsert metadata" => "AddUpsertMetadata",
         "Add Container" => "AddContainer",
         "Add Existing Item" => "AddExistingItem",
+        "Add existing container" => "AddExistingContainer",
         "Add Item" => "AddItem",
         "Add a new item" => "AddANewItem",
         "Add an existing item" => "AddAnExistingItem",

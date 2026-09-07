@@ -45,23 +45,6 @@ public sealed class NavigationRequestTests
     }
 
     [Test]
-    public void AddRequests_WithTagContext_SerializeTagIdentifiers()
-    {
-        var tagId = Guid.NewGuid();
-
-        var itemParameters = new AddItemNavigationRequest(TagId: tagId, TagName: "winter").ToParameters();
-        var containerParameters = new AddContainerNavigationRequest(tagId, "winter").ToParameters();
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(itemParameters[NavigationParams.TagId], Is.EqualTo(tagId.ToString()));
-            Assert.That(itemParameters[NavigationParams.TagName], Is.EqualTo("winter"));
-            Assert.That(containerParameters[NavigationParams.TagId], Is.EqualTo(tagId.ToString()));
-            Assert.That(containerParameters[NavigationParams.TagName], Is.EqualTo("winter"));
-        });
-    }
-
-    [Test]
     public void AssociateItemRequest_SerializesQuantityAsInteger()
     {
         var itemId = Guid.NewGuid();

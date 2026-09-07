@@ -1,6 +1,7 @@
 using CoreApp.Application.Features.Containers.Queries;
 using CoreApp.Application.Features.Items.Queries;
 using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Specifications;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.InventoryAggregate;
@@ -8,6 +9,7 @@ using CoreApp.Domain.Entities.ItemAggregate;
 using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Navigation;
+using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.UI.Features.Tags.TagResults;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Tags.TagResults;
@@ -140,5 +142,46 @@ public sealed class TagResultsViewModelTests
 
         itemQueries.VerifyNoOtherCalls();
         containerQueries.VerifyNoOtherCalls();
+    }
+
+    [Test]
+    public async Task AddItemCommand_AssignsAnExistingItemToTheSelectedTag()
+    {
+        var tagId = Guid.NewGuid();
+        var item = new Item(Guid.NewGuid(), "Existing item", "");
+        var inventory = new InventorySnapshot(item, 1, 0, []);
+        var itemQueries = new Mock<IItemsListQueryHandler>();
+        itemQueries.Setup(query => query.QueryAsync(
+                ItemQueryFilter.All, null, null, null, It.IsAny<CoreApp.Application.Contracts.Tags.TagFilter?>()))
+            .ReturnsAsync([inventory]);
+        var containerQueries = new Mock<IContainerListQueryHandler>();
+        containerQueries.Setup(query => query.QueryAsync(
+                false, null, null, null, It.IsAny<CoreApp.Application.Contracts.Tags.TagFilter?>()))
+            .ReturnsAsync([]);
+        var tags = new Mock<CoreApp.Application.Abstractions.Persistence.ITagRepository>();
+        tags.Setup(repository => repository.GetTargetIdsAsync(tagId, TagTargetType.Item, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HashSet<Guid>());
+        tags.Setup(repository => repository.AssignAsync(tagId, TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        var popup = new Mock<IPopupService>();
+        popup.Setup(service => service.SelectOptionAsync(It.IsAny<OptionPickerPopupDefinition<Guid>>()))
+            .ReturnsAsync(item.ItemId);
+        var viewModel = new TagResultsViewModel(
+            itemQueries.Object,
+            containerQueries.Object,
+            Mock.Of<IImagePathResolver>(),
+            Mock.Of<INavigationService>(),
+            popup.Object,
+            tags.Object);
+        viewModel.ApplyQueryAttributes(new Dictionary<string, object>
+        {
+            [NavigationParams.TagId] = tagId.ToString(),
+            [NavigationParams.TagName] = "winter",
+        });
+
+        await viewModel.AddItemCommand.ExecuteAsync(null);
+
+        tags.Verify(repository => repository.AssignAsync(
+            tagId, TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

@@ -51,49 +51,19 @@ public sealed record ItemDetailsNavigationRequest(Guid ItemId, Guid? SourceConta
     }
 }
 
-public sealed record AddItemNavigationRequest(
-    Guid? ContainerId = null,
-    Guid? TagId = null,
-    string? TagName = null) : INavigationRequest
+public sealed record AddItemNavigationRequest(Guid? ContainerId = null) : INavigationRequest
 {
     public IDictionary<string, object> ToParameters()
     {
-        var parameters = new Dictionary<string, object>();
-        if (ContainerId is { } containerId)
+        if (ContainerId is not { } containerId)
         {
-            parameters[NavigationParams.ContainerId] = containerId.ToString();
+            return new Dictionary<string, object>();
         }
 
-        if (TagId is { } tagId)
+        return new Dictionary<string, object>
         {
-            parameters[NavigationParams.TagId] = tagId.ToString();
-        }
-
-        if (!string.IsNullOrWhiteSpace(TagName))
-        {
-            parameters[NavigationParams.TagName] = TagName;
-        }
-
-        return parameters;
-    }
-}
-
-public sealed record AddContainerNavigationRequest(Guid? TagId = null, string? TagName = null) : INavigationRequest
-{
-    public IDictionary<string, object> ToParameters()
-    {
-        var parameters = new Dictionary<string, object>();
-        if (TagId is { } tagId)
-        {
-            parameters[NavigationParams.TagId] = tagId.ToString();
-        }
-
-        if (!string.IsNullOrWhiteSpace(TagName))
-        {
-            parameters[NavigationParams.TagName] = TagName;
-        }
-
-        return parameters;
+            [NavigationParams.ContainerId] = containerId.ToString(),
+        };
     }
 }
 
