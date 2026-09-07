@@ -105,11 +105,12 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         var cancellation = new CancellationTokenSource();
         var previous = Interlocked.Exchange(ref loadCancellation, cancellation);
         previous?.Cancel();
-        previous?.Dispose();
+        var gateAcquired = false;
 
         try
         {
             await reloadGate.WaitAsync(cancellation.Token);
+            gateAcquired = true;
             await RunCommandAsync(async () =>
             {
                 var itemFilter = new TagFilter(TagTargetType.Item, [tagName]);
@@ -153,15 +154,13 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         }
         finally
         {
-            if (reloadGate.CurrentCount == 0)
+            if (gateAcquired)
             {
                 reloadGate.Release();
             }
 
-            if (ReferenceEquals(Interlocked.CompareExchange(ref loadCancellation, null, cancellation), cancellation))
-            {
-                cancellation.Dispose();
-            }
+            Interlocked.CompareExchange(ref loadCancellation, null, cancellation);
+            cancellation.Dispose();
         }
     }
 
@@ -170,6 +169,5 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         Interlocked.Increment(ref requestVersion);
         var cancellation = Interlocked.Exchange(ref loadCancellation, null);
         cancellation?.Cancel();
-        cancellation?.Dispose();
     }
 }
