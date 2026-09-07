@@ -6,7 +6,6 @@ using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Features.Containers.Queries;
 using CoreApp.Application.Features.Items.Queries;
 using CoreApp.Application.Specifications;
-using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.Infrastructure.Utilities;
 
 namespace MothballMobile.UI.Features.Tags.TagResults;
@@ -20,8 +19,6 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
     private readonly IContainerListQueryHandler containerQueries;
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService navigation;
-    private readonly IPopupService? popup;
-    private readonly ITagRepository? tagRepository;
     private readonly SemaphoreSlim reloadGate = new(1, 1);
     private CancellationTokenSource? loadCancellation;
     private bool initialized;
@@ -34,16 +31,12 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         IItemsListQueryHandler itemQueries,
         IContainerListQueryHandler containerQueries,
         IImagePathResolver imagePaths,
-        INavigationService navigation,
-        IPopupService? popup = null,
-        ITagRepository? tagRepository = null)
+        INavigationService navigation)
     {
         this.itemQueries = itemQueries ?? throw new ArgumentNullException(nameof(itemQueries));
         this.containerQueries = containerQueries ?? throw new ArgumentNullException(nameof(containerQueries));
         this.imagePaths = imagePaths ?? throw new ArgumentNullException(nameof(imagePaths));
         this.navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
-        this.popup = popup;
-        this.tagRepository = tagRepository;
     }
 
     public ObservableCollection<TagResultViewModel> Results { get; } = [];
@@ -98,7 +91,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
     public Task InitializeAsync()
     {
         initializationAttempted = true;
-        return !HasTag || initialized ? Task.CompletedTask : ReloadAsync();
+        return !HasTag ? Task.CompletedTask : ReloadAsync();
     }
 
     partial void OnSelectedFilterChanged(TagTargetFilter value)
@@ -114,66 +107,24 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
     /// <summary>Shows existing items and assigns the selected tag to the chosen item.</summary>
     [RelayCommand]
     private Task AddItemAsync()
-        => AddExistingItemAsync();
+        => navigation.GoToAsync(
+            NavigationRoutes.TagItemPicker,
+            new Dictionary<string, object>
+            {
+                [NavigationParams.TagId] = tagId.ToString(),
+                [NavigationParams.TagName] = tagName,
+            });
 
     /// <summary>Shows existing containers and assigns the selected tag to the chosen container.</summary>
     [RelayCommand]
     private Task AddContainerAsync()
-        => AddExistingContainerAsync();
-
-    private async Task AddExistingItemAsync()
-    {
-        if (popup is null || tagRepository is null)
-        {
-            return;
-        }
-
-        var assignedIds = await tagRepository.GetTargetIdsAsync(tagId, TagTargetType.Item);
-        var items = await itemQueries.QueryAsync(ItemQueryFilter.All);
-        var options = items
-            .Where(item => !assignedIds.Contains(item.Item.ItemId))
-            .OrderBy(item => item.Item.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(item => new PopupOption<Guid>(item.Item.Name, item.Item.ItemId))
-            .ToList();
-        var itemId = await popup.SelectOptionAsync(new OptionPickerPopupDefinition<Guid>(
-            LocalizationManager.Current.Get("SelectAnItem"),
-            LocalizationManager.Current.Get("Cancel"),
-            options));
-        if (itemId == Guid.Empty)
-        {
-            return;
-        }
-
-        await tagRepository.AssignAsync(tagId, TagTargetType.Item, itemId);
-        await ReloadAsync();
-    }
-
-    private async Task AddExistingContainerAsync()
-    {
-        if (popup is null || tagRepository is null)
-        {
-            return;
-        }
-
-        var assignedIds = await tagRepository.GetTargetIdsAsync(tagId, TagTargetType.Container);
-        var containers = await containerQueries.QueryAsync(false);
-        var options = containers
-            .Where(container => !assignedIds.Contains(container.ContainerId))
-            .OrderBy(container => container.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(container => new PopupOption<Guid>(container.Name, container.ContainerId))
-            .ToList();
-        var containerId = await popup.SelectOptionAsync(new OptionPickerPopupDefinition<Guid>(
-            LocalizationManager.Current.Get("SelectContainer"),
-            LocalizationManager.Current.Get("Cancel"),
-            options));
-        if (containerId == Guid.Empty)
-        {
-            return;
-        }
-
-        await tagRepository.AssignAsync(tagId, TagTargetType.Container, containerId);
-        await ReloadAsync();
-    }
+        => navigation.GoToAsync(
+            NavigationRoutes.TagContainerPicker,
+            new Dictionary<string, object>
+            {
+                [NavigationParams.TagId] = tagId.ToString(),
+                [NavigationParams.TagName] = tagName,
+            });
 
     private void ReloadInBackground()
     {

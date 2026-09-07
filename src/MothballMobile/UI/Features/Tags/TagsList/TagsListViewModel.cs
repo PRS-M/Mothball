@@ -15,7 +15,6 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
     private readonly ITagRepository tagRepository;
     private readonly INavigationService navigation;
     private IReadOnlyList<TagUsageSummary> allTags = [];
-    private bool initialized;
 
     public TagsListViewModel(ITagRepository tagRepository, INavigationService navigation)
     {
@@ -29,14 +28,15 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
     private string query = string.Empty;
 
     public Task InitializeAsync()
-        => initialized ? Task.CompletedTask : RefreshAsync();
+        // Usage counts can change while a tag-details page is on the navigation stack.
+        // Refresh whenever this page appears so returning from an assignment shows current counts.
+        => RefreshAsync();
 
     [RelayCommand]
     private Task RefreshAsync()
         => RunCommandAsync(async () =>
         {
             allTags = await tagRepository.GetUsageSummariesAsync();
-            initialized = true;
             ApplyFilter();
         }, showRefreshing: true);
 

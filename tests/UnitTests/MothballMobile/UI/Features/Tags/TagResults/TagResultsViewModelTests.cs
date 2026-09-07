@@ -9,7 +9,6 @@ using CoreApp.Domain.Entities.ItemAggregate;
 using Moq;
 using MothballMobile.Infrastructure;
 using MothballMobile.Infrastructure.Navigation;
-using MothballMobile.Infrastructure.Presentation.Popups;
 using MothballMobile.UI.Features.Tags.TagResults;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Tags.TagResults;
@@ -145,34 +144,15 @@ public sealed class TagResultsViewModelTests
     }
 
     [Test]
-    public async Task AddItemCommand_AssignsAnExistingItemToTheSelectedTag()
+    public async Task AddItemCommand_NavigatesToPagedItemPicker()
     {
         var tagId = Guid.NewGuid();
-        var item = new Item(Guid.NewGuid(), "Existing item", "");
-        var inventory = new InventorySnapshot(item, 1, 0, []);
-        var itemQueries = new Mock<IItemsListQueryHandler>();
-        itemQueries.Setup(query => query.QueryAsync(
-                ItemQueryFilter.All, null, null, null, It.IsAny<CoreApp.Application.Contracts.Tags.TagFilter?>()))
-            .ReturnsAsync([inventory]);
-        var containerQueries = new Mock<IContainerListQueryHandler>();
-        containerQueries.Setup(query => query.QueryAsync(
-                false, null, null, null, It.IsAny<CoreApp.Application.Contracts.Tags.TagFilter?>()))
-            .ReturnsAsync([]);
-        var tags = new Mock<CoreApp.Application.Abstractions.Persistence.ITagRepository>();
-        tags.Setup(repository => repository.GetTargetIdsAsync(tagId, TagTargetType.Item, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new HashSet<Guid>());
-        tags.Setup(repository => repository.AssignAsync(tagId, TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        var popup = new Mock<IPopupService>();
-        popup.Setup(service => service.SelectOptionAsync(It.IsAny<OptionPickerPopupDefinition<Guid>>()))
-            .ReturnsAsync(item.ItemId);
+        var navigation = new Mock<INavigationService>();
         var viewModel = new TagResultsViewModel(
-            itemQueries.Object,
-            containerQueries.Object,
+            Mock.Of<IItemsListQueryHandler>(),
+            Mock.Of<IContainerListQueryHandler>(),
             Mock.Of<IImagePathResolver>(),
-            Mock.Of<INavigationService>(),
-            popup.Object,
-            tags.Object);
+            navigation.Object);
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
             [NavigationParams.TagId] = tagId.ToString(),
@@ -181,7 +161,10 @@ public sealed class TagResultsViewModelTests
 
         await viewModel.AddItemCommand.ExecuteAsync(null);
 
-        tags.Verify(repository => repository.AssignAsync(
-            tagId, TagTargetType.Item, item.ItemId, It.IsAny<CancellationToken>()), Times.Once);
+        navigation.Verify(service => service.GoToAsync(
+            NavigationRoutes.TagItemPicker,
+            It.Is< IDictionary<string, object>>(parameters =>
+                (string)parameters[NavigationParams.TagId] == tagId.ToString()
+                && (string)parameters[NavigationParams.TagName] == "winter")), Times.Once);
     }
 }

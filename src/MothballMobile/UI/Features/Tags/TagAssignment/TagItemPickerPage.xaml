@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Tags.TagAssignment"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
+                x:Class="MothballMobile.UI.Features.Tags.TagAssignment.TagItemPickerPage"
+                x:DataType="vm:TagItemPickerViewModel"
+                Title="{x:Static strings:AppResources.AddExistingItem}"
+                Background="{DynamicResource Surface}">
+    <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+        <controls:PageHeader Title="{Binding Title}"
+                             Subtitle="{x:Static strings:AppResources.SelectAnItem}"
+                             TitleFontSize="24" />
+        <SearchBar Grid.Row="1"
+                   Placeholder="{x:Static strings:AppResources.SearchItems}"
+                   Text="{Binding SearchQuery}"
+                   SearchCommand="{Binding ApplySearchCommand}"
+                   CancelButtonColor="{DynamicResource Primary}" />
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Items}"
+                            RemainingItemsThreshold="3"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}"
+                            SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <controls:EmptyStateView Title="{x:Static strings:AppResources.NoItemsYet}" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TagItemPickerRowViewModel">
+                        <controls:ItemTile Command="{Binding SelectCommand}"
+                                           Name="{Binding Name}"
+                                           Description="{Binding Description}"
+                                           TotalQuantity="{Binding TotalQuantity}"
+                                           AssignedQuantity="{Binding AssignedQuantity}"
+                                           UnassignedQuantity="{Binding UnassignedQuantity}"
+                                           ShowInventorySummary="True"
+                                           ImagePaths="{Binding ImagePaths}"
+                                           ImageSize="72" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</views:BasePage>

@@ -24,6 +24,7 @@ using MothballMobile.UI.Features.Settings;
 using MothballMobile.UI.Features.Scanning;
 using MothballMobile.UI.Features.Tags.TagsList;
 using MothballMobile.UI.Features.Tags.TagResults;
+using MothballMobile.UI.Features.Tags.TagAssignment;
 using CoreApp.Application.Features.Barcodes.Commands;
 
 namespace MothballMobile.Composition;
@@ -233,6 +234,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ItemsListViewModel>();
         services.AddTransient<TagsListViewModel>();
         services.AddTransient<TagResultsViewModel>();
+        services.AddTransient<TagItemPickerViewModel>();
+        services.AddTransient<TagContainerPickerViewModel>();
         services.AddTransient<ContainerDetailsViewModel>();
         services.AddTransient<ItemDetailsViewModel>();
         services.AddTransient<ItemLocationsViewModel>();
