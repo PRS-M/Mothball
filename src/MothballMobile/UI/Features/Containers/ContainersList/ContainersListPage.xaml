@@ -47,10 +47,9 @@
               ColumnDefinitions="*,Auto"
               ColumnSpacing="12">
             <controls:PageHeader Grid.Column="0"
-                                 Title="{x:Static strings:AppResources.Containers}"
                                  Subtitle="{x:Static strings:AppResources.BrowseYourStorage}"
                                  TitleFontSize="22"
-                                 SubtitleFontSize="12"
+                                 SubtitleFontSize="14"
                                  Spacing="2"
                                  HeaderMargin="0,0,0,4" />
 
