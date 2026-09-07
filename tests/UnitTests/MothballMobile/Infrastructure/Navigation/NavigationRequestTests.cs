@@ -57,4 +57,18 @@ public sealed class NavigationRequestTests
             Assert.That(parameters[NavigationParams.UnassignedQuantity], Is.EqualTo(4));
         });
     }
+
+    [Test]
+    public void TagResultsRequest_SerializesTagIdentifiers()
+    {
+        var tagId = Guid.NewGuid();
+
+        var parameters = new TagResultsNavigationRequest(tagId, "winter").ToParameters();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(parameters[NavigationParams.TagId], Is.EqualTo(tagId.ToString()));
+            Assert.That(parameters[NavigationParams.TagName], Is.EqualTo("winter"));
+        });
+    }
 }

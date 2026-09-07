@@ -16,6 +16,24 @@ This guide maps Mothball's visible features to the code that implements them. It
 | Operations | View ongoing photo work after leaving a page | Background operations | Photo background operation tracker |
 | Advertising | Display test or production banner and app-open ads on supported mobile platforms | Shared page base and app startup | `AdMobSettings`, `BasePage`, and MAUI AdMob setup |
 | Navigation and errors | Move between feature pages and surface failures consistently | Shell and shared UI | Typed navigation requests and error presenter |
+| Tags | Browse tags and open all matching items and containers | Tags catalogue and tag results pages | `TagsListViewModel`, `TagResultsViewModel`, and `ITagRepository` |
+
+## Tags
+
+The Tags entry is available from the home page and the Shell flyout. The catalogue loads tags in
+case-insensitive display order and shows separate item and container assignment counts. Searching the
+catalogue is local to the loaded tag definitions; selecting a row opens the exact-tag results view.
+
+The results view keeps the selected tag as an exact normalized criterion and offers an `All`, `Items`,
+or `Containers` scope. Optional text search is applied to the selected aggregate type's existing name,
+description, or notes query. Results from both aggregate types are merged and sorted by display name,
+with the aggregate type as a stable tie-breaker. A result row only navigates to the existing item or
+container details page, so quantity, edit, and delete actions retain their established context.
+
+Tag usage counts are computed from assignment tables in SQLite and assignment rows in the JSON store.
+They are returned with the tag catalogue in one backend operation; the catalogue does not issue one
+query per tag. The mixed results page reuses the existing item and container query handlers, preserving
+their exact normalized tag matching and backend parity.
 
 ## Containers
 
