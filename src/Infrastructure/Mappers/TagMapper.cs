@@ -9,6 +9,7 @@ public static class TagMapper
     public static DbTag ToDb(this Tag tag)
     {
         ArgumentNullException.ThrowIfNull(tag);
+
         return new DbTag
         {
             TagId = tag.TagId,

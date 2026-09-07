@@ -16,6 +16,7 @@ public class JsonHandlerBehaviorTests
             .Returns<string, string, string>((fileName, folderPath, content) =>
             {
                 store[(folderPath, fileName)] = content;
+
                 return Task.FromResult($"/appdata/{folderPath}/{fileName}");
             });
         fileHandler.Setup(f => f.ReadTextFileAsync(It.IsAny<string>(), It.IsAny<string>()))
@@ -32,6 +33,7 @@ public class JsonHandlerBehaviorTests
             .Returns<string, string, CancellationToken>((fileName, folderPath, _) =>
             {
                 store.Remove((folderPath, fileName));
+
                 return Task.CompletedTask;
             });
         fileHandler.Setup(f => f.EnumerateFiles(It.IsAny<string>(), It.IsAny<string>()))

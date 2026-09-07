@@ -201,6 +201,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
                 IsEditingDescription = false;
                 OnPropertyChanged(nameof(HasDescription));
                 ImagePaths.Add(paths.GetFallbackImagePath());
+
                 return;
             }
 
@@ -283,7 +284,6 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         }
 
         if (!Guid.TryParse(ItemId, out var itemId)) return Task.CompletedTask;
-
         return nav.GoToAsync(Infrastructure.NavigationRoutes.ItemLocations,
             new Infrastructure.Navigation.ItemLocationsNavigationRequest(itemId));
     }
@@ -292,7 +292,6 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private Task NavigateToAssociateWithContainerAsync()
     {
         if (!Guid.TryParse(ItemId, out var itemId)) return Task.CompletedTask;
-
         return nav.GoToAsync(
             Infrastructure.NavigationRoutes.AssociateItemWithContainer,
             new Infrastructure.Navigation.AssociateItemWithContainerNavigationRequest(itemId, UnassignedQuantity));
@@ -526,7 +525,6 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private Task DeletePhotoAsync()
     {
         if (currentItem is null) return Task.CompletedTask;
-
         return DeleteSelectedPhotoAsync(
             hasPhotos: currentItem.Photos.Count > 0,
             noPhotosPopup: popupDefinitions.NoItemPhotos(),

@@ -18,11 +18,13 @@ public class DebouncerTests
         _ = debouncer.DebounceAsync(_ =>
         {
             Interlocked.Increment(ref count);
+
             return Task.CompletedTask;
         });
         _ = debouncer.DebounceAsync(_ =>
         {
             Interlocked.Increment(ref count);
+
             return Task.CompletedTask;
         });
 
@@ -46,6 +48,7 @@ public class DebouncerTests
         _ = debouncer.DebounceAsync(_ =>
         {
             Interlocked.Increment(ref count);
+
             return Task.CompletedTask;
         });
         await Task.Delay(100);

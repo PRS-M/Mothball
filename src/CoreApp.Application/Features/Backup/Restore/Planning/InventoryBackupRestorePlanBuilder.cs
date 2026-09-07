@@ -37,7 +37,6 @@ internal sealed class InventoryBackupRestorePlanBuilder
         reconciliationStrategy.PlanImages(context, normalized.ValidContainerImages, normalized.ValidItemImages);
 
         ValidateOverwrittenQuantities(backup.Data.Items, context, normalized.ValidRelations, mergePolicy);
-
         return BuildPlanResult(context);
     }
 
@@ -285,7 +284,6 @@ internal sealed class InventoryBackupRestorePlanBuilder
     private static InventoryBackupRestorePlan BuildPlanResult(PlannerContext context)
     {
         var result = CreateRestoreResult(context);
-
         return new InventoryBackupRestorePlan(
             context.ContainersToInsert,
             context.ContainersToUpdate,

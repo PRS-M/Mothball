@@ -47,6 +47,7 @@ public class ImageService
         PhotoSource source = PhotoSource.Library)
     {
         ArgumentNullException.ThrowIfNull(container);
+
         return await CaptureAndPersistPhotoAsync(
             addImageItem: container.AddImageItem,
             removeImageItem: container.RemoveImageItem,
@@ -75,6 +76,7 @@ public class ImageService
         PhotoSource source = PhotoSource.Library)
     {
         ArgumentNullException.ThrowIfNull(item);
+
         return await CaptureAndPersistPhotoAsync(
             addImageItem: item.AddImageItem,
             removeImageItem: item.RemoveImageItem,

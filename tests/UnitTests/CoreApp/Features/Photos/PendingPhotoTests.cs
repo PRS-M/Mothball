@@ -10,6 +10,7 @@ public class PendingPhotoTests
     private static ImageService CreateImageService(Mock<IFileHandler> files, Mock<ICameraHandler> camera)
     {
         var photoSourceReader = new PhotoSourceReader(camera.Object);
+
         return new ImageService(
             photoSourceReader,
             Mock.Of<IPhotoFilePersistenceService>(),

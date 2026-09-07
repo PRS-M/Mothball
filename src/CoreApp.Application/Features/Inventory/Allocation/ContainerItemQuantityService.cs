@@ -15,7 +15,6 @@ public sealed class ContainerItemQuantityService : IContainerItemQuantityService
     public async Task<ItemInventoryUpdateResult> SaveQuantityAsync(Container container, Guid itemId, int quantity)
     {
         ArgumentNullException.ThrowIfNull(container);
-
         return await inventoryCommands.SetContainerAllocationAsync(
             itemId,
             container.ContainerId,

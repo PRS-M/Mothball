@@ -317,6 +317,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             ItemTypesCount = 0;
             ContainerImagePaths.Add(paths.GetFallbackImagePath());
             IsItemListEmpty = true;
+
             return;
         }
 
@@ -599,7 +600,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private Task DeletePhotoAsync()
     {
         if (currentContainer is null) return Task.CompletedTask;
-
         return DeleteSelectedPhotoAsync(
             hasPhotos: currentContainer.Photos.Count > 0,
             noPhotosPopup: popupDefinitions.NoContainerPhotos(),
@@ -613,7 +613,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private Task NavigateToAddExistingItemAsync()
     {
         if (!Guid.TryParse(ContainerId, out var containerId)) return Task.CompletedTask;
-
         return nav.GoToAsync(NavigationRoutes.AddExistingItemToContainer,
             new Infrastructure.Navigation.AddExistingItemToContainerNavigationRequest(containerId));
     }
@@ -622,7 +621,6 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private Task NavigateToAddNewItemAsync()
     {
         if (!Guid.TryParse(ContainerId, out var containerId)) return Task.CompletedTask;
-
         return nav.GoToAsync(NavigationRoutes.AddItem,
             new Infrastructure.Navigation.AddItemNavigationRequest(containerId));
     }

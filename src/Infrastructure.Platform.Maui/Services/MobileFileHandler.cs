@@ -26,6 +26,7 @@ public class MobileFileHandler : IFileHandler
     {
         string fullPath = GetWriteFullPath(fileName, folderPath);
         await File.WriteAllBytesAsync(fullPath, data, cancellationToken).ConfigureAwait(false);
+
         return fullPath;
     }
 
@@ -85,6 +86,7 @@ public class MobileFileHandler : IFileHandler
     {
         string fullPath = GetWriteFullPath(fileName, folderPath);
         await File.WriteAllTextAsync(fullPath, content).ConfigureAwait(false);
+
         return fullPath;
     }
 
@@ -110,7 +112,6 @@ public class MobileFileHandler : IFileHandler
             .Select(Path.GetFileName)!
             .Where(n => !string.IsNullOrEmpty(n))
             .Cast<string>();
-
         return files;
     }
 

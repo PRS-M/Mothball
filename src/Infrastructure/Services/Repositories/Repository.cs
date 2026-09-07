@@ -28,6 +28,7 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
     {
         Validate(entity);
         await EnsureInitializedAsync();
+
         return await Connection.InsertAsync(entity);
     }
 
@@ -49,6 +50,7 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
     {
         Validate(entity);
         await EnsureInitializedAsync();
+
         return await Connection.UpdateAsync(entity);
     }
 
@@ -145,7 +147,6 @@ public class Repository<T> : IRepositoryExtended<T> where T : new()
         var placeholders = string.Join(",", Enumerable.Repeat("?", list.Count));
         var table = GetTableName();
         var query = $"SELECT * FROM {table} WHERE {safePropertyName} IN ({placeholders}) ORDER BY rowid";
-
         return await Connection.QueryAsync<T>(query, list.ToArray());
     }
 

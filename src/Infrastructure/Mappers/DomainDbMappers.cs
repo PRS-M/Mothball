@@ -10,6 +10,7 @@ public static class ContainerMapper
     public static DbContainer ToDb(this Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
+
         return new DbContainer
         {
             ContainerId = container.ContainerId,
@@ -24,7 +25,6 @@ public static class ContainerMapper
     {
         Container result = CreateContainer(dbContainer);
         ApplyItemSummary(relations, result);
-
         return result;
     }
 
@@ -33,6 +33,7 @@ public static class ContainerMapper
         Container result = CreateContainer(dbContainer);
         ConvertAndAddPhotos(photos, result);
         ApplyItemSummary(relations, result);
+
         return result;
     }
 
@@ -40,7 +41,6 @@ public static class ContainerMapper
     {
         Container result = CreateContainer(dbContainer);
         ConvertAndAddPhotos(photos, result);
-
         return result;
     }
 
@@ -96,6 +96,7 @@ public static class ItemMapper
     public static DbItem ToDb(this Item item, string? containerId = null)
     {
         ArgumentNullException.ThrowIfNull(item);
+
         return new DbItem
         {
             ItemId = item.ItemId,

@@ -155,7 +155,6 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
             .Where(image => itemIds.Contains(image.OwnerUniqueId))
             .Select(image => new InventoryBackupImageOwnership(image.OwnerUniqueId, image.ImageId))
             .ToList();
-
         return new InventoryBackupExistingState(
             state.Containers
                 .Select(container => new InventoryBackupExistingContainer(
@@ -355,6 +354,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                 ItemId = itemId,
                 TotalQuantity = totalQuantity,
             });
+
             return;
         }
 

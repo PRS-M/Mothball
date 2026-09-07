@@ -68,9 +68,9 @@ public sealed class JsonTagRepository : ITagRepository
             };
             state.Tags.Add(row);
             result = ToDomain(row);
+
             return Task.CompletedTask;
         }, cancellationToken).ConfigureAwait(false);
-
         return result ?? throw new InvalidOperationException("Tag creation did not produce a result.");
     }
 
@@ -87,7 +87,6 @@ public sealed class JsonTagRepository : ITagRepository
             .Where(assignment => assignment.TargetType == targetType && assignment.TargetId == targetId)
             .Select(assignment => assignment.TagId)
             .ToHashSet();
-
         return state.Tags
             .Where(tag => tagIds.Contains(tag.TagId))
             .OrderBy(tag => tag.Name, StringComparer.OrdinalIgnoreCase)
@@ -102,6 +101,7 @@ public sealed class JsonTagRepository : ITagRepository
         CancellationToken cancellationToken = default)
     {
         ValidateIds(tagId, targetId);
+
         return store.UpdateAsync(state =>
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -120,6 +120,7 @@ public sealed class JsonTagRepository : ITagRepository
                 TargetId = targetId,
                 TargetType = targetType,
             });
+
             return Task.CompletedTask;
         }, cancellationToken);
     }
@@ -131,6 +132,7 @@ public sealed class JsonTagRepository : ITagRepository
         CancellationToken cancellationToken = default)
     {
         ValidateIds(tagId, targetId);
+
         return store.UpdateAsync(state =>
         {
             cancellationToken.ThrowIfCancellationRequested();

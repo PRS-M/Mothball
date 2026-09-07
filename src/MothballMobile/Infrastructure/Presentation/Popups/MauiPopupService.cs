@@ -40,6 +40,7 @@ public sealed class MauiPopupService : IPopupService
         return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
             var page = TryGetCurrentPage();
+
             return page is not null
                 && await page.DisplayAlertAsync(title, message, accept, cancel);
         });
@@ -121,7 +122,6 @@ public sealed class MauiPopupService : IPopupService
         var selected = await page.DisplayActionSheetAsync(title, cancel, null, options);
         if (string.Equals(selected, cancel, StringComparison.Ordinal))
             return null;
-
         return selected;
     }
 

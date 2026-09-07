@@ -22,7 +22,6 @@ public sealed class SkiaImageMetadataReader : IImageMetadataReader
         var filePath = ResolveLocalFilePath(imagePath);
         if (filePath is null || !File.Exists(filePath))
             return Task.FromResult<ImageDimensions?>(null);
-
         return Task.Run<ImageDimensions?>(() =>
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -36,7 +35,6 @@ public sealed class SkiaImageMetadataReader : IImageMetadataReader
 
                 if (width <= 0 || height <= 0)
                     return null;
-
                 return new ImageDimensions(width, height);
             }
 
@@ -59,7 +57,6 @@ public sealed class SkiaImageMetadataReader : IImageMetadataReader
     {
         if (Uri.TryCreate(imagePath, UriKind.Absolute, out var uri))
             return uri.IsFile ? uri.LocalPath : null;
-
         return Path.IsPathRooted(imagePath) ? imagePath : null;
     }
 }

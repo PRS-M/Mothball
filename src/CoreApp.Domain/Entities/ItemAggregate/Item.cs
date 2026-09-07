@@ -70,6 +70,7 @@ public class Item : BaseEntity, IAggregateRoot
     {
         var newImage = new ImageItem();
         photos.Add(newImage);
+
         return newImage;
     }
 
@@ -82,6 +83,7 @@ public class Item : BaseEntity, IAggregateRoot
     {
         var image = new ImageItem(imageId);
         photos.Add(image);
+
         return image;
     }
 

@@ -403,6 +403,7 @@ public sealed class ItemDetailsViewModelTests
             .Returns(() =>
             {
                 viewModel!.TotalQuantity = 0;
+
                 return Task.FromResult<int?>(5);
             });
         popup.Setup(p => p.PickNumberAsync(It.Is<NumberPickerPopupDefinition>(

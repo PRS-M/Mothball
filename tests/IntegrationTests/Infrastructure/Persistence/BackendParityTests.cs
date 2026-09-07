@@ -1003,7 +1003,6 @@ public class BackendParityTests
 
         var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
         var command = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
-
         return new SqliteHarness(dbPath, db, query, command);
     }
 
@@ -1028,7 +1027,6 @@ public class BackendParityTests
 
         var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
         var command = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
-
         return new JsonHarness(query, command);
     }
 

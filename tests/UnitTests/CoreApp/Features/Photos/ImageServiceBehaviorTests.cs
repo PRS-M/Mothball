@@ -16,6 +16,7 @@ public class ImageServiceBehaviorTests
         Mock<IFileHandler> files)
     {
         var photoSourceReader = new PhotoSourceReader(camera.Object);
+
         return new ImageService(
             photoSourceReader,
             new PhotoFilePersistenceService(files.Object, NullLogger<PhotoFilePersistenceService>.Instance),

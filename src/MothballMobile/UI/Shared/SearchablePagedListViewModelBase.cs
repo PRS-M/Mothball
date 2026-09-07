@@ -152,6 +152,7 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
             {
                 SuggestedTags.Clear();
                 OnPropertyChanged(nameof(IsTagSuggestionsVisible));
+
                 return;
             }
 

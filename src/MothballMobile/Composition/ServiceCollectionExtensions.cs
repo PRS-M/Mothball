@@ -129,7 +129,6 @@ public static class ServiceCollectionExtensions
 #if DEBUG
         services.AddSingleton<DemoDataSeeder>();
 #endif
-
         return services;
     }
 
@@ -157,7 +156,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
         services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         services.AddSingleton<IInventoryBackupRestoreService, JsonInventoryBackupRestoreService>();
-
         return services;
     }
 
@@ -179,7 +177,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
         services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         services.AddSingleton<IInventoryBackupRestoreService, SqliteInventoryBackupRestoreService>();
-
         return services;
     }
 

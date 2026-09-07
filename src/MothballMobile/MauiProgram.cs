@@ -71,7 +71,6 @@ public static class MauiProgram
 
 		// Platform tweaks
 		builder.ConfigureMauiHandlers(ConfigurePlatformHandlers);
-
 		return builder.Build();
 	}
 

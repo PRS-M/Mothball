@@ -208,6 +208,7 @@ public sealed class ContainerDetailsItemsCoordinator
                 showQuantityManagement),
             SkipNextInitialization);
         itemViewModel.LoadImagesAsync().FireAndForget(backgroundTasks, "Load container item images");
+
         return itemViewModel;
     }
 

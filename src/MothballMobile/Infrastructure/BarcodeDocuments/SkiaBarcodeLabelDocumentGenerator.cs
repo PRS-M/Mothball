@@ -46,7 +46,6 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
         var pageCount = BarcodeDocumentLayout.GetPageCount(labels.Count);
         await Task.Run(() => RenderAsync(labels, fullPath, pageCount, directory, cancellationToken), cancellationToken)
             .ConfigureAwait(false);
-
         return new BarcodeDocumentResult(Path.GetFileName(fullPath), fullPath, labels.Count, pageCount);
     }
 
@@ -194,6 +193,7 @@ public sealed class SkiaBarcodeLabelDocumentGenerator : IBarcodeLabelDocumentGen
         var drawHeight = height * scale;
         var left = bounds.MidX - drawWidth / 2;
         var top = bounds.MidY - drawHeight / 2;
+
         return new SKRect(left, top, left + drawWidth, top + drawHeight);
     }
 

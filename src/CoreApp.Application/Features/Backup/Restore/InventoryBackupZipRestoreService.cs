@@ -44,7 +44,6 @@ public sealed class InventoryBackupZipRestoreService : IInventoryBackupZipRestor
 
         var restoredPhotoFiles = await RestorePhotoFilesAsync(archive, backup, cancellationToken)
             .ConfigureAwait(false);
-
         return new InventoryBackupZipRestoreResult(result, restoredPhotoFiles);
     }
 

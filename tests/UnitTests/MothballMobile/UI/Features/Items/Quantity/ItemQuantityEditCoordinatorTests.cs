@@ -109,6 +109,7 @@ public sealed class ItemQuantityEditCoordinatorTests
         details.Setup(handler => handler.GetDetailsAsync(inventory.Item.ItemId.ToString()))
             .ReturnsAsync(new ItemDetailsResult(inventory));
         var definitions = new PopupDefinitionService();
+
         return new ItemQuantityEditCoordinator(
             details.Object,
             commands,

@@ -25,7 +25,6 @@ public sealed class JsonContainerRepository : IContainerRepository
         var state = await store.LoadAsync().ConfigureAwait(false);
         var row = state.Containers.FirstOrDefault(c => c.ContainerId == cid);
         if (row is null) return null;
-
         return MapContainer(state, row, includeRelations: true);
     }
 
@@ -107,7 +106,6 @@ public sealed class JsonContainerRepository : IContainerRepository
 
         var state = await store.LoadAsync().ConfigureAwait(false);
         var nonEmpty = state.Relations.Select(r => r.ContainerId).ToHashSet();
-
         return state.Containers
             .Where(c => !nonEmpty.Contains(c.ContainerId))
             .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
@@ -205,7 +203,6 @@ public sealed class JsonContainerRepository : IContainerRepository
 
         var row = state.Containers.FirstOrDefault(c => c.ContainerId == relation.ContainerId);
         if (row is null) return null;
-
         return MapContainer(state, row, includeRelations: true);
     }
 
@@ -218,6 +215,7 @@ public sealed class JsonContainerRepository : IContainerRepository
             .Select(group =>
             {
                 var container = state.Containers.FirstOrDefault(row => row.ContainerId == group.Key);
+
                 return container is null
                     ? null
                     : new ItemContainerAllocation(group.Key, container.Name, group.Sum(row => row.Quantity));
@@ -241,7 +239,6 @@ public sealed class JsonContainerRepository : IContainerRepository
 
         var state = await store.LoadAsync().ConfigureAwait(false);
         var containersById = state.Containers.ToDictionary(container => container.ContainerId);
-
         return state.Relations
             .Where(relation => distinctItemIds.Contains(relation.ItemId) && relation.Quantity > 0)
             .GroupBy(relation => new { relation.ItemId, relation.ContainerId })
@@ -268,7 +265,6 @@ public sealed class JsonContainerRepository : IContainerRepository
     public Task InsertAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
-
         return store.UpdateAsync(state =>
         {
             // If it already exists, treat as update (similar to Insert failure avoidance).
@@ -279,6 +275,7 @@ public sealed class JsonContainerRepository : IContainerRepository
                 existing.Notes = container.Notes;
                 existing.BarcodeValue = container.Barcode?.Value ?? string.Empty;
                 existing.BarcodeSymbology = container.Barcode is null ? null : (int)container.Barcode.Symbology;
+
                 return Task.CompletedTask;
             }
 
@@ -300,7 +297,6 @@ public sealed class JsonContainerRepository : IContainerRepository
     public Task UpdateAsync(Container container)
     {
         ArgumentNullException.ThrowIfNull(container);
-
         return store.UpdateAsync(state =>
         {
             var existing = state.Containers.FirstOrDefault(c => c.ContainerId == container.ContainerId);
@@ -332,7 +328,6 @@ public sealed class JsonContainerRepository : IContainerRepository
     public Task DeletePhotoAsync(Container container, Guid imageId)
     {
         ArgumentNullException.ThrowIfNull(container);
-
         return store.UpdateAsync(state =>
         {
             state.Images.RemoveAll(i => i.ImageId == imageId && i.OwnerUniqueId == container.ContainerId);
@@ -366,12 +361,12 @@ public sealed class JsonContainerRepository : IContainerRepository
     public Task DeleteAsync(string containerId)
     {
         if (!Guid.TryParse(containerId, out var cid)) return Task.CompletedTask;
-
         return store.UpdateAsync(state =>
         {
             state.Images.RemoveAll(p => p.OwnerUniqueId == cid);
             state.Relations.RemoveAll(r => r.ContainerId == cid);
             state.Containers.RemoveAll(c => c.ContainerId == cid);
+
             return Task.CompletedTask;
         });
     }

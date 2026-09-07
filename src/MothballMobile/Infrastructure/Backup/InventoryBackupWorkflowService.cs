@@ -39,6 +39,7 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
             cancellationToken).ConfigureAwait(false);
         var fileName = BuildBackupFileName("json");
         var fullPath = await fileHandler.SaveTextFileAsync(fileName, BackupsFolder, backupJson).ConfigureAwait(false);
+
         return new InventoryBackupExportResult(fileName, fullPath);
     }
 
@@ -51,6 +52,7 @@ public sealed class InventoryBackupWorkflowService : IInventoryBackupWorkflowSer
             cancellationToken).ConfigureAwait(false);
         var fileName = BuildBackupFileName("zip");
         var fullPath = await fileHandler.SaveFileAsync(fileName, BackupsFolder, backupZip).ConfigureAwait(false);
+
         return new InventoryBackupExportResult(fileName, fullPath);
     }
 

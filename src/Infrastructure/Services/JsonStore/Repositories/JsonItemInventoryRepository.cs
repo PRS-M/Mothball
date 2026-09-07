@@ -68,7 +68,6 @@ public sealed class JsonItemInventoryRepository : IItemInventoryRepository
     public Task SaveAsync(ItemInventory inventory)
     {
         ArgumentNullException.ThrowIfNull(inventory);
-
         return store.UpdateAsync(state =>
         {
             var existing = state.Inventories.FirstOrDefault(row => row.ItemId == inventory.ItemId);
@@ -107,6 +106,7 @@ public sealed class JsonItemInventoryRepository : IItemInventoryRepository
         {
             state.Relations.RemoveAll(relation => relation.ItemId == itemId);
             state.Inventories.RemoveAll(inventory => inventory.ItemId == itemId);
+
             return Task.CompletedTask;
         });
 

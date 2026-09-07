@@ -408,7 +408,6 @@ public class ItemRepository : IItemRepository
         logger.LogInformation(
             "SearchItemsInContainerAsync: containerId={ContainerId}, term='{SearchTerm}', page={PageNumber}, size={PageSize}, matched={Count}, elapsedMs={Elapsed}",
             containerId, searchTerm, pageNumber, pageSize, result.Count, sw.ElapsedMilliseconds);
-
         return result;
     }
 
@@ -497,6 +496,7 @@ public class ItemRepository : IItemRepository
         return dbItems.Select(dbItem =>
         {
             photosByItem.TryGetValue(dbItem.ItemId, out var itemPhotos);
+
             return dbItem.ToDomain(itemPhotos);
         }).ToList();
     }
