@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure.Scanning;
 #if IOS || ANDROID
@@ -11,6 +12,8 @@ namespace MothballMobile.Infrastructure.Startup;
 /// </summary>
 public sealed class AppStartupCoordinator
 {
+    private static readonly TimeSpan ShellLoadedTimeout = TimeSpan.FromSeconds(5);
+
     private readonly IAppStartupOrchestrator startupOrchestrator;
     private readonly IBackupSignatureSecretProvider backupSignatureSecretProvider;
     private readonly IPopupService popup;
@@ -72,18 +75,48 @@ public sealed class AppStartupCoordinator
 
         try
         {
+            var startupStarted = Stopwatch.GetTimestamp();
+            logger.LogInformation("Application startup started.");
+
+            var secretStarted = Stopwatch.GetTimestamp();
             await backupSignatureSecretProvider.GetOrCreateAsync();
+            logger.LogInformation(
+                "Application startup signing key completed in {ElapsedMilliseconds:F0} ms.",
+                Stopwatch.GetElapsedTime(secretStarted).TotalMilliseconds);
+
+            var persistenceStarted = Stopwatch.GetTimestamp();
             await startupOrchestrator.StartAsync();
+            logger.LogInformation(
+                "Application startup persistence completed in {ElapsedMilliseconds:F0} ms.",
+                Stopwatch.GetElapsedTime(persistenceStarted).TotalMilliseconds);
+
             var shell = new AppShell(popup, appShellLogger, barcodeLookupCoordinator);
             var shellLoaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             shell.Loaded += OnShellLoaded;
-            window.Page = shell;
-            await shellLoaded.Task;
+            try
+            {
+                window.Page = shell;
+                await shellLoaded.Task.WaitAsync(ShellLoadedTimeout);
+            }
+            catch (TimeoutException)
+            {
+                // A missed Loaded event must not leave the user on the splash page forever.
+                logger.LogWarning(
+                    "AppShell did not raise Loaded within {TimeoutSeconds} seconds; continuing startup.",
+                    ShellLoadedTimeout.TotalSeconds);
+            }
+            finally
+            {
+                shell.Loaded -= OnShellLoaded;
+            }
+
             await ShowStartupAdAsync();
+            logger.LogInformation(
+                "Application startup completed in {ElapsedMilliseconds:F0} ms.",
+                Stopwatch.GetElapsedTime(startupStarted).TotalMilliseconds);
 
             void OnShellLoaded(object? sender, EventArgs args)
             {
-                shell.Loaded -= OnShellLoaded;
                 shellLoaded.TrySetResult();
             }
         }

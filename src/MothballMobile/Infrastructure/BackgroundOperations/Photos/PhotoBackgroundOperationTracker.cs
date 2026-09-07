@@ -122,9 +122,12 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
                 status: success ? "Photo saved in background." : "Photo operation ended.",
                 bannerVisible: true);
 
-            hideBannerCts?.Cancel();
+            var previousHideBannerCts = hideBannerCts;
+            previousHideBannerCts?.Cancel();
+
             hideBannerCts = new CancellationTokenSource();
-            var token = hideBannerCts.Token;
+            var currentHideBannerCts = hideBannerCts;
+            var token = currentHideBannerCts.Token;
 
             Task.Run(async () =>
             {
@@ -142,6 +145,18 @@ public sealed class PhotoBackgroundOperationTracker : ObservableObject, IPhotoBa
                 {
                     logger.LogDebug(ex, "Photo background operation banner hide timer was canceled.");
                     // Ignore cancellation when newer operations replace this hide timer.
+                }
+                finally
+                {
+                    lock (gate)
+                    {
+                        if (ReferenceEquals(hideBannerCts, currentHideBannerCts))
+                        {
+                            hideBannerCts = null;
+                        }
+                    }
+
+                    currentHideBannerCts.Dispose();
                 }
             }, token);
         }
