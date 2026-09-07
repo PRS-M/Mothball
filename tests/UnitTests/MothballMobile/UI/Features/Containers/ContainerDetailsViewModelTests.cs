@@ -3,6 +3,8 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Contracts.Tags;
 using Moq;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.UI.Features.Containers.ContainerDetails;
@@ -13,6 +15,63 @@ namespace Mothball.Tests.Unit.Mobile.UI.Features.Containers;
 [TestFixture]
 public sealed class ContainerDetailsViewModelTests
 {
+    [Test]
+    public async Task TagEditorSuggestions_SelectingExistingTagAssignsItToTheContainer()
+    {
+        var container = new Container(Guid.NewGuid(), "Garage", "Top shelf");
+        var summary = new ContainerDetailsSummary(container, 0, 0);
+        var details = new Mock<IContainerDetailsHandler>();
+        details.Setup(handler => handler.GetSummaryAsync(container.ContainerId.ToString()))
+            .ReturnsAsync(summary);
+        var queries = new Mock<IContainerDetailsQueryHandler>();
+        queries.Setup(handler => handler.QueryItemsAsync(container.ContainerId.ToString(), null, 0, 5))
+            .ReturnsAsync([]);
+        var itemCoordinator = new ContainerDetailsItemsCoordinator(
+            details.Object,
+            queries.Object,
+            Mock.Of<IImagePathResolver>(),
+            Mock.Of<INavigationService>(),
+            Mock.Of<IPopupService>(),
+            new PopupDefinitionService(),
+            new ItemConsumptionCoordinator(
+                Mock.Of<IItemDetailsQueryHandler>(),
+                Mock.Of<IItemInventoryCommandService>(),
+                Mock.Of<IPopupService>(),
+                new PopupDefinitionService()),
+            Mock.Of<IBackgroundTaskObserver>());
+        var suggestedTag = new CoreApp.Domain.Entities.TagAggregate.Tag(Guid.NewGuid(), "winter");
+        var tags = new Mock<ITagRepository>();
+        tags.Setup(repository => repository.GetForTargetAsync(TagTargetType.Container, container.ContainerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+        tags.Setup(repository => repository.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([suggestedTag]);
+        var viewModel = new ContainerDetailsViewModel(
+            Mock.Of<IDeleteContainerCommandHandler>(),
+            Mock.Of<IUpdateContainerNotesCommandHandler>(),
+            Mock.Of<IImagePathResolver>(),
+            Mock.Of<IPopupService>(),
+            new PopupDefinitionService(),
+            CreateImageService(),
+            Mock.Of<INavigationService>(),
+            Mock.Of<IApplicationSettings>(),
+            Mock.Of<IPhotoBackgroundOperationTracker>(),
+            itemCoordinator,
+            Mock.Of<IBackgroundTaskObserver>(),
+            Mock.Of<IBarcodeAssignmentService>(),
+            Mock.Of<IBarcodeScanSession>(),
+            tagRepository: tags.Object);
+
+        await viewModel.InitializeAsync(container.ContainerId.ToString());
+        viewModel.NewTagText = "#wi";
+
+        Assert.That(SpinWait.SpinUntil(() => viewModel.SuggestedAssignmentTags.Count == 1, TimeSpan.FromSeconds(2)), Is.True);
+        await viewModel.AddSuggestedAssignmentTagCommand.ExecuteAsync(viewModel.SuggestedAssignmentTags[0]);
+
+        Assert.That(viewModel.Tags.Select(tag => tag.TagId), Is.EqualTo(new[] { suggestedTag.TagId }));
+        tags.Verify(repository => repository.AssignAsync(
+            suggestedTag.TagId, TagTargetType.Container, container.ContainerId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Test]
     public async Task InitializeAsync_PublishesHeaderAndPhotoBeforeItemRowsComplete()
     {

@@ -29,6 +29,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly ITagRepository? tagRepository;
     private CancellationTokenSource? tagSuggestionCancellation;
     private int tagSuggestionVersion;
+    private CancellationTokenSource? assignmentTagSuggestionCancellation;
+    private int assignmentTagSuggestionVersion;
     private Container? currentContainer;
 
     [ObservableProperty]
@@ -84,11 +86,17 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     /// <summary>Gets the tag suggestions matching the active hash token.</summary>
     public ObservableCollection<TagDescriptor> SuggestedTags { get; } = [];
 
+    /// <summary>Gets the tag suggestions for the container tag editor.</summary>
+    public ObservableCollection<TagDescriptor> SuggestedAssignmentTags { get; } = [];
+
     /// <summary>Gets a value indicating whether a tag filter is active.</summary>
     public bool HasSelectedTags => SelectedTags.Count > 0;
 
     /// <summary>Gets a value indicating whether tag suggestions should be shown.</summary>
     public bool IsTagSuggestionsVisible => SuggestedTags.Count > 0;
+
+    /// <summary>Gets a value indicating whether assignment suggestions should be shown.</summary>
+    public bool IsAssignmentTagSuggestionsVisible => SuggestedAssignmentTags.Count > 0;
     private TagFilter? CurrentTagFilter => SelectedTags.Count == 0
         ? null
         : new TagFilter(TagTargetType.Item, SelectedTags.Select(tag => tag.Name).ToArray());
@@ -167,6 +175,10 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         RefreshTagSuggestionsAsync(value)
             .FireAndForget(backgroundTasks, "Search container item tag suggestions");
     }
+
+    partial void OnNewTagTextChanged(string value)
+        => RefreshAssignmentTagSuggestionsAsync(value)
+            .FireAndForget(backgroundTasks, "Container tag suggestions");
 
     /// <summary>Adds a tag filter to the container contents query.</summary>
     /// <param name="tag">The selected tag suggestion.</param>
@@ -252,6 +264,60 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         finally
         {
             Interlocked.CompareExchange(ref tagSuggestionCancellation, null, cancellation);
+            cancellation.Dispose();
+        }
+    }
+
+    private async Task RefreshAssignmentTagSuggestionsAsync(string value)
+    {
+        var version = Interlocked.Increment(ref assignmentTagSuggestionVersion);
+        var cancellation = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref assignmentTagSuggestionCancellation, cancellation);
+        previous?.Cancel();
+
+        try
+        {
+            if (tagRepository is null)
+            {
+                return;
+            }
+
+            var token = value.Trim().TrimStart('#');
+            if (token.Length == 0 || token.Any(char.IsWhiteSpace))
+            {
+                SuggestedAssignmentTags.Clear();
+                OnPropertyChanged(nameof(IsAssignmentTagSuggestionsVisible));
+                return;
+            }
+
+            var selectedIds = Tags.Select(tag => tag.TagId).ToHashSet();
+            var tags = await tagRepository.GetAllAsync(cancellation.Token).ConfigureAwait(false);
+            cancellation.Token.ThrowIfCancellationRequested();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (version != Volatile.Read(ref assignmentTagSuggestionVersion))
+                {
+                    return;
+                }
+
+                SuggestedAssignmentTags.Clear();
+                foreach (var tag in tags
+                    .Where(tag => !selectedIds.Contains(tag.TagId)
+                        && tag.Name.Value.StartsWith(token, StringComparison.OrdinalIgnoreCase))
+                    .Take(5))
+                {
+                    SuggestedAssignmentTags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+                }
+
+                OnPropertyChanged(nameof(IsAssignmentTagSuggestionsVisible));
+            });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            Interlocked.CompareExchange(ref assignmentTagSuggestionCancellation, null, cancellation);
             cancellation.Dispose();
         }
     }
@@ -377,6 +443,28 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             await tagRepository.AssignAsync(tag.TagId, TagTargetType.Container, currentContainer.ContainerId);
             if (Tags.All(existing => existing.TagId != tag.TagId))
                 Tags.Add(new TagDescriptor(tag.TagId, tag.Name.Value));
+            NewTagText = string.Empty;
+        });
+    }
+
+    /// <summary>Assigns an existing tag selected from the suggestions.</summary>
+    /// <param name="tag">The suggested tag to assign.</param>
+    [RelayCommand]
+    public async Task AddSuggestedAssignmentTagAsync(TagDescriptor? tag)
+    {
+        if (tagRepository is null || currentContainer is null || tag is null)
+        {
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            await tagRepository.AssignAsync(tag.TagId, TagTargetType.Container, currentContainer.ContainerId);
+            if (Tags.All(existing => existing.TagId != tag.TagId))
+            {
+                Tags.Add(tag);
+            }
+
             NewTagText = string.Empty;
         });
     }
@@ -646,6 +734,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             Interlocked.Increment(ref tagSuggestionVersion);
             tagSuggestionCancellation?.Cancel();
             Interlocked.Exchange(ref tagSuggestionCancellation, null);
+            Interlocked.Increment(ref assignmentTagSuggestionVersion);
+            assignmentTagSuggestionCancellation?.Cancel();
+            Interlocked.Exchange(ref assignmentTagSuggestionCancellation, null);
         }
 
         disposed = true;
