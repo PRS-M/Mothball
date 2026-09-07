@@ -101,7 +101,8 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         => ReloadInBackground();
 
     [RelayCommand]
-    private Task RefreshAsync() => ReloadAsync();
+    private Task RefreshAsync()
+        => IsBusy ? Task.CompletedTask : ReloadAsync();
 
     private void ReloadInBackground()
     {

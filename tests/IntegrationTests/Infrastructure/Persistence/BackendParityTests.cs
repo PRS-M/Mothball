@@ -1,5 +1,8 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Contracts.Tags;
+using CoreApp.Application.Features.Containers.Queries;
+using CoreApp.Application.Features.Items.Queries;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
@@ -16,6 +19,58 @@ namespace Mothball.Tests.Integration.Infrastructure.Persistence;
 [TestFixture]
 public class BackendParityTests
 {
+    [TestCase(false, null)]
+    [TestCase(true, null)]
+    [TestCase(true, "matching")]
+    public async Task TagListQueries_ReturnAssignedEntitiesMatchingCatalogueCountsAcrossBackends(
+        bool useTagId,
+        string? search)
+    {
+        await using var sqlite = await BuildSqliteAsync();
+        var json = await BuildJsonAsync();
+        var taggedItem = new Item(Guid.NewGuid(), "Matching item", "");
+        var otherItem = new Item(Guid.NewGuid(), "Matching other item", "");
+        var taggedContainer = new Container(Guid.NewGuid(), "Matching container", "");
+        var otherContainer = new Container(Guid.NewGuid(), "Matching other container", "");
+
+        foreach (var (command, query, tags) in new[]
+        {
+            (sqlite.Command, sqlite.Query, sqlite.Tags),
+            (json.Command, json.Query, json.Tags),
+        })
+        {
+            await command.InsertItemAsync(taggedItem);
+            await command.InsertItemInventoryAsync(new ItemInventory(taggedItem.ItemId, 3));
+            await command.InsertItemAsync(otherItem);
+            await command.InsertItemInventoryAsync(new ItemInventory(otherItem.ItemId, 1));
+            await command.InsertContainerAsync(taggedContainer);
+            await command.InsertContainerAsync(otherContainer);
+
+            var tag = await tags.GetOrCreateAsync(new TagName("#ExampleTag"));
+            await tags.AssignAsync(tag.TagId, TagTargetType.Item, taggedItem.ItemId);
+            await tags.AssignAsync(tag.TagId, TagTargetType.Container, taggedContainer.ContainerId);
+            var summary = (await tags.GetUsageSummariesAsync()).Single();
+            Guid? tagId = useTagId ? summary.TagId : null;
+
+            var items = await new ItemsListQueryHandler(query).QueryAsync(
+                ItemQueryFilter.All, search, null, null,
+                new TagFilter(TagTargetType.Item, [summary.Name], TagId: tagId));
+            var containers = await new ContainerListQueryHandler(query).QueryAsync(
+                false, search, null, null,
+                new TagFilter(TagTargetType.Container, [summary.Name], TagId: tagId));
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(summary.ItemCount, Is.EqualTo(1));
+                Assert.That(summary.ContainerCount, Is.EqualTo(1));
+                Assert.That(items.Select(item => item.Item.ItemId), Is.EqualTo(new[] { taggedItem.ItemId }));
+                Assert.That(containers.Select(container => container.ContainerId), Is.EqualTo(new[] { taggedContainer.ContainerId }));
+                Assert.That(items.Count, Is.EqualTo(summary.ItemCount));
+                Assert.That(containers.Count, Is.EqualTo(summary.ContainerCount));
+            });
+        }
+    }
+
     [Test]
     public async Task ContainersAndItems_RoundTripBarcodeValueAndSymbologyAcrossBackends()
     {
@@ -1001,9 +1056,10 @@ public class BackendParityTests
         var imageRepo = new ImageRepository(photos);
         var relationRepo = new RelationRepository(relations, transactionRunner);
 
-        var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
+        var tags = new TagRepository(db);
+        var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo, tags);
         var command = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
-        return new SqliteHarness(dbPath, db, query, command);
+        return new SqliteHarness(dbPath, db, query, command, tags);
     }
 
     private static void AssertInventorySnapshot(InventorySnapshot item)
@@ -1025,9 +1081,10 @@ public class BackendParityTests
         var imageRepo = new JsonImageRepository(store);
         var relationRepo = new JsonRelationRepository(store);
 
-        var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo);
+        var tags = new JsonTagRepository(store);
+        var query = new InventoryQueryRepository(containerRepo, itemRepo, itemInventoryRepo, tags);
         var command = new InventoryCommandRepository(containerRepo, itemRepo, itemInventoryRepo, imageRepo, relationRepo);
-        return new JsonHarness(query, command);
+        return new JsonHarness(query, command, tags);
     }
 
     private static IFileHandler CreateInMemoryJsonFileHandler()
@@ -1085,16 +1142,18 @@ public class BackendParityTests
         private readonly string dbPath;
         private readonly MothballDatabase db;
 
-        public SqliteHarness(string dbPath, MothballDatabase db, IInventoryQueryRepository query, IInventoryCommandRepository command)
+        public SqliteHarness(string dbPath, MothballDatabase db, IInventoryQueryRepository query, IInventoryCommandRepository command, ITagRepository tags)
         {
             this.dbPath = dbPath;
             this.db = db;
             Query = query;
             Command = command;
+            Tags = tags;
         }
 
         public IInventoryQueryRepository Query { get; }
         public IInventoryCommandRepository Command { get; }
+        public ITagRepository Tags { get; }
 
         public async ValueTask DisposeAsync()
         {
@@ -1108,14 +1167,16 @@ public class BackendParityTests
 
     private sealed class JsonHarness
     {
-        public JsonHarness(IInventoryQueryRepository query, IInventoryCommandRepository command)
+        public JsonHarness(IInventoryQueryRepository query, IInventoryCommandRepository command, ITagRepository tags)
         {
             Query = query;
             Command = command;
+            Tags = tags;
         }
 
         public IInventoryQueryRepository Query { get; }
         public IInventoryCommandRepository Command { get; }
+        public ITagRepository Tags { get; }
     }
 
 }
