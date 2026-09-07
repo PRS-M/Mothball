@@ -1,73 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="MothballMobile.AppShell"
-    xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MothballMobile"
-    xmlns:containers="clr-namespace:MothballMobile.UI.Features.Containers.ContainersList"
-    xmlns:items="clr-namespace:MothballMobile.UI.Features.Items.ItemsList"
-    xmlns:tags="clr-namespace:MothballMobile.UI.Features.Tags.TagsList"
-    xmlns:settings="clr-namespace:MothballMobile.UI.Features.Settings"
-    Title="MothballMobile">
+    xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
+    Title="Mothball">
     <Shell.ToolbarItems>
         <ToolbarItem Text="{x:Static strings:AppResources.ScanBarcode}"
                      IconImageSource="{FontImageSource Glyph=&#xF02A;, FontFamily=FontAwesomeSolid, Size=18}"
                      Clicked="OnBarcodeScanClicked" />
     </Shell.ToolbarItems>
-
-    <FlyoutItem Title="{x:Static strings:AppResources.Home}" Route="Home">
-        <FlyoutItem.Icon>
-            <FontImageSource Glyph="&#xf015;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
-        </FlyoutItem.Icon>
-        <ShellContent
-            Title="{x:Static strings:AppResources.Home}"
-            ContentTemplate="{DataTemplate local:MainPage}"
-            Route="MainPage" />
-    </FlyoutItem>
-    <FlyoutItem Title="{x:Static strings:AppResources.Containers}" Route="Containers">
-        <Tab Title="{x:Static strings:AppResources.ContainersList}">
-            <ShellContent
-                ContentTemplate="{DataTemplate containers:ContainersListPage}"
-                Route="ContainersList">
-                <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf080;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
-                </ShellContent.Icon>
-            </ShellContent>
-        </Tab>
-    </FlyoutItem>
-    <FlyoutItem Title="{x:Static strings:AppResources.Items}" Route="Items">
-        <Tab Title="{x:Static strings:AppResources.ItemsList}">
-            <ShellContent
-                ContentTemplate="{DataTemplate items:ItemsListPage}"
-                Route="ItemsList">
-                <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf02c;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
-                </ShellContent.Icon>
-            </ShellContent>
-        </Tab>
-    </FlyoutItem>
-    <FlyoutItem Title="{x:Static strings:AppResources.Tags}" Route="Tags">
-        <Tab Title="{x:Static strings:AppResources.Tags}">
-            <ShellContent
-                ContentTemplate="{DataTemplate tags:TagsListPage}"
-                Route="TagsList">
-                <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf02b;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
-                </ShellContent.Icon>
-            </ShellContent>
-        </Tab>
-    </FlyoutItem>
-    <FlyoutItem Title="{x:Static strings:AppResources.Settings}" Route="Settings">
-        <Tab Title="{x:Static strings:AppResources.Settings}">
-            <ShellContent
-                Title="{x:Static strings:AppResources.Settings}"
-                ContentTemplate="{DataTemplate settings:SettingsPage}"
-                Route="SettingsPage">
-                <ShellContent.Icon>
-                    <FontImageSource Glyph="&#xf013;" FontFamily="FontAwesomeSolid" Size="26" Color="{DynamicResource OnSurface}" />
-                </ShellContent.Icon>
-            </ShellContent>
-        </Tab>
-    </FlyoutItem>
 </Shell>
