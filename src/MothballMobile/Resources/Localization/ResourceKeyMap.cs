@@ -223,6 +223,8 @@ internal static class ResourceKeyMap
         "Share backup JSON" => "ShareBackupJSON",
         "Share backup ZIP" => "ShareBackupZIP",
         "Share signing key" => "ShareSigningKey",
+        "Selected" => "ShareSelected",
+        "Share selected entries" => "ShareSelectedEntries",
         "Share the backup signing key using the system share sheet, including AirDrop" => "ShareTheBackupSigningKeyUsingTheSystemShareSheetIncludingAirDrop",
         "Short description" => "ShortDescription",
         "Signing key imported" => "SigningKeyImported",
