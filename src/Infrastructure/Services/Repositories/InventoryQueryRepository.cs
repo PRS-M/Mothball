@@ -196,6 +196,10 @@ public class InventoryQueryRepository : IInventoryQueryRepository
             return [];
         }
 
+        IReadOnlySet<Guid>? matchingTargetIds = criteria.TagId is { } tagId
+            ? await tagRepository.GetTargetIdsAsync(tagId, targetType).ConfigureAwait(false)
+            : null;
+
         var result = new List<T>();
         foreach (var entity in entities)
         {
@@ -205,6 +209,16 @@ public class InventoryQueryRepository : IInventoryQueryRepository
                 Item item => item.ItemId,
                 _ => throw new NotSupportedException($"Unsupported tag query entity '{typeof(T).Name}'."),
             };
+
+            if (matchingTargetIds is not null)
+            {
+                if (matchingTargetIds.Contains(targetId))
+                {
+                    result.Add(entity);
+                }
+
+                continue;
+            }
 
             var names = (await tagRepository.GetForTargetAsync(targetType, targetId).ConfigureAwait(false))
                 .Select(tag => tag.Name.NormalizedValue)

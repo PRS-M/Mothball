@@ -119,6 +119,25 @@ public sealed class JsonTagRepository : ITagRepository
             .ToList();
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlySet<Guid>> GetTargetIdsAsync(
+        Guid tagId,
+        TagTargetType targetType,
+        CancellationToken cancellationToken = default)
+    {
+        if (tagId == Guid.Empty)
+        {
+            throw new ArgumentException("Tag ID cannot be empty.", nameof(tagId));
+        }
+
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        return state.TagAssignments
+            .Where(assignment => assignment.TagId == tagId && assignment.TargetType == targetType)
+            .Select(assignment => assignment.TargetId)
+            .ToHashSet();
+    }
+
     public Task AssignAsync(
         Guid tagId,
         TagTargetType targetType,

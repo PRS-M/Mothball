@@ -120,6 +120,37 @@ public sealed class TagRepository : ITagRepository
         return rows.Select(row => row.ToDomain()).ToList();
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlySet<Guid>> GetTargetIdsAsync(
+        Guid tagId,
+        TagTargetType targetType,
+        CancellationToken cancellationToken = default)
+    {
+        if (tagId == Guid.Empty)
+        {
+            throw new ArgumentException("Tag ID cannot be empty.", nameof(tagId));
+        }
+
+        await database.InitializeAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string table = targetType switch
+        {
+            TagTargetType.Item => nameof(DbItemTag),
+            TagTargetType.Container => nameof(DbContainerTag),
+            _ => throw new NotSupportedException($"Unsupported tag target type '{targetType}'."),
+        };
+        string targetColumn = targetType == TagTargetType.Item
+            ? nameof(DbItemTag.ItemId)
+            : nameof(DbContainerTag.ContainerId);
+        var rows = await database.Connection.QueryAsync<TargetIdRow>(
+            $"SELECT {targetColumn} AS TargetId FROM {table} WHERE TagId = ?",
+            tagId).ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return rows.Select(row => row.TargetId).ToHashSet();
+    }
+
     public async Task AssignAsync(
         Guid tagId,
         TagTargetType targetType,
@@ -176,6 +207,11 @@ public sealed class TagRepository : ITagRepository
         {
             throw new ArgumentException("Tag target ID cannot be empty.", nameof(targetId));
         }
+    }
+
+    private sealed class TargetIdRow
+    {
+        public Guid TargetId { get; set; }
     }
 
     private static void ValidateIds(Guid tagId, Guid targetId)

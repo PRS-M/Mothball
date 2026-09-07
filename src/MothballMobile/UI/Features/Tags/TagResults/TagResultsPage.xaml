@@ -14,15 +14,10 @@
                              TitleFontSize="22"
                              SubtitleFontSize="12" />
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <Grid Grid.Row="1">
             <SearchBar Placeholder="{x:Static strings:AppResources.SearchTaggedResults}"
-                       Text="{Binding Query, Mode=TwoWay}" />
-            <Button Grid.Column="1"
-                    Text="&#xF00D;"
-                    FontFamily="FontAwesomeSolid"
-                    Command="{Binding ClearTagCommand}"
-                    Style="{StaticResource OutlinedButton}"
-                    SemanticProperties.Description="{x:Static strings:AppResources.ClearTag}" />
+                       Text="{Binding Query, Mode=TwoWay}"
+                       CancelButtonColor="{DynamicResource Primary}" />
         </Grid>
 
         <Picker Grid.Row="2"

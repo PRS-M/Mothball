@@ -86,4 +86,19 @@ public class TagRepositoryTests
         Assert.That(summary.ContainerCount, Is.EqualTo(1));
         Assert.That(summary.TotalCount, Is.EqualTo(3));
     }
+
+    [Test]
+    public async Task GetTargetIdsAsync_ReturnsOnlyTargetsForTheRequestedTagAndType()
+    {
+        var repository = new TagRepository(database);
+        var tag = await repository.GetOrCreateAsync(new TagName("winter"));
+        var itemId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+
+        await repository.AssignAsync(tag.TagId, TagTargetType.Item, itemId);
+        await repository.AssignAsync(tag.TagId, TagTargetType.Container, containerId);
+
+        Assert.That(await repository.GetTargetIdsAsync(tag.TagId, TagTargetType.Item), Is.EquivalentTo(new[] { itemId }));
+        Assert.That(await repository.GetTargetIdsAsync(tag.TagId, TagTargetType.Container), Is.EquivalentTo(new[] { containerId }));
+    }
 }

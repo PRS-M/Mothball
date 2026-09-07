@@ -103,9 +103,6 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
     [RelayCommand]
     private Task RefreshAsync() => ReloadAsync();
 
-    [RelayCommand]
-    private Task ClearTagAsync() => navigation.GoToAsync("..");
-
     private void ReloadInBackground()
     {
         if (!initialized || !HasTag)
@@ -130,8 +127,8 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
             gateAcquired = true;
             await RunCommandAsync(async () =>
             {
-                var itemFilter = new TagFilter(TagTargetType.Item, [tagName]);
-                var containerFilter = new TagFilter(TagTargetType.Container, [tagName]);
+                var itemFilter = new TagFilter(TagTargetType.Item, [tagName], TagId: tagId);
+                var containerFilter = new TagFilter(TagTargetType.Container, [tagName], TagId: tagId);
                 var search = string.IsNullOrWhiteSpace(Query) ? null : Query.Trim();
                 var results = new List<TagResultViewModel>();
 

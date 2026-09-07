@@ -44,6 +44,17 @@ public interface ITagRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets the item or container identifiers assigned to a tag.
+    /// </summary>
+    /// <param name="tagId">The tag identifier.</param>
+    /// <param name="targetType">The kind of target to return.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task<IReadOnlySet<Guid>> GetTargetIdsAsync(
+        Guid tagId,
+        TagTargetType targetType,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Assigns a tag idempotently to an item or container.
     /// </summary>
     Task AssignAsync(

@@ -20,6 +20,7 @@ public sealed class TagResultsViewModelTests
     {
         var item = new Item(Guid.NewGuid(), "Tagged item", "");
         var inventory = new InventorySnapshot(item, 1, 0, []);
+        var tagId = Guid.NewGuid();
         var itemQueries = new Mock<IItemsListQueryHandler>();
         var containerQueries = new Mock<IContainerListQueryHandler>();
         itemQueries
@@ -36,7 +37,8 @@ public sealed class TagResultsViewModelTests
                 null,
                 null,
                 null,
-                It.Is<CoreApp.Application.Contracts.Tags.TagFilter>(filter => filter.Names.SequenceEqual(new[] { "winter" }))))
+                It.Is<CoreApp.Application.Contracts.Tags.TagFilter>(filter => filter.TagId == tagId
+                    && filter.Names.SequenceEqual(new[] { "winter" }))))
             .ReturnsAsync([inventory]);
         containerQueries
             .Setup(query => query.QueryAsync(
@@ -56,7 +58,7 @@ public sealed class TagResultsViewModelTests
         await viewModel.InitializeAsync();
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
-            [NavigationParams.TagId] = Guid.NewGuid().ToString(),
+            [NavigationParams.TagId] = tagId.ToString(),
             [NavigationParams.TagName] = "winter",
         });
 

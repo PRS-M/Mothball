@@ -78,6 +78,22 @@ public class JsonTagRepositoryTests
     }
 
     [Test]
+    public async Task GetTargetIdsAsync_ReturnsOnlyTargetsForTheRequestedTagAndType()
+    {
+        var store = new JsonInventoryStore(new InMemoryFileHandler(), NullLogger<JsonInventoryStore>.Instance);
+        var repository = new JsonTagRepository(store);
+        var tag = await repository.GetOrCreateAsync(new TagName("winter"));
+        var itemId = Guid.NewGuid();
+        var containerId = Guid.NewGuid();
+
+        await repository.AssignAsync(tag.TagId, TagTargetType.Item, itemId);
+        await repository.AssignAsync(tag.TagId, TagTargetType.Container, containerId);
+
+        Assert.That(await repository.GetTargetIdsAsync(tag.TagId, TagTargetType.Item), Is.EquivalentTo(new[] { itemId }));
+        Assert.That(await repository.GetTargetIdsAsync(tag.TagId, TagTargetType.Container), Is.EquivalentTo(new[] { containerId }));
+    }
+
+    [Test]
     public async Task RestoreAsync_RestoresTagDefinitionsAndAssignments()
     {
         var store = new JsonInventoryStore(new InMemoryFileHandler(), NullLogger<JsonInventoryStore>.Instance);

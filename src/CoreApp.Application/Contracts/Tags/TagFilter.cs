@@ -8,7 +8,8 @@ namespace CoreApp.Application.Contracts.Tags;
 public sealed record TagFilter(
     TagTargetType TargetType,
     IReadOnlyCollection<string> Names,
-    bool MatchAll = true)
+    bool MatchAll = true,
+    Guid? TagId = null)
 {
     /// <summary>
     /// Gets distinct normalized names for exact backend filtering.
