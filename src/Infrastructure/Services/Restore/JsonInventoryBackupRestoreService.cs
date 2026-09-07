@@ -258,6 +258,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                 {
                     UpsertInventory(state, item.ItemId, item.TotalQuantity);
                 }
+
                 continue;
             }
 
@@ -268,6 +269,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                 existing.BarcodeValue = item.BarcodeValue;
                 existing.BarcodeSymbology = item.BarcodeSymbology;
             }
+
             if (plan.ItemIdsWithQuantityOverwrite.Contains(item.ItemId))
             {
                 UpsertInventory(state, item.ItemId, item.TotalQuantity);

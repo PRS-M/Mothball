@@ -208,6 +208,7 @@ public sealed class MauiPopupService : IPopupService
                     return page;
             }
         }
+
         return null;
     }
 }

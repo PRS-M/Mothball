@@ -217,6 +217,7 @@ public abstract partial class SearchablePagedListViewModelBase<TSource, TViewMod
             {
                 Query = string.Empty;
             }
+
             return;
         }
 

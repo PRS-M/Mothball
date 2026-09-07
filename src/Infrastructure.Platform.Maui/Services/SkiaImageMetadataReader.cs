@@ -39,6 +39,7 @@ public sealed class SkiaImageMetadataReader : IImageMetadataReader
 
                 return new ImageDimensions(width, height);
             }
+
             // Cancellation is a control-flow signal and must not be converted into
             // the same "unreadable image" result used for malformed image files.
             catch (OperationCanceledException exception)

@@ -162,6 +162,7 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                         BarcodeSymbology = item.BarcodeSymbology,
                     });
                 }
+
                 if (plan.ItemIdsWithQuantityOverwrite.Contains(item.ItemId))
                 {
                     connection.InsertOrReplace(new DbItemInventory

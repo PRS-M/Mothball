@@ -63,6 +63,7 @@ public class DatabaseIndexTests
                 return true;
             }
         }
+
         return false;
     }
 

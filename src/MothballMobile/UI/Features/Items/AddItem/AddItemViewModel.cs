@@ -229,6 +229,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             {
                 ValidationMessage = LocalizationManager.Current.Get("This barcode is already assigned to a container.");
             }
+
             return;
         }
 

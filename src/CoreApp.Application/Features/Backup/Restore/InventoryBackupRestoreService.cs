@@ -122,6 +122,7 @@ public sealed class InventoryBackupRestoreService : IInventoryBackupRestoreServi
                 await inventoryCommands.UpdateItemAsync(CreateItem(item))
                     .ConfigureAwait(false);
             }
+
             if (plan.ItemIdsWithQuantityOverwrite.Contains(item.ItemId))
             {
                 await inventoryCommands.SaveItemInventoryAsync(new ItemInventory(item.ItemId, item.TotalQuantity))

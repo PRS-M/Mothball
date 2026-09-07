@@ -92,6 +92,7 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
             {
                 await photoDeletion.DeleteItemPhotoFilesBestEffortAsync(summary.Item);
             }
+
             return new ItemInventoryUpdateResult(true, 0, 0, 0, ItemDeleted: true);
         }
 

@@ -128,6 +128,7 @@ public class ContainerRepository : IContainerRepository
         {
             RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
         }
+
         string pagingClause = hasPaging ? " LIMIT ? OFFSET ?" : string.Empty;
         object[] args = hasPaging
             ? [pattern, pattern, pageSizeValue, RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue)]
@@ -158,6 +159,7 @@ public class ContainerRepository : IContainerRepository
         {
             RepositoryQueryHelpers.ValidatePaging(pageNumberValue, pageSizeValue);
         }
+
         string pagingClause = hasPaging ? " LIMIT ? OFFSET ?" : string.Empty;
         object[] args = hasPaging
             ? [pattern, pattern, pageSizeValue, RepositoryQueryHelpers.CalculateOffset(pageNumberValue, pageSizeValue)]

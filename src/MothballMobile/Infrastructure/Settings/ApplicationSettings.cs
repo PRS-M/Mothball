@@ -23,6 +23,7 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
                 ? language
                 : LanguagePreference.System;
         }
+
         set
         {
             if (Language == value)
@@ -43,6 +44,7 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
                 ? theme
                 : AppTheme.Unspecified;
         }
+
         set
         {
             if (ThemeOverride == value)
@@ -70,6 +72,7 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
                 ? palette
                 : ThemePalette.BlueprintLedger;
         }
+
         set
         {
             if (ThemePalette == value)
@@ -92,6 +95,7 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
                 ? mode
                 : AppMode.Advanced;
         }
+
         set
         {
             if (AppMode == value)

@@ -124,6 +124,7 @@ internal sealed class InventoryBackupRestorePlanBuilder
                     {
                         context.ItemIdsWithMetadataUpdate.Add(item.ItemId);
                     }
+
                     if (shouldOverwriteQuantity)
                     {
                         context.OverwrittenItemQuantities++;
