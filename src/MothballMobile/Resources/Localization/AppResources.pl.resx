@@ -19,6 +19,9 @@
   <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Dodaje pojemniki, przedmioty, różnice ilości powiązań i obrazy obecne w kopii, ale brakujące w aplikacji.</value></data>
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Dodaje brakujące rekordy tak jak tryb Tylko dodaj.</value></data>
   <data name="Advanced" xml:space="preserve"><value>Zaawansowany</value></data>
+  <data name="AdvancedSettings" xml:space="preserve"><value>Ustawienia zaawansowane</value></data>
+  <data name="OpenAdvancedSettings" xml:space="preserve"><value>Otwórz ustawienia zaawansowane</value></data>
+  <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Opcje dla zaawansowanych użytkowników i techniczne</value></data>
   <data name="AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement" xml:space="preserve"><value>Tryb zaawansowany pokazuje sumy ilości, przypisania i edycję ilości. Tryb prosty ukrywa zarządzanie ilością.</value></data>
   <data name="AppMode" xml:space="preserve"><value>Tryb aplikacji</value></data>
   <data name="AreYouSureYouWantToDeleteThisItemThisCannotBeUndone" xml:space="preserve"><value>Czy na pewno chcesz usunąć ten przedmiot? Tej operacji nie można cofnąć.</value></data>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Settings"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
+                x:Class="MothballMobile.UI.Features.Settings.AdvancedSettingsPage"
+                x:DataType="vm:AdvancedSettingsViewModel"
+                Title="{x:Static strings:AppResources.AdvancedSettings}"
+                Background="{DynamicResource Surface}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+            <controls:PageHeader xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                                 Title="{x:Static strings:AppResources.AdvancedSettings}"
+                                 Subtitle="{x:Static strings:AppResources.PowerUserAndTechnicalOptions}"
+                                 TitleFontSize="22"
+                                 SubtitleFontSize="12"
+                                 Spacing="2"
+                                 HeaderMargin="0,0,0,6" />
+
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <Label Text="{x:Static strings:AppResources.BarcodesExtendedMode}"
+                               Style="{StaticResource HeadlineSmall}"
+                               VerticalOptions="Center"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsBarcodeExtendedMode, Mode=TwoWay}"
+                                SemanticProperties.Hint="{x:Static strings:AppResources.EnableAdditionalBarcodeTypes}" />
+                    </Grid>
+
+                    <Label Text="{x:Static strings:AppResources.BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <Label Text="{x:Static strings:AppResources.BackupSigningKey}"
+                               Style="{StaticResource HeadlineSmall}"
+                               VerticalOptions="Center"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding SigningKey.IsBackupSigningKeyEnabled, Mode=TwoWay}"
+                                SemanticProperties.Hint="{x:Static strings:AppResources.EnableOrDisableBackupSigningKeyUse}" />
+                    </Grid>
+
+                    <Label Text="{x:Static strings:AppResources.WhenEnabledBackupsAreSignedWithThisDeviceKeyShareOrImportItToVerifyBackupsAcrossDevices}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+
+                    <Button Text="{x:Static strings:AppResources.ShareSigningKey}"
+                            IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
+                            Command="{Binding SigningKey.ShareBackupSigningKeyCommand}"
+                            SemanticProperties.Hint="{x:Static strings:AppResources.ShareTheBackupSigningKeyUsingTheSystemShareSheetIncludingAirDrop}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF1E0;"
+                                             Size="16"
+                                             Color="{DynamicResource OnPrimary}" />
+                        </Button.ImageSource>
+                    </Button>
+
+                    <Button Text="{x:Static strings:AppResources.ImportSigningKey}"
+                            Style="{StaticResource OutlinedButton}"
+                            IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
+                            Command="{Binding SigningKey.ImportBackupSigningKeyCommand}"
+                            SemanticProperties.Hint="{x:Static strings:AppResources.ImportABackupSigningKeyFileReceivedFromAnotherDevice}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF093;"
+                                             Size="16"
+                                             Color="{DynamicResource Primary}" />
+                        </Button.ImageSource>
+                    </Button>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource SectionCard}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Label Text="&#xF1C5;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="20"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                        <Label Text="{x:Static strings:AppResources.ImageProcessing}"
+                               Style="{StaticResource HeadlineSmall}"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Label Text="{x:Static strings:AppResources.ViewActiveAndRecentBackgroundPhotoOperations}"
+                               Style="{StaticResource BodyMedium}"
+                               TextColor="{DynamicResource OnSurfaceVariant}" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="2"
+                            Text="&#xF054;"
+                            FontFamily="FontAwesomeSolid"
+                            Command="{Binding NavigateToBackgroundOperationsCommand}"
+                            SemanticProperties.Hint="{x:Static strings:AppResources.OpenTheBackgroundPhotoOperationsPage}"
+                            Style="{StaticResource TextButton}" />
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</views:BasePage>

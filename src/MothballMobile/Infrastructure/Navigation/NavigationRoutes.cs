@@ -5,6 +5,7 @@ public static class NavigationRoutes
     public const string HomeContainers = "HomeContainersView";
     public const string HomeItems = "HomeItemsView";
     public const string Settings = "SettingsView";
+    public const string AdvancedSettings = "AdvancedSettings";
     public const string ImportDocumentation = "ImportDocumentation";
     public const string AddContainer = "AddContainer";
     public const string ContainerDetails = "ContainerDetails";

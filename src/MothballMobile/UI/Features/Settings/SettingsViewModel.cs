@@ -13,12 +13,10 @@ public partial class SettingsViewModel : ObservableObject
     public SettingsViewModel(
         AppearanceSettingsViewModel appearance,
         BackupSettingsViewModel backup,
-        BackupSigningKeySettingsViewModel signingKey,
         INavigationService nav)
     {
         Appearance = appearance;
         Backup = backup;
-        SigningKey = signingKey;
         this.nav = nav;
     }
 
@@ -26,9 +24,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public BackupSettingsViewModel Backup { get; }
 
-    public BackupSigningKeySettingsViewModel SigningKey { get; }
-
     [RelayCommand]
-    private Task NavigateToBackgroundOperationsAsync()
-        => nav.GoToAsync(NavigationRoutes.BackgroundOperations);
+    private Task NavigateToAdvancedSettingsAsync()
+        => nav.GoToAsync(NavigationRoutes.AdvancedSettings);
 }
