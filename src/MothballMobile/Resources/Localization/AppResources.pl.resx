@@ -275,7 +275,7 @@
   <data name="ValueMustBeBetween0And1" xml:space="preserve"><value>Wartość musi być od {0} do {1}.</value></data>
   <data name="ViewActiveAndRecentBackgroundPhotoOperations" xml:space="preserve"><value>Wyświetl aktywne i ostatnie operacje zdjęć w tle.</value></data>
   <data name="ViewImageProcessing" xml:space="preserve"><value>Wyświetl przetwarzanie obrazów</value></data>
-  <data name="WhenEnabledBackupsAreSignedWithThisDeviceKeyShareOrImportItToVerifyBackupsAcrossDevices" xml:space="preserve"><value>When enabled, backups are signed with this device key. Share or import it to verify backups across devices.</value></data>
+  <data name="WhenEnabledBackupsAreSignedWithThisDeviceKeyShareOrImportItToVerifyBackupsAcrossDevices" xml:space="preserve"><value>Po włączeniu kopie zapasowe są podpisywane kluczem tego urządzenia. Udostępnij go lub zaimportuj, aby weryfikować kopie zapasowe na różnych urządzeniach.</value></data>
   <data name="WithdrawFrom0" xml:space="preserve"><value>Pobierz z {0}</value></data>
   <data name="WithdrawUnassignedItems" xml:space="preserve"><value>Pobierz nieprzypisane przedmioty</value></data>
   <data name="WithdrawUnassignedItems_c6a982" xml:space="preserve"><value>Pobrać nieprzypisane przedmioty?</value></data>
