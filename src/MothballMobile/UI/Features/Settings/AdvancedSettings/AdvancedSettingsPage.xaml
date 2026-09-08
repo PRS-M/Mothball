@@ -81,6 +81,9 @@
             </Border>
 
             <Border Style="{StaticResource SectionCard}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateToBackgroundOperationsCommand}" />
+                </Border.GestureRecognizers>
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
                     <Label Text="&#xF1C5;"
                            FontFamily="FontAwesomeSolid"
@@ -95,16 +98,20 @@
                                Style="{StaticResource BodyMedium}"
                                TextColor="{DynamicResource OnSurfaceVariant}" />
                     </VerticalStackLayout>
-                    <Button Grid.Column="2"
-                            Text="&#xF054;"
-                            FontFamily="FontAwesomeSolid"
-                            Command="{Binding NavigateToBackgroundOperationsCommand}"
-                            SemanticProperties.Hint="{x:Static strings:AppResources.OpenTheBackgroundPhotoOperationsPage}"
-                            Style="{StaticResource TextButton}" />
+                    <Label Grid.Column="2"
+                           Text="&#xF054;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="18"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center"
+                           SemanticProperties.Description="{x:Static strings:AppResources.OpenTheBackgroundPhotoOperationsPage}" />
                 </Grid>
             </Border>
 
             <Border Style="{StaticResource SectionCard}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding GenerateNewSkuPdfCommand}" />
+                </Border.GestureRecognizers>
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
                     <Label Text="&#xF02A;"
                            FontFamily="FontAwesomeSolid"
@@ -119,12 +126,13 @@
                                Style="{StaticResource BodyMedium}"
                                TextColor="{DynamicResource OnSurfaceVariant}" />
                     </VerticalStackLayout>
-                    <Button Grid.Column="2"
-                            Text="&#xF1C1;"
-                            FontFamily="FontAwesomeSolid"
-                            Command="{Binding GenerateNewSkuPdfCommand}"
-                            SemanticProperties.Hint="{x:Static strings:AppResources.GeneratePdfWithNewCodes}"
-                            Style="{StaticResource TextButton}" />
+                    <Label Grid.Column="2"
+                           Text="&#xF1C1;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="18"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center"
+                           SemanticProperties.Description="{x:Static strings:AppResources.GeneratePdfWithNewCodes}" />
                 </Grid>
             </Border>
         </VerticalStackLayout>
