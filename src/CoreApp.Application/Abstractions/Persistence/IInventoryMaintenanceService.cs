@@ -35,4 +35,8 @@ public interface IInventoryMaintenanceService
 /// </summary>
 /// <param name="Progress">The operation progress from zero to one.</param>
 /// <param name="Status">A user-facing operation status.</param>
-public readonly record struct MaintenanceProgress(double Progress, string Status);
+/// <param name="StepProgress">The current-step progress from zero to one.</param>
+public readonly record struct MaintenanceProgress(
+    double Progress,
+    string Status,
+    double StepProgress = 0);

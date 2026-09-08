@@ -46,7 +46,7 @@ public sealed partial class JsonInventoryStore
         IProgress<MaintenanceProgress>? progress = null)
     {
         ArgumentNullException.ThrowIfNull(files);
-        progress?.Report(new MaintenanceProgress(0.1, "Deleting inventory data"));
+        progress?.Report(new MaintenanceProgress(0, "Deleting inventory data", 0));
         await UpdateAsync(state =>
         {
             state.Metadata = new JsonStoreMetadata();
@@ -60,11 +60,27 @@ public sealed partial class JsonInventoryStore
             state.Barcodes.Clear();
             return Task.CompletedTask;
         });
-        progress?.Report(new MaintenanceProgress(0.7, "Deleting photo files"));
-        await DeleteFilesAsync(files, Constants.PathToContainerPhotos);
-        await DeleteFilesAsync(files, Constants.PathToItemPhotos);
-        await DeleteFilesAsync(files, Constants.PathToSharedPhotos);
-        progress?.Report(new MaintenanceProgress(1, "Data reset complete"));
+        progress?.Report(new MaintenanceProgress(0.25, "Deleting photo files", 0));
+        var folders = new[]
+        {
+            Constants.PathToContainerPhotos,
+            Constants.PathToItemPhotos,
+            Constants.PathToSharedPhotos,
+        };
+        var filesToDelete = folders
+            .SelectMany(folder => files.EnumerateFiles(folder).Select(file => (folder, file)))
+            .ToList();
+
+        for (var index = 0; index < filesToDelete.Count; index++)
+        {
+            var (folder, file) = filesToDelete[index];
+            await files.DeleteFileAsync(file, folder);
+            var stepProgress = (index + 1d) / Math.Max(filesToDelete.Count, 1);
+            progress?.Report(new MaintenanceProgress(0.25 + stepProgress * 0.75, "Deleting photo files", stepProgress));
+        }
+
+        await EnsureSharedAssetAsync(files, "container.png", "seeded-container.jpg");
+        progress?.Report(new MaintenanceProgress(1, "Data reset complete", 1));
     }
 
     private async Task EnsureSharedAssetAsync(IFileHandler files, string rawName, string storedName)

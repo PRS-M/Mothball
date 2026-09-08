@@ -34,6 +34,7 @@ public sealed class AppStartupOrchestrator : IAppStartupOrchestrator
             await startupInitializer.InitializeAsync();
             progress?.Report(new StartupProgress(0.2, 0, "Initializing local data"));
 
+#if DEBUG
             if (demoSeeder is not null && await ShouldRunDemoSeedAsync(demoSeeder, progress))
             {
                 var containerProgress = new Progress<double>(fraction =>
@@ -53,6 +54,7 @@ public sealed class AppStartupOrchestrator : IAppStartupOrchestrator
             {
                 logger.LogDebug("Skipping demo data seeding because version {SeedVersion} is already complete.", DemoDataSeeder.SeedVersion);
             }
+#endif
 
             progress?.Report(new StartupProgress(0.85, 1, "Preparing application"));
         }

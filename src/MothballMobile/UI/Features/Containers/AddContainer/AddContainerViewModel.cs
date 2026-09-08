@@ -176,6 +176,7 @@ public partial class AddContainerViewModel : BaseViewModel
 
             BarcodeValue = barcode.Value;
             BarcodeSymbology = barcode.Symbology;
+            GenerateInternalSku = false;
         }, rethrowOnError: false);
     }
 

@@ -121,6 +121,18 @@
                                              Color="{DynamicResource Primary}" />
                         </Button.ImageSource>
                     </Button>
+                    <Button Text="{x:Static strings:AppResources.SeedDemoData}"
+                            Style="{StaticResource OutlinedButton}"
+                            LineBreakMode="WordWrap"
+                            Command="{Binding SeedExampleDataCommand}"
+                            IsVisible="{Binding CanSeedExampleData}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF1B3;"
+                                             Size="16"
+                                             Color="{DynamicResource Primary}" />
+                        </Button.ImageSource>
+                    </Button>
                 </VerticalStackLayout>
             </Border>
 

@@ -21,7 +21,7 @@ public class ImagePathResolverTests
     {
         var c = new Container();
         var path = _resolver.GetPrimaryContainerPhotoPath(c);
-        Assert.That(path, Is.EqualTo("mothball_logo.png"));
+        Assert.That(path, Is.EqualTo($"/root/{CoreApp.Application.Utilities.Constants.PathToSharedPhotos}/seeded-container.jpg"));
     }
 
     [Test]

@@ -24,6 +24,7 @@ public sealed class AddContainerViewModelTests
         {
             Assert.That(viewModel.BarcodeValue, Is.EqualTo("box-01"));
             Assert.That(viewModel.BarcodeSymbology, Is.EqualTo(BarcodeSymbology.Code128));
+            Assert.That(viewModel.GenerateInternalSku, Is.False);
         });
     }
 

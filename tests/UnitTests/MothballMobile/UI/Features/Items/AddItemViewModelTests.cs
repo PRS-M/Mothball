@@ -94,6 +94,7 @@ public sealed class AddItemViewModelTests
         {
             Assert.That(viewModel.BarcodeValue, Is.EqualTo("widget-01"));
             Assert.That(viewModel.BarcodeSymbology, Is.EqualTo(BarcodeSymbology.Code128));
+            Assert.That(viewModel.GenerateInternalSku, Is.False);
         });
     }
 

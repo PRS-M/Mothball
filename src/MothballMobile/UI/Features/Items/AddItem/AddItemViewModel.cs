@@ -221,6 +221,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
             BarcodeValue = barcode.Value;
             BarcodeSymbology = barcode.Symbology;
+            GenerateInternalSku = false;
 
             await ResolveBarcodeCoreAsync();
         }, rethrowOnError: false);

@@ -13,6 +13,7 @@ public partial class AdvancedSettingsViewModel : ObservableObject
     private readonly INavigationService navigation;
     private readonly IInventoryMaintenanceService maintenance;
     private readonly IPopupService popup;
+    private readonly IInventoryChangeTracker? inventoryChanges;
     private readonly DemoDataSeeder? demoSeeder;
     public AdvancedSettingsViewModel(
         IApplicationSettings applicationSettings,
@@ -20,6 +21,7 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         INavigationService navigation,
         IInventoryMaintenanceService maintenance,
         IPopupService popup,
+        IInventoryChangeTracker? inventoryChanges = null,
         DemoDataSeeder? demoSeeder = null)
     {
         this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
@@ -27,6 +29,7 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         this.navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         this.maintenance = maintenance ?? throw new ArgumentNullException(nameof(maintenance));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
+        this.inventoryChanges = inventoryChanges;
         this.demoSeeder = demoSeeder;
     }
 
@@ -47,6 +50,8 @@ public partial class AdvancedSettingsViewModel : ObservableObject
     private string maintenanceStatus = string.Empty;
 
     public bool IsMaintenanceIdle => !IsMaintenanceInProgress;
+
+    public bool CanSeedExampleData => demoSeeder is not null && IsMaintenanceIdle;
 
     public bool IsBarcodeExtendedMode
     {
@@ -111,6 +116,21 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         await SeedDemoDataAsync();
     }
 
+    [RelayCommand(CanExecute = nameof(CanSeedExampleData))]
+    private async Task SeedExampleDataAsync()
+    {
+        if (!await popup.ConfirmAsync(
+                LocalizationManager.Current.Get("Seed demo data"),
+                LocalizationManager.Current.Get("The inventory store is empty. Create the demonstration containers, items, and tags now?"),
+                LocalizationManager.Current.Get("Seed"),
+                LocalizationManager.Current.Get("Cancel")))
+        {
+            return;
+        }
+
+        await SeedDemoDataAsync();
+    }
+
     private async Task<bool> RunMaintenanceAsync(Func<IProgress<MaintenanceProgress>, Task> operation)
     {
         IsMaintenanceInProgress = true;
@@ -123,6 +143,7 @@ public partial class AdvancedSettingsViewModel : ObservableObject
             var progress = new Progress<MaintenanceProgress>(update =>
             {
                 MaintenanceProgress = update.Progress;
+                MaintenanceStepProgress = update.StepProgress;
                 MaintenanceStatus = LocalizationManager.Current.Get(update.Status);
             });
             await operation(progress);
@@ -165,6 +186,7 @@ public partial class AdvancedSettingsViewModel : ObservableObject
                 MaintenanceStatus = LocalizationManager.Current.Get("Generating demo items");
             });
             await demoSeeder.EnsureItemsAsync(100, withPhotos: true, itemProgress);
+            inventoryChanges?.MarkChanged();
             MaintenanceProgress = 1;
             MaintenanceStepProgress = 1;
             MaintenanceStatus = LocalizationManager.Current.Get("Demo data ready");
@@ -183,8 +205,10 @@ public partial class AdvancedSettingsViewModel : ObservableObject
     partial void OnIsMaintenanceInProgressChanged(bool value)
     {
         OnPropertyChanged(nameof(IsMaintenanceIdle));
+        OnPropertyChanged(nameof(CanSeedExampleData));
         ReplaceAllPhotosCommand.NotifyCanExecuteChanged();
         ResetAllDataCommand.NotifyCanExecuteChanged();
+        SeedExampleDataCommand.NotifyCanExecuteChanged();
     }
 
 }

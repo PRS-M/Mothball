@@ -23,36 +23,39 @@ public sealed class ImagePathResolver : IImagePathResolver
 
     /// <inheritdoc />
     public string GetPrimaryContainerPhotoPath(Container container)
-        => FirstOrFallback(container.Photos, Constants.PathToContainerPhotos);
+        => FirstOrFallback(container.Photos, Constants.PathToContainerPhotos, GetContainerFallbackImagePath());
 
     /// <inheritdoc />
     public IEnumerable<string> GetContainerPhotoPaths(Container container)
-        => PathsOrFallback(container.Photos, Constants.PathToContainerPhotos);
+        => PathsOrFallback(container.Photos, Constants.PathToContainerPhotos, GetContainerFallbackImagePath());
 
     /// <inheritdoc />
     public string GetPrimaryItemPhotoPath(Item item)
-        => FirstOrFallback(item.Photos, Constants.PathToItemPhotos);
+        => FirstOrFallback(item.Photos, Constants.PathToItemPhotos, GetFallbackImagePath());
 
     /// <inheritdoc />
     public IEnumerable<string> GetItemPhotoPaths(Item item)
-        => PathsOrFallback(item.Photos, Constants.PathToItemPhotos);
+        => PathsOrFallback(item.Photos, Constants.PathToItemPhotos, GetFallbackImagePath());
 
     /// <inheritdoc />
     public string GetFallbackImagePath() => "mothball_logo.png"; // central fallback
 
-    private string FirstOrFallback(IEnumerable<ImageItem> photos, string folder)
+    private string GetContainerFallbackImagePath()
+        => BuildPath(Constants.PathToSharedPhotos, "seeded-container.jpg");
+
+    private string FirstOrFallback(IEnumerable<ImageItem> photos, string folder, string fallback)
     {
         var photo = photos.FirstOrDefault();
-        return photo is null ? GetFallbackImagePath() : BuildPath(GetFolder(photo, folder), photo.FileName);
+        return photo is null ? fallback : BuildPath(GetFolder(photo, folder), photo.FileName);
     }
 
-    private IEnumerable<string> PathsOrFallback(IEnumerable<ImageItem> photos, string folder)
+    private IEnumerable<string> PathsOrFallback(IEnumerable<ImageItem> photos, string folder, string fallback)
     {
         if (photos.Any())
             foreach (var p in photos)
                 yield return BuildPath(GetFolder(p, folder), p.FileName);
         else
-            yield return GetFallbackImagePath();
+            yield return fallback;
     }
 
     private static string GetFolder(ImageItem photo, string ownerFolder)

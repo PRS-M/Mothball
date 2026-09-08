@@ -4,10 +4,15 @@ public sealed class JsonInventoryMaintenanceService : IInventoryMaintenanceServi
 {
     private readonly JsonInventoryStore store;
     private readonly IFileHandler? files;
+    private readonly IInventoryChangeTracker? inventoryChanges;
 
-    public JsonInventoryMaintenanceService(JsonInventoryStore store, IFileHandler? files = null)
+    public JsonInventoryMaintenanceService(
+        JsonInventoryStore store,
+        IInventoryChangeTracker? inventoryChanges = null,
+        IFileHandler? files = null)
     {
         this.store = store;
+        this.inventoryChanges = inventoryChanges;
         this.files = files;
     }
 
@@ -16,10 +21,13 @@ public sealed class JsonInventoryMaintenanceService : IInventoryMaintenanceServi
             files ?? throw new InvalidOperationException("A file handler is required for photo maintenance."),
             progress);
 
-    public Task ResetAllDataAsync(IProgress<MaintenanceProgress>? progress = null)
-        => store.ResetAllDataAsync(
+    public async Task ResetAllDataAsync(IProgress<MaintenanceProgress>? progress = null)
+    {
+        await store.ResetAllDataAsync(
             files ?? throw new InvalidOperationException("A file handler is required for data reset."),
             progress);
+        inventoryChanges?.MarkChanged();
+    }
 
     /// <inheritdoc />
     public Task<bool> TryRecoverAsync() => store.TryRecoverAsync();

@@ -28,7 +28,9 @@ public partial class ContainerViewModel : ContainerWithImagesViewModelBase
 
     public string ItemTypesStoredText => LocalizationManager.Current.Format("Item types stored: {0}", Container.ItemTypeCount);
 
-    public string ItemsStoredText => LocalizationManager.Current.Format("Items stored (Total): {0}", ShowQuantityManagement ? Container.TotalItemQuantity : Container.ItemTypeCount);
+    public string ItemsStoredText => ShowQuantityManagement
+        ? LocalizationManager.Current.Format("Items stored (Total): {0}", Container.TotalItemQuantity)
+        : LocalizationManager.Current.Format("Item types stored: {0}", Container.ItemTypeCount);
 
     [RelayCommand]
     private Task NavigateAsync()

@@ -14,11 +14,16 @@ public sealed class SqliteInventoryMaintenanceService : IInventoryMaintenanceSer
     private const string SharedItemPhoto = "seeded-item.jpg";
     private readonly MothballDatabase database;
     private readonly IFileHandler files;
+    private readonly IInventoryChangeTracker inventoryChanges;
 
-    public SqliteInventoryMaintenanceService(MothballDatabase database, IFileHandler files)
+    public SqliteInventoryMaintenanceService(
+        MothballDatabase database,
+        IFileHandler files,
+        IInventoryChangeTracker inventoryChanges)
     {
         this.database = database ?? throw new ArgumentNullException(nameof(database));
         this.files = files ?? throw new ArgumentNullException(nameof(files));
+        this.inventoryChanges = inventoryChanges ?? throw new ArgumentNullException(nameof(inventoryChanges));
     }
 
     public async Task ReplaceAllPhotosWithSharedAssetsAsync(IProgress<MaintenanceProgress>? progress = null)
@@ -51,13 +56,31 @@ public sealed class SqliteInventoryMaintenanceService : IInventoryMaintenanceSer
 
     public async Task ResetAllDataAsync(IProgress<MaintenanceProgress>? progress = null)
     {
-        progress?.Report(new MaintenanceProgress(0.1, "Deleting inventory data"));
+        progress?.Report(new MaintenanceProgress(0, "Deleting inventory data", 0));
         await database.ResetAsync();
-        progress?.Report(new MaintenanceProgress(0.7, "Deleting photo files"));
-        await DeleteAllFilesAsync(Constants.PathToContainerPhotos);
-        await DeleteAllFilesAsync(Constants.PathToItemPhotos);
-        await DeleteAllFilesAsync(Constants.PathToSharedPhotos);
-        progress?.Report(new MaintenanceProgress(1, "Data reset complete"));
+        inventoryChanges.MarkChanged();
+        progress?.Report(new MaintenanceProgress(0.25, "Deleting photo files", 0));
+
+        var folders = new[]
+        {
+            Constants.PathToContainerPhotos,
+            Constants.PathToItemPhotos,
+            Constants.PathToSharedPhotos,
+        };
+        var filesToDelete = folders
+            .SelectMany(folder => files.EnumerateFiles(folder).Select(file => (folder, file)))
+            .ToList();
+
+        for (var index = 0; index < filesToDelete.Count; index++)
+        {
+            var (folder, file) = filesToDelete[index];
+            await files.DeleteFileAsync(file, folder);
+            var stepProgress = (index + 1d) / Math.Max(filesToDelete.Count, 1);
+            progress?.Report(new MaintenanceProgress(0.25 + stepProgress * 0.75, "Deleting photo files", stepProgress));
+        }
+
+        await EnsureSharedAssetAsync("container.png", SharedContainerPhoto);
+        progress?.Report(new MaintenanceProgress(1, "Data reset complete", 1));
     }
 
     public Task<bool> TryRecoverAsync() => Task.FromResult(true);
