@@ -40,6 +40,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     public bool IsReceivingExistingItem { get; private set; }
     public bool IsItemMetadataEditable => !IsReceivingExistingItem;
 
+    public bool GenerateInternalSku { get; set; } = true;
+
     [ObservableProperty]
     private string destinationContainerName = string.Empty;
 
@@ -357,7 +359,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                 containerId,
                 quantity,
                 pendingPhoto.Bytes,
-                barcode);
+                barcode,
+                GenerateInternalSku);
         }
         catch (Exception ex)
         {

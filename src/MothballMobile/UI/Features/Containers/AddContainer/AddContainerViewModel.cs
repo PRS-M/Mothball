@@ -56,6 +56,8 @@ public partial class AddContainerViewModel : BaseViewModel
     [ObservableProperty]
     private BarcodeSymbology barcodeSymbology = BarcodeSymbology.QrCode;
 
+    public bool GenerateInternalSku { get; set; } = true;
+
     [ObservableProperty]
     private string? validationMessage;
 
@@ -173,7 +175,8 @@ public partial class AddContainerViewModel : BaseViewModel
                 trimmedName,
                 string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim(),
                 pendingPhoto.Bytes,
-                barcode);
+                barcode,
+                GenerateInternalSku);
 
             await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;

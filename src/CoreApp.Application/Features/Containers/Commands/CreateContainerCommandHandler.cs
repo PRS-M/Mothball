@@ -26,17 +26,20 @@ public sealed class CreateContainerCommandHandler : ICreateContainerCommandHandl
     }
 
     /// <inheritdoc />
-    public async Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null, Barcode? barcode = null)
+    public async Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null, Barcode? barcode = null, bool generateInternalSku = true)
     {
         var container = new Container(
             containerId: Guid.NewGuid(),
             name: name,
             notes: notes);
-        var assignedBarcode = barcode ?? InternalSkuGenerator.Create(container.ContainerId);
-        await EnsureBarcodeIsAvailableAsync(assignedBarcode);
-        if (registry is not null)
+        var assignedBarcode = barcode ?? (generateInternalSku ? InternalSkuGenerator.Create(container.ContainerId) : null);
+        if (assignedBarcode is not null)
         {
-            await registry.AssignAsync(assignedBarcode, BarcodeOwnerKind.Container, container.ContainerId, container.Name);
+            await EnsureBarcodeIsAvailableAsync(assignedBarcode);
+            if (registry is not null)
+            {
+                await registry.AssignAsync(assignedBarcode, BarcodeOwnerKind.Container, container.ContainerId, container.Name);
+            }
         }
         container.UpdateBarcode(assignedBarcode);
 

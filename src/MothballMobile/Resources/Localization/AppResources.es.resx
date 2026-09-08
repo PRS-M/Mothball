@@ -38,6 +38,8 @@
   <data name="GeneratePdfWithNewCodesDescription" xml:space="preserve"><value>Reserva SKU Code 128 y comparte un PDF listo para imprimir.</value></data>
   <data name="Generate" xml:space="preserve"><value>Generar</value></data>
   <data name="InternalSku" xml:space="preserve"><value>SKU interno</value></data>
+  <data name="GenerateInternalSku" xml:space="preserve"><value>Generar SKU interno</value></data>
+  <data name="GenerateInternalSkuDescription" xml:space="preserve"><value>Genera un SKU Code 128 cuando no se proporciona un código de barras.</value></data>
   <data name="Error" xml:space="preserve"><value>Error</value></data>
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Este código de barras ya está en uso.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Algo salió mal. Inténtalo de nuevo.</value></data>

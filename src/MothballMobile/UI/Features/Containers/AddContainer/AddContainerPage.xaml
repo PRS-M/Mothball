@@ -48,6 +48,15 @@
                                                      UseWrapper="False"
                                                      Text="{Binding BarcodeValue}" />
 
+                        <Grid WidthRequest="{StaticResource WidthM}" ColumnDefinitions="*,Auto">
+                            <Label Text="{x:Static strings:AppResources.GenerateInternalSku}"
+                                   Style="{StaticResource BodyMedium}"
+                                   VerticalOptions="Center" />
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding GenerateInternalSku, Mode=TwoWay}"
+                                    SemanticProperties.Hint="{x:Static strings:AppResources.GenerateInternalSkuDescription}" />
+                        </Grid>
+
                         <Grid WidthRequest="{StaticResource WidthM}"
                               ColumnDefinitions="*,Auto"
                               ColumnSpacing="8">

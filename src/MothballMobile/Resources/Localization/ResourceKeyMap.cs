@@ -57,6 +57,7 @@ internal static class ResourceKeyMap
         "Generate PDF with new codes" => "GeneratePdfWithNewCodes",
         "Generate" => "Generate",
         "Internal SKU" => "InternalSku",
+        "Generate internal SKU" => "GenerateInternalSku",
         "Error" => "Error",
         "This barcode is already in use." => "ThisBarcodeIsAlreadyInUse",
         "Something went wrong. Please try again." => "SomethingWentWrongPleaseTryAgain",
