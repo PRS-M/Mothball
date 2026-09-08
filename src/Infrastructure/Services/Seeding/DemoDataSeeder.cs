@@ -1,4 +1,7 @@
 using CoreApp.Application.Utilities;
+using CoreApp.Application.Contracts;
+using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Domain.ValueObjects;
 using Infrastructure.Services.DatabaseModels;
 using Microsoft.Extensions.Logging;
 
@@ -21,6 +24,7 @@ public class DemoDataSeeder
     private readonly IRepository<DbItemContainerRelation> itemContainerRelations;
     private readonly IFileHandler fileHandler;
     private readonly ILogger<DemoDataSeeder> logger;
+    private readonly IBarcodeRegistryService? barcodeRegistry;
 
     public DemoDataSeeder(
         IRepository<DbContainer> containers,
@@ -29,7 +33,8 @@ public class DemoDataSeeder
         IRepository<DbImage> photos,
         IRepository<DbItemContainerRelation> itemContainerRelations,
         IFileHandler fileHandler,
-        ILogger<DemoDataSeeder> logger)
+        ILogger<DemoDataSeeder> logger,
+        IBarcodeRegistryService? barcodeRegistry = null)
     {
         this.containers = containers;
         this.items = items;
@@ -38,6 +43,7 @@ public class DemoDataSeeder
         this.itemContainerRelations = itemContainerRelations;
         this.fileHandler = fileHandler;
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.barcodeRegistry = barcodeRegistry;
     }
 
     /// <summary>
@@ -62,8 +68,9 @@ public class DemoDataSeeder
             {
                 ContainerId = id,
                 Name = $"Container {existing.Count + i + 1}",
-                Notes = BuildSeedContainerNotes(id)
+                Notes = BuildSeedContainerNotes(id),
             };
+            SetGeneratedBarcode(container);
 
             await containers.InsertAsync(container);
 
@@ -123,6 +130,8 @@ public class DemoDataSeeder
 
         foreach (var container in seededContainers)
         {
+            await EnsureGeneratedBarcodeAsync(container);
+
             await RemoveDuplicateSeedItemsAsync(
                 container,
                 allItems,
@@ -149,6 +158,7 @@ public class DemoDataSeeder
                     ItemId = itemId,
                     Name = itemName,
                 };
+                SetGeneratedBarcode(item);
 
                 await items.InsertAsync(item);
                 allItems.Add(item);
@@ -194,6 +204,61 @@ public class DemoDataSeeder
                     }
                 }
             }
+
+            foreach (var item in allItems.Where(item => IsSeedItemForContainer(item, container)))
+            {
+                await EnsureGeneratedBarcodeAsync(item);
+            }
+        }
+    }
+
+    private void SetGeneratedBarcode(DbContainer container)
+    {
+        var barcode = BarcodeGenerator.Create(container.ContainerId, BarcodeOwnerKind.Container, BarcodeSymbology.QrCode);
+        container.BarcodeValue = barcode.Value;
+        container.BarcodeSymbology = (int)barcode.Symbology;
+    }
+
+    private void SetGeneratedBarcode(DbItem item)
+    {
+        var barcode = BarcodeGenerator.Create(item.ItemId, BarcodeOwnerKind.Item, BarcodeSymbology.QrCode);
+        item.BarcodeValue = barcode.Value;
+        item.BarcodeSymbology = (int)barcode.Symbology;
+    }
+
+    private async Task EnsureGeneratedBarcodeAsync(DbContainer container)
+    {
+        if (string.IsNullOrWhiteSpace(container.BarcodeValue))
+        {
+            SetGeneratedBarcode(container);
+            await containers.UpdateAsync(container);
+        }
+
+        if (barcodeRegistry is not null && !string.IsNullOrWhiteSpace(container.BarcodeValue))
+        {
+            await barcodeRegistry.AssignAsync(
+                new Barcode(container.BarcodeValue, (BarcodeSymbology)(container.BarcodeSymbology ?? (int)BarcodeSymbology.QrCode)),
+                BarcodeOwnerKind.Container,
+                container.ContainerId,
+                container.Name);
+        }
+    }
+
+    private async Task EnsureGeneratedBarcodeAsync(DbItem item)
+    {
+        if (string.IsNullOrWhiteSpace(item.BarcodeValue))
+        {
+            SetGeneratedBarcode(item);
+            await items.UpdateAsync(item);
+        }
+
+        if (barcodeRegistry is not null && !string.IsNullOrWhiteSpace(item.BarcodeValue))
+        {
+            await barcodeRegistry.AssignAsync(
+                new Barcode(item.BarcodeValue, (BarcodeSymbology)(item.BarcodeSymbology ?? (int)BarcodeSymbology.QrCode)),
+                BarcodeOwnerKind.Item,
+                item.ItemId,
+                item.Name);
         }
     }
 
