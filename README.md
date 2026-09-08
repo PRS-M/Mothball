@@ -105,6 +105,8 @@ See [Barcodes](docs/Barcodes.md) for barcode workflows, supported formats, and d
   - Explains export format, restore strategies, conflict policies, integrity checks, and usage examples.
 - [Debouncer](docs/Debouncer.md)
   - Describes the concurrency utility used for trailing-edge debounce behavior in UI workflows.
+- [Concurrency and Threading](docs/ConcurrencyAndThreading.md)
+  - Maps async operations, UI-thread dispatch, locks, cancellation, fire-and-forget work, startup coordination, and known concurrency risks.
 - [Localization](docs/Localization.md)
   - Documents English/Polish resources, language preference lifecycle, platform declarations, and the restart-after-selection behavior.
 - [JSON Operational Store](docs/JsonStore.md)
