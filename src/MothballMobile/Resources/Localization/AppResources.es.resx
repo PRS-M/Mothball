@@ -360,4 +360,11 @@
   <data name="DeletingInventoryData" xml:space="preserve"><value>Eliminando datos del inventario</value></data>
   <data name="DeletingPhotoFiles" xml:space="preserve"><value>Eliminando archivos de fotos</value></data>
   <data name="DataResetComplete" xml:space="preserve"><value>Restablecimiento de datos completado</value></data>
+  <data name="OverallProgress" xml:space="preserve"><value>Progreso general</value></data>
+  <data name="CurrentStep" xml:space="preserve"><value>Paso actual</value></data>
+  <data name="SeedDemoData" xml:space="preserve"><value>Crear datos de demostración</value></data>
+  <data name="SeedDemoDataPrompt" xml:space="preserve"><value>El almacén de inventario está vacío. ¿Crear ahora los contenedores, artículos y etiquetas de demostración?</value></data>
+  <data name="Seed" xml:space="preserve"><value>Crear</value></data>
+  <data name="Skip" xml:space="preserve"><value>Omitir</value></data>
+  <data name="DemoDataReady" xml:space="preserve"><value>Datos de demostración listos</value></data>
 </root>

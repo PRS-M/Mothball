@@ -360,4 +360,11 @@
   <data name="DeletingInventoryData" xml:space="preserve"><value>Inventardaten werden gelöscht</value></data>
   <data name="DeletingPhotoFiles" xml:space="preserve"><value>Fotodateien werden gelöscht</value></data>
   <data name="DataResetComplete" xml:space="preserve"><value>Datenlöschung abgeschlossen</value></data>
+  <data name="OverallProgress" xml:space="preserve"><value>Gesamtfortschritt</value></data>
+  <data name="CurrentStep" xml:space="preserve"><value>Aktueller Schritt</value></data>
+  <data name="SeedDemoData" xml:space="preserve"><value>Demodaten erstellen</value></data>
+  <data name="SeedDemoDataPrompt" xml:space="preserve"><value>Der Inventarspeicher ist leer. Jetzt Demo-Container, -Elemente und -Tags erstellen?</value></data>
+  <data name="Seed" xml:space="preserve"><value>Erstellen</value></data>
+  <data name="Skip" xml:space="preserve"><value>Überspringen</value></data>
+  <data name="DemoDataReady" xml:space="preserve"><value>Demodaten bereit</value></data>
 </root>

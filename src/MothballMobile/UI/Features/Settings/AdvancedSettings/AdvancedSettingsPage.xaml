@@ -163,7 +163,12 @@
                 ZIndex="10">
             <VerticalStackLayout VerticalOptions="Center" Spacing="16">
                 <ActivityIndicator IsRunning="True" />
+                <Label Text="{x:Static strings:AppResources.OverallProgress}"
+                       Style="{StaticResource BodyMedium}" />
                 <ProgressBar Progress="{Binding MaintenanceProgress}" />
+                <Label Text="{x:Static strings:AppResources.CurrentStep}"
+                       Style="{StaticResource BodyMedium}" />
+                <ProgressBar Progress="{Binding MaintenanceStepProgress}" />
                 <Label Text="{Binding MaintenanceStatus}"
                        HorizontalTextAlignment="Center"
                        Style="{StaticResource BodyMedium}" />

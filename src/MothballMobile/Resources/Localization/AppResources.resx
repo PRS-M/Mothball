@@ -359,4 +359,11 @@
   <data name="DeletingInventoryData" xml:space="preserve"><value>Deleting inventory data</value></data>
   <data name="DeletingPhotoFiles" xml:space="preserve"><value>Deleting photo files</value></data>
   <data name="DataResetComplete" xml:space="preserve"><value>Data reset complete</value></data>
+  <data name="OverallProgress" xml:space="preserve"><value>Overall progress</value></data>
+  <data name="CurrentStep" xml:space="preserve"><value>Current step</value></data>
+  <data name="SeedDemoData" xml:space="preserve"><value>Seed demo data</value></data>
+  <data name="SeedDemoDataPrompt" xml:space="preserve"><value>The inventory store is empty. Create the demonstration containers, items, and tags now?</value></data>
+  <data name="Seed" xml:space="preserve"><value>Seed</value></data>
+  <data name="Skip" xml:space="preserve"><value>Skip</value></data>
+  <data name="DemoDataReady" xml:space="preserve"><value>Demo data ready</value></data>
 </root>
