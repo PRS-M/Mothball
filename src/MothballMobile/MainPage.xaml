@@ -8,11 +8,11 @@
 
     <ScrollView>
         <VerticalStackLayout
-            Padding="20,12"
-            Spacing="12">
+            Padding="20,24"
+            Spacing="20">
             <Image
                 Source="mothball_logo.png"
-                HeightRequest="140"
+                HeightRequest="180"
                 Aspect="AspectFit"
                 SemanticProperties.Description="{x:Static strings:AppResources.DotNetBotInAHovercraftNumberNine}" />
 
