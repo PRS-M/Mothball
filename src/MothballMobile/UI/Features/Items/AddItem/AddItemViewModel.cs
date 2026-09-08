@@ -41,19 +41,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     public bool IsItemMetadataEditable => !IsReceivingExistingItem;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(GenerateBarcodeCommand))]
     private bool generateInternalSku = true;
 
     public bool IsManualBarcodeVisible => !GenerateInternalSku;
-
-    public bool CanGenerateBarcode => BarcodeSymbology is BarcodeSymbology.Code128 or BarcodeSymbology.QrCode;
-
-    [RelayCommand(CanExecute = nameof(CanGenerateBarcode))]
-    private void GenerateBarcode()
-    {
-        BarcodeValue = string.Empty;
-        GenerateInternalSku = true;
-    }
 
     partial void OnGenerateInternalSkuChanged(bool value)
         => OnPropertyChanged(nameof(IsManualBarcodeVisible));
@@ -65,8 +55,6 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             GenerateInternalSku = false;
         }
 
-        OnPropertyChanged(nameof(CanGenerateBarcode));
-        GenerateBarcodeCommand.NotifyCanExecuteChanged();
     }
 
     [ObservableProperty]

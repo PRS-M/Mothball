@@ -57,19 +57,9 @@ public partial class AddContainerViewModel : BaseViewModel
     private BarcodeSymbology barcodeSymbology = BarcodeSymbology.QrCode;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(GenerateBarcodeCommand))]
     private bool generateInternalSku = true;
 
     public bool IsManualBarcodeVisible => !GenerateInternalSku;
-
-    public bool CanGenerateBarcode => BarcodeSymbology is BarcodeSymbology.Code128 or BarcodeSymbology.QrCode;
-
-    [RelayCommand(CanExecute = nameof(CanGenerateBarcode))]
-    private void GenerateBarcode()
-    {
-        BarcodeValue = string.Empty;
-        GenerateInternalSku = true;
-    }
 
     partial void OnGenerateInternalSkuChanged(bool value)
         => OnPropertyChanged(nameof(IsManualBarcodeVisible));
@@ -81,8 +71,6 @@ public partial class AddContainerViewModel : BaseViewModel
             GenerateInternalSku = false;
         }
 
-        OnPropertyChanged(nameof(CanGenerateBarcode));
-        GenerateBarcodeCommand.NotifyCanExecuteChanged();
     }
 
     [ObservableProperty]

@@ -42,30 +42,21 @@
                                                Placeholder="{x:Static strings:AppResources.EnterADescriptionOrNotes}"
                                                Text="{Binding Notes}" />
 
-                        <controls:LabeledEntryField Label="{x:Static strings:AppResources.Barcode}"
-                                                     LabelMargin="4,8,4,0"
-                                                     FieldWidthRequest="{StaticResource WidthM}"
-                                                     UseWrapper="False"
-                                                     Text="{Binding BarcodeValue}"
-                                                     IsVisible="{Binding IsManualBarcodeVisible}" />
-
-                        <Grid WidthRequest="{StaticResource WidthM}" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <Grid WidthRequest="{StaticResource WidthM}" ColumnDefinitions="*,Auto" ColumnSpacing="8">
                             <Label Text="{x:Static strings:AppResources.GenerateBarcode}"
                                    Style="{StaticResource BodyMedium}"
                                    VerticalOptions="Center" />
                             <Switch Grid.Column="1"
                                     IsToggled="{Binding GenerateInternalSku, Mode=TwoWay}"
                                     SemanticProperties.Hint="{x:Static strings:AppResources.GenerateBarcodeDescription}" />
-                            <Button Grid.Column="2"
-                                    Text="{x:Static strings:AppResources.Generate}"
-                                    Style="{StaticResource CompactOutlinedButton}"
-                                    Command="{Binding GenerateBarcodeCommand}"
-                                    IsEnabled="{Binding CanGenerateBarcode}">
-                                <Button.ImageSource>
-                                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1D8;" Color="{DynamicResource Primary}" Size="14" />
-                                </Button.ImageSource>
-                            </Button>
                         </Grid>
+
+                        <controls:LabeledEntryField Label="{x:Static strings:AppResources.Barcode}"
+                                                     LabelMargin="4,8,4,0"
+                                                     FieldWidthRequest="{StaticResource WidthM}"
+                                                     UseWrapper="False"
+                                                     Text="{Binding BarcodeValue}"
+                                                     IsVisible="{Binding IsManualBarcodeVisible}" />
 
                         <Grid WidthRequest="{StaticResource WidthM}"
                               ColumnDefinitions="*,Auto"
