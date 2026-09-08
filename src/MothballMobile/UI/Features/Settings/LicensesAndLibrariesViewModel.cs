@@ -2,6 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.ApplicationModel;
 using MothballMobile.Resources.Localization;
+using Plugin.AdMob;
+using System.Reflection;
 
 namespace MothballMobile.UI.Features.Settings;
 
@@ -15,14 +17,19 @@ public sealed partial class LicensesAndLibrariesViewModel : ObservableObject
     {
         Libraries =
         [
-            new("CommunityToolkit.Mvvm", "8.4.0", "MIT", "https://github.com/CommunityToolkit/dotnet", "https://github.com/CommunityToolkit/dotnet/blob/main/License.md"),
-            new("Plugin.AdMob", "10.0.90", "MIT", "https://github.com/marius-bughiu/Plugin.AdMob", "https://github.com/marius-bughiu/Plugin.AdMob/blob/main/LICENSE", "https://github.com/sponsors/marius-bughiu"),
-            new("SkiaSharp", "3.119.2", "MIT", "https://github.com/mono/SkiaSharp", "https://github.com/mono/SkiaSharp/blob/main/LICENSE.md", "https://github.com/mono/SkiaSharp/graphs/contributors", AppResources.Contributors),
-            new("sqlite-net-pcl", "1.9.172", "MIT", "https://github.com/cjgaliana/SQLite.Net-PCL", "https://github.com/cjgaliana/SQLite.Net-PCL/blob/master/LICENSE"),
-            new("SQLitePCLRaw", "2.1.12", "Apache-2.0", "https://github.com/ericsink/SQLitePCL.raw", "https://github.com/ericsink/SQLitePCL.raw/blob/main/LICENSE.txt", "https://github.com/sponsors/ericsink"),
-            new("ZXing.Net.Maui", "0.10.4", "MIT", "https://github.com/Redth/ZXing.Net.Maui", "https://github.com/Redth/ZXing.Net.Maui/blob/master/LICENSE"),
+            new("CommunityToolkit.Mvvm", GetVersion(typeof(ObservableObject).Assembly), "MIT", "https://github.com/CommunityToolkit/dotnet", "https://github.com/CommunityToolkit/dotnet/blob/main/License.md"),
+            new("Plugin.AdMob", GetVersion(typeof(BannerAd).Assembly), "MIT", "https://github.com/marius-bughiu/Plugin.AdMob", "https://github.com/marius-bughiu/Plugin.AdMob/blob/main/LICENSE", "https://github.com/sponsors/marius-bughiu"),
+            new("SkiaSharp", GetVersion(typeof(SkiaSharp.SKBitmap).Assembly), "MIT", "https://github.com/mono/SkiaSharp", "https://github.com/mono/SkiaSharp/blob/main/LICENSE.md", "https://github.com/mono/SkiaSharp/graphs/contributors", AppResources.Contributors),
+            new("sqlite-net-pcl", GetVersion(typeof(SQLite.SQLiteConnection).Assembly), "MIT", "https://github.com/cjgaliana/SQLite.Net-PCL", "https://github.com/cjgaliana/SQLite.Net-PCL/blob/master/LICENSE"),
+            new("SQLitePCLRaw", GetVersion(typeof(SQLitePCL.raw).Assembly), "Apache-2.0", "https://github.com/ericsink/SQLitePCL.raw", "https://github.com/ericsink/SQLitePCL.raw/blob/main/LICENSE.txt", "https://github.com/sponsors/ericsink"),
+            new("ZXing.Net.Maui", GetVersion(typeof(ZXing.Net.Maui.BarcodeScanning).Assembly), "MIT", "https://github.com/Redth/ZXing.Net.Maui", "https://github.com/Redth/ZXing.Net.Maui/blob/master/LICENSE"),
         ];
     }
+
+    private static string GetVersion(Assembly assembly)
+        => assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0]
+            ?? assembly.GetName().Version?.ToString()
+            ?? "Unknown";
 
     /// <summary>Gets the direct libraries used by the application.</summary>
     public IReadOnlyList<LibraryLicenseEntry> Libraries { get; }
