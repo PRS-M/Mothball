@@ -82,6 +82,19 @@ public class ActivityIndicator
     public double HeightRequest { get; set; }
 }
 
+public class ProgressBar
+{
+    public double Progress { get; set; }
+
+    public double WidthRequest { get; set; }
+
+    public double HeightRequest { get; set; }
+
+    public Color? ProgressColor { get; set; }
+
+    public Color? BackgroundColor { get; set; }
+}
+
 public class Thickness
 {
     public Thickness(double value)
@@ -104,7 +117,8 @@ public class VerticalStackLayout
 
 public enum LayoutOptions
 {
-    Center
+    Center,
+    Start
 }
 
 public enum TextAlignment

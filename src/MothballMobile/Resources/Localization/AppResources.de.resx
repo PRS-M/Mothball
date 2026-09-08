@@ -335,4 +335,14 @@
   <data name="NoTaggedResults" xml:space="preserve"><value>Keine passenden Gegenstände oder Container</value></data>
   <data name="ClearTag" xml:space="preserve"><value>Ausgewählten Tag löschen</value></data>
   <data name="TagUsageFormat" xml:space="preserve"><value>{0} Gegenstände · {1} Container</value></data>
+  <data name="PreparingStartup" xml:space="preserve"><value>Start wird vorbereitet</value></data>
+  <data name="PreparingSecureStorage" xml:space="preserve"><value>Sicherer Speicher wird vorbereitet</value></data>
+  <data name="InitializingLocalData" xml:space="preserve"><value>Lokale Daten werden initialisiert</value></data>
+  <data name="CheckingDemoData" xml:space="preserve"><value>Demodaten werden überprüft</value></data>
+  <data name="GeneratingDemoContainers" xml:space="preserve"><value>Demo-Container werden erstellt</value></data>
+  <data name="GeneratingDemoItems" xml:space="preserve"><value>Demo-Elemente werden erstellt</value></data>
+  <data name="PreparingApplication" xml:space="preserve"><value>Anwendung wird vorbereitet</value></data>
+  <data name="LoadingApplicationInterface" xml:space="preserve"><value>Anwendungsoberfläche wird geladen</value></data>
+  <data name="StartupComplete" xml:space="preserve"><value>Start abgeschlossen</value></data>
+  <data name="PreparingAdvertising" xml:space="preserve"><value>Werbung wird vorbereitet</value></data>
 </root>

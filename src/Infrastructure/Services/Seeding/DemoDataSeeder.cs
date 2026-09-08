@@ -62,13 +62,20 @@ public class DemoDataSeeder
     /// </summary>
     /// <param name="minContainers">The minimum number of demo containers to ensure.</param>
     /// <param name="withPhotos">Whether each newly created container receives a demo photo.</param>
-    public async Task EnsureContainersAsync(int minContainers = 100, bool withPhotos = true)
+    public async Task EnsureContainersAsync(
+        int minContainers = 100,
+        bool withPhotos = true,
+        IProgress<double>? progress = null)
     {
         await containers.InitializeAsync();
         await photos.InitializeAsync();
 
         var existing = await containers.GetAllAsync();
-        if (existing.Count >= minContainers) return;
+        if (existing.Count >= minContainers)
+        {
+            progress?.Report(1);
+            return;
+        }
 
         int toCreate = minContainers - existing.Count;
 
@@ -97,6 +104,8 @@ public class DemoDataSeeder
                 await photos.InsertAsync(img);
                 await fileHandler.CopyFileFromRawToAppDataAsync("container.png", img.FileName, Constants.PathToContainerPhotos);
             }
+
+            progress?.Report((i + 1d) / toCreate);
         }
     }
 
@@ -146,7 +155,10 @@ public class DemoDataSeeder
     /// </summary>
     /// <param name="minItemsPerContainer">The minimum number of demo items for each seeded container.</param>
     /// <param name="withPhotos">Whether each newly created item receives a demo photo.</param>
-    public async Task EnsureItemsAsync(int minItemsPerContainer = 100, bool withPhotos = true)
+    public async Task EnsureItemsAsync(
+        int minItemsPerContainer = 100,
+        bool withPhotos = true,
+        IProgress<double>? progress = null)
     {
         // Ensure tables exist
         await containers.InitializeAsync();
@@ -171,8 +183,11 @@ public class DemoDataSeeder
 
         if (seededContainers.Count == 0)
         {
+            progress?.Report(1);
             return;
         }
+
+        progress?.Report(0);
 
         var demoTags = await EnsureDemoTagsAsync();
         var orderedSeededContainers = seededContainers
@@ -185,8 +200,9 @@ public class DemoDataSeeder
         var allRelations = await itemContainerRelations.GetAllAsync();
         var allPhotos = await photos.GetAllAsync();
 
-        foreach (var container in orderedSeededContainers)
+        for (var containerIndex = 0; containerIndex < orderedSeededContainers.Count; containerIndex++)
         {
+            var container = orderedSeededContainers[containerIndex];
             await EnsureGeneratedBarcodeAsync(container);
 
             await RemoveDuplicateSeedItemsAsync(
@@ -288,6 +304,8 @@ public class DemoDataSeeder
                         item.ItemId);
                 }
             }
+
+            progress?.Report((containerIndex + 1d) / orderedSeededContainers.Count);
         }
     }
 

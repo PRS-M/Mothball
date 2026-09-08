@@ -133,7 +133,7 @@ The following stages have no timeout or caller cancellation:
 - `AppStartupOrchestrator.StartAsync` persistence initialization and recovery.
 - Debug demo seeding, including 100 containers, 100 items per container, photos, barcodes, tags, and assignments.
 
-The Debug seed is intentionally large and performs many sequential operations. On a fresh device, it can make the splash screen appear frozen even when the process is progressing. Instrumentation already logs signing-key and persistence elapsed time in `AppStartupCoordinator`; the seeder itself does not currently report progress or per-phase timing. After successful completion, the orchestrator stores `DemoDataSeeder.SeedVersion` in preferences and checks seed-marker/container/item counts before skipping the expensive path on subsequent startups.
+The Debug seed is intentionally large and performs many sequential operations. On a fresh device, it can make the splash screen appear frozen even when the process is progressing. The startup page now exposes both overall startup progress and current-step progress; the seeder reports container and item generation progress within the persistence phase. Instrumentation also logs signing-key and persistence elapsed time in `AppStartupCoordinator`. After successful completion, the orchestrator stores `DemoDataSeeder.SeedVersion` in preferences and checks seed-marker/container/item counts before skipping the expensive path on subsequent startups.
 
 There is no startup single-flight gate. The normal window lifecycle invokes initialization once, and the retry page invokes it after a failure, but defensive protection against duplicate calls is not present.
 

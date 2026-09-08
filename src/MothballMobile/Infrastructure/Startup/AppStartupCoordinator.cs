@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using MothballMobile.Infrastructure.Scanning;
 #if IOS || ANDROID
 using Plugin.AdMob.Services;
@@ -21,6 +22,9 @@ public sealed class AppStartupCoordinator
     private readonly ILogger<AppStartupCoordinator> logger;
     private readonly ILogger<AppShell> appShellLogger;
     private readonly BarcodeLookupCoordinator barcodeLookupCoordinator;
+    private ProgressBar? overallProgressBar;
+    private ProgressBar? stepProgressBar;
+    private Label? startupStatusLabel;
 
     public AppStartupCoordinator(
         IAppStartupOrchestrator startupOrchestrator,
@@ -44,7 +48,30 @@ public sealed class AppStartupCoordinator
     /// Creates the temporary page shown while startup is in progress.
     /// </summary>
     public Page CreateStartupPage()
-        => new ContentPage
+    {
+        overallProgressBar = new ProgressBar
+        {
+            Progress = 0,
+            WidthRequest = 280,
+            HeightRequest = 8,
+            ProgressColor = GetActiveColor("Primary", "#496B9F"),
+            BackgroundColor = GetActiveColor("OutlineVariant", "#D0CCD8"),
+        };
+        stepProgressBar = new ProgressBar
+        {
+            Progress = 0,
+            WidthRequest = 280,
+            HeightRequest = 8,
+            ProgressColor = GetActiveColor("Primary", "#496B9F"),
+            BackgroundColor = GetActiveColor("OutlineVariant", "#D0CCD8"),
+        };
+        startupStatusLabel = new Label
+        {
+            Text = LocalizationManager.Current.Get("Preparing startup"),
+            HorizontalTextAlignment = TextAlignment.Center,
+        };
+
+        return new ContentPage
         {
             BackgroundColor = GetActiveColor("Background", "#FAF8FF"),
             Content = new VerticalStackLayout
@@ -56,14 +83,13 @@ public sealed class AppStartupCoordinator
                 Children =
                 {
                     new ActivityIndicator { IsRunning = true, WidthRequest = 44, HeightRequest = 44 },
-                    new Label
-                    {
-                        Text = LocalizationManager.Current.Get("Starting Mothball..."),
-                        HorizontalTextAlignment = TextAlignment.Center
-                    }
+                    overallProgressBar,
+                    stepProgressBar,
+                    startupStatusLabel,
                 }
             }
         };
+    }
 
     /// <summary>
     /// Runs startup and replaces the window page with the application shell or a retry page.
@@ -77,20 +103,25 @@ public sealed class AppStartupCoordinator
         {
             var startupStarted = Stopwatch.GetTimestamp();
             logger.LogInformation("Application startup started.");
+            IProgress<StartupProgress> progress = new Progress<StartupProgress>(ReportStartupProgress);
+            progress.Report(new StartupProgress(0.02, 0, "Preparing startup"));
 
             var secretStarted = Stopwatch.GetTimestamp();
+            progress.Report(new StartupProgress(0.05, 0, "Preparing secure storage"));
             await backupSignatureSecretProvider.GetOrCreateAsync();
+            progress.Report(new StartupProgress(0.18, 1, "Preparing secure storage"));
             logger.LogInformation(
                 "Application startup signing key completed in {ElapsedMilliseconds:F0} ms.",
                 Stopwatch.GetElapsedTime(secretStarted).TotalMilliseconds);
 
             var persistenceStarted = Stopwatch.GetTimestamp();
-            await startupOrchestrator.StartAsync();
+            await startupOrchestrator.StartAsync(progress);
             logger.LogInformation(
                 "Application startup persistence completed in {ElapsedMilliseconds:F0} ms.",
                 Stopwatch.GetElapsedTime(persistenceStarted).TotalMilliseconds);
 
             var shell = new AppShell(popup, appShellLogger, barcodeLookupCoordinator);
+            progress.Report(new StartupProgress(0.9, 0, "Loading application interface"));
             var shellLoaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             shell.Loaded += OnShellLoaded;
             try
@@ -110,7 +141,12 @@ public sealed class AppStartupCoordinator
                 shell.Loaded -= OnShellLoaded;
             }
 
+            progress.Report(new StartupProgress(0.95, 1, "Loading application interface"));
+
+            progress.Report(new StartupProgress(0.96, 0, "Preparing advertising"));
             await ShowStartupAdAsync();
+            progress.Report(new StartupProgress(0.99, 1, "Preparing advertising"));
+            progress.Report(new StartupProgress(1, 1, "Startup complete"));
             logger.LogInformation(
                 "Application startup completed in {ElapsedMilliseconds:F0} ms.",
                 Stopwatch.GetElapsedTime(startupStarted).TotalMilliseconds);
@@ -125,6 +161,30 @@ public sealed class AppStartupCoordinator
             logger.LogError(ex, "Application startup failed.");
             window.Page = CreateStartupErrorPage(window, ex.Message);
         }
+    }
+
+    private void ReportStartupProgress(StartupProgress progress)
+    {
+        var overallFraction = Math.Clamp(progress.OverallFraction, 0, 1);
+        var stepFraction = Math.Clamp(progress.StepFraction, 0, 1);
+        var status = LocalizationManager.Current.Get(progress.Status);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (overallProgressBar is not null)
+            {
+                overallProgressBar.Progress = overallFraction;
+            }
+
+            if (stepProgressBar is not null)
+            {
+                stepProgressBar.Progress = stepFraction;
+            }
+
+            if (startupStatusLabel is not null)
+            {
+                startupStatusLabel.Text = status;
+            }
+        });
     }
 
     private async Task ShowStartupAdAsync()
@@ -213,5 +273,7 @@ public sealed class AppStartupCoordinator
     }
 
     private static Color GetActiveColor(string resourceKey, string fallback)
-        => Application.Current?.Resources[resourceKey] as Color ?? Color.FromArgb(fallback);
+        => Application.Current?.Resources.TryGetValue(resourceKey, out var value) == true && value is Color color
+            ? color
+            : Color.FromArgb(fallback);
 }
