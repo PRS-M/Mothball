@@ -12,9 +12,12 @@ namespace MothballMobile.UI.Features.Tags.TagsList;
 /// </summary>
 public partial class TagsListViewModel : BaseViewModel, IInitializable
 {
+    private const int PageSize = 20;
     private readonly ITagRepository tagRepository;
     private readonly INavigationService navigation;
-    private IReadOnlyList<TagUsageSummary> allTags = [];
+    private string? activeQuery;
+    private int currentPage;
+    private bool hasMorePages = true;
 
     public TagsListViewModel(ITagRepository tagRepository, INavigationService navigation)
     {
@@ -42,14 +45,40 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
     private Task RefreshAsync()
         => RunCommandAsync(RefreshCoreAsync, showRefreshing: true);
 
+    [RelayCommand]
+    private Task LoadNextPageAsync()
+        => IsBusy || !hasMorePages
+            ? Task.CompletedTask
+            : RunCommandAsync(LoadNextPageCoreAsync);
+
+    private async Task LoadNextPageCoreAsync()
+    {
+        var page = await tagRepository.GetUsageSummariesPageAsync(activeQuery, currentPage, PageSize);
+        foreach (var tag in page)
+        {
+            Tags.Add(new TagViewModel(tag, navigation));
+        }
+
+        hasMorePages = page.Count == PageSize;
+        if (page.Count > 0)
+        {
+            currentPage++;
+        }
+    }
+
     private async Task RefreshCoreAsync()
     {
-        allTags = await tagRepository.GetUsageSummariesAsync();
-        ApplyFilter();
+        currentPage = 0;
+        hasMorePages = true;
+        Tags.Clear();
+        await LoadNextPageCoreAsync();
     }
 
     partial void OnQueryChanged(string value)
-        => ApplyFilter();
+    {
+        activeQuery = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        _ = RefreshAsync();
+    }
 
     [RelayCommand]
     private void ShowAddTagForm()
@@ -85,18 +114,5 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
             IsAddTagFormVisible = false;
             await RefreshCoreAsync();
         }, rethrowOnError: false);
-    }
-
-    private void ApplyFilter()
-    {
-        var search = Query.Trim().TrimStart('#');
-        var selected = allTags.Where(tag => string.IsNullOrWhiteSpace(search)
-            || tag.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
-
-        Tags.Clear();
-        foreach (var tag in selected)
-        {
-            Tags.Add(new TagViewModel(tag, navigation));
-        }
     }
 }

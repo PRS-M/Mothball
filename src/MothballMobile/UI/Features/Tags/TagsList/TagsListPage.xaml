@@ -59,7 +59,9 @@
                      IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding RefreshCommand}">
             <CollectionView ItemsSource="{Binding Tags}"
-                            SelectionMode="None">
+                            SelectionMode="None"
+                            RemainingItemsThreshold="3"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
                 <CollectionView.EmptyView>
                     <controls:EmptyStateView Title="{x:Static strings:AppResources.NoTagsFound}" />
                 </CollectionView.EmptyView>
