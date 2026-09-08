@@ -69,6 +69,7 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
         this.inventoryChanges = inventoryChanges;
         this.barcodeLookup = barcodeLookup ?? throw new ArgumentNullException(nameof(barcodeLookup));
         this.barcodeShare = barcodeShare;
+        this.applicationSettings.AppModeChanged += OnAppModeChanged;
     }
 
     protected override string SearchOperationName => "Search containers";
@@ -113,6 +114,20 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
                 OnPropertyChanged(nameof(HasSelection));
             }
         };
+    }
+
+    private void OnAppModeChanged(object? sender, EventArgs e)
+        => MainThread.InvokeOnMainThreadAsync(SearchAsync)
+            .FireAndForget(backgroundTasks, SearchOperationName);
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            applicationSettings.AppModeChanged -= OnAppModeChanged;
+        }
+
+        base.Dispose(disposing);
     }
 
     [RelayCommand]

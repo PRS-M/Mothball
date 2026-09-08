@@ -87,6 +87,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         this.inventoryChanges = inventoryChanges;
         this.barcodeLookup = barcodeLookup ?? throw new ArgumentNullException(nameof(barcodeLookup));
         this.barcodeShare = barcodeShare;
+        this.applicationSettings.AppModeChanged += OnAppModeChanged;
     }
 
     protected override string SearchOperationName => "Search items";
@@ -131,6 +132,20 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
                 OnPropertyChanged(nameof(HasSelection));
             }
         };
+    }
+
+    private void OnAppModeChanged(object? sender, EventArgs e)
+        => MainThread.InvokeOnMainThreadAsync(SearchAsync)
+            .FireAndForget(backgroundTasks, SearchOperationName);
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            applicationSettings.AppModeChanged -= OnAppModeChanged;
+        }
+
+        base.Dispose(disposing);
     }
 
     [RelayCommand]
