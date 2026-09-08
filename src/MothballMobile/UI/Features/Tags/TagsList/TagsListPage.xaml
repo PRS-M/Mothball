@@ -21,9 +21,10 @@
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
     </ContentPage.ToolbarItems>
-    <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
+    <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
         <controls:PageHeader Subtitle="{x:Static strings:AppResources.BrowseYourTags}"
-                             SubtitleFontSize="14" />
+                             SubtitleFontSize="14"
+                             HeaderMargin="0" />
 
         <Grid Grid.Row="1"
               ColumnDefinitions="*,Auto,Auto"
