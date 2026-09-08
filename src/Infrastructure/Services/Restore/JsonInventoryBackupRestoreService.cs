@@ -3,6 +3,8 @@ using Infrastructure.Services.JsonStore.Models;
 using CoreApp.Application.Contracts.Backup;
 using CoreApp.Application.Contracts.Tags;
 using CoreApp.Domain.ValueObjects;
+using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Contracts;
 
 namespace Infrastructure.Services.Restore;
 
@@ -56,6 +58,7 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
                 options.ConflictPolicy,
                 options.OverwriteExistingQuantities);
             ApplyPlan(state, plan, cancellationToken);
+            SyncBarcodeRegistry(state);
             ApplyTags(state, backup.Data, cancellationToken);
             result = plan.Result;
 
@@ -64,6 +67,45 @@ public sealed class JsonInventoryBackupRestoreService : IInventoryBackupRestoreS
 
         inventoryChanges?.MarkChanged();
         return result;
+    }
+
+    private static void SyncBarcodeRegistry(JsonInventoryStore.StoreState state)
+    {
+        state.Barcodes.RemoveAll(barcode => barcode.Status == (int)BarcodeRegistryStatus.Assigned);
+
+        foreach (var container in state.Containers.Where(container => !string.IsNullOrWhiteSpace(container.BarcodeValue)))
+        {
+            var value = container.BarcodeValue.Trim();
+            state.Barcodes.RemoveAll(barcode => barcode.NormalizedValue == value);
+            state.Barcodes.Add(new JsonBarcodeRegistryRow
+            {
+                BarcodeId = Guid.NewGuid(),
+                Value = value,
+                NormalizedValue = value,
+                Symbology = container.BarcodeSymbology ?? (int)BarcodeSymbology.Code128,
+                Status = (int)BarcodeRegistryStatus.Assigned,
+                OwnerKind = (int)BarcodeOwnerKind.Container,
+                OwnerId = container.ContainerId,
+                OwnerName = container.Name,
+            });
+        }
+
+        foreach (var item in state.Items.Where(item => !string.IsNullOrWhiteSpace(item.BarcodeValue)))
+        {
+            var value = item.BarcodeValue.Trim();
+            state.Barcodes.RemoveAll(barcode => barcode.NormalizedValue == value);
+            state.Barcodes.Add(new JsonBarcodeRegistryRow
+            {
+                BarcodeId = Guid.NewGuid(),
+                Value = value,
+                NormalizedValue = value,
+                Symbology = item.BarcodeSymbology ?? (int)BarcodeSymbology.Code128,
+                Status = (int)BarcodeRegistryStatus.Assigned,
+                OwnerKind = (int)BarcodeOwnerKind.Item,
+                OwnerId = item.ItemId,
+                OwnerName = item.Name,
+            });
+        }
     }
 
     private static void ApplyTags(
