@@ -96,7 +96,7 @@ Use this project for data storage and persistence-specific behavior.
 - `Services/JsonStore`: JSON operational store, repository implementations, recovery, and maintenance support.
 - `Services/Restore`: backend-aware backup restore implementations.
 - `Services/Startup`: backend startup initialization.
-- `Services/Seeding`: Debug-only demo data generation.
+- `Services/Seeding`: Example-data generation; automatic startup seeding is Debug-only, while the explicit Release action currently targets SQLite.
 
 The SQLite and JSON backends are both registered through `AddPersistence`. When changing shared persistence behavior, consider whether both backends need an equivalent implementation.
 
@@ -228,6 +228,8 @@ Use the matching method when you add a service:
 - `AddViewModels` for page view models.
 
 SQLite is the default backend. Set `MOTHBALL_PERSISTENCE_BACKEND=Json` to exercise the JSON operational store. `JsonOperationalStore` is accepted as an alternative value.
+
+The shared seeded container image is prepared during both SQLite and JSON startup initialization so containers without an assigned photo have a stable default image. Full data reset preserves that application asset after deleting inventory-owned photo files.
 
 ## Testing
 

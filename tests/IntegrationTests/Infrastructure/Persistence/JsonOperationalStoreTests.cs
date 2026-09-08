@@ -2,6 +2,7 @@ using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Application.Specifications;
+using CoreApp.Application.Utilities;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.JsonStore.Repositories;
@@ -29,10 +30,11 @@ public class JsonOperationalStoreTests
         public Task<string> SaveFileAsync(string fileName, string folderPath, byte[] data, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
 
-        public bool FileExists(string fileName, string folderPath) => false;
+        public bool FileExists(string fileName, string folderPath)
+            => textFiles.ContainsKey((folderPath, fileName));
 
         public Task CopyFileFromRawToAppDataAsync(string rawFileName, string destFileName, string destFolderPath)
-            => throw new NotSupportedException();
+            => SaveTextFileAsync(destFileName, destFolderPath, $"raw:{rawFileName}");
 
         public Task<byte[]> ReadFileAsync(string fileName, string folderPath)
             => throw new NotSupportedException();
@@ -170,6 +172,39 @@ public class JsonOperationalStoreTests
 
         var afterRollback = await containers.QueryAsync(new ContainerListSpecification(ContainerQueryFilter.All));
         Assert.That(afterRollback.Select(c => c.ContainerId), Is.EquivalentTo(new[] { c1.ContainerId }));
+    }
+
+    [Test]
+    public async Task ResetAllData_ReportsFileProgressAndAdvancesInventoryRevision()
+    {
+        var files = new InMemoryFileHandler();
+        await files.WriteRawAsync("photo.jpg", Constants.PathToItemPhotos, "photo");
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
+        var tracker = new InventoryChangeTracker();
+        var maintenance = new JsonInventoryMaintenanceService(store, tracker, files);
+        var reports = new List<MaintenanceProgress>();
+
+        await maintenance.ResetAllDataAsync(new Progress<MaintenanceProgress>(reports.Add));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(tracker.Revision, Is.EqualTo(1));
+            Assert.That(reports.Any(report => report.Status == "Deleting photo files" && report.StepProgress > 0), Is.True);
+            Assert.That(reports[^1].Progress, Is.EqualTo(1));
+            Assert.That(files.FileExists("seeded-container.jpg", Constants.PathToSharedPhotos), Is.True);
+        });
+    }
+
+    [Test]
+    public async Task StartupInitializer_EnsuresSharedContainerPhoto()
+    {
+        var files = new InMemoryFileHandler();
+        var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
+        var initializer = new JsonStoreStartupInitializer(store, files);
+
+        await initializer.InitializeAsync();
+
+        Assert.That(files.FileExists("seeded-container.jpg", Constants.PathToSharedPhotos), Is.True);
     }
 
     [Test]
