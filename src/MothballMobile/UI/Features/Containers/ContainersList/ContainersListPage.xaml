@@ -8,7 +8,7 @@
                 x:Name="ContainersPage"
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ContainerListViewModel"
-                Title="{x:Static strings:AppResources.Containers}"
+                Title="{Binding Title}"
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
@@ -47,6 +47,7 @@
               ColumnDefinitions="*,Auto"
               ColumnSpacing="12">
             <controls:PageHeader Grid.Column="0"
+                                 Title="{Binding Title}"
                                  Subtitle="{x:Static strings:AppResources.BrowseYourStorage}"
                                  TitleFontSize="22"
                                  SubtitleFontSize="14"

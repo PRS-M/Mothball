@@ -51,6 +51,12 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ToList();
     }
 
+    public async Task<int> CountAsync()
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        return state.Containers.Count;
+    }
+
     private async Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
     {
         RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);

@@ -72,6 +72,8 @@ public class ItemRepository : IItemRepository
     private Task<List<Item>> GetAllWithPhotosAsync()
         => GetItemsInternalAsync();
 
+    public Task<int> CountAsync() => items.CountAsync(_ => true);
+
     private Task<List<Item>> GetAllWithPhotosAsync(int pageNumber, int pageSize)
         => GetItemsInternalAsync(pageNumber, pageSize);
 

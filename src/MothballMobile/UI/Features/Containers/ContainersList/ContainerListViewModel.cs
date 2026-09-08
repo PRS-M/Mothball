@@ -78,6 +78,10 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
 
     public ObservableCollection<ContainerViewModel> Containers => Items;
 
+    public int TotalCount { get; private set; }
+
+    public string Title => LocalizationManager.Current.Format("Containers ({0})", TotalCount);
+
     public int SelectedCount => Containers.Count(container => container.IsSelected);
     public bool HasSelection => SelectedCount > 0;
 
@@ -91,6 +95,13 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
 
     protected override ContainerViewModel MapToViewModel(Container source)
         => new ContainerViewModel(source, imagePaths, nav, applicationSettings.IsAdvancedMode);
+
+    protected override async Task OnInitializedAsync()
+    {
+        TotalCount = await containerListQueries.CountAsync();
+        OnPropertyChanged(nameof(TotalCount));
+        OnPropertyChanged(nameof(Title));
+    }
 
     protected override void OnViewModelAdded(ContainerViewModel vm)
     {

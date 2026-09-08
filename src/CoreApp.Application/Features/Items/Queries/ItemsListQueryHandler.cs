@@ -26,4 +26,6 @@ public sealed class ItemsListQueryHandler : IItemsListQueryHandler
                 PageNumber: pageNumber,
                 PageSize: pageSize,
                 TagCriteria: tagFilter));
+
+    public Task<int> CountAsync() => inventoryQueries.CountItemsAsync();
 }

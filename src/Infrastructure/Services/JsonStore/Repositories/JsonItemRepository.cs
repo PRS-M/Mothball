@@ -61,6 +61,12 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
+    public async Task<int> CountAsync()
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        return state.Items.Count;
+    }
+
     public Task<List<Item>> QueryWithPhotosAsync(ItemListSpecification specification)
     {
         var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);

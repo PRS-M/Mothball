@@ -24,6 +24,9 @@ public interface IContainerRepository
     /// <param name="specification">The value used by the operation.</param>
     Task<List<Container>> QueryAsync(ContainerListSpecification specification);
 
+    /// <summary>Gets the total number of containers.</summary>
+    Task<int> CountAsync();
+
     /// <summary>
     /// Gets the total item quantity stored in a container.
     /// </summary>

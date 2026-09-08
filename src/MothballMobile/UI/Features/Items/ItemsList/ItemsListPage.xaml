@@ -8,7 +8,7 @@
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:Name="ItemsPage"
                 x:DataType="vm:ItemsListViewModel"
-                Title="{x:Static strings:AppResources.Items}"
+                Title="{Binding Title}"
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
@@ -49,6 +49,7 @@
               ColumnDefinitions="*,Auto"
               ColumnSpacing="12">
             <controls:PageHeader Grid.Column="0"
+                                 Title="{Binding Title}"
                                  Subtitle="{x:Static strings:AppResources.AllItemsAcrossContainers}"
                                  TitleFontSize="22"
                                  SubtitleFontSize="14"

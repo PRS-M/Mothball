@@ -22,6 +22,8 @@ internal static class ResourceKeyMap
         "Items stored: {0}" => "ItemsStoredFormat",
         "Quantity here: {0}" => "QuantityHereFormat",
         "Items stored (Total): {0}" => "ItemsStoredTotalFormat",
+        "Containers ({0})" => "ContainersWithCount",
+        "Items ({0})" => "ItemsWithCount",
         "Item types stored: {0}" => "ItemTypesStoredFormat",
         "Test Ad" => "TestAd",
         "German (AI-Translated)" => "GermanAITranslated",

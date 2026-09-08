@@ -367,4 +367,6 @@
   <data name="Seed" xml:space="preserve"><value>Crear</value></data>
   <data name="Skip" xml:space="preserve"><value>Omitir</value></data>
   <data name="DemoDataReady" xml:space="preserve"><value>Datos de demostración listos</value></data>
+  <data name="ContainersWithCount" xml:space="preserve"><value>Contenedores ({0})</value></data>
+  <data name="ItemsWithCount" xml:space="preserve"><value>Artículos ({0})</value></data>
 </root>

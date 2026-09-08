@@ -54,6 +54,10 @@ public class InventoryQueryRepository : IInventoryQueryRepository
     public Task<Container?> GetContainerAsync(string containerId)
         => containerRepo.GetAsync(containerId);
 
+    public Task<int> CountContainersAsync() => containerRepo.CountAsync();
+
+    public Task<int> CountItemsAsync() => itemRepo.CountAsync();
+
     /// <inheritdoc />
     public Task<int> GetItemCountInContainerAsync(string containerId)
         => containerRepo.GetItemCountInContainerAsync(containerId);
