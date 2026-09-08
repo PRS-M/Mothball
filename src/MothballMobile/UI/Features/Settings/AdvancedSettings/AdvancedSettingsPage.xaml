@@ -83,18 +83,44 @@
 
             <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="{x:Static strings:AppResources.DataMaintenance}"
-                           Style="{StaticResource HeadlineSmall}"
-                           TextColor="{DynamicResource OnSurface}" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Text="&#xF0AD;"
+                               FontFamily="FontAwesomeSolid"
+                               FontSize="20"
+                               TextColor="{DynamicResource Primary}"
+                               VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="{x:Static strings:AppResources.DataMaintenance}"
+                               Style="{StaticResource HeadlineSmall}"
+                               LineBreakMode="WordWrap"
+                               TextColor="{DynamicResource OnSurface}" />
+                    </Grid>
                     <Label Text="{x:Static strings:AppResources.DataMaintenanceDescription}"
                            Style="{StaticResource BodyMedium}"
+                           LineBreakMode="WordWrap"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                     <Button Text="{x:Static strings:AppResources.ReplaceAllPhotosWithGenericImages}"
                             Style="{StaticResource OutlinedButton}"
-                            Command="{Binding ReplaceAllPhotosCommand}" />
+                            LineBreakMode="WordWrap"
+                            Command="{Binding ReplaceAllPhotosCommand}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF03E;"
+                                             Size="16"
+                                             Color="{DynamicResource Primary}" />
+                        </Button.ImageSource>
+                    </Button>
                     <Button Text="{x:Static strings:AppResources.DeleteAllAppData}"
                             Style="{StaticResource OutlinedButton}"
-                            Command="{Binding ResetAllDataCommand}" />
+                            LineBreakMode="WordWrap"
+                            Command="{Binding ResetAllDataCommand}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF2ED;"
+                                             Size="16"
+                                             Color="{DynamicResource Primary}" />
+                        </Button.ImageSource>
+                    </Button>
                 </VerticalStackLayout>
             </Border>
 
