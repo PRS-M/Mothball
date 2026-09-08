@@ -640,7 +640,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         var normalizedBarcodeValue = BarcodeValueDraft?.Trim();
         var barcode = GenerateBarcode
-            ? GeneratedBarcodeGenerator.Create(currentContainer.ContainerId, BarcodeOwnerKind.Container, BarcodeSymbologyDraft)
+            ? BarcodeGenerator.Create(currentContainer.ContainerId, BarcodeOwnerKind.Container, BarcodeSymbologyDraft)
             : string.IsNullOrWhiteSpace(normalizedBarcodeValue)
                 ? null
                 : new Barcode(normalizedBarcodeValue, BarcodeSymbologyDraft);

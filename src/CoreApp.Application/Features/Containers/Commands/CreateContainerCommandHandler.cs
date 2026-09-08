@@ -33,7 +33,7 @@ public sealed class CreateContainerCommandHandler : ICreateContainerCommandHandl
             name: name,
             notes: notes);
         var assignedBarcode = barcode ?? (generateInternalSku
-            ? GeneratedBarcodeGenerator.Create(container.ContainerId, BarcodeOwnerKind.Container, generatedBarcodeSymbology)
+            ? BarcodeGenerator.Create(container.ContainerId, BarcodeOwnerKind.Container, generatedBarcodeSymbology)
             : null);
         if (assignedBarcode is not null)
         {

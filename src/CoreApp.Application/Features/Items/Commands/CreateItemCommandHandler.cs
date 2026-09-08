@@ -31,7 +31,7 @@ public sealed class CreateItemCommandHandler : ICreateItemCommandHandler
     {
         var item = new Item(name, description);
         var assignedBarcode = barcode ?? (generateInternalSku
-            ? GeneratedBarcodeGenerator.Create(item.ItemId, BarcodeOwnerKind.Item, generatedBarcodeSymbology)
+            ? BarcodeGenerator.Create(item.ItemId, BarcodeOwnerKind.Item, generatedBarcodeSymbology)
             : null);
         if (assignedBarcode is not null)
         {

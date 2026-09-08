@@ -583,7 +583,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
         var normalizedBarcodeValue = BarcodeValueDraft?.Trim();
         var barcode = GenerateBarcode
-            ? GeneratedBarcodeGenerator.Create(currentItem.ItemId, BarcodeOwnerKind.Item, BarcodeSymbologyDraft)
+            ? BarcodeGenerator.Create(currentItem.ItemId, BarcodeOwnerKind.Item, BarcodeSymbologyDraft)
             : string.IsNullOrWhiteSpace(normalizedBarcodeValue)
                 ? null
                 : new Barcode(normalizedBarcodeValue, BarcodeSymbologyDraft);

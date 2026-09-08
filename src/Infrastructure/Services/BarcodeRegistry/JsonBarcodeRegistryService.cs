@@ -40,7 +40,7 @@ public sealed class JsonBarcodeRegistryService : IBarcodeRegistryService
         {
             for (var index = 0; index < count; index++)
             {
-                var barcode = InternalSkuGenerator.Create(Guid.NewGuid());
+                var barcode = BarcodeGenerator.CreateInternalSku(Guid.NewGuid());
                 var row = new JsonBarcodeRegistryRow
                 {
                     BarcodeId = Guid.NewGuid(),
