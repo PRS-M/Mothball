@@ -27,6 +27,12 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
     [ObservableProperty]
     private string query = string.Empty;
 
+    [ObservableProperty]
+    private string newTagName = string.Empty;
+
+    [ObservableProperty]
+    private bool isAddTagFormVisible;
+
     public Task InitializeAsync()
         // Usage counts can change while a tag-details page is on the navigation stack.
         // Refresh whenever this page appears so returning from an assignment shows current counts.
@@ -34,14 +40,52 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
 
     [RelayCommand]
     private Task RefreshAsync()
-        => RunCommandAsync(async () =>
-        {
-            allTags = await tagRepository.GetUsageSummariesAsync();
-            ApplyFilter();
-        }, showRefreshing: true);
+        => RunCommandAsync(RefreshCoreAsync, showRefreshing: true);
+
+    private async Task RefreshCoreAsync()
+    {
+        allTags = await tagRepository.GetUsageSummariesAsync();
+        ApplyFilter();
+    }
 
     partial void OnQueryChanged(string value)
         => ApplyFilter();
+
+    [RelayCommand]
+    private void ShowAddTagForm()
+    {
+        NewTagName = string.Empty;
+        IsAddTagFormVisible = true;
+    }
+
+    [RelayCommand]
+    private void CancelAddTag()
+    {
+        NewTagName = string.Empty;
+        IsAddTagFormVisible = false;
+    }
+
+    [RelayCommand]
+    private async Task AddTagAsync()
+    {
+        var name = NewTagName.Trim().TrimStart('#');
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            await RunCommandAsync(
+                () => Task.FromException(new InvalidOperationException("Tag name is required.")),
+                errorMessageFactory: _ => LocalizationManager.Current.Get("Tag name is required."),
+                rethrowOnError: false);
+            return;
+        }
+
+        await RunCommandAsync(async () =>
+        {
+            await tagRepository.GetOrCreateAsync(new CoreApp.Domain.ValueObjects.TagName(name));
+            NewTagName = string.Empty;
+            IsAddTagFormVisible = false;
+            await RefreshCoreAsync();
+        }, rethrowOnError: false);
+    }
 
     private void ApplyFilter()
     {

@@ -369,4 +369,5 @@
   <data name="DemoDataReady" xml:space="preserve"><value>Datos de demostración listos</value></data>
   <data name="ContainersWithCount" xml:space="preserve"><value>Contenedores ({0})</value></data>
   <data name="ItemsWithCount" xml:space="preserve"><value>Artículos ({0})</value></data>
+  <data name="TagNameIsRequired" xml:space="preserve"><value>El nombre de la etiqueta es obligatorio.</value></data>
 </root>

@@ -214,6 +214,7 @@ internal static class ResourceKeyMap
         "Seed" => "Seed",
         "Skip" => "Skip",
         "Demo data ready" => "DemoDataReady",
+        "Tag name is required." => "TagNameIsRequired",
         "Power-user and technical options" => "PowerUserAndTechnicalOptions",
         "Open the background photo operations page" => "OpenTheBackgroundPhotoOperationsPage",
         "Open the containers view" => "OpenTheContainersView",
