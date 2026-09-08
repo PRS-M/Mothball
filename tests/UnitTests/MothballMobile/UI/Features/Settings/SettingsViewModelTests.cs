@@ -51,7 +51,9 @@ public sealed class SettingsViewModelTests
         var viewModel = new AdvancedSettingsViewModel(
             settings.Object,
             CreateSigningKeyViewModel(),
-            Mock.Of<INavigationService>());
+            Mock.Of<INavigationService>(),
+            Mock.Of<IInventoryMaintenanceService>(),
+            Mock.Of<IPopupService>());
 
         viewModel.IsBarcodeExtendedMode = true;
 

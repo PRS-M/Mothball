@@ -167,6 +167,7 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddSqlitePersistence(this IServiceCollection services)
     {
         services.AddSingleton<MothballDatabase>();
+        services.AddSingleton<IInventoryMaintenanceService, SqliteInventoryMaintenanceService>();
         services.AddSingleton<IAppStartupInitializer, SqliteStartupInitializer>();
         services.AddSingleton<ITransactionRunner, SqliteTransactionRunner>();
         services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));

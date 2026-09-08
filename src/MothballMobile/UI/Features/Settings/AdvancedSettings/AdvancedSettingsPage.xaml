@@ -9,6 +9,7 @@
                 Title="{x:Static strings:AppResources.AdvancedSettings}"
                 Background="{DynamicResource Surface}">
 
+    <Grid>
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
             <controls:PageHeader xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
@@ -81,6 +82,23 @@
             </Border>
 
             <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{x:Static strings:AppResources.DataMaintenance}"
+                           Style="{StaticResource HeadlineSmall}"
+                           TextColor="{DynamicResource OnSurface}" />
+                    <Label Text="{x:Static strings:AppResources.DataMaintenanceDescription}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+                    <Button Text="{x:Static strings:AppResources.ReplaceAllPhotosWithGenericImages}"
+                            Style="{StaticResource OutlinedButton}"
+                            Command="{Binding ReplaceAllPhotosCommand}" />
+                    <Button Text="{x:Static strings:AppResources.DeleteAllAppData}"
+                            Style="{StaticResource OutlinedButton}"
+                            Command="{Binding ResetAllDataCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource SectionCard}">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding NavigateToBackgroundOperationsCommand}" />
                 </Border.GestureRecognizers>
@@ -110,4 +128,20 @@
 
         </VerticalStackLayout>
     </ScrollView>
+        <Border Grid.Row="0"
+                BackgroundColor="{DynamicResource Surface}"
+                IsVisible="{Binding IsMaintenanceInProgress}"
+                Padding="24"
+                VerticalOptions="Fill"
+                HorizontalOptions="Fill"
+                ZIndex="10">
+            <VerticalStackLayout VerticalOptions="Center" Spacing="16">
+                <ActivityIndicator IsRunning="True" />
+                <ProgressBar Progress="{Binding MaintenanceProgress}" />
+                <Label Text="{Binding MaintenanceStatus}"
+                       HorizontalTextAlignment="Center"
+                       Style="{StaticResource BodyMedium}" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
 </views:BasePage>

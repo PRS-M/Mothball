@@ -344,4 +344,19 @@
   <data name="LoadingApplicationInterface" xml:space="preserve"><value>Loading application interface</value></data>
   <data name="StartupComplete" xml:space="preserve"><value>Startup complete</value></data>
   <data name="PreparingAdvertising" xml:space="preserve"><value>Preparing advertising</value></data>
+  <data name="DataMaintenance" xml:space="preserve"><value>Data maintenance</value></data>
+  <data name="DataMaintenanceDescription" xml:space="preserve"><value>Replace photos with shared generic images or delete the complete inventory store.</value></data>
+  <data name="ReplaceAllPhotosWithGenericImages" xml:space="preserve"><value>Replace all photos with generic images</value></data>
+  <data name="DeleteAllAppData" xml:space="preserve"><value>Delete all app data</value></data>
+  <data name="ReplaceAllPhotos" xml:space="preserve"><value>Replace all photos</value></data>
+  <data name="ReplaceAllPhotosPrompt" xml:space="preserve"><value>This will replace every inventory photo with generic shared images. Continue?</value></data>
+  <data name="Replace" xml:space="preserve"><value>Replace</value></data>
+  <data name="DeleteAllData" xml:space="preserve"><value>Delete all data</value></data>
+  <data name="DeleteAllAppDataPrompt" xml:space="preserve"><value>This will permanently delete all inventory data, assignments, barcodes, and photos. Continue?</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Preparing</value></data>
+  <data name="ReplacingPhotos" xml:space="preserve"><value>Replacing photos</value></data>
+  <data name="PhotosReplaced" xml:space="preserve"><value>Photos replaced</value></data>
+  <data name="DeletingInventoryData" xml:space="preserve"><value>Deleting inventory data</value></data>
+  <data name="DeletingPhotoFiles" xml:space="preserve"><value>Deleting photo files</value></data>
+  <data name="DataResetComplete" xml:space="preserve"><value>Data reset complete</value></data>
 </root>

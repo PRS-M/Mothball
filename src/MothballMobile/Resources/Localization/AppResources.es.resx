@@ -345,4 +345,19 @@
   <data name="LoadingApplicationInterface" xml:space="preserve"><value>Cargando la interfaz de la aplicación</value></data>
   <data name="StartupComplete" xml:space="preserve"><value>Inicio completado</value></data>
   <data name="PreparingAdvertising" xml:space="preserve"><value>Preparando la publicidad</value></data>
+  <data name="DataMaintenance" xml:space="preserve"><value>Mantenimiento de datos</value></data>
+  <data name="DataMaintenanceDescription" xml:space="preserve"><value>Reemplaza las fotos por imágenes genéricas compartidas o elimina todo el almacén de inventario.</value></data>
+  <data name="ReplaceAllPhotosWithGenericImages" xml:space="preserve"><value>Reemplazar todas las fotos por imágenes genéricas</value></data>
+  <data name="DeleteAllAppData" xml:space="preserve"><value>Eliminar todos los datos de la aplicación</value></data>
+  <data name="ReplaceAllPhotos" xml:space="preserve"><value>Reemplazar todas las fotos</value></data>
+  <data name="ReplaceAllPhotosPrompt" xml:space="preserve"><value>Esto reemplazará todas las fotos del inventario por imágenes genéricas compartidas. ¿Continuar?</value></data>
+  <data name="Replace" xml:space="preserve"><value>Reemplazar</value></data>
+  <data name="DeleteAllData" xml:space="preserve"><value>Eliminar todos los datos</value></data>
+  <data name="DeleteAllAppDataPrompt" xml:space="preserve"><value>Esto eliminará permanentemente todos los datos del inventario, asignaciones, códigos de barras y fotos. ¿Continuar?</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Preparando</value></data>
+  <data name="ReplacingPhotos" xml:space="preserve"><value>Reemplazando fotos</value></data>
+  <data name="PhotosReplaced" xml:space="preserve"><value>Fotos reemplazadas</value></data>
+  <data name="DeletingInventoryData" xml:space="preserve"><value>Eliminando datos del inventario</value></data>
+  <data name="DeletingPhotoFiles" xml:space="preserve"><value>Eliminando archivos de fotos</value></data>
+  <data name="DataResetComplete" xml:space="preserve"><value>Restablecimiento de datos completado</value></data>
 </root>

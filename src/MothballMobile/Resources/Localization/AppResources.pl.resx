@@ -344,4 +344,19 @@
   <data name="LoadingApplicationInterface" xml:space="preserve"><value>Ładowanie interfejsu aplikacji</value></data>
   <data name="StartupComplete" xml:space="preserve"><value>Uruchomienie zakończone</value></data>
   <data name="PreparingAdvertising" xml:space="preserve"><value>Przygotowywanie reklam</value></data>
+  <data name="DataMaintenance" xml:space="preserve"><value>Konserwacja danych</value></data>
+  <data name="DataMaintenanceDescription" xml:space="preserve"><value>Zastąp wszystkie zdjęcia wspólnymi obrazami domyślnymi lub usuń cały magazyn inwentarza.</value></data>
+  <data name="ReplaceAllPhotosWithGenericImages" xml:space="preserve"><value>Zastąp wszystkie zdjęcia obrazami domyślnymi</value></data>
+  <data name="DeleteAllAppData" xml:space="preserve"><value>Usuń wszystkie dane aplikacji</value></data>
+  <data name="ReplaceAllPhotos" xml:space="preserve"><value>Zastąp wszystkie zdjęcia</value></data>
+  <data name="ReplaceAllPhotosPrompt" xml:space="preserve"><value>Wszystkie zdjęcia inwentarza zostaną zastąpione wspólnymi obrazami domyślnymi. Kontynuować?</value></data>
+  <data name="Replace" xml:space="preserve"><value>Zastąp</value></data>
+  <data name="DeleteAllData" xml:space="preserve"><value>Usuń wszystkie dane</value></data>
+  <data name="DeleteAllAppDataPrompt" xml:space="preserve"><value>Wszystkie dane inwentarza, przypisania, kody kreskowe i zdjęcia zostaną trwale usunięte. Kontynuować?</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Przygotowywanie</value></data>
+  <data name="ReplacingPhotos" xml:space="preserve"><value>Zastępowanie zdjęć</value></data>
+  <data name="PhotosReplaced" xml:space="preserve"><value>Zdjęcia zastąpione</value></data>
+  <data name="DeletingInventoryData" xml:space="preserve"><value>Usuwanie danych inwentarza</value></data>
+  <data name="DeletingPhotoFiles" xml:space="preserve"><value>Usuwanie plików zdjęć</value></data>
+  <data name="DataResetComplete" xml:space="preserve"><value>Resetowanie danych zakończone</value></data>
 </root>

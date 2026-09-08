@@ -51,6 +51,33 @@ public class MothballDatabase : IAsyncDisposable
         await Connection.RunInTransactionAsync(transactionBody);
     }
 
+    /// <summary>
+    /// Drops and recreates every operational table while keeping the open connection usable.
+    /// </summary>
+    public async Task ResetAsync()
+    {
+        await InitializeAsync();
+        await Connection.DropTableAsync<DbBarcodeRegistry>();
+        await Connection.DropTableAsync<DbContainerTag>();
+        await Connection.DropTableAsync<DbItemTag>();
+        await Connection.DropTableAsync<DbTag>();
+        await Connection.DropTableAsync<DbItemContainerRelation>();
+        await Connection.DropTableAsync<DbImage>();
+        await Connection.DropTableAsync<DbItemInventory>();
+        await Connection.DropTableAsync<DbItem>();
+        await Connection.DropTableAsync<DbContainer>();
+
+        await CreateTableIfNotExistsAsync<DbContainer>(Connection);
+        await CreateTableIfNotExistsAsync<DbItem>(Connection);
+        await CreateTableIfNotExistsAsync<DbItemInventory>(Connection);
+        await CreateTableIfNotExistsAsync<DbImage>(Connection);
+        await CreateTableIfNotExistsAsync<DbItemContainerRelation>(Connection);
+        await CreateTableIfNotExistsAsync<DbTag>(Connection);
+        await CreateTableIfNotExistsAsync<DbItemTag>(Connection);
+        await CreateTableIfNotExistsAsync<DbContainerTag>(Connection);
+        await CreateTableIfNotExistsAsync<DbBarcodeRegistry>(Connection);
+    }
+
     private async Task<SQLiteAsyncConnection> InitializeCoreAsync()
     {
         var databaseConnection = new SQLiteAsyncConnection(databasePath, SQLiteConstants.OpenFlags);

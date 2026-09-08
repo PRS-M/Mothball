@@ -345,4 +345,19 @@
   <data name="LoadingApplicationInterface" xml:space="preserve"><value>Anwendungsoberfläche wird geladen</value></data>
   <data name="StartupComplete" xml:space="preserve"><value>Start abgeschlossen</value></data>
   <data name="PreparingAdvertising" xml:space="preserve"><value>Werbung wird vorbereitet</value></data>
+  <data name="DataMaintenance" xml:space="preserve"><value>Datenwartung</value></data>
+  <data name="DataMaintenanceDescription" xml:space="preserve"><value>Fotos durch gemeinsame Standardbilder ersetzen oder den gesamten Inventarspeicher löschen.</value></data>
+  <data name="ReplaceAllPhotosWithGenericImages" xml:space="preserve"><value>Alle Fotos durch Standardbilder ersetzen</value></data>
+  <data name="DeleteAllAppData" xml:space="preserve"><value>Alle App-Daten löschen</value></data>
+  <data name="ReplaceAllPhotos" xml:space="preserve"><value>Alle Fotos ersetzen</value></data>
+  <data name="ReplaceAllPhotosPrompt" xml:space="preserve"><value>Dadurch werden alle Inventarfotos durch gemeinsame Standardbilder ersetzt. Fortfahren?</value></data>
+  <data name="Replace" xml:space="preserve"><value>Ersetzen</value></data>
+  <data name="DeleteAllData" xml:space="preserve"><value>Alle Daten löschen</value></data>
+  <data name="DeleteAllAppDataPrompt" xml:space="preserve"><value>Dadurch werden alle Inventardaten, Zuordnungen, Barcodes und Fotos dauerhaft gelöscht. Fortfahren?</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Vorbereitung</value></data>
+  <data name="ReplacingPhotos" xml:space="preserve"><value>Fotos werden ersetzt</value></data>
+  <data name="PhotosReplaced" xml:space="preserve"><value>Fotos ersetzt</value></data>
+  <data name="DeletingInventoryData" xml:space="preserve"><value>Inventardaten werden gelöscht</value></data>
+  <data name="DeletingPhotoFiles" xml:space="preserve"><value>Fotodateien werden gelöscht</value></data>
+  <data name="DataResetComplete" xml:space="preserve"><value>Datenlöschung abgeschlossen</value></data>
 </root>
