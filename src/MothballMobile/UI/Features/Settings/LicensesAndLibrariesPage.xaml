@@ -43,6 +43,10 @@
                                     <Button Text="{x:Static strings:AppResources.License}"
                                             Style="{StaticResource OutlinedButton}"
                                             Command="{Binding OpenLicenseCommand}" />
+                                    <Button Style="{StaticResource OutlinedButton}"
+                                            Command="{Binding OpenSupportCommand}"
+                                            IsVisible="{Binding HasSupport}"
+                                            Text="{Binding SupportLabel}" />
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Border>

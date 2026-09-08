@@ -50,6 +50,8 @@ internal static class ResourceKeyMap
         "Open-source libraries used by Mothball" => "OpenSourceLibrariesUsedByMothball",
         "GitHub" => "GitHub",
         "License" => "License",
+        "Sponsor" => "Sponsor",
+        "Contributors" => "Contributors",
         "Advanced mode shows quantity totals, assignments, and quantity editing. Simple mode hides quantity management." => "AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement",
         "App mode" => "AppMode",
         "Are you sure you want to delete this item? This cannot be undone." => "AreYouSureYouWantToDeleteThisItemThisCannotBeUndone",

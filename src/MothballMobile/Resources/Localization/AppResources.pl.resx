@@ -26,6 +26,8 @@
   <data name="OpenSourceLibrariesUsedByMothball" xml:space="preserve"><value>Biblioteki open source używane przez Mothball</value></data>
   <data name="GitHub" xml:space="preserve"><value>GitHub</value></data>
   <data name="License" xml:space="preserve"><value>Licencja</value></data>
+  <data name="Sponsor" xml:space="preserve"><value>Wesprzyj</value></data>
+  <data name="Contributors" xml:space="preserve"><value>Współtwórcy</value></data>
   <data name="AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement" xml:space="preserve"><value>Tryb zaawansowany pokazuje sumy ilości, przypisania i edycję ilości. Tryb prosty ukrywa zarządzanie ilością.</value></data>
   <data name="AppMode" xml:space="preserve"><value>Tryb aplikacji</value></data>
   <data name="AreYouSureYouWantToDeleteThisItemThisCannotBeUndone" xml:space="preserve"><value>Czy na pewno chcesz usunąć ten przedmiot? Tej operacji nie można cofnąć.</value></data>
