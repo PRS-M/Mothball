@@ -14,15 +14,17 @@ public sealed partial class JsonInventoryStore
 {
     public async Task ReplaceAllPhotosWithSharedAssetsAsync(
         IFileHandler files,
-        IProgress<MaintenanceProgress>? progress = null)
+        IProgress<MaintenanceProgress>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(files);
         await UpdateAsync(state =>
         {
             var containerIds = state.Containers.Select(container => container.ContainerId).ToHashSet();
             var itemIds = state.Items.Select(item => item.ItemId).ToHashSet();
-            for (var index = 0; index < state.Images.Count; index++)
-            {
+        for (var index = 0; index < state.Images.Count; index++)
+        {
+                cancellationToken.ThrowIfCancellationRequested();
                 var image = state.Images[index];
                 image.StoredFileName = containerIds.Contains(image.OwnerUniqueId) ? "seeded-container.jpg" :
                     itemIds.Contains(image.OwnerUniqueId) ? "seeded-item.jpg" : image.StoredFileName;
@@ -43,7 +45,8 @@ public sealed partial class JsonInventoryStore
 
     public async Task ResetAllDataAsync(
         IFileHandler files,
-        IProgress<MaintenanceProgress>? progress = null)
+        IProgress<MaintenanceProgress>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(files);
         progress?.Report(new MaintenanceProgress(0, "Deleting inventory data", 0));
@@ -73,8 +76,9 @@ public sealed partial class JsonInventoryStore
 
         for (var index = 0; index < filesToDelete.Count; index++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var (folder, file) = filesToDelete[index];
-            await files.DeleteFileAsync(file, folder);
+            await files.DeleteFileAsync(file, folder, cancellationToken);
             var stepProgress = (index + 1d) / Math.Max(filesToDelete.Count, 1);
             progress?.Report(new MaintenanceProgress(0.25 + stepProgress * 0.75, "Deleting photo files", stepProgress));
         }

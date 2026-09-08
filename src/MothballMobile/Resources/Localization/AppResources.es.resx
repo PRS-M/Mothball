@@ -378,4 +378,5 @@
   <data name="ContainersWithCount" xml:space="preserve"><value>Contenedores ({0})</value></data>
   <data name="ItemsWithCount" xml:space="preserve"><value>Artículos ({0})</value></data>
   <data name="TagNameIsRequired" xml:space="preserve"><value>El nombre de la etiqueta es obligatorio.</value></data>
+  <data name="OperationCanceled" xml:space="preserve"><value>Operación cancelada</value></data>
 </root>

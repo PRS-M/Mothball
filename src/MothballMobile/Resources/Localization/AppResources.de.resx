@@ -378,4 +378,5 @@
   <data name="ContainersWithCount" xml:space="preserve"><value>Container ({0})</value></data>
   <data name="ItemsWithCount" xml:space="preserve"><value>Elemente ({0})</value></data>
   <data name="TagNameIsRequired" xml:space="preserve"><value>Ein Tagname ist erforderlich.</value></data>
+  <data name="OperationCanceled" xml:space="preserve"><value>Vorgang abgebrochen</value></data>
 </root>

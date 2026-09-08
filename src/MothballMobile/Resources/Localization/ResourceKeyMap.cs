@@ -212,6 +212,7 @@ internal static class ResourceKeyMap
         "Preparing" => "Preparing",
         "Replacing photos" => "ReplacingPhotos",
         "Photos replaced" => "PhotosReplaced",
+        "Operation canceled" => "OperationCanceled",
         "Deleting inventory data" => "DeletingInventoryData",
         "Deleting photo files" => "DeletingPhotoFiles",
         "Data reset complete" => "DataResetComplete",

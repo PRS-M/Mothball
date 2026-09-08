@@ -69,8 +69,10 @@ public class DemoDataSeeder
     public async Task EnsureContainersAsync(
         int minContainers = 100,
         bool withPhotos = true,
-        IProgress<double>? progress = null)
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         await containers.InitializeAsync();
         await photos.InitializeAsync();
 
@@ -93,6 +95,7 @@ public class DemoDataSeeder
 
         for (int i = 0; i < toCreate; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var id = Guid.NewGuid();
             var container = new DbContainer
             {
@@ -178,8 +181,10 @@ public class DemoDataSeeder
     public async Task EnsureItemsAsync(
         int minItemsPerContainer = 100,
         bool withPhotos = true,
-        IProgress<double>? progress = null)
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         // Ensure tables exist
         await containers.InitializeAsync();
         await items.InitializeAsync();
@@ -191,7 +196,7 @@ public class DemoDataSeeder
         var containersList = await containers.GetAllAsync();
         if (containersList.Count == 0)
         {
-            await EnsureContainersAsync(minContainers: 100, withPhotos: withPhotos);
+            await EnsureContainersAsync(minContainers: 100, withPhotos: withPhotos, cancellationToken: cancellationToken);
             containersList = await containers.GetAllAsync();
         }
 
@@ -230,6 +235,7 @@ public class DemoDataSeeder
 
         for (var containerIndex = 0; containerIndex < orderedSeededContainers.Count; containerIndex++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var container = orderedSeededContainers[containerIndex];
             await EnsureGeneratedBarcodeAsync(container);
 
@@ -247,6 +253,7 @@ public class DemoDataSeeder
 
             for (int ordinal = 1; ordinal <= minItemsPerContainer; ordinal++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var itemName = BuildSeedItemName(container, ordinal);
                 if (existingSeededItemNames.Contains(itemName))
                 {

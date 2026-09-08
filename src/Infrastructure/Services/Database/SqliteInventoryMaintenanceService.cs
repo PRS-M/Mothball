@@ -26,7 +26,7 @@ public sealed class SqliteInventoryMaintenanceService : IInventoryMaintenanceSer
         this.inventoryChanges = inventoryChanges ?? throw new ArgumentNullException(nameof(inventoryChanges));
     }
 
-    public async Task ReplaceAllPhotosWithSharedAssetsAsync(IProgress<MaintenanceProgress>? progress = null)
+    public async Task ReplaceAllPhotosWithSharedAssetsAsync(IProgress<MaintenanceProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         await database.InitializeAsync();
         var containers = await database.Connection.Table<DbContainer>().ToListAsync();
@@ -40,6 +40,7 @@ public sealed class SqliteInventoryMaintenanceService : IInventoryMaintenanceSer
 
         for (var index = 0; index < images.Count; index++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var image = images[index];
             image.StoredFileName = containerIds.Contains(image.OwnerUniqueId) ? SharedContainerPhoto :
                 itemIds.Contains(image.OwnerUniqueId) ? SharedItemPhoto : image.StoredFileName;
@@ -54,7 +55,7 @@ public sealed class SqliteInventoryMaintenanceService : IInventoryMaintenanceSer
         progress?.Report(new MaintenanceProgress(1, "Photos replaced"));
     }
 
-    public async Task ResetAllDataAsync(IProgress<MaintenanceProgress>? progress = null)
+    public async Task ResetAllDataAsync(IProgress<MaintenanceProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         progress?.Report(new MaintenanceProgress(0, "Deleting inventory data", 0));
         await database.ResetAsync();
@@ -73,8 +74,9 @@ public sealed class SqliteInventoryMaintenanceService : IInventoryMaintenanceSer
 
         for (var index = 0; index < filesToDelete.Count; index++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var (folder, file) = filesToDelete[index];
-            await files.DeleteFileAsync(file, folder);
+            await files.DeleteFileAsync(file, folder, cancellationToken);
             var stepProgress = (index + 1d) / Math.Max(filesToDelete.Count, 1);
             progress?.Report(new MaintenanceProgress(0.25 + stepProgress * 0.75, "Deleting photo files", stepProgress));
         }

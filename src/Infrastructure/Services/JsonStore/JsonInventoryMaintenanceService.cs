@@ -16,16 +16,18 @@ public sealed class JsonInventoryMaintenanceService : IInventoryMaintenanceServi
         this.files = files;
     }
 
-    public Task ReplaceAllPhotosWithSharedAssetsAsync(IProgress<MaintenanceProgress>? progress = null)
+    public Task ReplaceAllPhotosWithSharedAssetsAsync(IProgress<MaintenanceProgress>? progress = null, CancellationToken cancellationToken = default)
         => store.ReplaceAllPhotosWithSharedAssetsAsync(
             files ?? throw new InvalidOperationException("A file handler is required for photo maintenance."),
-            progress);
+            progress,
+            cancellationToken);
 
-    public async Task ResetAllDataAsync(IProgress<MaintenanceProgress>? progress = null)
+    public async Task ResetAllDataAsync(IProgress<MaintenanceProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         await store.ResetAllDataAsync(
             files ?? throw new InvalidOperationException("A file handler is required for data reset."),
-            progress);
+            progress,
+            cancellationToken);
         inventoryChanges?.MarkChanged();
     }
 
