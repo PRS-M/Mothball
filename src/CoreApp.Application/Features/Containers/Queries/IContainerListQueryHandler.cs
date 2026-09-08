@@ -8,6 +8,8 @@ namespace CoreApp.Application.Features.Containers.Queries;
 /// </summary>
 public interface IContainerListQueryHandler
 {
+    /// <summary>Gets the total number of containers, independent of list filters.</summary>
+    Task<int> CountAsync();
     /// <param name="emptyOnly">The value used by the operation.</param>
     /// <param name="searchTerm">The value used by the operation.</param>
     /// <param name="pageNumber">The value used by the operation.</param>

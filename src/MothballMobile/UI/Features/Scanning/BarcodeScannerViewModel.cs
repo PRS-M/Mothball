@@ -21,9 +21,10 @@ public sealed partial class BarcodeScannerViewModel : BaseViewModel
     /// Determines whether a decoded barcode type is available in the current mode.
     /// </summary>
     /// <param name="symbology">The decoded barcode type.</param>
-    /// <returns><see langword="true"/> for QR codes and for every type in extended mode; otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> for EAN-8, EAN-13, and QR codes, and for every type in extended mode; otherwise <see langword="false"/>.</returns>
     public bool IsSymbologyAllowed(BarcodeSymbology symbology)
-        => applicationSettings.IsBarcodeExtendedMode || symbology == BarcodeSymbology.QrCode;
+        => applicationSettings.IsBarcodeExtendedMode
+            || symbology is BarcodeSymbology.Ean8 or BarcodeSymbology.Ean13 or BarcodeSymbology.QrCode;
 
     /// <summary>
     /// Completes the active scan while exposing processing state to the scanner page.

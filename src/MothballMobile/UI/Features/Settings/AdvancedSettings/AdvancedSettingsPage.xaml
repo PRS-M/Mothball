@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Settings"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
+                x:Class="MothballMobile.UI.Features.Settings.AdvancedSettingsPage"
+                x:DataType="vm:AdvancedSettingsViewModel"
+                Title="{x:Static strings:AppResources.AdvancedSettings}"
+                Background="{DynamicResource Surface}">
+
+    <Grid>
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+            <controls:PageHeader xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                                 Title="{x:Static strings:AppResources.AdvancedSettings}"
+                                 Subtitle="{x:Static strings:AppResources.PowerUserAndTechnicalOptions}"
+                                 TitleFontSize="22"
+                                 SubtitleFontSize="12"
+                                 Spacing="2"
+                                 HeaderMargin="0,0,0,6" />
+
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <Label Text="{x:Static strings:AppResources.BarcodesExtendedMode}"
+                               Style="{StaticResource HeadlineSmall}"
+                               VerticalOptions="Center"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsBarcodeExtendedMode, Mode=TwoWay}"
+                                SemanticProperties.Hint="{x:Static strings:AppResources.EnableAdditionalBarcodeTypes}" />
+                    </Grid>
+
+                    <Label Text="{x:Static strings:AppResources.BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <Label Text="{x:Static strings:AppResources.BackupSigningKey}"
+                               Style="{StaticResource HeadlineSmall}"
+                               VerticalOptions="Center"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding SigningKey.IsBackupSigningKeyEnabled, Mode=TwoWay}"
+                                SemanticProperties.Hint="{x:Static strings:AppResources.EnableOrDisableBackupSigningKeyUse}" />
+                    </Grid>
+
+                    <Label Text="{x:Static strings:AppResources.WhenEnabledBackupsAreSignedWithThisDeviceKeyShareOrImportItToVerifyBackupsAcrossDevices}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+
+                    <Button Text="{x:Static strings:AppResources.ShareSigningKey}"
+                            IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
+                            Command="{Binding SigningKey.ShareBackupSigningKeyCommand}"
+                            SemanticProperties.Hint="{x:Static strings:AppResources.ShareTheBackupSigningKeyUsingTheSystemShareSheetIncludingAirDrop}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF1E0;"
+                                             Size="16"
+                                             Color="{DynamicResource OnPrimary}" />
+                        </Button.ImageSource>
+                    </Button>
+
+                    <Button Text="{x:Static strings:AppResources.ImportSigningKey}"
+                            Style="{StaticResource OutlinedButton}"
+                            IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
+                            Command="{Binding SigningKey.ImportBackupSigningKeyCommand}"
+                            SemanticProperties.Hint="{x:Static strings:AppResources.ImportABackupSigningKeyFileReceivedFromAnotherDevice}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF093;"
+                                             Size="16"
+                                             Color="{DynamicResource Primary}" />
+                        </Button.ImageSource>
+                    </Button>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Text="&#xF0AD;"
+                               FontFamily="FontAwesomeSolid"
+                               FontSize="20"
+                               TextColor="{DynamicResource Primary}"
+                               VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="{x:Static strings:AppResources.DataMaintenance}"
+                               Style="{StaticResource HeadlineSmall}"
+                               LineBreakMode="WordWrap"
+                               TextColor="{DynamicResource OnSurface}" />
+                    </Grid>
+                    <Label Text="{x:Static strings:AppResources.DataMaintenanceDescription}"
+                           Style="{StaticResource BodyMedium}"
+                           LineBreakMode="WordWrap"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+                    <Button Text="{x:Static strings:AppResources.ReplaceAllPhotosWithGenericImages}"
+                            Style="{StaticResource OutlinedButton}"
+                            LineBreakMode="WordWrap"
+                            Command="{Binding ReplaceAllPhotosCommand}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF03E;"
+                                             Size="16"
+                                             Color="{DynamicResource Primary}" />
+                        </Button.ImageSource>
+                    </Button>
+                    <Button Text="{x:Static strings:AppResources.DeleteAllAppData}"
+                            Style="{StaticResource OutlinedButton}"
+                            LineBreakMode="WordWrap"
+                            Command="{Binding ResetAllDataCommand}">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid"
+                                             Glyph="&#xF2ED;"
+                                             Size="16"
+                                             Color="{DynamicResource Primary}" />
+                        </Button.ImageSource>
+                    </Button>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource SectionCard}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateToBackgroundOperationsCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Label Text="&#xF1C5;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="20"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                        <Label Text="{x:Static strings:AppResources.ImageProcessing}"
+                               Style="{StaticResource HeadlineSmall}"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Label Text="{x:Static strings:AppResources.ViewActiveAndRecentBackgroundPhotoOperations}"
+                               Style="{StaticResource BodyMedium}"
+                               TextColor="{DynamicResource OnSurfaceVariant}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2"
+                           Text="&#xF054;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="18"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center"
+                           SemanticProperties.Description="{x:Static strings:AppResources.OpenTheBackgroundPhotoOperationsPage}" />
+                </Grid>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+        <Border Grid.Row="0"
+                BackgroundColor="{DynamicResource Surface}"
+                IsVisible="{Binding IsMaintenanceInProgress}"
+                Padding="24"
+                VerticalOptions="Fill"
+                HorizontalOptions="Fill"
+                ZIndex="10">
+            <VerticalStackLayout VerticalOptions="Center" Spacing="16">
+                <ActivityIndicator IsRunning="True" />
+                <Label Text="{x:Static strings:AppResources.OverallProgress}"
+                       Style="{StaticResource BodyMedium}" />
+                <ProgressBar Progress="{Binding MaintenanceProgress}" />
+                <Label Text="{x:Static strings:AppResources.CurrentStep}"
+                       Style="{StaticResource BodyMedium}" />
+                <ProgressBar Progress="{Binding MaintenanceStepProgress}" />
+                <Label Text="{Binding MaintenanceStatus}"
+                       HorizontalTextAlignment="Center"
+                       Style="{StaticResource BodyMedium}" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</views:BasePage>

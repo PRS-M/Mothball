@@ -16,6 +16,7 @@ public partial class App : Application
 		LocalizationManager.Configure(localization);
 		localization.SetLanguage(applicationSettings.Language);
 		InitializeComponent();
+		ApplyPlatformDesign();
 		UserAppTheme = applicationSettings.ThemeOverride;
 		this.startupCoordinator = startupCoordinator;
 		ThemePaletteApplier.Apply(Resources, applicationSettings.ThemePalette, UserAppTheme == AppTheme.Unspecified ? RequestedTheme : UserAppTheme);
@@ -31,6 +32,13 @@ public partial class App : Application
 
 	private void ApplyThemePalette(AppTheme mode)
 		=> ThemePaletteApplier.Apply(Resources, applicationSettings.ThemePalette, mode);
+
+	private void ApplyPlatformDesign()
+	{
+#if IOS || MACCATALYST
+		Resources.MergedDictionaries.Add(new Resources.Styles.AppleStyles());
+#endif
+	}
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{

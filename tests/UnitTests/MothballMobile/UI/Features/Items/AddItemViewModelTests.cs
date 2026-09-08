@@ -3,6 +3,7 @@ using Moq;
 using CoreApp.Application.Contracts;
 using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Scanning;
+using MothballMobile.Infrastructure.Navigation;
 using MothballMobile.UI.Features.Items.AddItem;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Items;
@@ -14,7 +15,7 @@ public sealed class AddItemViewModelTests
     public async Task SaveCommand_InAdvancedMode_CreatesStandaloneItemWithEnteredUnassignedQuantity()
     {
         var createItem = new Mock<ICreateItemCommandHandler>();
-        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 4, null))
+        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 4, null, null, true, BarcodeSymbology.QrCode))
             .ReturnsAsync(new CoreApp.Domain.Entities.ItemAggregate.Item("Widget", ""));
         var viewModel = CreateViewModel(createItem.Object, isAdvancedMode: true);
         viewModel.Name = "Widget";
@@ -23,14 +24,14 @@ public sealed class AddItemViewModelTests
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.That(viewModel.ShowQuantityField, Is.True);
-        createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 4, null), Times.Once);
+        createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 4, null, null, true, BarcodeSymbology.QrCode), Times.Once);
     }
 
     [Test]
     public async Task SaveCommand_InSimpleMode_CreatesStandaloneItemWithDefaultQuantity()
     {
         var createItem = new Mock<ICreateItemCommandHandler>();
-        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null))
+        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null, null, true, BarcodeSymbology.QrCode))
             .ReturnsAsync(new CoreApp.Domain.Entities.ItemAggregate.Item("Widget", ""));
         var viewModel = CreateViewModel(createItem.Object, isAdvancedMode: false);
         viewModel.Name = "Widget";
@@ -39,14 +40,33 @@ public sealed class AddItemViewModelTests
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.That(viewModel.ShowQuantityField, Is.False);
-        createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 1, null), Times.Once);
+        createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 1, null, null, true, BarcodeSymbology.QrCode), Times.Once);
+    }
+
+    [Test]
+    public async Task SaveCommand_NavigatesToCreatedItemDetails()
+    {
+        var createdItem = new CoreApp.Domain.Entities.ItemAggregate.Item("Widget", "");
+        var createItem = new Mock<ICreateItemCommandHandler>();
+        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null, null, true, BarcodeSymbology.QrCode))
+            .ReturnsAsync(createdItem);
+        var navigation = new Mock<INavigationService>();
+        var viewModel = CreateViewModel(createItem.Object, false, navigation: navigation.Object);
+        viewModel.Name = "Widget";
+
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        navigation.Verify(service => service.GoBackAsync(), Times.Once);
+        navigation.Verify(service => service.GoToAsync(
+            NavigationRoutes.ItemDetails,
+            It.Is<ItemDetailsNavigationRequest>(request => request.ItemId == createdItem.ItemId && request.SourceContainerId == null)), Times.Once);
     }
 
     [Test]
     public async Task SaveCommand_WhenCreateThrows_RecordsGenericErrorWithoutRethrowing()
     {
         var createItem = new Mock<ICreateItemCommandHandler>();
-        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null))
+        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null, null, true, BarcodeSymbology.QrCode))
             .ThrowsAsync(new InvalidOperationException("disk full"));
         var viewModel = CreateViewModel(createItem.Object, isAdvancedMode: false);
         viewModel.Name = "Widget";
@@ -78,11 +98,11 @@ public sealed class AddItemViewModelTests
     }
 
     [Test]
-    public void AvailableBarcodeSymbologies_WhenExtendedModeIsDisabled_ContainsOnlyQrCode()
+    public void AvailableBarcodeSymbologies_WhenExtendedModeIsDisabled_ContainsSimpleBarcodeTypes()
     {
         var viewModel = CreateViewModel(Mock.Of<ICreateItemCommandHandler>(), false);
 
-        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.QrCode }));
+        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.Ean8, BarcodeSymbology.Ean13, BarcodeSymbology.QrCode }));
     }
 
     [Test]
@@ -256,7 +276,8 @@ public sealed class AddItemViewModelTests
         IBarcodeScanSession? barcodeScanner = null,
         IInventoryQueryRepository? inventoryQueries = null,
         IItemReceiptService? itemReceipts = null,
-        bool isBarcodeExtendedMode = false)
+        bool isBarcodeExtendedMode = false,
+        INavigationService? navigation = null)
         => new(
             new ImageService(
                 Mock.Of<IPhotoSourceReader>(),
@@ -265,7 +286,7 @@ public sealed class AddItemViewModelTests
                 Mock.Of<IPhotoDeletionService>(),
                 Mock.Of<IInventoryCommandRepository>()),
             createItem,
-            Mock.Of<INavigationService>(),
+            navigation ?? Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(settings =>
                 settings.IsAdvancedMode == isAdvancedMode
                 && settings.IsBarcodeExtendedMode == isBarcodeExtendedMode),

@@ -2,6 +2,7 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Contracts;
 using CoreApp.Application.Features.Photos;
 
 namespace CoreApp.Application.Features.Items.Commands;
@@ -11,32 +12,56 @@ public sealed class CreateItemCommandHandler : ICreateItemCommandHandler
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly ImageService imageService;
+    private readonly IBarcodeRegistryService? registry;
 
     public CreateItemCommandHandler(
         IInventoryCommandRepository inventoryCommands,
         IInventoryQueryRepository inventoryQueries,
-        ImageService imageService)
+        ImageService imageService,
+        IBarcodeRegistryService? registry = null)
     {
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
+        this.registry = registry;
     }
 
     /// <inheritdoc />
-    public async Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null, Barcode? barcode = null)
+    public async Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null, Barcode? barcode = null, bool generateInternalSku = true, BarcodeSymbology generatedBarcodeSymbology = BarcodeSymbology.Code128)
     {
-        await EnsureBarcodeIsAvailableAsync(barcode);
-
         var item = new Item(name, description);
-        item.UpdateBarcode(barcode);
+        var assignedBarcode = barcode ?? (generateInternalSku
+            ? BarcodeGenerator.Create(item.ItemId, BarcodeOwnerKind.Item, generatedBarcodeSymbology)
+            : null);
+        if (assignedBarcode is not null)
+        {
+            await EnsureBarcodeIsAvailableAsync(assignedBarcode);
+            if (registry is not null)
+            {
+                await registry.AssignAsync(assignedBarcode, BarcodeOwnerKind.Item, item.ItemId, item.Name);
+            }
+        }
+        item.UpdateBarcode(assignedBarcode);
         var inventory = new ItemInventory(item.ItemId, quantity);
         if (containerId is { } cid && cid != Guid.Empty)
         {
             inventory.SetContainerAllocation(cid, string.Empty, quantity);
         }
 
-        await inventoryCommands.InsertItemAsync(item);
-        await inventoryCommands.InsertItemInventoryAsync(inventory);
+        try
+        {
+            await inventoryCommands.InsertItemAsync(item);
+            await inventoryCommands.InsertItemInventoryAsync(inventory);
+        }
+        catch
+        {
+            if (registry is not null && assignedBarcode is not null)
+            {
+                await registry.ReleaseAsync(assignedBarcode.Value);
+            }
+
+            throw;
+        }
 
         if (photoBytes is { Length: > 0 })
         {

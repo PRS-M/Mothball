@@ -25,11 +25,11 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly IItemReceiptService itemReceipts;
 
     private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<BarcodeSymbology> qrCodeOnlySymbologies = new([BarcodeSymbology.QrCode]);
+    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.Ean8, BarcodeSymbology.Ean13, BarcodeSymbology.QrCode]);
 
     public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
-        : qrCodeOnlySymbologies;
+        : simpleBarcodeSymbologies;
 
     [ObservableProperty]
     private string containerId = string.Empty;
@@ -39,6 +39,35 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     public bool ShowQuantityField => ShowQuantityManagement || IsReceivingExistingItem;
     public bool IsReceivingExistingItem { get; private set; }
     public bool IsItemMetadataEditable => !IsReceivingExistingItem;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(GenerateBarcodeCommand))]
+    private bool generateInternalSku = true;
+
+    public bool IsManualBarcodeVisible => !GenerateInternalSku;
+
+    public bool CanGenerateBarcode => BarcodeSymbology is BarcodeSymbology.Code128 or BarcodeSymbology.QrCode;
+
+    [RelayCommand(CanExecute = nameof(CanGenerateBarcode))]
+    private void GenerateBarcode()
+    {
+        BarcodeValue = string.Empty;
+        GenerateInternalSku = true;
+    }
+
+    partial void OnGenerateInternalSkuChanged(bool value)
+        => OnPropertyChanged(nameof(IsManualBarcodeVisible));
+
+    partial void OnBarcodeSymbologyChanged(BarcodeSymbology value)
+    {
+        if (value is BarcodeSymbology.Ean8 or BarcodeSymbology.Ean13)
+        {
+            GenerateInternalSku = false;
+        }
+
+        OnPropertyChanged(nameof(CanGenerateBarcode));
+        GenerateBarcodeCommand.NotifyCanExecuteChanged();
+    }
 
     [ObservableProperty]
     private string destinationContainerName = string.Empty;
@@ -312,12 +341,15 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                 return;
             }
 
-            await CreateItemAsync(trimmed, parsedQuantity, destinationContainerId);
+            var createdItem = await CreateItemAsync(trimmed, parsedQuantity, destinationContainerId);
 
             await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;
             ValidationMessage = null;
             await nav.GoBackAsync();
+            await nav.GoToAsync(
+                Infrastructure.NavigationRoutes.ItemDetails,
+                new Infrastructure.Navigation.ItemDetailsNavigationRequest(createdItem.ItemId, destinationContainerId));
         }, errorMessageFactory: BarcodeOperationErrorMessage, rethrowOnError: false);
     }
 
@@ -342,7 +374,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         await itemReceipts.ReceiveAsync(existingItem.OwnerId, quantity, containerId);
     }
 
-    private async Task CreateItemAsync(string name, int quantity, Guid? containerId)
+    private async Task<CoreApp.Domain.Entities.ItemAggregate.Item> CreateItemAsync(string name, int quantity, Guid? containerId)
     {
         var normalizedBarcodeValue = BarcodeValue?.Trim();
         var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
@@ -351,13 +383,17 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         try
         {
-            await createItem.CreateAsync(
+            var createdItem = await createItem.CreateAsync(
                 name,
                 Description?.Trim() ?? string.Empty,
                 containerId,
                 quantity,
                 pendingPhoto.Bytes,
-                barcode);
+                barcode,
+                GenerateInternalSku,
+                BarcodeSymbology);
+
+            return createdItem;
         }
         catch (Exception ex)
         {

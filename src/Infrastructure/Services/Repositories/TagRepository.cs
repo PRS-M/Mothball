@@ -60,6 +60,41 @@ public sealed class TagRepository : ITagRepository
             .ToList();
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TagUsageSummary>> GetUsageSummariesPageAsync(
+        string? searchTerm,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        await database.InitializeAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var (term, hasSearch) = RepositoryQueryHelpers.NormalizeSearch(searchTerm);
+        var pattern = $"%{term?.TrimStart('#')}%";
+        var offset = RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize);
+        object[] parameters = hasSearch
+            ? [pattern, pageSize, offset]
+            : [pageSize, offset];
+        var rows = await database.Connection.QueryAsync<TagUsageSummaryRow>(
+            $"""
+            SELECT t.TagId,
+                   t.Name,
+                   (SELECT COUNT(*) FROM {nameof(DbItemTag)} i WHERE i.TagId = t.TagId) AS ItemCount,
+                   (SELECT COUNT(*) FROM {nameof(DbContainerTag)} c WHERE c.TagId = t.TagId) AS ContainerCount
+            FROM {nameof(DbTag)} t
+            {(hasSearch ? "WHERE t.Name LIKE ? COLLATE NOCASE" : string.Empty)}
+            ORDER BY t.Name COLLATE NOCASE
+            LIMIT ? OFFSET ?
+            """, parameters).ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return rows
+            .Select(row => new TagUsageSummary(row.TagId, row.Name, row.ItemCount, row.ContainerCount))
+            .ToList();
+    }
+
     public async Task<Tag?> FindByNormalizedNameAsync(
         string normalizedName,
         CancellationToken cancellationToken = default)

@@ -55,7 +55,11 @@
                         Padding="14,8"
                         FontSize="13"
                         MinimumWidthRequest="120"
-                            Clicked="OnCancelClicked" />
+                            Clicked="OnCancelClicked">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF00D;" Color="{DynamicResource Primary}" Size="14" />
+                        </Button.ImageSource>
+                    </Button>
 
                     <Button x:Name="AcceptButton"
                             Grid.Column="1"
@@ -63,7 +67,11 @@
                         Padding="14,8"
                         FontSize="13"
                         MinimumWidthRequest="120"
-                            Clicked="OnAcceptClicked" />
+                            Clicked="OnAcceptClicked">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF00C;" Color="{DynamicResource OnSecondaryContainer}" Size="14" />
+                        </Button.ImageSource>
+                    </Button>
                 </Grid>
             </VerticalStackLayout>
         </Border>

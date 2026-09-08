@@ -57,6 +57,8 @@ public class ContainerRepository : IContainerRepository
     private Task<List<Container>> GetAllAsync()
         => GetContainersInternalAsync();
 
+    public Task<int> CountAsync() => containers.CountAsync(_ => true);
+
     private Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
         => GetContainersInternalAsync(pageNumber, pageSize);
 

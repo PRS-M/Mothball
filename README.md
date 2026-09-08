@@ -105,6 +105,8 @@ See [Barcodes](docs/Barcodes.md) for barcode workflows, supported formats, and d
   - Explains export format, restore strategies, conflict policies, integrity checks, and usage examples.
 - [Debouncer](docs/Debouncer.md)
   - Describes the concurrency utility used for trailing-edge debounce behavior in UI workflows.
+- [Concurrency and Threading](docs/ConcurrencyAndThreading.md)
+  - Maps async operations, UI-thread dispatch, locks, cancellation, fire-and-forget work, startup coordination, and known concurrency risks.
 - [Localization](docs/Localization.md)
   - Documents English/Polish resources, language preference lifecycle, platform declarations, and the restart-after-selection behavior.
 - [JSON Operational Store](docs/JsonStore.md)
@@ -242,6 +244,17 @@ Projects included:
 - `Infrastructure.Platform.Maui`
 - `MothballMobile`
 - `UnitTests`
+
+## Libraries and licenses
+
+Mothball uses the following external open-source libraries directly:
+
+- [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet) — [MIT license](https://github.com/CommunityToolkit/dotnet/blob/main/License.md)
+- [Plugin.AdMob](https://github.com/marius-bughiu/Plugin.AdMob) — [MIT license](https://github.com/marius-bughiu/Plugin.AdMob/blob/main/LICENSE) · [Sponsor the maintainer](https://github.com/sponsors/marius-bughiu)
+- [SkiaSharp](https://github.com/mono/SkiaSharp) — [MIT license](https://github.com/mono/SkiaSharp/blob/main/LICENSE.md) · [Contributors](https://github.com/mono/SkiaSharp/graphs/contributors)
+- [sqlite-net-pcl](https://github.com/cjgaliana/SQLite.Net-PCL) — [MIT license](https://github.com/cjgaliana/SQLite.Net-PCL/blob/master/LICENSE)
+- [SQLitePCLRaw](https://github.com/ericsink/SQLitePCL.raw) — [Apache-2.0 license](https://github.com/ericsink/SQLitePCL.raw/blob/main/LICENSE.txt) · [Sponsor the maintainer](https://github.com/sponsors/ericsink)
+- [ZXing.Net.Maui](https://github.com/Redth/ZXing.Net.Maui) — [MIT license](https://github.com/Redth/ZXing.Net.Maui/blob/master/LICENSE)
 
 ## Hashtags
 ***Keywords**: `WMS, WarehouseManagementSystem, Warehouse, House, Organization, Catalogue, Catalog, MAUI, dotNET, .NET, iOS, Apple`*

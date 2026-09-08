@@ -18,7 +18,7 @@ public sealed class JsonImageRepository : IImageRepository
         ArgumentNullException.ThrowIfNull(imageItem);
         if (ownerId == Guid.Empty) throw new ArgumentException("Owner ID cannot be empty.", nameof(ownerId));
 
-        return UpsertAsync(imageItem.ImageId, ownerId);
+        return UpsertAsync(imageItem, ownerId);
     }
 
     /// <inheritdoc />
@@ -28,26 +28,30 @@ public sealed class JsonImageRepository : IImageRepository
         if (ownerId == Guid.Empty) throw new ArgumentException("Owner ID cannot be empty.", nameof(ownerId));
 
         // Current SQLite update effectively upserts by PK.
-        return UpsertAsync(image.ImageId, ownerId);
+        return UpsertAsync(image, ownerId);
     }
 
-    private Task UpsertAsync(Guid imageId, Guid ownerId)
+    private Task UpsertAsync(ImageItem image, Guid ownerId)
         => store.UpdateAsync(state =>
         {
-            var existing = state.Images.FirstOrDefault(i => i.ImageId == imageId);
+            var existing = state.Images.FirstOrDefault(i => i.ImageId == image.ImageId);
             if (existing is null)
             {
                 state.Images.Add(new JsonImageRow
                 {
                     RowId = state.Metadata.NextImageRowId++,
-                    ImageId = imageId,
+                    ImageId = image.ImageId,
                     OwnerUniqueId = ownerId,
                     ImageDataBase64 = null,
+                    StoredFileName = image.IsSharedAsset ? image.FileName : null,
+                    IsSharedAsset = image.IsSharedAsset,
                 });
             }
             else
             {
                 existing.OwnerUniqueId = ownerId;
+                existing.StoredFileName = image.IsSharedAsset ? image.FileName : null;
+                existing.IsSharedAsset = image.IsSharedAsset;
             }
 
             return Task.CompletedTask;

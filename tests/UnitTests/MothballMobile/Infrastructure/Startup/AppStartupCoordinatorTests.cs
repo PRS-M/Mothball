@@ -39,7 +39,7 @@ public sealed class AppStartupCoordinatorTests
             .Callback(() => calls.Add("secret"))
             .ReturnsAsync("secret");
         var startup = new Mock<IAppStartupOrchestrator>();
-        startup.Setup(service => service.StartAsync())
+        startup.Setup(service => service.StartAsync(It.IsAny<IProgress<StartupProgress>>()))
             .Callback(() => calls.Add("startup"))
             .Returns(Task.CompletedTask);
         var coordinator = CreateCoordinator(secrets.Object, startup.Object);
@@ -58,7 +58,7 @@ public sealed class AppStartupCoordinatorTests
     public async Task InitializeAsync_WhenStartupFails_PresentsRetryPageAndLogsError()
     {
         var startup = new Mock<IAppStartupOrchestrator>();
-        startup.Setup(service => service.StartAsync())
+        startup.Setup(service => service.StartAsync(It.IsAny<IProgress<StartupProgress>>()))
             .ThrowsAsync(new InvalidOperationException("startup failed"));
         var logger = new Mock<ILogger<AppStartupCoordinator>>();
         var coordinator = CreateCoordinator(Mock.Of<IBackupSignatureSecretProvider>(), startup.Object, logger.Object);
@@ -90,14 +90,14 @@ public sealed class AppStartupCoordinatorTests
         await coordinator.InitializeAsync(window);
 
         Assert.That(window.Page, Is.TypeOf<ContentPage>());
-        startup.Verify(service => service.StartAsync(), Times.Never);
+        startup.Verify(service => service.StartAsync(It.IsAny<IProgress<StartupProgress>>()), Times.Never);
     }
 
     [Test]
     public async Task StartupErrorPage_WhenRetryClicked_RunsStartupAgain()
     {
         var startup = new Mock<IAppStartupOrchestrator>();
-        startup.SetupSequence(service => service.StartAsync())
+        startup.SetupSequence(service => service.StartAsync(It.IsAny<IProgress<StartupProgress>>()))
             .ThrowsAsync(new InvalidOperationException("first attempt"))
             .Returns(Task.CompletedTask);
         var coordinator = CreateCoordinator(Mock.Of<IBackupSignatureSecretProvider>(), startup.Object);

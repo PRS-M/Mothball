@@ -86,64 +86,33 @@
                 </VerticalStackLayout>
             </Border>
 
-                                                 <Border Style="{StaticResource SectionCard}">
-                                                                        <VerticalStackLayout Spacing="10">
-                                                                                        <Grid ColumnDefinitions="*,Auto"
-                                                                                                                ColumnSpacing="12">
-                                                                                                        <Label Text="{x:Static strings:AppResources.BarcodesExtendedMode}"
-                                                                                                                                 Style="{StaticResource HeadlineSmall}"
-                                                                                                                                 VerticalOptions="Center"
-                                                                                                                                 TextColor="{DynamicResource OnSurface}" />
-                                                                                                        <Switch Grid.Column="1"
-                                                                                                                                        IsToggled="{Binding Appearance.IsBarcodeExtendedMode, Mode=TwoWay}"
-                                                                                                                                        SemanticProperties.Hint="{x:Static strings:AppResources.EnableAdditionalBarcodeTypes}" />
-                                                                                        </Grid>
-
-                                                                                <Label Text="{x:Static strings:AppResources.BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable}"
-                                                                                                         Style="{StaticResource BodyMedium}"
-                                                                                                         TextColor="{DynamicResource OnSurfaceVariant}" />
-                                                                </VerticalStackLayout>
-                                                </Border>
-
-             <Border Style="{StaticResource SectionCard}">
-                  <VerticalStackLayout Spacing="10">
-                      <Grid ColumnDefinitions="*,Auto"
-                            ColumnSpacing="12">
-                          <Label Text="{x:Static strings:AppResources.BackupSigningKey}"
-                                 Style="{StaticResource HeadlineSmall}"
-                                 VerticalOptions="Center"
-                                 TextColor="{DynamicResource OnSurface}" />
-                          <Switch Grid.Column="1"
-                                  IsToggled="{Binding SigningKey.IsBackupSigningKeyEnabled, Mode=TwoWay}"
-                                  SemanticProperties.Hint="{x:Static strings:AppResources.EnableOrDisableBackupSigningKeyUse}" />
-                      </Grid>
-
-                    <Label Text="{x:Static strings:AppResources.WhenEnabledBackupsAreSignedWithThisDeviceKeyShareOrImportItToVerifyBackupsAcrossDevices}"
-                              Style="{StaticResource BodyMedium}"
-                              TextColor="{DynamicResource OnSurfaceVariant}" />
-
-                      <Button Text="{x:Static strings:AppResources.ShareSigningKey}"
-                                IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
-                                Command="{Binding SigningKey.ShareBackupSigningKeyCommand}"
-                                                                                                                                SemanticProperties.Hint="{x:Static strings:AppResources.ShareTheBackupSigningKeyUsingTheSystemShareSheetIncludingAirDrop}">
-                                                                                                <Button.ImageSource>
-                                                                                                                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="16"
-                                                                                                                                                                                 Color="{DynamicResource OnPrimary}" />
-                                                                                                </Button.ImageSource>
-                                                                                        </Button>
-
-                    <Button Text="{x:Static strings:AppResources.ImportSigningKey}"
-                            Style="{StaticResource OutlinedButton}"
-                            IsEnabled="{Binding SigningKey.IsBackupSigningKeyEnabled}"
-                            Command="{Binding SigningKey.ImportBackupSigningKeyCommand}"
-                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ImportABackupSigningKeyFileReceivedFromAnotherDevice}">
-                                                <Button.ImageSource>
-                                                        <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF093;" Size="16"
-                                                                                         Color="{DynamicResource Primary}" />
-                                                </Button.ImageSource>
-                                        </Button>
-                  </VerticalStackLayout>
-             </Border>
+            <Border Style="{StaticResource SectionCard}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding GenerateNewSkuPdfCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Label Text="&#xF02A;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="20"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                        <Label Text="{x:Static strings:AppResources.GeneratePdfWithNewCodes}"
+                               Style="{StaticResource HeadlineSmall}"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Label Text="{x:Static strings:AppResources.GeneratePdfWithNewCodesDescription}"
+                               Style="{StaticResource BodyMedium}"
+                               TextColor="{DynamicResource OnSurfaceVariant}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2"
+                           Text="&#xF1C1;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="18"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center"
+                           SemanticProperties.Description="{x:Static strings:AppResources.GeneratePdfWithNewCodes}" />
+                </Grid>
+            </Border>
 
             <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="10">
@@ -277,25 +246,60 @@
             </Border>
 
             <Border Style="{StaticResource SectionCard}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="{x:Static strings:AppResources.ImageProcessing}"
-                           Style="{StaticResource HeadlineSmall}"
-                           TextColor="{DynamicResource OnSurface}" />
-
-                    <Label Text="{x:Static strings:AppResources.ViewActiveAndRecentBackgroundPhotoOperations}"
-                           Style="{StaticResource BodyMedium}"
-                           TextColor="{DynamicResource OnSurfaceVariant}" />
-
-                    <Button Text="{x:Static strings:AppResources.ViewImageProcessing}"
-                            Command="{Binding NavigateToBackgroundOperationsCommand}"
-                                                        SemanticProperties.Hint="{x:Static strings:AppResources.OpenTheBackgroundPhotoOperationsPage}">
-                                                <Button.ImageSource>
-                                                        <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1C5;" Size="16"
-                                                                                         Color="{DynamicResource OnPrimary}" />
-                                                </Button.ImageSource>
-                                        </Button>
-                </VerticalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateToAdvancedSettingsCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Label Text="&#xF013;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="20"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                        <Label Text="{x:Static strings:AppResources.AdvancedSettings}"
+                               Style="{StaticResource HeadlineSmall}"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Label Text="{x:Static strings:AppResources.PowerUserAndTechnicalOptions}"
+                               Style="{StaticResource BodyMedium}"
+                               TextColor="{DynamicResource OnSurfaceVariant}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2"
+                           Text="&#xF054;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="18"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center"
+                           SemanticProperties.Description="{x:Static strings:AppResources.OpenAdvancedSettings}" />
+                </Grid>
             </Border>
+
+            <Border Style="{StaticResource SectionCard}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateToLicensesAndLibrariesCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Label Text="&#xF1AD;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="20"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                        <Label Text="{x:Static strings:AppResources.LicensesAndLibraries}"
+                               Style="{StaticResource HeadlineSmall}"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Label Text="{x:Static strings:AppResources.OpenSourceLibrariesUsedByMothball}"
+                               Style="{StaticResource BodyMedium}"
+                               TextColor="{DynamicResource OnSurfaceVariant}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2"
+                           Text="&#xF054;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="18"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
         </VerticalStackLayout>
     </ScrollView>
 

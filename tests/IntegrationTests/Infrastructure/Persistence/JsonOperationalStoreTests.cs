@@ -425,6 +425,7 @@ public class JsonOperationalStoreTests
         await files.WriteRawAsync(JsonStoreConstants.RelationsFileName, JsonStoreConstants.SlotA, Serialize(relations));
         await files.WriteRawAsync(JsonStoreConstants.TagsFileName, JsonStoreConstants.SlotA, Serialize(Array.Empty<JsonTagRow>()));
         await files.WriteRawAsync(JsonStoreConstants.TagAssignmentsFileName, JsonStoreConstants.SlotA, Serialize(Array.Empty<JsonTagAssignmentRow>()));
+        await files.WriteRawAsync(JsonStoreConstants.BarcodesFileName, JsonStoreConstants.SlotA, Serialize(Array.Empty<JsonBarcodeRegistryRow>()));
         await files.WriteRawAsync(JsonStoreConstants.CommitInfoFileName, JsonStoreConstants.SlotA, Serialize(commitInfo));
 
         var manifestA = new JsonStoreManifest

@@ -19,11 +19,11 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IApplicationSettings applicationSettings;
     private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<BarcodeSymbology> qrCodeOnlySymbologies = new([BarcodeSymbology.QrCode]);
+    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.Ean8, BarcodeSymbology.Ean13, BarcodeSymbology.QrCode]);
 
     public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
-        : qrCodeOnlySymbologies;
+        : simpleBarcodeSymbologies;
 
     public AddContainerViewModel(
         ImageService imageService,
@@ -55,6 +55,35 @@ public partial class AddContainerViewModel : BaseViewModel
 
     [ObservableProperty]
     private BarcodeSymbology barcodeSymbology = BarcodeSymbology.QrCode;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(GenerateBarcodeCommand))]
+    private bool generateInternalSku = true;
+
+    public bool IsManualBarcodeVisible => !GenerateInternalSku;
+
+    public bool CanGenerateBarcode => BarcodeSymbology is BarcodeSymbology.Code128 or BarcodeSymbology.QrCode;
+
+    [RelayCommand(CanExecute = nameof(CanGenerateBarcode))]
+    private void GenerateBarcode()
+    {
+        BarcodeValue = string.Empty;
+        GenerateInternalSku = true;
+    }
+
+    partial void OnGenerateInternalSkuChanged(bool value)
+        => OnPropertyChanged(nameof(IsManualBarcodeVisible));
+
+    partial void OnBarcodeSymbologyChanged(BarcodeSymbology value)
+    {
+        if (value is BarcodeSymbology.Ean8 or BarcodeSymbology.Ean13)
+        {
+            GenerateInternalSku = false;
+        }
+
+        OnPropertyChanged(nameof(CanGenerateBarcode));
+        GenerateBarcodeCommand.NotifyCanExecuteChanged();
+    }
 
     [ObservableProperty]
     private string? validationMessage;
@@ -169,16 +198,21 @@ public partial class AddContainerViewModel : BaseViewModel
             var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
                 ? null
                 : new Barcode(normalizedBarcodeValue, BarcodeSymbology);
-            await createContainer.CreateAsync(
+            var createdContainer = await createContainer.CreateAsync(
                 trimmedName,
                 string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim(),
                 pendingPhoto.Bytes,
-                barcode);
+                barcode,
+                GenerateInternalSku,
+                BarcodeSymbology);
 
             await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;
             ValidationMessage = null;
             await navigationService.GoBackAsync();
+            await navigationService.GoToAsync(
+                Infrastructure.NavigationRoutes.ContainerDetails,
+                new Infrastructure.Navigation.ContainerDetailsNavigationRequest(createdContainer.ContainerId));
         }, errorMessageFactory: BarcodeOperationErrorMessage, rethrowOnError: false);
     }
 

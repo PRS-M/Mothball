@@ -23,6 +23,9 @@ public interface IItemRepository
     /// <param name="specification">The value used by the operation.</param>
     Task<List<Item>> QueryWithPhotosAsync(ItemListSpecification specification);
 
+    /// <summary>Gets the total number of items.</summary>
+    Task<int> CountAsync();
+
     /// <param name="specification">The value used by the operation.</param>
     Task<List<Item>> QueryContainerItemsWithPhotosAsync(ContainerItemsSpecification specification);
 

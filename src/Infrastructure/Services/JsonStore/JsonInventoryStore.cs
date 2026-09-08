@@ -1,4 +1,6 @@
 using System.Text.Json;
+using CoreApp.Application.Abstractions.Platform;
+using CoreApp.Application.Utilities;
 using Infrastructure.Services.JsonStore.Models;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +12,77 @@ namespace Infrastructure.Services.JsonStore;
 /// </summary>
 public sealed partial class JsonInventoryStore
 {
+    public async Task ReplaceAllPhotosWithSharedAssetsAsync(
+        IFileHandler files,
+        IProgress<MaintenanceProgress>? progress = null)
+    {
+        ArgumentNullException.ThrowIfNull(files);
+        await UpdateAsync(state =>
+        {
+            var containerIds = state.Containers.Select(container => container.ContainerId).ToHashSet();
+            var itemIds = state.Items.Select(item => item.ItemId).ToHashSet();
+            for (var index = 0; index < state.Images.Count; index++)
+            {
+                var image = state.Images[index];
+                image.StoredFileName = containerIds.Contains(image.OwnerUniqueId) ? "seeded-container.jpg" :
+                    itemIds.Contains(image.OwnerUniqueId) ? "seeded-item.jpg" : image.StoredFileName;
+                image.IsSharedAsset = containerIds.Contains(image.OwnerUniqueId) || itemIds.Contains(image.OwnerUniqueId);
+                image.ImageDataBase64 = null;
+                progress?.Report(new MaintenanceProgress((index + 1d) / Math.Max(state.Images.Count, 1), "Replacing photos"));
+            }
+
+            return Task.CompletedTask;
+        });
+
+        await EnsureSharedAssetAsync(files, "container.png", "seeded-container.jpg");
+        await EnsureSharedAssetAsync(files, "mothball_logo.png", "seeded-item.jpg");
+        await DeleteFilesAsync(files, Constants.PathToContainerPhotos);
+        await DeleteFilesAsync(files, Constants.PathToItemPhotos);
+        progress?.Report(new MaintenanceProgress(1, "Photos replaced"));
+    }
+
+    public async Task ResetAllDataAsync(
+        IFileHandler files,
+        IProgress<MaintenanceProgress>? progress = null)
+    {
+        ArgumentNullException.ThrowIfNull(files);
+        progress?.Report(new MaintenanceProgress(0.1, "Deleting inventory data"));
+        await UpdateAsync(state =>
+        {
+            state.Metadata = new JsonStoreMetadata();
+            state.Containers.Clear();
+            state.Items.Clear();
+            state.Inventories.Clear();
+            state.Images.Clear();
+            state.Relations.Clear();
+            state.Tags.Clear();
+            state.TagAssignments.Clear();
+            state.Barcodes.Clear();
+            return Task.CompletedTask;
+        });
+        progress?.Report(new MaintenanceProgress(0.7, "Deleting photo files"));
+        await DeleteFilesAsync(files, Constants.PathToContainerPhotos);
+        await DeleteFilesAsync(files, Constants.PathToItemPhotos);
+        await DeleteFilesAsync(files, Constants.PathToSharedPhotos);
+        progress?.Report(new MaintenanceProgress(1, "Data reset complete"));
+    }
+
+    private async Task EnsureSharedAssetAsync(IFileHandler files, string rawName, string storedName)
+    {
+        if (!files.FileExists(storedName, Constants.PathToSharedPhotos))
+        {
+            await files.CopyFileFromRawToAppDataAsync(rawName, storedName, Constants.PathToSharedPhotos);
+        }
+    }
+
+    private static async Task DeleteFilesAsync(IFileHandler files, string folder)
+    {
+        foreach (var file in files.EnumerateFiles(folder).ToList())
+        {
+            await files.DeleteFileAsync(file, folder);
+        }
+    }
+
     private readonly IFileHandler files;
     private readonly ILogger<JsonInventoryStore> logger;
     private readonly JsonStoreManifestManager manifestManager;

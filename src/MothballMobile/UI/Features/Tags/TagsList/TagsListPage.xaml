@@ -9,22 +9,60 @@
                 x:DataType="vm:TagsListViewModel"
                 Background="{DynamicResource Surface}"
                 Title="{x:Static strings:AppResources.Tags}">
-    <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="12">
-        <controls:PageHeader Title="{x:Static strings:AppResources.Tags}"
-                             Subtitle="{x:Static strings:AppResources.BrowseYourTags}"
-                             TitleFontSize="22"
-                             SubtitleFontSize="12" />
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding ShowAddTagFormCommand}"
+                     Order="Primary"
+                     Text="{x:Static strings:AppResources.AddTag}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid"
+                                 Glyph="&#xF067;"
+                                 Color="{DynamicResource OnSurface}"
+                                 Size="22" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+    <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
+        <controls:PageHeader Subtitle="{x:Static strings:AppResources.BrowseYourTags}"
+                             SubtitleFontSize="14"
+                             HeaderMargin="0" />
 
-        <SearchBar Grid.Row="1"
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*,Auto,Auto"
+              ColumnSpacing="8"
+              IsVisible="{Binding IsAddTagFormVisible}">
+            <Entry Placeholder="{x:Static strings:AppResources.TagNamePlaceholder}"
+                   Text="{Binding NewTagName, Mode=TwoWay}"
+                   ReturnCommand="{Binding AddTagCommand}"
+                   ClearButtonVisibility="WhileEditing" />
+            <Button Grid.Column="1"
+                    Text="{x:Static strings:AppResources.AddTag}"
+                    Style="{StaticResource OutlinedButton}"
+                    Command="{Binding AddTagCommand}" />
+            <Button Grid.Column="2"
+                    Style="{StaticResource OutlinedButton}"
+                    Command="{Binding CancelAddTagCommand}"
+                    SemanticProperties.Description="{x:Static strings:AppResources.Cancel}">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid"
+                                     Glyph="&#xF00D;"
+                                     Size="16"
+                                     Color="{DynamicResource Primary}" />
+                </Button.ImageSource>
+            </Button>
+        </Grid>
+
+        <SearchBar Grid.Row="2"
                    Placeholder="{x:Static strings:AppResources.SearchTags}"
                    Text="{Binding Query, Mode=TwoWay}"
                    CancelButtonColor="{DynamicResource Primary}" />
 
-        <RefreshView Grid.Row="2"
+        <RefreshView Grid.Row="3"
                      IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding RefreshCommand}">
             <CollectionView ItemsSource="{Binding Tags}"
-                            SelectionMode="None">
+                            SelectionMode="None"
+                            RemainingItemsThreshold="3"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadNextPageCommand}">
                 <CollectionView.EmptyView>
                     <controls:EmptyStateView Title="{x:Static strings:AppResources.NoTagsFound}" />
                 </CollectionView.EmptyView>

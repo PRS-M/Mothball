@@ -20,6 +20,15 @@
   <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Añade contenedores, artículos, cambios de cantidad de relaciones e imágenes que están presentes en la copia de seguridad pero faltan en la aplicación.</value></data>
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Añade los registros que faltan, igual que «Solo añadir».</value></data>
   <data name="Advanced" xml:space="preserve"><value>Avanzado</value></data>
+  <data name="AdvancedSettings" xml:space="preserve"><value>Configuración avanzada</value></data>
+  <data name="OpenAdvancedSettings" xml:space="preserve"><value>Abrir configuración avanzada</value></data>
+  <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Opciones técnicas y para usuarios avanzados</value></data>
+  <data name="LicensesAndLibraries" xml:space="preserve"><value>Licencias y bibliotecas</value></data>
+  <data name="OpenSourceLibrariesUsedByMothball" xml:space="preserve"><value>Bibliotecas de código abierto utilizadas por Mothball</value></data>
+  <data name="GitHub" xml:space="preserve"><value>GitHub</value></data>
+  <data name="License" xml:space="preserve"><value>Licencia</value></data>
+  <data name="Sponsor" xml:space="preserve"><value>Patrocinar</value></data>
+  <data name="Contributors" xml:space="preserve"><value>Colaboradores</value></data>
   <data name="AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement" xml:space="preserve"><value>El modo avanzado muestra totales, asignaciones y edición de cantidades. El modo sencillo oculta la gestión de cantidades.</value></data>
   <data name="AppMode" xml:space="preserve"><value>Modo de la aplicación</value></data>
   <data name="AreYouSureYouWantToDeleteThisItemThisCannotBeUndone" xml:space="preserve"><value>¿Seguro que quieres eliminar este artículo? Esta acción no se puede deshacer.</value></data>
@@ -31,11 +40,20 @@
   <data name="BackgroundOperations" xml:space="preserve"><value>Operaciones en segundo plano</value></data>
   <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Operaciones de fotos en segundo plano</value></data>
   <data name="Barcode" xml:space="preserve"><value>Código de barras</value></data>
+  <data name="GeneratePdfWithNewCodes" xml:space="preserve"><value>Generar PDF con códigos nuevos</value></data>
+  <data name="GeneratePdfWithNewCodesDescription" xml:space="preserve"><value>Reserva SKU Code 128 y comparte un PDF listo para imprimir.</value></data>
+  <data name="Generate" xml:space="preserve"><value>Generar</value></data>
+  <data name="InternalSku" xml:space="preserve"><value>SKU interno</value></data>
+  <data name="GenerateInternalSku" xml:space="preserve"><value>Generar SKU interno</value></data>
+  <data name="GenerateInternalSkuDescription" xml:space="preserve"><value>Genera un SKU Code 128 cuando no se proporciona un código de barras.</value></data>
+  <data name="GenerateBarcode" xml:space="preserve"><value>Generar código</value></data>
+  <data name="GenerateBarcodeDescription" xml:space="preserve"><value>Genera un código en el formato seleccionado al guardar el registro.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
   <data name="Error" xml:space="preserve"><value>Error</value></data>
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Este código de barras ya está en uso.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Algo salió mal. Inténtalo de nuevo.</value></data>
-  <data name="BarcodesExtendedMode" xml:space="preserve"><value>Modo ampliado de códigos de barras</value></data>
-  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Muestra tipos adicionales de códigos de barras. El código QR siempre está disponible.</value></data>
+  <data name="BarcodesExtendedMode" xml:space="preserve"><value>Modo ampliado de códigos de barras (experimental)</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>El modo experimental muestra tipos adicionales de códigos de barras. En el modo simple están disponibles EAN-8, EAN-13 y el código QR.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Tipo de código de barras</value></data>
   <data name="Backup" xml:space="preserve"><value>Copia de seguridad</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Copia de seguridad exportada</value></data>
@@ -210,9 +228,14 @@
   <data name="SearchItems" xml:space="preserve"><value>Buscar artículos…</value></data>
   <data name="ScanBarcode" xml:space="preserve"><value>Escanear código de barras</value></data>
   <data name="Share" xml:space="preserve"><value>Compartir</value></data>
+  <data name="ShareSelected" xml:space="preserve"><value>Seleccionados</value></data>
+  <data name="ShareAll" xml:space="preserve"><value>Todos</value></data>
+  <data name="Visible" xml:space="preserve"><value>Visibles</value></data>
+  <data name="ShareSelectedEntries" xml:space="preserve"><value>Compartir elementos seleccionados</value></data>
   <data name="BarcodeSharing" xml:space="preserve"><value>Compartir códigos de barras</value></data>
   <data name="Select" xml:space="preserve"><value>Seleccionar</value></data>
   <data name="SelectAllLoaded" xml:space="preserve"><value>Seleccionar todos los cargados</value></data>
+  <data name="SelectVisible" xml:space="preserve"><value>Seleccionar visibles</value></data>
   <data name="ClearSelection" xml:space="preserve"><value>Limpiar</value></data>
   <data name="ShareAllMatching" xml:space="preserve"><value>Compartir todos los resultados filtrados</value></data>
   <data name="NumberOfSelectedContainers" xml:space="preserve"><value>Número de contenedores seleccionados:</value></data>
@@ -320,4 +343,39 @@
   <data name="NoTaggedResults" xml:space="preserve"><value>No hay artículos ni contenedores coincidentes</value></data>
   <data name="ClearTag" xml:space="preserve"><value>Borrar etiqueta seleccionada</value></data>
   <data name="TagUsageFormat" xml:space="preserve"><value>{0} artículos · {1} contenedores</value></data>
+  <data name="PreparingStartup" xml:space="preserve"><value>Preparando el inicio</value></data>
+  <data name="PreparingSecureStorage" xml:space="preserve"><value>Preparando el almacenamiento seguro</value></data>
+  <data name="InitializingLocalData" xml:space="preserve"><value>Inicializando los datos locales</value></data>
+  <data name="CheckingDemoData" xml:space="preserve"><value>Comprobando los datos de demostración</value></data>
+  <data name="GeneratingDemoContainers" xml:space="preserve"><value>Generando contenedores de demostración</value></data>
+  <data name="GeneratingDemoItems" xml:space="preserve"><value>Generando artículos de demostración</value></data>
+  <data name="PreparingApplication" xml:space="preserve"><value>Preparando la aplicación</value></data>
+  <data name="LoadingApplicationInterface" xml:space="preserve"><value>Cargando la interfaz de la aplicación</value></data>
+  <data name="StartupComplete" xml:space="preserve"><value>Inicio completado</value></data>
+  <data name="PreparingAdvertising" xml:space="preserve"><value>Preparando la publicidad</value></data>
+  <data name="DataMaintenance" xml:space="preserve"><value>Mantenimiento de datos</value></data>
+  <data name="DataMaintenanceDescription" xml:space="preserve"><value>Reemplaza las fotos por imágenes genéricas compartidas o elimina todo el almacén de inventario.</value></data>
+  <data name="ReplaceAllPhotosWithGenericImages" xml:space="preserve"><value>Reemplazar todas las fotos por imágenes genéricas</value></data>
+  <data name="DeleteAllAppData" xml:space="preserve"><value>Eliminar todos los datos de la aplicación</value></data>
+  <data name="ReplaceAllPhotos" xml:space="preserve"><value>Reemplazar todas las fotos</value></data>
+  <data name="ReplaceAllPhotosPrompt" xml:space="preserve"><value>Esto reemplazará todas las fotos del inventario por imágenes genéricas compartidas. ¿Continuar?</value></data>
+  <data name="Replace" xml:space="preserve"><value>Reemplazar</value></data>
+  <data name="DeleteAllData" xml:space="preserve"><value>Eliminar todos los datos</value></data>
+  <data name="DeleteAllAppDataPrompt" xml:space="preserve"><value>Esto eliminará permanentemente todos los datos del inventario, asignaciones, códigos de barras y fotos. ¿Continuar?</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Preparando</value></data>
+  <data name="ReplacingPhotos" xml:space="preserve"><value>Reemplazando fotos</value></data>
+  <data name="PhotosReplaced" xml:space="preserve"><value>Fotos reemplazadas</value></data>
+  <data name="DeletingInventoryData" xml:space="preserve"><value>Eliminando datos del inventario</value></data>
+  <data name="DeletingPhotoFiles" xml:space="preserve"><value>Eliminando archivos de fotos</value></data>
+  <data name="DataResetComplete" xml:space="preserve"><value>Restablecimiento de datos completado</value></data>
+  <data name="OverallProgress" xml:space="preserve"><value>Progreso general</value></data>
+  <data name="CurrentStep" xml:space="preserve"><value>Paso actual</value></data>
+  <data name="SeedDemoData" xml:space="preserve"><value>Crear datos de demostración</value></data>
+  <data name="SeedDemoDataPrompt" xml:space="preserve"><value>El almacén de inventario está vacío. ¿Crear ahora los contenedores, artículos y etiquetas de demostración?</value></data>
+  <data name="Seed" xml:space="preserve"><value>Crear</value></data>
+  <data name="Skip" xml:space="preserve"><value>Omitir</value></data>
+  <data name="DemoDataReady" xml:space="preserve"><value>Datos de demostración listos</value></data>
+  <data name="ContainersWithCount" xml:space="preserve"><value>Contenedores ({0})</value></data>
+  <data name="ItemsWithCount" xml:space="preserve"><value>Artículos ({0})</value></data>
+  <data name="TagNameIsRequired" xml:space="preserve"><value>El nombre de la etiqueta es obligatorio.</value></data>
 </root>

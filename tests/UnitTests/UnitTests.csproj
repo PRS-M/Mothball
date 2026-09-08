@@ -79,6 +79,7 @@
 
   <ItemGroup>
     <Compile Include="../../src/MothballMobile/UI/Features/Settings/SettingsViewModel.cs" Link="UI/Features/Settings/SettingsViewModel.cs" />
+    <Compile Include="../../src/MothballMobile/UI/Features/Settings/AdvancedSettings/AdvancedSettingsViewModel.cs" Link="UI/Features/Settings/AdvancedSettingsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Settings/SettingsSectionViewModelBase.cs" Link="UI/Features/Settings/SettingsSectionViewModelBase.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Settings/AppearanceSettingsViewModel.cs" Link="UI/Features/Settings/AppearanceSettingsViewModel.cs" />
     <Compile Include="../../src/MothballMobile/UI/Features/Settings/BackupSettingsViewModel.cs" Link="UI/Features/Settings/BackupSettingsViewModel.cs" />

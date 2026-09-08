@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using CoreApp.Application.Utilities;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Startup;
@@ -88,5 +89,61 @@ public class AppStartupOrchestratorTests
         initializer.Verify(service => service.InitializeAsync(), Times.Once);
         containers.Verify(repository => repository.GetAllAsync(), Times.Exactly(2));
         items.Verify(repository => repository.InitializeAsync(), Times.Once);
+    }
+
+    [Test]
+    public async Task StartAsync_WhenDemoSeedIsMarkedCompleteAndDataIsIntact_SkipsHeavySeeding()
+    {
+        var initializer = new Mock<IAppStartupInitializer>();
+        var containers = new Mock<IRepository<DbContainer>>();
+        var items = new Mock<IRepository<DbItem>>();
+        var inventories = new Mock<IRepository<DbItemInventory>>();
+        var photos = new Mock<IRepository<DbImage>>();
+        var relations = new Mock<IRepository<DbItemContainerRelation>>();
+        var seededContainers = Enumerable.Range(1, 100)
+            .Select(index => new DbContainer
+            {
+                ContainerId = Guid.NewGuid(),
+                Name = $"Container {index}",
+                Notes = $"Seeded notes [SEED-CONTAINER-MARKER:4f3c5d11-2f9b-44b3-9e55-2e0f1ea7a8d2]",
+                BarcodeValue = $"mothball://container/{index}"
+            })
+            .ToList();
+
+        containers.Setup(repository => repository.InitializeAsync()).Returns(Task.CompletedTask);
+        containers.Setup(repository => repository.GetAllAsync()).ReturnsAsync(seededContainers);
+        items.Setup(repository => repository.InitializeAsync()).Returns(Task.CompletedTask);
+        items.Setup(repository => repository.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<DbItem, bool>>>()))
+            .ReturnsAsync(100);
+        var fileHandler = new Mock<IFileHandler>();
+        fileHandler.Setup(handler => handler.FileExists("seeded-container.jpg", Constants.PathToSharedPhotos))
+            .Returns(true);
+        fileHandler.Setup(handler => handler.FileExists("seeded-item.jpg", Constants.PathToSharedPhotos))
+            .Returns(true);
+        var preferences = new Mock<IPreferences>();
+        preferences.Setup(store => store.Get("DemoDataSeedVersion", string.Empty))
+            .Returns(DemoDataSeeder.SeedVersion);
+
+        var seeder = new DemoDataSeeder(
+            containers.Object,
+            items.Object,
+            inventories.Object,
+            photos.Object,
+            relations.Object,
+            fileHandler.Object,
+            NullLogger<DemoDataSeeder>.Instance);
+        var orchestrator = new AppStartupOrchestrator(
+            initializer.Object,
+            Mock.Of<ILogger<AppStartupOrchestrator>>(),
+            seeder,
+            preferences.Object);
+
+        await orchestrator.StartAsync();
+
+        items.Verify(repository => repository.GetAllAsync(), Times.Never);
+        inventories.Verify(repository => repository.InitializeAsync(), Times.Never);
+        photos.Verify(repository => repository.InitializeAsync(), Times.Once);
+        relations.Verify(repository => repository.InitializeAsync(), Times.Never);
+        preferences.Verify(store => store.Set("DemoDataSeedVersion", It.IsAny<string>()), Times.Never);
     }
 }

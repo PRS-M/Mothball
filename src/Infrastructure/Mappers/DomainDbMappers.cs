@@ -153,12 +153,14 @@ public static class ImageMapper
         {
             ImageId = photo.ImageId,
             OwnerUniqueId = ownerId,
+            StoredFileName = photo.IsSharedAsset ? photo.FileName : null,
+            IsSharedAsset = photo.IsSharedAsset,
         };
     }
 
     public static ImageItem ToDomain(this DbImage dbPhoto)
     {
         ArgumentNullException.ThrowIfNull(dbPhoto);
-        return new ImageItem(dbPhoto.ImageId);
+        return new ImageItem(dbPhoto.ImageId, dbPhoto.StoredFileName, dbPhoto.IsSharedAsset);
     }
 }

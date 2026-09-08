@@ -2,6 +2,8 @@ using Infrastructure.Services.DatabaseModels;
 using CoreApp.Application.Contracts.Backup;
 using CoreApp.Application.Contracts.Tags;
 using CoreApp.Domain.ValueObjects;
+using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Contracts;
 
 namespace Infrastructure.Services.Restore;
 
@@ -247,6 +249,8 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
                 connection.Execute($"DELETE FROM {nameof(DbContainer)} WHERE {nameof(DbContainer.ContainerId)} = ?", containerId);
             }
 
+            SyncBarcodeRegistry(connection);
+
             ApplyTags(connection, backup.Data, cancellationToken);
 
             result = plan.Result;
@@ -254,6 +258,41 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
 
         inventoryChanges?.MarkChanged();
         return result;
+    }
+
+    private static void SyncBarcodeRegistry(SQLite.SQLiteConnection connection)
+    {
+        connection.Execute($"DELETE FROM {nameof(DbBarcodeRegistry)} WHERE {nameof(DbBarcodeRegistry.Status)} = ?", (int)BarcodeRegistryStatus.Assigned);
+
+        foreach (var container in connection.Table<DbContainer>().ToList().Where(container => !string.IsNullOrWhiteSpace(container.BarcodeValue)))
+        {
+            connection.Execute($"DELETE FROM {nameof(DbBarcodeRegistry)} WHERE {nameof(DbBarcodeRegistry.NormalizedValue)} = ?", container.BarcodeValue.Trim());
+            connection.Insert(new DbBarcodeRegistry
+            {
+                Value = container.BarcodeValue.Trim(),
+                NormalizedValue = container.BarcodeValue.Trim(),
+                Symbology = container.BarcodeSymbology ?? (int)BarcodeSymbology.Code128,
+                Status = (int)BarcodeRegistryStatus.Assigned,
+                OwnerKind = (int)BarcodeOwnerKind.Container,
+                OwnerId = container.ContainerId,
+                OwnerName = container.Name,
+            });
+        }
+
+        foreach (var item in connection.Table<DbItem>().ToList().Where(item => !string.IsNullOrWhiteSpace(item.BarcodeValue)))
+        {
+            connection.Execute($"DELETE FROM {nameof(DbBarcodeRegistry)} WHERE {nameof(DbBarcodeRegistry.NormalizedValue)} = ?", item.BarcodeValue.Trim());
+            connection.Insert(new DbBarcodeRegistry
+            {
+                Value = item.BarcodeValue.Trim(),
+                NormalizedValue = item.BarcodeValue.Trim(),
+                Symbology = item.BarcodeSymbology ?? (int)BarcodeSymbology.Code128,
+                Status = (int)BarcodeRegistryStatus.Assigned,
+                OwnerKind = (int)BarcodeOwnerKind.Item,
+                OwnerId = item.ItemId,
+                OwnerName = item.Name,
+            });
+        }
     }
 
     private static void ApplyTags(

@@ -20,6 +20,15 @@
   <data name="AddsContainersItemsRelationQuantityDeltasAndImagesThatArePresentInTheBackupButMissingFromTheApp" xml:space="preserve"><value>Fügt Container, Gegenstände, Änderungen der Zuordnungsmengen und Bilder hinzu, die in der Sicherung vorhanden sind, aber in der App fehlen.</value></data>
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Fügt fehlende Einträge wie bei „Nur hinzufügen“ hinzu.</value></data>
   <data name="Advanced" xml:space="preserve"><value>Erweitert</value></data>
+  <data name="AdvancedSettings" xml:space="preserve"><value>Erweiterte Einstellungen</value></data>
+  <data name="OpenAdvancedSettings" xml:space="preserve"><value>Erweiterte Einstellungen öffnen</value></data>
+  <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Optionen für erfahrene Nutzer und technische Optionen</value></data>
+  <data name="LicensesAndLibraries" xml:space="preserve"><value>Lizenzen und Bibliotheken</value></data>
+  <data name="OpenSourceLibrariesUsedByMothball" xml:space="preserve"><value>Von Mothball verwendete Open-Source-Bibliotheken</value></data>
+  <data name="GitHub" xml:space="preserve"><value>GitHub</value></data>
+  <data name="License" xml:space="preserve"><value>Lizenz</value></data>
+  <data name="Sponsor" xml:space="preserve"><value>Unterstützen</value></data>
+  <data name="Contributors" xml:space="preserve"><value>Mitwirkende</value></data>
   <data name="AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement" xml:space="preserve"><value>Der erweiterte Modus zeigt Gesamtmengen, Zuordnungen und Mengenbearbeitung. Der einfache Modus blendet die Mengenverwaltung aus.</value></data>
   <data name="AppMode" xml:space="preserve"><value>App-Modus</value></data>
   <data name="AreYouSureYouWantToDeleteThisItemThisCannotBeUndone" xml:space="preserve"><value>Möchten Sie diesen Gegenstand wirklich löschen? Dies kann nicht rückgängig gemacht werden.</value></data>
@@ -31,11 +40,20 @@
   <data name="BackgroundOperations" xml:space="preserve"><value>Hintergrundvorgänge</value></data>
   <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Foto-Hintergrundvorgänge</value></data>
   <data name="Barcode" xml:space="preserve"><value>Barcode</value></data>
+  <data name="GeneratePdfWithNewCodes" xml:space="preserve"><value>PDF mit neuen Codes generieren</value></data>
+  <data name="GeneratePdfWithNewCodesDescription" xml:space="preserve"><value>Code-128-SKUs reservieren und ein druckfertiges PDF teilen.</value></data>
+  <data name="Generate" xml:space="preserve"><value>Generieren</value></data>
+  <data name="InternalSku" xml:space="preserve"><value>Interne SKU</value></data>
+  <data name="GenerateInternalSku" xml:space="preserve"><value>Interne SKU generieren</value></data>
+  <data name="GenerateInternalSkuDescription" xml:space="preserve"><value>Eine Code-128-SKU generieren, wenn kein Barcode angegeben ist.</value></data>
+  <data name="GenerateBarcode" xml:space="preserve"><value>Barcode generieren</value></data>
+  <data name="GenerateBarcodeDescription" xml:space="preserve"><value>Beim Speichern einen Barcode im ausgewählten Format generieren.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Bearbeiten</value></data>
   <data name="Error" xml:space="preserve"><value>Fehler</value></data>
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Dieser Barcode wird bereits verwendet.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.</value></data>
-  <data name="BarcodesExtendedMode" xml:space="preserve"><value>Erweiterter Barcode-Modus</value></data>
-  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Zeigt zusätzliche Barcode-Typen an. QR-Code ist immer verfügbar.</value></data>
+  <data name="BarcodesExtendedMode" xml:space="preserve"><value>Erweiterter Barcode-Modus (experimentell)</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Der experimentelle Modus zeigt zusätzliche Barcode-Typen an. Im einfachen Modus sind EAN-8, EAN-13 und QR-Code verfügbar.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Barcode-Typ</value></data>
   <data name="Backup" xml:space="preserve"><value>Sicherung</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Sicherung exportiert</value></data>
@@ -210,9 +228,14 @@
   <data name="SearchItems" xml:space="preserve"><value>Gegenstände suchen …</value></data>
   <data name="ScanBarcode" xml:space="preserve"><value>Barcode scannen</value></data>
   <data name="Share" xml:space="preserve"><value>Teilen</value></data>
+  <data name="ShareSelected" xml:space="preserve"><value>Auswahl</value></data>
+  <data name="ShareAll" xml:space="preserve"><value>Alle</value></data>
+  <data name="Visible" xml:space="preserve"><value>Sichtbar</value></data>
+  <data name="ShareSelectedEntries" xml:space="preserve"><value>Ausgewählte Einträge teilen</value></data>
   <data name="BarcodeSharing" xml:space="preserve"><value>Barcode teilen</value></data>
   <data name="Select" xml:space="preserve"><value>Auswählen</value></data>
   <data name="SelectAllLoaded" xml:space="preserve"><value>Alle geladenen auswählen</value></data>
+  <data name="SelectVisible" xml:space="preserve"><value>Sichtbare auswählen</value></data>
   <data name="ClearSelection" xml:space="preserve"><value>Leeren</value></data>
   <data name="ShareAllMatching" xml:space="preserve"><value>Alle gefilterten Ergebnisse teilen</value></data>
   <data name="NumberOfSelectedContainers" xml:space="preserve"><value>Anzahl der ausgewählten Container:</value></data>
@@ -320,4 +343,39 @@
   <data name="NoTaggedResults" xml:space="preserve"><value>Keine passenden Gegenstände oder Container</value></data>
   <data name="ClearTag" xml:space="preserve"><value>Ausgewählten Tag löschen</value></data>
   <data name="TagUsageFormat" xml:space="preserve"><value>{0} Gegenstände · {1} Container</value></data>
+  <data name="PreparingStartup" xml:space="preserve"><value>Start wird vorbereitet</value></data>
+  <data name="PreparingSecureStorage" xml:space="preserve"><value>Sicherer Speicher wird vorbereitet</value></data>
+  <data name="InitializingLocalData" xml:space="preserve"><value>Lokale Daten werden initialisiert</value></data>
+  <data name="CheckingDemoData" xml:space="preserve"><value>Demodaten werden überprüft</value></data>
+  <data name="GeneratingDemoContainers" xml:space="preserve"><value>Demo-Container werden erstellt</value></data>
+  <data name="GeneratingDemoItems" xml:space="preserve"><value>Demo-Elemente werden erstellt</value></data>
+  <data name="PreparingApplication" xml:space="preserve"><value>Anwendung wird vorbereitet</value></data>
+  <data name="LoadingApplicationInterface" xml:space="preserve"><value>Anwendungsoberfläche wird geladen</value></data>
+  <data name="StartupComplete" xml:space="preserve"><value>Start abgeschlossen</value></data>
+  <data name="PreparingAdvertising" xml:space="preserve"><value>Werbung wird vorbereitet</value></data>
+  <data name="DataMaintenance" xml:space="preserve"><value>Datenwartung</value></data>
+  <data name="DataMaintenanceDescription" xml:space="preserve"><value>Fotos durch gemeinsame Standardbilder ersetzen oder den gesamten Inventarspeicher löschen.</value></data>
+  <data name="ReplaceAllPhotosWithGenericImages" xml:space="preserve"><value>Alle Fotos durch Standardbilder ersetzen</value></data>
+  <data name="DeleteAllAppData" xml:space="preserve"><value>Alle App-Daten löschen</value></data>
+  <data name="ReplaceAllPhotos" xml:space="preserve"><value>Alle Fotos ersetzen</value></data>
+  <data name="ReplaceAllPhotosPrompt" xml:space="preserve"><value>Dadurch werden alle Inventarfotos durch gemeinsame Standardbilder ersetzt. Fortfahren?</value></data>
+  <data name="Replace" xml:space="preserve"><value>Ersetzen</value></data>
+  <data name="DeleteAllData" xml:space="preserve"><value>Alle Daten löschen</value></data>
+  <data name="DeleteAllAppDataPrompt" xml:space="preserve"><value>Dadurch werden alle Inventardaten, Zuordnungen, Barcodes und Fotos dauerhaft gelöscht. Fortfahren?</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Vorbereitung</value></data>
+  <data name="ReplacingPhotos" xml:space="preserve"><value>Fotos werden ersetzt</value></data>
+  <data name="PhotosReplaced" xml:space="preserve"><value>Fotos ersetzt</value></data>
+  <data name="DeletingInventoryData" xml:space="preserve"><value>Inventardaten werden gelöscht</value></data>
+  <data name="DeletingPhotoFiles" xml:space="preserve"><value>Fotodateien werden gelöscht</value></data>
+  <data name="DataResetComplete" xml:space="preserve"><value>Datenlöschung abgeschlossen</value></data>
+  <data name="OverallProgress" xml:space="preserve"><value>Gesamtfortschritt</value></data>
+  <data name="CurrentStep" xml:space="preserve"><value>Aktueller Schritt</value></data>
+  <data name="SeedDemoData" xml:space="preserve"><value>Demodaten erstellen</value></data>
+  <data name="SeedDemoDataPrompt" xml:space="preserve"><value>Der Inventarspeicher ist leer. Jetzt Demo-Container, -Elemente und -Tags erstellen?</value></data>
+  <data name="Seed" xml:space="preserve"><value>Erstellen</value></data>
+  <data name="Skip" xml:space="preserve"><value>Überspringen</value></data>
+  <data name="DemoDataReady" xml:space="preserve"><value>Demodaten bereit</value></data>
+  <data name="ContainersWithCount" xml:space="preserve"><value>Container ({0})</value></data>
+  <data name="ItemsWithCount" xml:space="preserve"><value>Elemente ({0})</value></data>
+  <data name="TagNameIsRequired" xml:space="preserve"><value>Ein Tagname ist erforderlich.</value></data>
 </root>

@@ -22,6 +22,19 @@ public interface ITagRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets one page of tags with counts of their item and container assignments.
+    /// </summary>
+    /// <param name="searchTerm">An optional case-insensitive name filter.</param>
+    /// <param name="pageNumber">The zero-based page number.</param>
+    /// <param name="pageSize">The maximum number of tags to return.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task<IReadOnlyList<TagUsageSummary>> GetUsageSummariesPageAsync(
+        string? searchTerm,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Finds a tag by its normalized name.
     /// </summary>
     Task<Tag?> FindByNormalizedNameAsync(

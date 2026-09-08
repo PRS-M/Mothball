@@ -8,13 +8,17 @@
                 x:Name="ContainersPage"
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:DataType="vm:ContainerListViewModel"
-                Title="{x:Static strings:AppResources.Containers}"
+                Title="{Binding Title}"
                 Background="{DynamicResource Surface}">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="{x:Static strings:AppResources.BarcodeSharing}"
                      Command="{Binding EnterSelectionModeCommand}"
-                     Order="Primary" />
+                     Order="Primary">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Color="{DynamicResource OnSurface}" Size="22" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
         <ToolbarItem Priority="1"
                      Order="Primary"
                      Command="{Binding ScanToFindCommand}">
@@ -43,10 +47,8 @@
               ColumnDefinitions="*,Auto"
               ColumnSpacing="12">
             <controls:PageHeader Grid.Column="0"
-                                 Title="{x:Static strings:AppResources.Containers}"
                                  Subtitle="{x:Static strings:AppResources.BrowseYourStorage}"
-                                 TitleFontSize="22"
-                                 SubtitleFontSize="12"
+                                 SubtitleFontSize="14"
                                  Spacing="2"
                                  HeaderMargin="0,0,0,4" />
 
@@ -94,7 +96,7 @@
                      RemoveTagCommand="{Binding RemoveTagCommand}" />
 
         <Grid Grid.Row="2"
-              ColumnDefinitions="*,*,*,*"
+              ColumnDefinitions="0.9*,0.9*,0.7*,1.5*"
               RowDefinitions="Auto,Auto,Auto"
               ColumnSpacing="8"
               RowSpacing="8"
@@ -102,12 +104,53 @@
             <HorizontalStackLayout Grid.ColumnSpan="4" Margin="4,0,0,0" Spacing="4">
                 <Label Text="{x:Static strings:AppResources.NumberOfSelectedContainers}" FontSize="14" TextColor="{DynamicResource OnSurfaceVariant}" />
                 <Label Text="{Binding SelectedCount}" FontSize="14" TextColor="{DynamicResource OnSurfaceVariant}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Margin="8,0,0,0"
+                                   WidthRequest="22"
+                                   HeightRequest="22"
+                                   Color="{DynamicResource Primary}" />
             </HorizontalStackLayout>
-            <Button Grid.Row="1" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.SelectAllLoaded}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding SelectAllLoadedCommand}" />
-            <Button Grid.Row="1" Grid.Column="2" Text="{x:Static strings:AppResources.ClearSelection}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding ClearSelectionCommand}" />
-            <Button Grid.Row="1" Grid.Column="3" Text="{x:Static strings:AppResources.Share}" Padding="8,0" Style="{StaticResource TonalButton}" Command="{Binding ShareSelectedCommand}" IsEnabled="{Binding HasSelection}" />
-            <Button Grid.Row="2" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.ShareAllMatching}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding ShareAllMatchingCommand}" />
-            <Button Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.Cancel}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding CancelSelectionCommand}" />
+            <Button Grid.Row="1" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.Visible}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding SelectAllLoadedCommand}" SemanticProperties.Description="{x:Static strings:AppResources.SelectVisible}">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF00C;" Size="16" Color="{DynamicResource Primary}" />
+                </Button.ImageSource>
+            </Button>
+            <Button Grid.Row="1" Grid.Column="2" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding ClearSelectionCommand}" SemanticProperties.Description="{x:Static strings:AppResources.ClearSelection}">
+                <Button.Text>
+                    <OnPlatform x:TypeArguments="x:String" Default="{x:Static strings:AppResources.ClearSelection}">
+                        <On Platform="iOS, MacCatalyst" Value="" />
+                    </OnPlatform>
+                </Button.Text>
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF12D;" Size="16" Color="{DynamicResource Primary}" />
+                </Button.ImageSource>
+            </Button>
+            <Button Grid.Row="1" Grid.Column="3" Text="{x:Static strings:AppResources.ShareSelected}" MinimumWidthRequest="96" Padding="8,0" Style="{StaticResource TonalButton}" Command="{Binding ShareSelectedCommand}" IsEnabled="{Binding HasSelection}" SemanticProperties.Description="{x:Static strings:AppResources.ShareSelectedEntries}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsBusy}" Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Button.Triggers>
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="18" Color="{DynamicResource OnSecondaryContainer}" />
+                </Button.ImageSource>
+            </Button>
+            <Button Grid.Row="2" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.ShareAll}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding ShareAllMatchingCommand}" SemanticProperties.Description="{x:Static strings:AppResources.ShareAllMatching}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsBusy}" Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Button.Triggers>
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1E0;" Size="18" Color="{DynamicResource Primary}" />
+                </Button.ImageSource>
+            </Button>
+            <Button Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.Cancel}" Padding="8,0" Style="{StaticResource OutlinedButton}" Command="{Binding CancelSelectionCommand}" SemanticProperties.Description="{x:Static strings:AppResources.Cancel}">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF00D;" Size="16" Color="{DynamicResource Primary}" />
+                </Button.ImageSource>
+            </Button>
         </Grid>
 
         <Grid Grid.Row="3">

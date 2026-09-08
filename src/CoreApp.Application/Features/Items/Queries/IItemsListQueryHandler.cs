@@ -9,6 +9,8 @@ namespace CoreApp.Application.Features.Items.Queries;
 /// </summary>
 public interface IItemsListQueryHandler
 {
+    /// <summary>Gets the total number of items, independent of list filters.</summary>
+    Task<int> CountAsync();
     /// <summary>
     /// Queries inventory snapshots that match the supplied filter and optional search criteria.
     /// </summary>

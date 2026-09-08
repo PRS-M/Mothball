@@ -11,6 +11,11 @@ namespace CoreApp.Application.Abstractions.Persistence;
 /// </summary>
 public interface IInventoryQueryRepository
 {
+    /// <summary>Gets the total number of containers.</summary>
+    Task<int> CountContainersAsync();
+
+    /// <summary>Gets the total number of items.</summary>
+    Task<int> CountItemsAsync();
     /// <summary>
     /// Finds the container or item that owns an exact barcode value.
     /// </summary>

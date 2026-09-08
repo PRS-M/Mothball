@@ -3,6 +3,7 @@ using CoreApp.Application.Contracts.Tags;
 using CoreApp.Domain.Entities.TagAggregate;
 using CoreApp.Domain.ValueObjects;
 using Infrastructure.Services.JsonStore.Models;
+using Infrastructure.Services.Repositories;
 
 namespace Infrastructure.Services.JsonStore.Repositories;
 
@@ -48,6 +49,40 @@ public sealed class JsonTagRepository : ITagRepository
 
         return state.Tags
             .OrderBy(tag => tag.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(tag =>
+            {
+                assignments.TryGetValue(tag.TagId, out var counts);
+                return new TagUsageSummary(tag.TagId, tag.Name, counts.ItemCount, counts.ContainerCount);
+            })
+            .ToList();
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TagUsageSummary>> GetUsageSummariesPageAsync(
+        string? searchTerm,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var search = searchTerm?.Trim().TrimStart('#');
+        var assignments = state.TagAssignments
+            .GroupBy(assignment => assignment.TagId)
+            .ToDictionary(
+                group => group.Key,
+                group => (
+                    ItemCount: group.Count(assignment => assignment.TargetType == TagTargetType.Item),
+                    ContainerCount: group.Count(assignment => assignment.TargetType == TagTargetType.Container)));
+
+        return state.Tags
+            .Where(tag => string.IsNullOrWhiteSpace(search)
+                || tag.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(tag => tag.Name, StringComparer.OrdinalIgnoreCase)
+            .Skip(RepositoryQueryHelpers.CalculateOffset(pageNumber, pageSize))
+            .Take(pageSize)
             .Select(tag =>
             {
                 assignments.TryGetValue(tag.TagId, out var counts);

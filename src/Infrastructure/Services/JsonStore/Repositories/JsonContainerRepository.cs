@@ -51,6 +51,12 @@ public sealed class JsonContainerRepository : IContainerRepository
             .ToList();
     }
 
+    public async Task<int> CountAsync()
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        return state.Containers.Count;
+    }
+
     private async Task<List<Container>> GetAllAsync(int pageNumber, int pageSize)
     {
         RepositoryQueryHelpers.ValidatePaging(pageNumber, pageSize);
@@ -389,7 +395,13 @@ public sealed class JsonContainerRepository : IContainerRepository
         var photos = state.Images
             .Where(p => p.OwnerUniqueId == row.ContainerId)
             .OrderBy(p => p.RowId)
-            .Select(p => new DbImage { ImageId = p.ImageId, OwnerUniqueId = p.OwnerUniqueId })
+            .Select(p => new DbImage
+            {
+                ImageId = p.ImageId,
+                OwnerUniqueId = p.OwnerUniqueId,
+                StoredFileName = p.StoredFileName,
+                IsSharedAsset = p.IsSharedAsset,
+            })
             .ToList();
 
         List<DbItemContainerRelation>? relations = null;

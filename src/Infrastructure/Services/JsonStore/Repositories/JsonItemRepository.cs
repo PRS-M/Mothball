@@ -61,6 +61,12 @@ public sealed class JsonItemRepository : IItemRepository
             .ToList();
     }
 
+    public async Task<int> CountAsync()
+    {
+        var state = await store.LoadAsync().ConfigureAwait(false);
+        return state.Items.Count;
+    }
+
     public Task<List<Item>> QueryWithPhotosAsync(ItemListSpecification specification)
     {
         var (term, hasSearch) = NormalizeSearch(specification.SearchTerm);
@@ -427,7 +433,13 @@ public sealed class JsonItemRepository : IItemRepository
         var photos = state.Images
             .Where(p => p.OwnerUniqueId == row.ItemId)
             .OrderBy(p => p.RowId)
-            .Select(p => new DbImage { ImageId = p.ImageId, OwnerUniqueId = p.OwnerUniqueId })
+            .Select(p => new DbImage
+            {
+                ImageId = p.ImageId,
+                OwnerUniqueId = p.OwnerUniqueId,
+                StoredFileName = p.StoredFileName,
+                IsSharedAsset = p.IsSharedAsset,
+            })
             .ToList();
 
         return dbItem.ToDomain(photos);

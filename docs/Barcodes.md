@@ -15,13 +15,15 @@ Mothball can identify containers and item types with barcodes. A barcode lets yo
 
 ## Supported Formats
 
-QR Code is always available. In Settings, enable **Barcodes extended mode** to select and scan the additional formats supported by the device barcode reader. The scanner only accepts formats enabled by the current setting.
+In simple mode, EAN-8, EAN-13, and QR Code are available. In Settings, enable **Barcodes extended mode** to select and scan the additional formats supported by the device barcode reader. The scanner only accepts formats enabled by the current setting.
+
+Mothball generates internal SKUs as Code 128 values in the format `MB-{GUID:N}`. These are application-owned inventory identifiers, not commercial EAN/GTIN values. EAN-8 and EAN-13 are intended for user-supplied or reserved external codes; Mothball does not generate EAN values. Selecting QR Code for generation produces a versioned record URI such as `mothball://v1/item/{id}` or `mothball://v1/container/{id}`.
 
 The details pages render an assigned value using its recorded symbology, so the displayed label matches the type that was scanned or selected.
 
 ## Assigning and Editing
 
-Use the Barcode field on an add form to enter a value manually or use **Scan Barcode**. On an item or container details page, select the edit control beside Barcode to enter, replace, clear, or scan a value.
+Use the Barcode field on an add form to enter a value manually or use **Scan Barcode**. The **Generate barcode** switch and button use the selected format when the record is saved. Code 128 and QR Code can be generated; selecting EAN-8 or EAN-13 automatically exposes the manual field because commercial EAN values must be supplied by the user. On an item or container details page, select **Edit** beside Barcode to enter, replace, clear, scan, or enable the same format-aware generation switch.
 
 Each barcode value belongs to at most one inventory record across the whole app. A value assigned to a container cannot also be assigned to an item, and vice versa. Reusing the same owner's current value is allowed. If a value is already in use, Mothball keeps the current record unchanged and shows a native device alert.
 
@@ -43,7 +45,9 @@ In simple mode, the receipt quantity defaults to one. In advanced mode, enter a 
 
 Mothball stores the decoded barcode value and its symbology, not the camera image or source image used to scan it. Barcode values and symbologies are persisted by both the SQLite and JSON backends. Backup export and restore retain those fields, so an assigned barcode moves with its container or item when inventory data is restored.
 
-For contributors, barcode ownership is enforced by the Application-layer `IBarcodeAssignmentService` and creation handlers. Lookup uses `IInventoryQueryRepository.FindBarcodeAsync`. Preserve the trim-only, case-sensitive matching and global uniqueness rules when changing either persistence backend or backup/restore behavior. Camera/gallery decoding and barcode rendering are MAUI-only concerns.
+For contributors, barcode ownership is enforced by the Application-layer `IBarcodeAssignmentService`, creation handlers, and `IBarcodeRegistryService`. The registry tracks reserved and assigned values and has a unique SQLite index; JSON writes are serialized by the store. Lookup uses `IInventoryQueryRepository.FindBarcodeAsync`. Preserve the trim-only, case-sensitive matching and global uniqueness rules when changing either persistence backend or backup/restore behavior. Camera/gallery decoding and barcode rendering are MAUI-only concerns.
+
+Advanced Settings can reserve a batch of internal Code 128 SKUs and share them as a print-ready PDF. A reserved code can later be claimed by entering or scanning it on an add or details form; claiming does not require reprinting.
 
 ## Sharing and Batch Documents
 

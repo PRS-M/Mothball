@@ -132,6 +132,24 @@ public sealed class ListAndItemWorkflowHandlerTests
     }
 
     [Test]
+    public async Task CreateItemCommandHandler_WhenInternalSkuGenerationIsDisabled_LeavesBarcodeEmpty()
+    {
+        var commands = new Mock<IInventoryCommandRepository>();
+        var queries = new Mock<IInventoryQueryRepository>();
+        var imageService = new ImageService(
+            Mock.Of<IPhotoSourceReader>(),
+            Mock.Of<IPhotoFilePersistenceService>(),
+            Mock.Of<ITemporaryPhotoService>(),
+            Mock.Of<IPhotoDeletionService>(),
+            commands.Object);
+        var handler = new CreateItemCommandHandler(commands.Object, queries.Object, imageService);
+
+        var item = await handler.CreateAsync("Hat", "Blue", generateInternalSku: false);
+
+        Assert.That(item.Barcode, Is.Null);
+    }
+
+    [Test]
     public void CreateItemCommandHandler_WhenBarcodeIsAssigned_RejectsExistingOwner()
     {
         var commands = new Mock<IInventoryCommandRepository>();

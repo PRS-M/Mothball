@@ -87,12 +87,17 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         this.inventoryChanges = inventoryChanges;
         this.barcodeLookup = barcodeLookup ?? throw new ArgumentNullException(nameof(barcodeLookup));
         this.barcodeShare = barcodeShare;
+        this.applicationSettings.AppModeChanged += OnAppModeChanged;
     }
 
     protected override string SearchOperationName => "Search items";
     protected override TagTargetType TagTargetType => TagTargetType.Item;
     protected override long DataRevision => inventoryChanges.Revision;
     protected override string LoadVariant => $"{SelectedFilter}:{base.LoadVariant}";
+
+    public int TotalCount { get; private set; }
+
+    public string Title => LocalizationManager.Current.Format("Items ({0})", TotalCount);
 
     protected override ItemViewModel MapToViewModel(InventorySnapshot source)
     {
@@ -104,6 +109,13 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
             EditQuantityAsync,
             UseAsync,
             DeleteAsync);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        TotalCount = await itemListQueries.CountAsync();
+        OnPropertyChanged(nameof(TotalCount));
+        OnPropertyChanged(nameof(Title));
     }
 
     public int SelectedCount => Items.Count(item => item.IsSelected);
@@ -120,6 +132,20 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
                 OnPropertyChanged(nameof(HasSelection));
             }
         };
+    }
+
+    private void OnAppModeChanged(object? sender, EventArgs e)
+        => MainThread.InvokeOnMainThreadAsync(SearchAsync)
+            .FireAndForget(backgroundTasks, SearchOperationName);
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            applicationSettings.AppModeChanged -= OnAppModeChanged;
+        }
+
+        base.Dispose(disposing);
     }
 
     [RelayCommand]

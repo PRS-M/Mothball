@@ -181,6 +181,7 @@ public sealed class ItemDetailsViewModelTests
     public async Task SaveBarcodeCommand_WhenReplacementIsConfirmed_AssignsAndPublishesBarcode()
     {
         var item = new Item(Guid.NewGuid(), "Widget", "");
+        item.UpdateBarcode(new Barcode("old-widget-code", BarcodeSymbology.Code128));
         var details = new ItemDetailsResult(new InventorySnapshot(item, 1, 0, []));
         var itemDetails = CreateItemDetailsQuery(item.ItemId, details);
         var assignments = new Mock<IBarcodeAssignmentService>();

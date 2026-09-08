@@ -43,6 +43,37 @@ public sealed class SettingsViewModelTests
             It.Is<AlertPopupDefinition>(d => d.Message == "disk full")), Times.Once);
     }
 
+    [Test]
+    public void AdvancedSettingsViewModel_ChangesBarcodeModeThroughApplicationSettings()
+    {
+        var settings = new Mock<IApplicationSettings>();
+        settings.SetupGet(value => value.IsBarcodeExtendedMode).Returns(false);
+        var viewModel = new AdvancedSettingsViewModel(
+            settings.Object,
+            CreateSigningKeyViewModel(),
+            Mock.Of<INavigationService>(),
+            Mock.Of<IInventoryMaintenanceService>(),
+            Mock.Of<IPopupService>());
+
+        viewModel.IsBarcodeExtendedMode = true;
+
+        settings.VerifySet(value => value.IsBarcodeExtendedMode = true, Times.Once);
+    }
+
+    [Test]
+    public async Task SettingsViewModel_NavigateToAdvancedSettings_UsesAdvancedSettingsRoute()
+    {
+        var navigation = new Mock<INavigationService>();
+        var viewModel = new SettingsViewModel(
+            new AppearanceSettingsViewModel(Mock.Of<IApplicationSettings>()),
+            CreateBackupViewModel(),
+            navigation.Object);
+
+        await viewModel.NavigateToAdvancedSettingsCommand.ExecuteAsync(null);
+
+        navigation.Verify(value => value.GoToAsync(NavigationRoutes.AdvancedSettings), Times.Once);
+    }
+
     private static BackupSettingsViewModel CreateBackupViewModel()
         => new(
             Mock.Of<IInventoryBackupWorkflowService>(),
@@ -51,4 +82,13 @@ public sealed class SettingsViewModelTests
             Mock.Of<IPopupService>(),
             Mock.Of<IPopupDefinitionService>(),
             NullLogger<BackupSettingsViewModel>.Instance);
+
+    private static BackupSigningKeySettingsViewModel CreateSigningKeyViewModel()
+        => new(
+            Mock.Of<IBackupSigningKeyTransferService>(),
+            Mock.Of<IFilePicker>(),
+            Mock.Of<IApplicationSettings>(),
+            Mock.Of<IPopupService>(),
+            Mock.Of<IPopupDefinitionService>(),
+            NullLogger<BackupSigningKeySettingsViewModel>.Instance);
 }

@@ -41,6 +41,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
         {
             ResetPaging();
             await LoadNextPageCore();
+            await OnInitializedAsync();
             loadedRevision = revisionAtStart;
             initialized = true;
         }, showRefreshing: true);
@@ -78,6 +79,9 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     /// </summary>
     /// <param name="vm">The view model that was added.</param>
     protected virtual void OnViewModelAdded(TViewModel vm) { }
+
+    /// <summary>Runs feature-specific work after the first page has loaded.</summary>
+    protected virtual Task OnInitializedAsync() => Task.CompletedTask;
 
     /// <summary>
     /// Loads a page of source items.
