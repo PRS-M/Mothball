@@ -175,10 +175,6 @@
                 ZIndex="10">
             <VerticalStackLayout VerticalOptions="Center" Spacing="16">
                 <ActivityIndicator IsRunning="True" />
-                <Button Text="{x:Static strings:AppResources.Cancel}"
-                        Style="{StaticResource OutlinedButton}"
-                        Command="{Binding CancelMaintenanceCommand}"
-                        IsVisible="{Binding CanCancelMaintenance}" />
                 <Label Text="{x:Static strings:AppResources.OverallProgress}"
                        Style="{StaticResource BodyMedium}" />
                 <ProgressBar Progress="{Binding MaintenanceProgress}" />
@@ -188,6 +184,10 @@
                 <Label Text="{Binding MaintenanceStatus}"
                        HorizontalTextAlignment="Center"
                        Style="{StaticResource BodyMedium}" />
+                <Button Text="{x:Static strings:AppResources.Cancel}"
+                        Style="{StaticResource OutlinedButton}"
+                        Command="{Binding CancelMaintenanceCommand}"
+                        IsVisible="{Binding CanCancelMaintenance}" />
             </VerticalStackLayout>
         </Border>
     </Grid>
