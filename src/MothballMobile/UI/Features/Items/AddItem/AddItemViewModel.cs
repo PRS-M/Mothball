@@ -341,12 +341,15 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                 return;
             }
 
-            await CreateItemAsync(trimmed, parsedQuantity, destinationContainerId);
+            var createdItem = await CreateItemAsync(trimmed, parsedQuantity, destinationContainerId);
 
             await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;
             ValidationMessage = null;
             await nav.GoBackAsync();
+            await nav.GoToAsync(
+                Infrastructure.NavigationRoutes.ItemDetails,
+                new Infrastructure.Navigation.ItemDetailsNavigationRequest(createdItem.ItemId, destinationContainerId));
         }, errorMessageFactory: BarcodeOperationErrorMessage, rethrowOnError: false);
     }
 
@@ -371,7 +374,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
         await itemReceipts.ReceiveAsync(existingItem.OwnerId, quantity, containerId);
     }
 
-    private async Task CreateItemAsync(string name, int quantity, Guid? containerId)
+    private async Task<CoreApp.Domain.Entities.ItemAggregate.Item> CreateItemAsync(string name, int quantity, Guid? containerId)
     {
         var normalizedBarcodeValue = BarcodeValue?.Trim();
         var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
@@ -380,7 +383,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
         try
         {
-            await createItem.CreateAsync(
+            var createdItem = await createItem.CreateAsync(
                 name,
                 Description?.Trim() ?? string.Empty,
                 containerId,
@@ -389,6 +392,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                 barcode,
                 GenerateInternalSku,
                 BarcodeSymbology);
+
+            return createdItem;
         }
         catch (Exception ex)
         {

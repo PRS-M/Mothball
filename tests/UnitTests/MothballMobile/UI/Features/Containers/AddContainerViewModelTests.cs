@@ -2,6 +2,7 @@ using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.ValueObjects;
 using Moq;
 using MothballMobile.Infrastructure.Scanning;
+using MothballMobile.Infrastructure.Navigation;
 using MothballMobile.UI.Features.Containers.AddContainer;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Containers;
@@ -47,9 +48,30 @@ public sealed class AddContainerViewModelTests
             It.Is<Barcode>(barcode => barcode.Value == "box-01" && barcode.Symbology == BarcodeSymbology.Code128)), Times.Once);
     }
 
+    [Test]
+    public async Task SaveContainerCommand_NavigatesToCreatedContainerDetails()
+    {
+        var createdContainer = new Container(Guid.NewGuid(), "Archive box", "Top shelf");
+        var createContainer = new Mock<ICreateContainerCommandHandler>();
+        createContainer.Setup(handler => handler.CreateAsync("Archive box", "Top shelf", null, null, true, BarcodeSymbology.QrCode))
+            .ReturnsAsync(createdContainer);
+        var navigation = new Mock<INavigationService>();
+        var viewModel = CreateViewModel(createContainer.Object, navigation: navigation.Object);
+        viewModel.Name = "Archive box";
+        viewModel.Notes = "Top shelf";
+
+        await viewModel.SaveContainerCommand.ExecuteAsync(null);
+
+        navigation.Verify(service => service.GoBackAsync(), Times.Once);
+        navigation.Verify(service => service.GoToAsync(
+            NavigationRoutes.ContainerDetails,
+            It.Is<ContainerDetailsNavigationRequest>(request => request.ContainerId == createdContainer.ContainerId)), Times.Once);
+    }
+
     private static AddContainerViewModel CreateViewModel(
         ICreateContainerCommandHandler createContainer,
-        IBarcodeScanSession? barcodeScanner = null)
+        IBarcodeScanSession? barcodeScanner = null,
+        INavigationService? navigation = null)
         => new(
             new ImageService(
                 Mock.Of<IPhotoSourceReader>(),
@@ -58,7 +80,7 @@ public sealed class AddContainerViewModelTests
                 Mock.Of<IPhotoDeletionService>(),
                 Mock.Of<IInventoryCommandRepository>()),
             createContainer,
-            Mock.Of<INavigationService>(),
+            navigation ?? Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(),
             Mock.Of<IPopupService>(),
             Mock.Of<IPopupDefinitionService>(),

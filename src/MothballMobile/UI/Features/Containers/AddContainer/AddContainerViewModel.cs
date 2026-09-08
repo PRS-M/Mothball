@@ -198,7 +198,7 @@ public partial class AddContainerViewModel : BaseViewModel
             var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
                 ? null
                 : new Barcode(normalizedBarcodeValue, BarcodeSymbology);
-            await createContainer.CreateAsync(
+            var createdContainer = await createContainer.CreateAsync(
                 trimmedName,
                 string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim(),
                 pendingPhoto.Bytes,
@@ -210,6 +210,9 @@ public partial class AddContainerViewModel : BaseViewModel
             PhotoThumbnailPath = null;
             ValidationMessage = null;
             await navigationService.GoBackAsync();
+            await navigationService.GoToAsync(
+                Infrastructure.NavigationRoutes.ContainerDetails,
+                new Infrastructure.Navigation.ContainerDetailsNavigationRequest(createdContainer.ContainerId));
         }, errorMessageFactory: BarcodeOperationErrorMessage, rethrowOnError: false);
     }
 

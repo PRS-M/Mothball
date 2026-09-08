@@ -3,6 +3,7 @@ using Moq;
 using CoreApp.Application.Contracts;
 using CoreApp.Domain.ValueObjects;
 using MothballMobile.Infrastructure.Scanning;
+using MothballMobile.Infrastructure.Navigation;
 using MothballMobile.UI.Features.Items.AddItem;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Items;
@@ -40,6 +41,25 @@ public sealed class AddItemViewModelTests
 
         Assert.That(viewModel.ShowQuantityField, Is.False);
         createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 1, null, null, true, BarcodeSymbology.QrCode), Times.Once);
+    }
+
+    [Test]
+    public async Task SaveCommand_NavigatesToCreatedItemDetails()
+    {
+        var createdItem = new CoreApp.Domain.Entities.ItemAggregate.Item("Widget", "");
+        var createItem = new Mock<ICreateItemCommandHandler>();
+        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null, null, true, BarcodeSymbology.QrCode))
+            .ReturnsAsync(createdItem);
+        var navigation = new Mock<INavigationService>();
+        var viewModel = CreateViewModel(createItem.Object, false, navigation: navigation.Object);
+        viewModel.Name = "Widget";
+
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        navigation.Verify(service => service.GoBackAsync(), Times.Once);
+        navigation.Verify(service => service.GoToAsync(
+            NavigationRoutes.ItemDetails,
+            It.Is<ItemDetailsNavigationRequest>(request => request.ItemId == createdItem.ItemId && request.SourceContainerId == null)), Times.Once);
     }
 
     [Test]
@@ -256,7 +276,8 @@ public sealed class AddItemViewModelTests
         IBarcodeScanSession? barcodeScanner = null,
         IInventoryQueryRepository? inventoryQueries = null,
         IItemReceiptService? itemReceipts = null,
-        bool isBarcodeExtendedMode = false)
+        bool isBarcodeExtendedMode = false,
+        INavigationService? navigation = null)
         => new(
             new ImageService(
                 Mock.Of<IPhotoSourceReader>(),
@@ -265,7 +286,7 @@ public sealed class AddItemViewModelTests
                 Mock.Of<IPhotoDeletionService>(),
                 Mock.Of<IInventoryCommandRepository>()),
             createItem,
-            Mock.Of<INavigationService>(),
+            navigation ?? Mock.Of<INavigationService>(),
             Mock.Of<IApplicationSettings>(settings =>
                 settings.IsAdvancedMode == isAdvancedMode
                 && settings.IsBarcodeExtendedMode == isBarcodeExtendedMode),
