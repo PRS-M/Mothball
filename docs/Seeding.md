@@ -12,6 +12,8 @@ This document describes development demo-data seeding and its startup boundary.
 4. Ensure 10 demo tags exist and assign them in groups of 10 containers and groups of 10 items within each container.
 5. Continue application startup.
 
+After a successful Debug seed, the orchestrator stores the seeder version in application preferences. On later startups it performs a lightweight integrity check using the seed marker, container barcodes, and per-container item counts. If those checks pass, the expensive seeding path is skipped. A missing, changed, or invalid marker causes the normal idempotent seed to run again; the marker is written only after both container and item seeding completes successfully.
+
 List pages do not seed data. `PagedListViewModelBase.InitializeAsync()` only decides whether its cached list is current and loads the first page when a reload is needed. Navigating between the item and container lists therefore does not scan or mutate the database for demo data.
 
 Relevant files:
@@ -49,6 +51,8 @@ Startup may be retried after a failure, so seeding remains idempotent:
 - Demo tags are created by normalized name and assignments are idempotent.
 - Existing seeded item names are reused.
 - User-created containers are never selected for automatic item assignment.
+
+The persisted completion marker is a performance optimization, not the source of truth. It is versioned with the expected demo-data shape and is accepted only when the lightweight integrity check still finds the seeded containers and their minimum item counts. Deleting or partially removing seeded records therefore causes the seeder to repair them on the next Debug startup.
 
 Release builds do not register `DemoDataSeeder`; the optional orchestrator dependency is then `null`, and startup performs no demo-data work.
 

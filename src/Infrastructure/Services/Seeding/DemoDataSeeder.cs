@@ -16,6 +16,11 @@ namespace Infrastructure.Services.Seeding;
 /// </summary>
 public class DemoDataSeeder
 {
+    /// <summary>
+    /// Identifies the demo data shape represented by this seeder.
+    /// </summary>
+    public const string SeedVersion = "100-containers-100-items-10-tags-v1";
+
     private const string SeededContainerNotesPrefix = "Seeded notes for container";
     private const string SeedContainerMarkerTokenPrefix = "[SEED-CONTAINER-MARKER:";
     private static readonly Guid SeedContainerMarkerGuid = new("4f3c5d11-2f9b-44b3-9e55-2e0f1ea7a8d2");
@@ -93,6 +98,46 @@ public class DemoDataSeeder
                 await fileHandler.CopyFileFromRawToAppDataAsync("container.png", img.FileName, Constants.PathToContainerPhotos);
             }
         }
+    }
+
+    /// <summary>
+    /// Performs a lightweight check that the expected demo records are still present.
+    /// </summary>
+    /// <param name="minContainers">The minimum number of seeded containers expected.</param>
+    /// <param name="minItemsPerContainer">The minimum number of seeded items expected in each container.</param>
+    /// <returns><see langword="true"/> when the seeded records appear intact.</returns>
+    public async Task<bool> IsSeedDataIntactAsync(
+        int minContainers = 100,
+        int minItemsPerContainer = 100)
+    {
+        await containers.InitializeAsync();
+        await items.InitializeAsync();
+
+        var seededContainers = (await containers.GetAllAsync())
+            .Where(IsSeedContainer)
+            .ToList();
+
+        if (seededContainers.Count < minContainers)
+        {
+            return false;
+        }
+
+        foreach (var container in seededContainers)
+        {
+            if (string.IsNullOrWhiteSpace(container.BarcodeValue))
+            {
+                return false;
+            }
+
+            var seededItemPrefix = $"Item {container.Name}-";
+            var itemCount = await items.CountAsync(item => item.Name.StartsWith(seededItemPrefix));
+            if (itemCount < minItemsPerContainer)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

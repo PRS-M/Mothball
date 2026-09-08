@@ -17,7 +17,7 @@ The main coordination mechanisms are:
 
 The most important risks found by static inspection are:
 
-1. Startup awaits signing-key access, persistence recovery/seeding, Shell loading, and an optional ad without a cancellation token for the first three stages. The ad and Shell have timeouts, but persistence and seeding do not.
+1. Startup awaits signing-key access, persistence recovery/seeding, Shell loading, and an optional ad without a cancellation token for the first three stages. The ad and Shell have timeouts, but persistence and a first-time Debug seed do not. Completed Debug seed data now has a versioned preference marker and a lightweight integrity check, so the long seed path is not repeated when the data is intact.
 2. `BarcodeScanSession` waits for a result until `CompleteAsync` is called. If the scanner page disappears without completing the session, the original caller can remain blocked and the session gate can remain held.
 3. `TagResultsViewModel` starts reloads with `_ = ReloadAsync()`. Its internal error handling updates the view model and rethrows, so an unexpected failure from a property-change or navigation-attribute reload can become an unobserved task exception.
 4. The SQLite barcode registry uses a read/check followed by a separate insert or update. The uniqueness index protects the final data, but two concurrent callers can still race and receive a database exception rather than the application’s intended ownership exception. Assignment of an entity and registry update are also separate operations.
@@ -133,7 +133,7 @@ The following stages have no timeout or caller cancellation:
 - `AppStartupOrchestrator.StartAsync` persistence initialization and recovery.
 - Debug demo seeding, including 100 containers, 100 items per container, photos, barcodes, tags, and assignments.
 
-The Debug seed is intentionally large and performs many sequential operations. On a fresh device, it can make the splash screen appear frozen even when the process is progressing. Instrumentation already logs signing-key and persistence elapsed time in `AppStartupCoordinator`; the seeder itself does not currently report progress or per-phase timing.
+The Debug seed is intentionally large and performs many sequential operations. On a fresh device, it can make the splash screen appear frozen even when the process is progressing. Instrumentation already logs signing-key and persistence elapsed time in `AppStartupCoordinator`; the seeder itself does not currently report progress or per-phase timing. After successful completion, the orchestrator stores `DemoDataSeeder.SeedVersion` in preferences and checks seed-marker/container/item counts before skipping the expensive path on subsequent startups.
 
 There is no startup single-flight gate. The normal window lifecycle invokes initialization once, and the retry page invokes it after a failure, but defensive protection against duplicate calls is not present.
 
