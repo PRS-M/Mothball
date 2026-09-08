@@ -1,4 +1,5 @@
 using Infrastructure.Services.DatabaseModels;
+using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -158,5 +159,74 @@ public class DemoDataSeederTests
         await sut.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: false);
 
         Assert.That(createdItems, Is.Empty);
+    }
+
+    [Test]
+    public async Task EnsureItemsAsync_WhenSharedItemPhotoWasDeleted_RecreatesItOnReseeding()
+    {
+        var seededContainerId = Guid.NewGuid();
+        var containersData = new List<DbContainer>
+        {
+            new()
+            {
+                ContainerId = seededContainerId,
+                Name = "Container 1",
+                Notes = $"Seeded notes for container abc12345 {SeedMarker}"
+            }
+        };
+        var sharedItemPhotoExists = false;
+
+        var containersRepo = new Mock<IRepository<DbContainer>>();
+        containersRepo.Setup(r => r.InitializeAsync()).Returns(Task.CompletedTask);
+        containersRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(containersData);
+
+        var itemsRepo = new Mock<IRepository<DbItem>>();
+        itemsRepo.Setup(r => r.InitializeAsync()).Returns(Task.CompletedTask);
+        itemsRepo.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        itemsRepo.Setup(r => r.InsertAsync(It.IsAny<DbItem>())).ReturnsAsync(1);
+
+        var inventoriesRepo = new Mock<IRepository<DbItemInventory>>();
+        inventoriesRepo.Setup(r => r.InitializeAsync()).Returns(Task.CompletedTask);
+        inventoriesRepo.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        inventoriesRepo.Setup(r => r.InsertAsync(It.IsAny<DbItemInventory>())).ReturnsAsync(1);
+
+        var photosRepo = new Mock<IRepository<DbImage>>();
+        photosRepo.Setup(r => r.InitializeAsync()).Returns(Task.CompletedTask);
+        photosRepo.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        photosRepo.Setup(r => r.InsertAsync(It.IsAny<DbImage>())).ReturnsAsync(1);
+
+        var relationRepo = new Mock<IRepository<DbItemContainerRelation>>();
+        relationRepo.Setup(r => r.InitializeAsync()).Returns(Task.CompletedTask);
+        relationRepo.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        relationRepo.Setup(r => r.InsertAsync(It.IsAny<DbItemContainerRelation>())).ReturnsAsync(1);
+
+        var fileHandler = new Mock<IFileHandler>();
+        fileHandler.Setup(handler => handler.FileExists("seeded-item.jpg", Constants.PathToSharedPhotos))
+            .Returns(() => sharedItemPhotoExists);
+        fileHandler.Setup(handler => handler.CopyFileFromRawToAppDataAsync(
+                "mothball_logo.png",
+                "seeded-item.jpg",
+                Constants.PathToSharedPhotos))
+            .Callback(() => sharedItemPhotoExists = true)
+            .Returns(Task.CompletedTask);
+
+        var sut = new DemoDataSeeder(
+            containersRepo.Object,
+            itemsRepo.Object,
+            inventoriesRepo.Object,
+            photosRepo.Object,
+            relationRepo.Object,
+            fileHandler.Object,
+            NullLogger<DemoDataSeeder>.Instance);
+
+        await sut.EnsureItemsAsync(minItemsPerContainer: 0, withPhotos: true);
+        sharedItemPhotoExists = false;
+        await sut.EnsureItemsAsync(minItemsPerContainer: 0, withPhotos: true);
+
+        fileHandler.Verify(handler => handler.CopyFileFromRawToAppDataAsync(
+                "mothball_logo.png",
+                "seeded-item.jpg",
+                Constants.PathToSharedPhotos),
+            Times.Exactly(2));
     }
 }

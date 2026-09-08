@@ -407,7 +407,7 @@ public class DemoDataSeeder
         string sharedFileName,
         bool prepared)
     {
-        if (prepared)
+        if (prepared && fileHandler.FileExists(sharedFileName, Constants.PathToSharedPhotos))
         {
             return true;
         }
