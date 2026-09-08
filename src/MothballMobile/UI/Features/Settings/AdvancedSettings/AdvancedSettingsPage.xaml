@@ -108,33 +108,6 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource SectionCard}">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding GenerateNewSkuPdfCommand}" />
-                </Border.GestureRecognizers>
-                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                    <Label Text="&#xF02A;"
-                           FontFamily="FontAwesomeSolid"
-                           FontSize="20"
-                           TextColor="{DynamicResource Primary}"
-                           VerticalOptions="Center" />
-                    <VerticalStackLayout Grid.Column="1" Spacing="2">
-                        <Label Text="{x:Static strings:AppResources.GeneratePdfWithNewCodes}"
-                               Style="{StaticResource HeadlineSmall}"
-                               TextColor="{DynamicResource OnSurface}" />
-                        <Label Text="{x:Static strings:AppResources.GeneratePdfWithNewCodesDescription}"
-                               Style="{StaticResource BodyMedium}"
-                               TextColor="{DynamicResource OnSurfaceVariant}" />
-                    </VerticalStackLayout>
-                    <Label Grid.Column="2"
-                           Text="&#xF1C1;"
-                           FontFamily="FontAwesomeSolid"
-                           FontSize="18"
-                           TextColor="{DynamicResource Primary}"
-                           VerticalOptions="Center"
-                           SemanticProperties.Description="{x:Static strings:AppResources.GeneratePdfWithNewCodes}" />
-                </Grid>
-            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </views:BasePage>
