@@ -23,8 +23,7 @@
     </ContentPage.ToolbarItems>
     <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
         <controls:PageHeader Subtitle="{x:Static strings:AppResources.BrowseYourTags}"
-                             TitleFontSize="22"
-                             SubtitleFontSize="12" />
+                             SubtitleFontSize="14" />
 
         <Grid Grid.Row="1"
               ColumnDefinitions="*,Auto,Auto"
