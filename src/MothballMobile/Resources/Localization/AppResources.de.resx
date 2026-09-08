@@ -23,6 +23,10 @@
   <data name="AdvancedSettings" xml:space="preserve"><value>Erweiterte Einstellungen</value></data>
   <data name="OpenAdvancedSettings" xml:space="preserve"><value>Erweiterte Einstellungen öffnen</value></data>
   <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Optionen für erfahrene Nutzer und technische Optionen</value></data>
+  <data name="LicensesAndLibraries" xml:space="preserve"><value>Lizenzen und Bibliotheken</value></data>
+  <data name="OpenSourceLibrariesUsedByMothball" xml:space="preserve"><value>Von Mothball verwendete Open-Source-Bibliotheken</value></data>
+  <data name="GitHub" xml:space="preserve"><value>GitHub</value></data>
+  <data name="License" xml:space="preserve"><value>Lizenz</value></data>
   <data name="AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement" xml:space="preserve"><value>Der erweiterte Modus zeigt Gesamtmengen, Zuordnungen und Mengenbearbeitung. Der einfache Modus blendet die Mengenverwaltung aus.</value></data>
   <data name="AppMode" xml:space="preserve"><value>App-Modus</value></data>
   <data name="AreYouSureYouWantToDeleteThisItemThisCannotBeUndone" xml:space="preserve"><value>Möchten Sie diesen Gegenstand wirklich löschen? Dies kann nicht rückgängig gemacht werden.</value></data>

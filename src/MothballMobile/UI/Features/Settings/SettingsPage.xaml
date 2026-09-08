@@ -273,6 +273,33 @@
                 </Grid>
             </Border>
 
+            <Border Style="{StaticResource SectionCard}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateToLicensesAndLibrariesCommand}" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Label Text="&#xF1AD;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="20"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                        <Label Text="{x:Static strings:AppResources.LicensesAndLibraries}"
+                               Style="{StaticResource HeadlineSmall}"
+                               TextColor="{DynamicResource OnSurface}" />
+                        <Label Text="{x:Static strings:AppResources.OpenSourceLibrariesUsedByMothball}"
+                               Style="{StaticResource BodyMedium}"
+                               TextColor="{DynamicResource OnSurfaceVariant}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2"
+                           Text="&#xF054;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="18"
+                           TextColor="{DynamicResource Primary}"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
         </VerticalStackLayout>
     </ScrollView>
 

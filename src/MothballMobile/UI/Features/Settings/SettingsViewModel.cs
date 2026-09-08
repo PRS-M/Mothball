@@ -36,6 +36,10 @@ public partial class SettingsViewModel : ObservableObject
         => nav.GoToAsync(NavigationRoutes.AdvancedSettings);
 
     [RelayCommand]
+    private Task NavigateToLicensesAndLibrariesAsync()
+        => nav.GoToAsync(NavigationRoutes.LicensesAndLibraries);
+
+    [RelayCommand]
     private async Task GenerateNewSkuPdfAsync()
     {
         if (barcodeShare is null || popup is null)

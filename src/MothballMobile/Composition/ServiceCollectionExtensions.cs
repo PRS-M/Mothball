@@ -251,6 +251,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<BackupSigningKeySettingsViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<AdvancedSettingsViewModel>();
+        services.AddTransient<LicensesAndLibrariesViewModel>();
         services.AddTransient<BarcodeScannerViewModel>();
 
         return services;

@@ -22,6 +22,10 @@
   <data name="AdvancedSettings" xml:space="preserve"><value>Ustawienia zaawansowane</value></data>
   <data name="OpenAdvancedSettings" xml:space="preserve"><value>Otwórz ustawienia zaawansowane</value></data>
   <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Opcje dla zaawansowanych użytkowników i techniczne</value></data>
+  <data name="LicensesAndLibraries" xml:space="preserve"><value>Licencje i biblioteki</value></data>
+  <data name="OpenSourceLibrariesUsedByMothball" xml:space="preserve"><value>Biblioteki open source używane przez Mothball</value></data>
+  <data name="GitHub" xml:space="preserve"><value>GitHub</value></data>
+  <data name="License" xml:space="preserve"><value>Licencja</value></data>
   <data name="AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement" xml:space="preserve"><value>Tryb zaawansowany pokazuje sumy ilości, przypisania i edycję ilości. Tryb prosty ukrywa zarządzanie ilością.</value></data>
   <data name="AppMode" xml:space="preserve"><value>Tryb aplikacji</value></data>
   <data name="AreYouSureYouWantToDeleteThisItemThisCannotBeUndone" xml:space="preserve"><value>Czy na pewno chcesz usunąć ten przedmiot? Tej operacji nie można cofnąć.</value></data>

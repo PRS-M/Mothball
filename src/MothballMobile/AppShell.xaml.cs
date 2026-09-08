@@ -117,6 +117,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(Infrastructure.NavigationRoutes.HomeItems, typeof(UI.Features.Items.ItemsList.ItemsListPage));
         Routing.RegisterRoute(Infrastructure.NavigationRoutes.Settings, typeof(UI.Features.Settings.SettingsPage));
         Routing.RegisterRoute(Infrastructure.NavigationRoutes.AdvancedSettings, typeof(UI.Features.Settings.AdvancedSettingsPage));
+        Routing.RegisterRoute(Infrastructure.NavigationRoutes.LicensesAndLibraries, typeof(UI.Features.Settings.LicensesAndLibrariesPage));
         Routing.RegisterRoute(Infrastructure.NavigationRoutes.ImportDocumentation, typeof(UI.Features.Settings.ImportDocumentationPage));
         Routing.RegisterRoute(Infrastructure.NavigationRoutes.AddContainer, typeof(UI.Features.Containers.AddContainer.AddContainerPage));
         Routing.RegisterRoute(Infrastructure.NavigationRoutes.ContainerDetails, typeof(UI.Features.Containers.ContainerDetails.ContainerDetailsPage));

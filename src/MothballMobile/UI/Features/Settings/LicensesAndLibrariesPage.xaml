@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+                xmlns:views="clr-namespace:MothballMobile.UI.Shared"
+                xmlns:vm="clr-namespace:MothballMobile.UI.Features.Settings"
+                xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
+                x:Class="MothballMobile.UI.Features.Settings.LicensesAndLibrariesPage"
+                x:DataType="vm:LicensesAndLibrariesViewModel"
+                Title="{x:Static strings:AppResources.LicensesAndLibraries}"
+                Background="{DynamicResource Surface}">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+            <controls:PageHeader Title="{x:Static strings:AppResources.LicensesAndLibraries}"
+                                 Subtitle="{x:Static strings:AppResources.OpenSourceLibrariesUsedByMothball}"
+                                 TitleFontSize="22"
+                                 SubtitleFontSize="14"
+                                 Spacing="2"
+                                 HeaderMargin="0,0,0,6" />
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Libraries}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LibraryLicenseEntry">
+                        <Border Style="{StaticResource SectionCard}"
+                                Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <Label Text="{Binding Name}"
+                                           Style="{StaticResource TitleMedium}"
+                                           TextColor="{DynamicResource OnSurface}" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Version, StringFormat='v{0}'}"
+                                           Style="{StaticResource BodyMedium}"
+                                           TextColor="{DynamicResource OnSurfaceVariant}" />
+                                </Grid>
+                                <Label Text="{Binding License}"
+                                       Style="{StaticResource BodyMedium}"
+                                       TextColor="{DynamicResource OnSurfaceVariant}" />
+                                <HorizontalStackLayout Spacing="8">
+                                    <Button Text="{x:Static strings:AppResources.GitHub}"
+                                            Style="{StaticResource OutlinedButton}"
+                                            Command="{Binding OpenGitHubCommand}" />
+                                    <Button Text="{x:Static strings:AppResources.License}"
+                                            Style="{StaticResource OutlinedButton}"
+                                            Command="{Binding OpenLicenseCommand}" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</views:BasePage>
