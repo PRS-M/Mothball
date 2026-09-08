@@ -66,10 +66,16 @@
                               ColumnDefinitions="*,Auto"
                               ColumnSpacing="8"
                               IsEnabled="{Binding IsItemMetadataEditable}">
-                            <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
-                                    ItemsSource="{Binding AvailableBarcodeSymbologies}"
-                                    IsEnabled="{Binding IsBarcodeSymbologyEditable}"
-                                    SelectedItem="{Binding BarcodeSymbology}" />
+                            <Border Style="{StaticResource OutlinedPickerWrapper}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Picker Grid.ColumnSpan="2"
+                                            Title="{x:Static strings:AppResources.BarcodeSymbology}"
+                                            ItemsSource="{Binding AvailableBarcodeSymbologies}"
+                                            IsEnabled="{Binding IsBarcodeSymbologyEditable}"
+                                            SelectedItem="{Binding BarcodeSymbology}" />
+                                    <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+                                </Grid>
+                            </Border>
                             <Button Grid.Column="1"
                                     Text="{x:Static strings:AppResources.ScanBarcode}"
                                     Style="{StaticResource OutlinedButton}"

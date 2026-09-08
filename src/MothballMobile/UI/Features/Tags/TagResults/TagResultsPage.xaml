@@ -38,11 +38,17 @@
                        CancelButtonColor="{DynamicResource Primary}" />
         </Grid>
 
-        <Picker Grid.Row="3"
-                ItemsSource="{Binding AvailableFilters}"
-                SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
-                ItemDisplayBinding="{Binding ., Converter={StaticResource LocalizedEnumConverter}}"
-                Style="{StaticResource CompactFilterPicker}" />
+        <Border Grid.Row="3"
+                Style="{StaticResource OutlinedPickerWrapper}">
+            <Grid ColumnDefinitions="*,Auto">
+                <Picker Grid.ColumnSpan="2"
+                        ItemsSource="{Binding AvailableFilters}"
+                        SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                        ItemDisplayBinding="{Binding ., Converter={StaticResource LocalizedEnumConverter}}"
+                        Style="{StaticResource CompactFilterPicker}" />
+                <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+            </Grid>
+        </Border>
 
         <RefreshView Grid.Row="4"
                      IsRefreshing="{Binding IsRefreshing}"

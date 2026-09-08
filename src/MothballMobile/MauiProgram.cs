@@ -9,6 +9,7 @@ using Plugin.AdMob.Configuration;
 #endif
 
 #if IOS || MACCATALYST
+using CoreGraphics;
 using UIKit;
 #endif
 
@@ -77,6 +78,22 @@ public static class MauiProgram
 	private static void ConfigurePlatformHandlers(IMauiHandlersCollection handlers)
 	{
 		#if IOS || MACCATALYST
+		PickerHandler.Mapper.AppendToMapping("ApplePickerContrast", (handler, view) =>
+		{
+			if (handler.PlatformView is not UITextField picker)
+			{
+				return;
+			}
+
+			picker.BorderStyle = UITextBorderStyle.RoundedRect;
+			picker.Layer.BorderWidth = 1.5f;
+			picker.Layer.BorderColor = UIColor.Separator.CGColor;
+			picker.Layer.CornerRadius = 8;
+			picker.Layer.ShadowOpacity = 0;
+			picker.RightView = new UIView(new CGRect(0, 0, 24, 1));
+			picker.RightViewMode = UITextFieldViewMode.Always;
+		});
+
 		SearchBarHandler.Mapper.AppendToMapping("ContrastBackground", (handler, view) =>
 		{
 			var sb = handler.PlatformView;

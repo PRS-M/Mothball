@@ -24,10 +24,16 @@
                     <Label Text="{x:Static strings:AppResources.Language}"
                            Style="{StaticResource HeadlineSmall}"
                            TextColor="{DynamicResource OnSurface}" />
-                    <Picker Title="{x:Static strings:AppResources.Language}"
-                            ItemsSource="{Binding Appearance.LanguageOptions}"
-                            SelectedItem="{Binding Appearance.SelectedLanguageOption, Mode=TwoWay}"
-                            SemanticProperties.Hint="{x:Static strings:AppResources.ChooseApplicationLanguage}" />
+                    <Border Style="{StaticResource OutlinedPickerWrapper}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Picker Grid.ColumnSpan="2"
+                                    Title="{x:Static strings:AppResources.Language}"
+                                    ItemsSource="{Binding Appearance.LanguageOptions}"
+                                    SelectedItem="{Binding Appearance.SelectedLanguageOption, Mode=TwoWay}"
+                                    SemanticProperties.Hint="{x:Static strings:AppResources.ChooseApplicationLanguage}" />
+                            <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+                        </Grid>
+                    </Border>
                     <Label Text="{x:Static strings:AppResources.RestartMothballToApplyTheNewLanguage}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
@@ -40,10 +46,16 @@
                                                    Style="{StaticResource HeadlineSmall}"
                                                    TextColor="{DynamicResource OnSurface}" />
 
-                                        <Picker Title="{x:Static strings:AppResources.ThemeMode}"
-                                                        ItemsSource="{Binding Appearance.ModeOptions}"
-                                                        SelectedItem="{Binding Appearance.SelectedModeOption, Mode=TwoWay}"
-                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ChooseAutomaticSystemThemeLightThemeOrDarkTheme}" />
+                                        <Border Style="{StaticResource OutlinedPickerWrapper}">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                        <Picker Grid.ColumnSpan="2"
+                                                                Title="{x:Static strings:AppResources.ThemeMode}"
+                                                                        ItemsSource="{Binding Appearance.ModeOptions}"
+                                                                        SelectedItem="{Binding Appearance.SelectedModeOption, Mode=TwoWay}"
+                                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ChooseAutomaticSystemThemeLightThemeOrDarkTheme}" />
+                                                        <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+                                                </Grid>
+                                        </Border>
 
                                         <Label Text="{x:Static strings:AppResources.ChooseWhetherMothballFollowsTheSystemAppearanceOrAlwaysUsesALightOrDarkMode}"
                                                    Style="{StaticResource BodyMedium}"
@@ -56,10 +68,16 @@
                                         <Label Text="{x:Static strings:AppResources.Theme}"
                                                    Style="{StaticResource HeadlineSmall}"
                                                    TextColor="{DynamicResource OnSurface}" />
-                                        <Picker Title="{x:Static strings:AppResources.Theme}"
-                                                        ItemsSource="{Binding Appearance.ThemeOptions}"
-                                                        SelectedItem="{Binding Appearance.SelectedThemeOption, Mode=TwoWay}"
-                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ChooseTheMothballColorTheme}" />
+                                        <Border Style="{StaticResource OutlinedPickerWrapper}">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                        <Picker Grid.ColumnSpan="2"
+                                                                Title="{x:Static strings:AppResources.Theme}"
+                                                                        ItemsSource="{Binding Appearance.ThemeOptions}"
+                                                                        SelectedItem="{Binding Appearance.SelectedThemeOption, Mode=TwoWay}"
+                                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ChooseTheMothballColorTheme}" />
+                                                        <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+                                                </Grid>
+                                        </Border>
                                         <Label Text="{x:Static strings:AppResources.ChooseTheColorPaletteUsedThroughoutMothball}"
                                                    Style="{StaticResource BodyMedium}"
                                                    TextColor="{DynamicResource OnSurfaceVariant}" />

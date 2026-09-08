@@ -75,12 +75,18 @@
                               TextColor="{DynamicResource OnSecondaryContainer}"
                                                      Grid.Column="1" />
 
-                                        <Picker Grid.Column="2"
-                            AutomationId="ContainersFilterPicker"
-                            ItemsSource="{x:Static Member=vm:ContainerListViewModel.AvailableFilters}"
-                            ItemDisplayBinding="{Binding ., Converter={StaticResource LocalizedEnumConverter}}"
-                            SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
-                            Style="{StaticResource CompactFilterPicker}" />
+                                        <Border Grid.Column="2"
+                                                Style="{StaticResource OutlinedPickerWrapper}">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <Picker Grid.ColumnSpan="2"
+                                                        AutomationId="ContainersFilterPicker"
+                                                        ItemsSource="{x:Static Member=vm:ContainerListViewModel.AvailableFilters}"
+                                                        ItemDisplayBinding="{Binding ., Converter={StaticResource LocalizedEnumConverter}}"
+                                                        SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                                                        Style="{StaticResource CompactFilterPicker}" />
+                                                <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+                                            </Grid>
+                                        </Border>
                 </Grid>
             </Border>
         </Grid>
