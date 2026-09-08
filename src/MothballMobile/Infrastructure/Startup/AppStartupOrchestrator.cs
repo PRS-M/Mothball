@@ -26,8 +26,8 @@ public sealed class AppStartupOrchestrator : IAppStartupOrchestrator
             await startupInitializer.InitializeAsync();
             if (demoSeeder is not null)
             {
-                await demoSeeder.EnsureContainersAsync(minContainers: 5, withPhotos: true);
-                await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 3, withPhotos: true);
+                await demoSeeder.EnsureContainersAsync(minContainers: 100, withPhotos: true);
+                await demoSeeder.EnsureItemsAsync(minItemsPerContainer: 100, withPhotos: true);
             }
         }
         catch (Exception ex)

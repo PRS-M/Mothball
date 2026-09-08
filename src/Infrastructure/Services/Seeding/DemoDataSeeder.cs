@@ -1,6 +1,9 @@
 using CoreApp.Application.Utilities;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Abstractions.Persistence;
 using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Contracts.Tags;
+using CoreApp.Domain.Entities.TagAggregate;
 using CoreApp.Domain.ValueObjects;
 using Infrastructure.Services.DatabaseModels;
 using Microsoft.Extensions.Logging;
@@ -25,6 +28,7 @@ public class DemoDataSeeder
     private readonly IFileHandler fileHandler;
     private readonly ILogger<DemoDataSeeder> logger;
     private readonly IBarcodeRegistryService? barcodeRegistry;
+    private readonly ITagRepository? tagRepository;
 
     public DemoDataSeeder(
         IRepository<DbContainer> containers,
@@ -34,7 +38,8 @@ public class DemoDataSeeder
         IRepository<DbItemContainerRelation> itemContainerRelations,
         IFileHandler fileHandler,
         ILogger<DemoDataSeeder> logger,
-        IBarcodeRegistryService? barcodeRegistry = null)
+        IBarcodeRegistryService? barcodeRegistry = null,
+        ITagRepository? tagRepository = null)
     {
         this.containers = containers;
         this.items = items;
@@ -44,6 +49,7 @@ public class DemoDataSeeder
         this.fileHandler = fileHandler;
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.barcodeRegistry = barcodeRegistry;
+        this.tagRepository = tagRepository;
     }
 
     /// <summary>
@@ -51,7 +57,7 @@ public class DemoDataSeeder
     /// </summary>
     /// <param name="minContainers">The minimum number of demo containers to ensure.</param>
     /// <param name="withPhotos">Whether each newly created container receives a demo photo.</param>
-    public async Task EnsureContainersAsync(int minContainers = 5, bool withPhotos = true)
+    public async Task EnsureContainersAsync(int minContainers = 100, bool withPhotos = true)
     {
         await containers.InitializeAsync();
         await photos.InitializeAsync();
@@ -95,7 +101,7 @@ public class DemoDataSeeder
     /// </summary>
     /// <param name="minItemsPerContainer">The minimum number of demo items for each seeded container.</param>
     /// <param name="withPhotos">Whether each newly created item receives a demo photo.</param>
-    public async Task EnsureItemsAsync(int minItemsPerContainer = 3, bool withPhotos = true)
+    public async Task EnsureItemsAsync(int minItemsPerContainer = 100, bool withPhotos = true)
     {
         // Ensure tables exist
         await containers.InitializeAsync();
@@ -108,7 +114,7 @@ public class DemoDataSeeder
         var containersList = await containers.GetAllAsync();
         if (containersList.Count == 0)
         {
-            await EnsureContainersAsync(minContainers: 3, withPhotos: true);
+            await EnsureContainersAsync(minContainers: 100, withPhotos: withPhotos);
             containersList = await containers.GetAllAsync();
         }
 
@@ -123,12 +129,18 @@ public class DemoDataSeeder
             return;
         }
 
+        var demoTags = await EnsureDemoTagsAsync();
+        var orderedSeededContainers = seededContainers
+            .OrderBy(GetSeedContainerNumber)
+            .ThenBy(container => container.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
         var allItems = await items.GetAllAsync();
         var allInventories = await inventories.GetAllAsync();
         var allRelations = await itemContainerRelations.GetAllAsync();
         var allPhotos = await photos.GetAllAsync();
 
-        foreach (var container in seededContainers)
+        foreach (var container in orderedSeededContainers)
         {
             await EnsureGeneratedBarcodeAsync(container);
 
@@ -209,7 +221,45 @@ public class DemoDataSeeder
             {
                 await EnsureGeneratedBarcodeAsync(item);
             }
+
+            if (tagRepository is not null)
+            {
+                var containerNumber = GetSeedContainerNumber(container);
+                await tagRepository.AssignAsync(
+                    demoTags[(containerNumber - 1) / 10 % demoTags.Count].TagId,
+                    TagTargetType.Container,
+                    container.ContainerId);
+
+                var containerItems = allItems
+                    .Where(item => IsSeedItemForContainer(item, container))
+                    .OrderBy(item => GetSeedItemNumber(item, container))
+                    .ToList();
+                foreach (var item in containerItems)
+                {
+                    var itemNumber = GetSeedItemNumber(item, container);
+                    await tagRepository.AssignAsync(
+                        demoTags[(itemNumber - 1) / 10 % demoTags.Count].TagId,
+                        TagTargetType.Item,
+                        item.ItemId);
+                }
+            }
         }
+    }
+
+    private async Task<IReadOnlyList<Tag>> EnsureDemoTagsAsync()
+    {
+        if (tagRepository is null)
+        {
+            return [];
+        }
+
+        var tags = new List<CoreApp.Domain.Entities.TagAggregate.Tag>(10);
+        for (var index = 1; index <= 10; index++)
+        {
+            tags.Add(await tagRepository.GetOrCreateAsync(new TagName($"Demo Tag {index}")));
+        }
+
+        return tags;
     }
 
     private void SetGeneratedBarcode(DbContainer container)
@@ -328,6 +378,20 @@ public class DemoDataSeeder
 
     private static string BuildSeedItemName(DbContainer container, int ordinal)
         => $"Item {container.Name}-{ordinal}";
+
+    private static int GetSeedContainerNumber(DbContainer container)
+        => ParseTrailingNumber(container.Name, fallback: 1);
+
+    private static int GetSeedItemNumber(DbItem item, DbContainer container)
+        => ParseTrailingNumber(item.Name, fallback: 1);
+
+    private static int ParseTrailingNumber(string value, int fallback)
+    {
+        var separator = value.LastIndexOf('-');
+        return separator >= 0 && int.TryParse(value[(separator + 1)..], out var number) && number > 0
+            ? number
+            : fallback;
+    }
 
     private static string BuildSeedContainerNotes(Guid containerId)
     {
