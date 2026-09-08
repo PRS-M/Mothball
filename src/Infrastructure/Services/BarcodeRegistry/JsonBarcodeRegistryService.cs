@@ -65,7 +65,7 @@ public sealed class JsonBarcodeRegistryService : IBarcodeRegistryService
         await store.UpdateAsync(state =>
         {
             var existing = state.Barcodes.FirstOrDefault(value => value.NormalizedValue == normalized);
-            if (existing is not null && existing.Status != (int)BarcodeRegistryStatus.Released)
+            if (existing is not null)
             {
                 throw new BarcodeAlreadyAssignedException(barcode.Value, existing.OwnerKind is int kind ? (BarcodeOwnerKind)kind : BarcodeOwnerKind.Item, existing.OwnerName);
             }
@@ -93,6 +93,11 @@ public sealed class JsonBarcodeRegistryService : IBarcodeRegistryService
         await store.UpdateAsync(state =>
         {
             var existing = state.Barcodes.FirstOrDefault(value => value.NormalizedValue == normalized);
+            if (existing?.Status == (int)BarcodeRegistryStatus.Released)
+            {
+                throw new BarcodeAlreadyAssignedException(barcode.Value, existing.OwnerKind is int releasedKind ? (BarcodeOwnerKind)releasedKind : BarcodeOwnerKind.Item, existing.OwnerName);
+            }
+
             if (existing is not null
                 && existing.Status == (int)BarcodeRegistryStatus.Assigned
                 && (existing.OwnerKind != (int)ownerKind || existing.OwnerId != ownerId))

@@ -43,7 +43,19 @@ public sealed class CreateContainerCommandHandler : ICreateContainerCommandHandl
         }
         container.UpdateBarcode(assignedBarcode);
 
-        await inventoryCommands.InsertContainerAsync(container);
+        try
+        {
+            await inventoryCommands.InsertContainerAsync(container);
+        }
+        catch
+        {
+            if (registry is not null && assignedBarcode is not null)
+            {
+                await registry.ReleaseAsync(assignedBarcode.Value);
+            }
+
+            throw;
+        }
 
         if (photoBytes is { Length: > 0 })
         {

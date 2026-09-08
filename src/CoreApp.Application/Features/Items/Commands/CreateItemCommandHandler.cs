@@ -46,8 +46,20 @@ public sealed class CreateItemCommandHandler : ICreateItemCommandHandler
             inventory.SetContainerAllocation(cid, string.Empty, quantity);
         }
 
-        await inventoryCommands.InsertItemAsync(item);
-        await inventoryCommands.InsertItemInventoryAsync(inventory);
+        try
+        {
+            await inventoryCommands.InsertItemAsync(item);
+            await inventoryCommands.InsertItemInventoryAsync(inventory);
+        }
+        catch
+        {
+            if (registry is not null && assignedBarcode is not null)
+            {
+                await registry.ReleaseAsync(assignedBarcode.Value);
+            }
+
+            throw;
+        }
 
         if (photoBytes is { Length: > 0 })
         {

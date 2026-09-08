@@ -65,7 +65,7 @@ public sealed class SqliteBarcodeRegistryService : IBarcodeRegistryService
         ArgumentNullException.ThrowIfNull(barcode);
         await database.InitializeAsync().ConfigureAwait(false);
         var existing = await FindAsync(barcode.Value).ConfigureAwait(false);
-        if (existing is not null && existing.Status != BarcodeRegistryStatus.Released)
+        if (existing is not null)
         {
             throw new BarcodeAlreadyAssignedException(barcode.Value, existing.OwnerKind ?? BarcodeOwnerKind.Item, existing.OwnerName ?? "reserved code");
         }
@@ -91,6 +91,11 @@ public sealed class SqliteBarcodeRegistryService : IBarcodeRegistryService
 
         await database.InitializeAsync().ConfigureAwait(false);
         var existing = await FindAsync(barcode.Value).ConfigureAwait(false);
+        if (existing?.Status == BarcodeRegistryStatus.Released)
+        {
+            throw new BarcodeAlreadyAssignedException(barcode.Value, existing.OwnerKind ?? BarcodeOwnerKind.Item, existing.OwnerName ?? "released code");
+        }
+
         if (existing is not null
             && existing.Status == BarcodeRegistryStatus.Assigned
             && (existing.OwnerKind != ownerKind || existing.OwnerId != ownerId))
