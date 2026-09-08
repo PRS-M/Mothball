@@ -52,7 +52,7 @@
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Ten kod kreskowy jest już używany.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Coś poszło nie tak. Spróbuj ponownie.</value></data>
   <data name="BarcodesExtendedMode" xml:space="preserve"><value>Rozszerzony tryb kodów kreskowych (eksperymentalny)</value></data>
-  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Tryb eksperymentalny pokazuje dodatkowe typy kodów kreskowych. W trybie prostym dostępne są kody EAN-8, EAN-13 i QR.</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Tryb eksperymentalny pokazuje dodatkowe typy kodów kreskowych. W trybie prostym dla generowanych kodów dostępne są QR i Code 128, a zeskanowane kody zachowują wykryty format.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Typ kodu kreskowego</value></data>
   <data name="Backup" xml:space="preserve"><value>Kopia zapasowa</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Wyeksportowano kopię zapasową</value></data>

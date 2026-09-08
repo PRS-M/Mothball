@@ -64,6 +64,9 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     [ObservableProperty]
     private bool generateBarcode;
 
+    [ObservableProperty]
+    private bool isBarcodeSymbologyEditable = true;
+
     public bool IsManualBarcodeVisible => !GenerateBarcode;
 
     [ObservableProperty]
@@ -120,8 +123,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
     public bool IsViewingBarcode => !IsEditingBarcode;
     private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<global::CoreApp.Domain.ValueObjects.BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> simpleBarcodeSymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean8, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean13, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode]);
-    public IReadOnlyList<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> simpleBarcodeSymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Code128]);
+    public IReadOnlyList<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> AvailableBarcodeSymbologies => !GenerateBarcode && applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
         : simpleBarcodeSymbologies;
     public bool ShowQuantityManagement => applicationSettings.IsAdvancedMode;
@@ -573,7 +576,19 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         => OnPropertyChanged(nameof(IsViewingBarcode));
 
     partial void OnGenerateBarcodeChanged(bool value)
-        => OnPropertyChanged(nameof(IsManualBarcodeVisible));
+    {
+        OnPropertyChanged(nameof(IsManualBarcodeVisible));
+        OnPropertyChanged(nameof(AvailableBarcodeSymbologies));
+        if (value)
+        {
+            BarcodeValueDraft = string.Empty;
+            IsBarcodeSymbologyEditable = true;
+            if (BarcodeSymbologyDraft is not (global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode or global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Code128))
+            {
+                BarcodeSymbologyDraft = global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
+            }
+        }
+    }
 
     partial void OnBarcodeSymbologyDraftChanged(global::CoreApp.Domain.ValueObjects.BarcodeSymbology value)
     {
@@ -589,6 +604,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         BarcodeValueDraft = BarcodeValue;
         BarcodeSymbologyDraft = currentContainer?.Barcode?.Symbology ?? global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
         GenerateBarcode = false;
+        IsBarcodeSymbologyEditable = true;
         IsEditingBarcode = true;
     }
 
@@ -618,6 +634,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
             BarcodeValueDraft = barcode.Value;
             BarcodeSymbologyDraft = barcode.Symbology;
+            GenerateBarcode = false;
+            IsBarcodeSymbologyEditable = false;
 
             var container = currentContainer;
             if (container?.Barcode is null && container is not null)

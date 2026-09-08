@@ -54,20 +54,15 @@ public sealed class BarcodeScanSessionTests
         Assert.That(await scan, Is.EqualTo(expected));
     }
 
-    [TestCase(false, BarcodeSymbology.QrCode, true)]
-    [TestCase(false, BarcodeSymbology.Ean13, true)]
-    [TestCase(false, BarcodeSymbology.Ean8, true)]
-    [TestCase(false, BarcodeSymbology.UpcE, false)]
-    [TestCase(true, BarcodeSymbology.UpcE, true)]
-    public void IsSymbologyAllowed_UsesBarcodeExtendedMode(
-        bool isBarcodeExtendedMode,
-        BarcodeSymbology symbology,
-        bool expected)
+    [TestCase(BarcodeSymbology.QrCode)]
+    [TestCase(BarcodeSymbology.Code128)]
+    [TestCase(BarcodeSymbology.Ean13)]
+    [TestCase(BarcodeSymbology.Ean8)]
+    [TestCase(BarcodeSymbology.UpcE)]
+    public void IsSymbologyAllowed_AcceptsEveryRecognizedSymbology(BarcodeSymbology symbology)
     {
-        var settings = Mock.Of<IApplicationSettings>(value =>
-            value.IsBarcodeExtendedMode == isBarcodeExtendedMode);
-        var viewModel = new BarcodeScannerViewModel(Mock.Of<IBarcodeScanSession>(), settings);
+        var viewModel = new BarcodeScannerViewModel(Mock.Of<IBarcodeScanSession>());
 
-        Assert.That(viewModel.IsSymbologyAllowed(symbology), Is.EqualTo(expected));
+        Assert.That(viewModel.IsSymbologyAllowed(symbology), Is.True);
     }
 }

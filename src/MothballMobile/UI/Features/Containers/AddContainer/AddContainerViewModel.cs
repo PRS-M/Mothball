@@ -19,9 +19,9 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IApplicationSettings applicationSettings;
     private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.Ean8, BarcodeSymbology.Ean13, BarcodeSymbology.QrCode]);
+    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.QrCode, BarcodeSymbology.Code128]);
 
-    public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
+    public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => !GenerateInternalSku && applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
         : simpleBarcodeSymbologies;
 
@@ -59,10 +59,25 @@ public partial class AddContainerViewModel : BaseViewModel
     [ObservableProperty]
     private bool generateInternalSku = true;
 
+    [ObservableProperty]
+    private bool isBarcodeSymbologyEditable = true;
+
     public bool IsManualBarcodeVisible => !GenerateInternalSku;
 
     partial void OnGenerateInternalSkuChanged(bool value)
-        => OnPropertyChanged(nameof(IsManualBarcodeVisible));
+    {
+        OnPropertyChanged(nameof(IsManualBarcodeVisible));
+        OnPropertyChanged(nameof(AvailableBarcodeSymbologies));
+        if (value)
+        {
+            BarcodeValue = string.Empty;
+            IsBarcodeSymbologyEditable = true;
+            if (BarcodeSymbology is not (BarcodeSymbology.QrCode or BarcodeSymbology.Code128))
+            {
+                BarcodeSymbology = BarcodeSymbology.QrCode;
+            }
+        }
+    }
 
     partial void OnBarcodeSymbologyChanged(BarcodeSymbology value)
     {
@@ -165,6 +180,7 @@ public partial class AddContainerViewModel : BaseViewModel
             BarcodeValue = barcode.Value;
             BarcodeSymbology = barcode.Symbology;
             GenerateInternalSku = false;
+            IsBarcodeSymbologyEditable = false;
         }, rethrowOnError: false);
     }
 

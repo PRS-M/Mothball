@@ -29,7 +29,7 @@ public static class BarcodeGenerator
     /// <param name="recordId">The identifier of the inventory record.</param>
     /// <param name="ownerKind">The type of inventory record.</param>
     /// <param name="symbology">The requested barcode symbology.</param>
-    /// <returns>A generated Code 128 SKU or versioned Mothball QR URI.</returns>
+    /// <returns>A generated value encoded as either Code 128 or a versioned Mothball QR code.</returns>
     public static Barcode Create(Guid recordId, BarcodeOwnerKind ownerKind, BarcodeSymbology symbology)
     {
         if (recordId == Guid.Empty)
@@ -39,10 +39,9 @@ public static class BarcodeGenerator
 
         return symbology switch
         {
-            BarcodeSymbology.Code128 => CreateInternalSku(recordId),
-            BarcodeSymbology.QrCode => new Barcode(
+            BarcodeSymbology.Code128 or BarcodeSymbology.QrCode => new Barcode(
                 $"mothball://v1/{GetOwnerSegment(ownerKind)}/{recordId:N}",
-                BarcodeSymbology.QrCode),
+                symbology),
             _ => throw new NotSupportedException($"Mothball does not generate {symbology} values."),
         };
     }
