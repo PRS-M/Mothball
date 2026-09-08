@@ -16,6 +16,8 @@ namespace Infrastructure.Services.Seeding;
 /// </summary>
 public class DemoDataSeeder
 {
+    private const string SharedSeedContainerPhotoFileName = "seeded-container.jpg";
+    private const string SharedSeedItemPhotoFileName = "seeded-item.jpg";
     /// <summary>
     /// Identifies the demo data shape represented by this seeder.
     /// </summary>
@@ -34,6 +36,8 @@ public class DemoDataSeeder
     private readonly ILogger<DemoDataSeeder> logger;
     private readonly IBarcodeRegistryService? barcodeRegistry;
     private readonly ITagRepository? tagRepository;
+    private bool sharedSeedContainerPhotoPrepared;
+    private bool sharedSeedItemPhotoPrepared;
 
     public DemoDataSeeder(
         IRepository<DbContainer> containers,
@@ -71,6 +75,14 @@ public class DemoDataSeeder
         await photos.InitializeAsync();
 
         var existing = await containers.GetAllAsync();
+        if (withPhotos)
+        {
+            sharedSeedContainerPhotoPrepared = await EnsureSharedSeedPhotoAsync(
+                "container.png",
+                SharedSeedContainerPhotoFileName,
+                sharedSeedContainerPhotoPrepared);
+        }
+
         if (existing.Count >= minContainers)
         {
             progress?.Report(1);
@@ -98,11 +110,12 @@ public class DemoDataSeeder
                 {
                     // ImageId auto-generated
                     OwnerUniqueId = id,
-                    ImageData = null // keep on disk only; UI will fallback if file isn't present
+                    ImageData = null,
+                    StoredFileName = SharedSeedContainerPhotoFileName,
+                    IsSharedAsset = true,
                 };
 
                 await photos.InsertAsync(img);
-                await fileHandler.CopyFileFromRawToAppDataAsync("container.png", img.FileName, Constants.PathToContainerPhotos);
             }
 
             progress?.Report((i + 1d) / toCreate);
@@ -121,12 +134,19 @@ public class DemoDataSeeder
     {
         await containers.InitializeAsync();
         await items.InitializeAsync();
+        await photos.InitializeAsync();
 
         var seededContainers = (await containers.GetAllAsync())
             .Where(IsSeedContainer)
             .ToList();
 
         if (seededContainers.Count < minContainers)
+        {
+            return false;
+        }
+
+        if (!fileHandler.FileExists(SharedSeedContainerPhotoFileName, Constants.PathToSharedPhotos) ||
+            !fileHandler.FileExists(SharedSeedItemPhotoFileName, Constants.PathToSharedPhotos))
         {
             return false;
         }
@@ -200,6 +220,14 @@ public class DemoDataSeeder
         var allRelations = await itemContainerRelations.GetAllAsync();
         var allPhotos = await photos.GetAllAsync();
 
+        if (withPhotos)
+        {
+            sharedSeedItemPhotoPrepared = await EnsureSharedSeedPhotoAsync(
+                "mothball_logo.png",
+                SharedSeedItemPhotoFileName,
+                sharedSeedItemPhotoPrepared);
+        }
+
         for (var containerIndex = 0; containerIndex < orderedSeededContainers.Count; containerIndex++)
         {
             var container = orderedSeededContainers[containerIndex];
@@ -259,22 +287,14 @@ public class DemoDataSeeder
                     var img = new DbImage
                     {
                         OwnerUniqueId = itemId,
-                        ImageData = null
+                        ImageData = null,
+                        StoredFileName = SharedSeedItemPhotoFileName,
+                        IsSharedAsset = true,
                     };
 
                     await photos.InsertAsync(img);
                     allPhotos.Add(img);
 
-                    // Use a bundled placeholder image; fall back gracefully if missing
-                    try
-                    {
-                        await fileHandler.CopyFileFromRawToAppDataAsync("mothball_logo.png", img.FileName, Constants.PathToItemPhotos);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogWarning(ex, "Failed to copy demo item photo {SourceFileName} to {TargetFileName}.", "mothball_logo.png", img.FileName);
-                        // Ignore copy errors in demo seeding; UI will use its own fallback
-                    }
                 }
             }
 
@@ -373,6 +393,27 @@ public class DemoDataSeeder
                 item.ItemId,
                 item.Name);
         }
+    }
+
+    private async Task<bool> EnsureSharedSeedPhotoAsync(
+        string rawFileName,
+        string sharedFileName,
+        bool prepared)
+    {
+        if (prepared)
+        {
+            return true;
+        }
+
+        if (!fileHandler.FileExists(sharedFileName, Constants.PathToSharedPhotos))
+        {
+            await fileHandler.CopyFileFromRawToAppDataAsync(
+                rawFileName,
+                sharedFileName,
+                Constants.PathToSharedPhotos);
+        }
+
+        return true;
     }
 
     private async Task RemoveDuplicateSeedItemsAsync(

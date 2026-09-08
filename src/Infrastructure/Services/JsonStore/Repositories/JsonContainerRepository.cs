@@ -389,7 +389,13 @@ public sealed class JsonContainerRepository : IContainerRepository
         var photos = state.Images
             .Where(p => p.OwnerUniqueId == row.ContainerId)
             .OrderBy(p => p.RowId)
-            .Select(p => new DbImage { ImageId = p.ImageId, OwnerUniqueId = p.OwnerUniqueId })
+            .Select(p => new DbImage
+            {
+                ImageId = p.ImageId,
+                OwnerUniqueId = p.OwnerUniqueId,
+                StoredFileName = p.StoredFileName,
+                IsSharedAsset = p.IsSharedAsset,
+            })
             .ToList();
 
         List<DbItemContainerRelation>? relations = null;

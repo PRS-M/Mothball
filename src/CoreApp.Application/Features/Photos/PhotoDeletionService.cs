@@ -1,5 +1,6 @@
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
+using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Utilities;
 using Microsoft.Extensions.Logging;
 
@@ -31,6 +32,7 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
             return false;
         }
 
+        var photo = container.Photos.First(p => p.ImageId == imageId);
         container.RemoveImageItem(imageId);
 
         try
@@ -43,7 +45,7 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
             throw;
         }
 
-        await DeletePhotoFileBestEffortAsync(imageId, Constants.PathToContainerPhotos).ConfigureAwait(false);
+        await DeletePhotoFileBestEffortAsync(photo, Constants.PathToContainerPhotos).ConfigureAwait(false);
         return true;
     }
 
@@ -57,6 +59,7 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
             return false;
         }
 
+        var photo = item.Photos.First(p => p.ImageId == imageId);
         item.RemoveImageItem(imageId);
 
         try
@@ -69,7 +72,7 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
             throw;
         }
 
-        await DeletePhotoFileBestEffortAsync(imageId, Constants.PathToItemPhotos).ConfigureAwait(false);
+        await DeletePhotoFileBestEffortAsync(photo, Constants.PathToItemPhotos).ConfigureAwait(false);
         return true;
     }
 
@@ -80,23 +83,28 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
 
         foreach (var photo in item.Photos)
         {
-            await DeletePhotoFileBestEffortAsync(photo.ImageId, Constants.PathToItemPhotos).ConfigureAwait(false);
+            await DeletePhotoFileBestEffortAsync(photo, Constants.PathToItemPhotos).ConfigureAwait(false);
         }
     }
 
-    private async Task DeletePhotoFileBestEffortAsync(Guid imageId, string folderPath)
+    private async Task DeletePhotoFileBestEffortAsync(ImageItem photo, string folderPath)
     {
+        if (photo.IsSharedAsset)
+        {
+            return;
+        }
+
         try
         {
-            await fileHandler.DeleteFileAsync($"{imageId}.jpg", folderPath).ConfigureAwait(false);
+            await fileHandler.DeleteFileAsync(photo.FileName, folderPath).ConfigureAwait(false);
         }
         catch (FileNotFoundException ex)
         {
-            logger.LogDebug(ex, "Photo file for image {ImageId} was not found in {FolderPath} during cleanup.", imageId, folderPath);
+            logger.LogDebug(ex, "Photo file for image {ImageId} was not found in {FolderPath} during cleanup.", photo.ImageId, folderPath);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to delete photo file for image {ImageId} from {FolderPath}.", imageId, folderPath);
+            logger.LogWarning(ex, "Failed to delete photo file for image {ImageId} from {FolderPath}.", photo.ImageId, folderPath);
         }
     }
 }

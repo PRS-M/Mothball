@@ -12,7 +12,17 @@ public class DbImage : IValidatableDbModel
     public Guid OwnerUniqueId { get; set; }
 
 	[SQLite.Ignore]
-	public string FileName => $"{ImageId}.jpg";
+	public string FileName => string.IsNullOrWhiteSpace(StoredFileName) ? $"{ImageId}.jpg" : StoredFileName;
+
+    /// <summary>
+    /// Optional stored filename used when multiple image records share one physical asset.
+    /// </summary>
+    public string? StoredFileName { get; set; }
+
+    /// <summary>
+    /// Indicates that deleting this metadata row must not delete its physical file.
+    /// </summary>
+    public bool IsSharedAsset { get; set; }
 
 	// Not recommended for large images, but kept as optional blob for thumbnails or small data
 	public byte[]? ImageData { get; set; }

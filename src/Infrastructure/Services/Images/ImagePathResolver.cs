@@ -41,16 +41,22 @@ public sealed class ImagePathResolver : IImagePathResolver
     public string GetFallbackImagePath() => "mothball_logo.png"; // central fallback
 
     private string FirstOrFallback(IEnumerable<ImageItem> photos, string folder)
-        => photos.Any() ? BuildPath(folder, photos.First().FileName) : GetFallbackImagePath();
+    {
+        var photo = photos.FirstOrDefault();
+        return photo is null ? GetFallbackImagePath() : BuildPath(GetFolder(photo, folder), photo.FileName);
+    }
 
     private IEnumerable<string> PathsOrFallback(IEnumerable<ImageItem> photos, string folder)
     {
         if (photos.Any())
             foreach (var p in photos)
-                yield return BuildPath(folder, p.FileName);
+                yield return BuildPath(GetFolder(p, folder), p.FileName);
         else
             yield return GetFallbackImagePath();
     }
+
+    private static string GetFolder(ImageItem photo, string ownerFolder)
+        => photo.IsSharedAsset ? Constants.PathToSharedPhotos : ownerFolder;
 
     private string BuildPath(string folder, string fileName)
     {

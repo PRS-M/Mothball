@@ -427,7 +427,13 @@ public sealed class JsonItemRepository : IItemRepository
         var photos = state.Images
             .Where(p => p.OwnerUniqueId == row.ItemId)
             .OrderBy(p => p.RowId)
-            .Select(p => new DbImage { ImageId = p.ImageId, OwnerUniqueId = p.OwnerUniqueId })
+            .Select(p => new DbImage
+            {
+                ImageId = p.ImageId,
+                OwnerUniqueId = p.OwnerUniqueId,
+                StoredFileName = p.StoredFileName,
+                IsSharedAsset = p.IsSharedAsset,
+            })
             .ToList();
 
         return dbItem.ToDomain(photos);

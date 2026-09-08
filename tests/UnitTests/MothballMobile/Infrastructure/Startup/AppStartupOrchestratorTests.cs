@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using CoreApp.Application.Utilities;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Mothball.Tests.Unit.Mobile.Infrastructure.Startup;
@@ -114,6 +115,11 @@ public class AppStartupOrchestratorTests
         items.Setup(repository => repository.InitializeAsync()).Returns(Task.CompletedTask);
         items.Setup(repository => repository.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<DbItem, bool>>>()))
             .ReturnsAsync(100);
+        var fileHandler = new Mock<IFileHandler>();
+        fileHandler.Setup(handler => handler.FileExists("seeded-container.jpg", Constants.PathToSharedPhotos))
+            .Returns(true);
+        fileHandler.Setup(handler => handler.FileExists("seeded-item.jpg", Constants.PathToSharedPhotos))
+            .Returns(true);
         var preferences = new Mock<IPreferences>();
         preferences.Setup(store => store.Get("DemoDataSeedVersion", string.Empty))
             .Returns(DemoDataSeeder.SeedVersion);
@@ -124,7 +130,7 @@ public class AppStartupOrchestratorTests
             inventories.Object,
             photos.Object,
             relations.Object,
-            Mock.Of<IFileHandler>(),
+            fileHandler.Object,
             NullLogger<DemoDataSeeder>.Instance);
         var orchestrator = new AppStartupOrchestrator(
             initializer.Object,
@@ -136,7 +142,7 @@ public class AppStartupOrchestratorTests
 
         items.Verify(repository => repository.GetAllAsync(), Times.Never);
         inventories.Verify(repository => repository.InitializeAsync(), Times.Never);
-        photos.Verify(repository => repository.InitializeAsync(), Times.Never);
+        photos.Verify(repository => repository.InitializeAsync(), Times.Once);
         relations.Verify(repository => repository.InitializeAsync(), Times.Never);
         preferences.Verify(store => store.Set("DemoDataSeedVersion", It.IsAny<string>()), Times.Never);
     }

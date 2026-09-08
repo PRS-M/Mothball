@@ -32,7 +32,9 @@ Relevant files:
 [SEED-CONTAINER-MARKER:4f3c5d11-2f9b-44b3-9e55-2e0f1ea7a8d2]
 ```
 
-When photos are enabled, the seeder also creates image metadata and attempts to copy the bundled container image.
+When photos are enabled, the seeder also creates image metadata and ensures the bundled default image is available.
+
+Seeded container and item image metadata each point to one shared asset: `MothballData/Photos/Shared/seeded-container.jpg` reuses the bundled container image, while `seeded-item.jpg` reuses the bundled item/logo image. Each asset is copied at most once per seeder instance. Shared image metadata is intentionally protected from physical-file deletion; deleting a seeded photo removes only that owner’s metadata. Regular user photos continue to use their own image-ID filenames and are deleted normally.
 
 ### Items
 

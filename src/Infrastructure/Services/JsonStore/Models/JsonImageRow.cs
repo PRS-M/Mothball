@@ -6,6 +6,10 @@ public sealed class JsonImageRow
     public Guid ImageId { get; set; }
     public Guid OwnerUniqueId { get; set; }
 
+    public string? StoredFileName { get; set; }
+
+    public bool IsSharedAsset { get; set; }
+
     // Present in SQLite schema, unused in current domain behavior.
     public string? ImageDataBase64 { get; set; }
 }

@@ -2,6 +2,8 @@ using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Utilities;
+using Infrastructure.Services.DatabaseModels;
+using Infrastructure.Services.Mappers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -425,5 +427,33 @@ public class ImageServiceBehaviorTests
         repo.Verify(r => r.DeleteItemPhotoAsync(item, image.ImageId), Times.Once);
         repo.Verify(r => r.UpdateItemAsync(It.IsAny<Item>()), Times.Never);
         files.Verify(f => f.DeleteFileAsync(image.FileName, Constants.PathToItemPhotos), Times.Once);
+    }
+
+    [Test]
+    public async Task DeleteItemPhotoAsync_WhenPhotoIsShared_DeletesMetadataButPreservesFile()
+    {
+        var camera = new Mock<ICameraHandler>();
+        var repo = new Mock<IInventoryCommandRepository>();
+        var files = new Mock<IFileHandler>();
+
+        var imageId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var item = new DbItem { ItemId = itemId, Name = "Lamp" }
+            .ToDomain(new[]
+            {
+                new DbImage
+                {
+                    ImageId = imageId,
+                    OwnerUniqueId = itemId,
+                    StoredFileName = "seeded-default.jpg",
+                    IsSharedAsset = true,
+                },
+            });
+        var service = CreateService(camera, repo, files);
+
+        var deleted = await service.DeleteItemPhotoAsync(item, imageId);
+
+        Assert.That(deleted, Is.True);
+        files.Verify(f => f.DeleteFileAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 }
