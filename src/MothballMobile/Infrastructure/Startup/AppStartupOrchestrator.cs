@@ -26,7 +26,9 @@ public sealed class AppStartupOrchestrator : IAppStartupOrchestrator
     }
 
     /// <inheritdoc />
-    public async Task StartAsync(IProgress<StartupProgress>? progress = null)
+    public async Task StartAsync(
+        IProgress<StartupProgress>? progress = null,
+        bool automaticDemoSeeding = true)
     {
         try
         {
@@ -34,8 +36,7 @@ public sealed class AppStartupOrchestrator : IAppStartupOrchestrator
             await startupInitializer.InitializeAsync();
             progress?.Report(new StartupProgress(0.2, 0, "Initializing local data"));
 
-#if DEBUG
-            if (demoSeeder is not null && await ShouldRunDemoSeedAsync(demoSeeder, progress))
+            if (automaticDemoSeeding && demoSeeder is not null && await ShouldRunDemoSeedAsync(demoSeeder, progress))
             {
                 var containerProgress = new Progress<double>(fraction =>
                     progress?.Report(new StartupProgress(0.2 + fraction * 0.2, fraction, "Generating demo containers")));
@@ -54,7 +55,6 @@ public sealed class AppStartupOrchestrator : IAppStartupOrchestrator
             {
                 logger.LogDebug("Skipping demo data seeding because version {SeedVersion} is already complete.", DemoDataSeeder.SeedVersion);
             }
-#endif
 
             progress?.Report(new StartupProgress(0.85, 1, "Preparing application"));
         }

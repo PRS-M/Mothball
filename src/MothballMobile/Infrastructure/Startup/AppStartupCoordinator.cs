@@ -115,7 +115,12 @@ public sealed class AppStartupCoordinator
                 Stopwatch.GetElapsedTime(secretStarted).TotalMilliseconds);
 
             var persistenceStarted = Stopwatch.GetTimestamp();
-            await startupOrchestrator.StartAsync(progress);
+#if DEBUG
+            const bool automaticDemoSeeding = true;
+#else
+            const bool automaticDemoSeeding = false;
+#endif
+            await startupOrchestrator.StartAsync(progress, automaticDemoSeeding);
             logger.LogInformation(
                 "Application startup persistence completed in {ElapsedMilliseconds:F0} ms.",
                 Stopwatch.GetElapsedTime(persistenceStarted).TotalMilliseconds);

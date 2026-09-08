@@ -19,5 +19,8 @@ public interface IAppStartupOrchestrator
     /// <summary>
     /// Runs the coordinated application startup workflow.
     /// </summary>
-    Task StartAsync(IProgress<StartupProgress>? progress = null);
+    /// <param name="automaticDemoSeeding">Whether Debug-style automatic example-data seeding is enabled for this startup.</param>
+    Task StartAsync(
+        IProgress<StartupProgress>? progress = null,
+        bool automaticDemoSeeding = true);
 }
