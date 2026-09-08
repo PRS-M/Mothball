@@ -82,7 +82,7 @@ public sealed class AddItemViewModelTests
     {
         var viewModel = CreateViewModel(Mock.Of<ICreateItemCommandHandler>(), false);
 
-        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.Ean13, BarcodeSymbology.QrCode }));
+        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.Ean8, BarcodeSymbology.Ean13, BarcodeSymbology.QrCode }));
     }
 
     [Test]

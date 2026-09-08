@@ -150,6 +150,7 @@ public sealed class ContainerDetailsViewModelTests
     public async Task SaveBarcodeCommand_WhenReplacementIsConfirmed_AssignsAndPublishesBarcode()
     {
         var container = new Container(Guid.NewGuid(), "Garage", "Top shelf");
+        container.UpdateBarcode(new Barcode("old-garage-code", BarcodeSymbology.Code128));
         var details = new Mock<IContainerDetailsHandler>();
         details.Setup(handler => handler.GetSummaryAsync(container.ContainerId.ToString()))
             .ReturnsAsync(new ContainerDetailsSummary(container, 0, 0));

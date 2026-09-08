@@ -24,13 +24,13 @@ public sealed class CreateContainerCommandHandler : ICreateContainerCommandHandl
     /// <inheritdoc />
     public async Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null, Barcode? barcode = null)
     {
-        await EnsureBarcodeIsAvailableAsync(barcode);
-
         var container = new Container(
             containerId: Guid.NewGuid(),
             name: name,
             notes: notes);
-        container.UpdateBarcode(barcode);
+        var assignedBarcode = barcode ?? InternalSkuGenerator.Create(container.ContainerId);
+        await EnsureBarcodeIsAvailableAsync(assignedBarcode);
+        container.UpdateBarcode(assignedBarcode);
 
         await inventoryCommands.InsertContainerAsync(container);
 

@@ -25,10 +25,10 @@ public sealed class CreateItemCommandHandler : ICreateItemCommandHandler
     /// <inheritdoc />
     public async Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null, Barcode? barcode = null)
     {
-        await EnsureBarcodeIsAvailableAsync(barcode);
-
         var item = new Item(name, description);
-        item.UpdateBarcode(barcode);
+        var assignedBarcode = barcode ?? InternalSkuGenerator.Create(item.ItemId);
+        await EnsureBarcodeIsAvailableAsync(assignedBarcode);
+        item.UpdateBarcode(assignedBarcode);
         var inventory = new ItemInventory(item.ItemId, quantity);
         if (containerId is { } cid && cid != Guid.Empty)
         {

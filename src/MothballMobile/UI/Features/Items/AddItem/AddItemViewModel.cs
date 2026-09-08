@@ -25,7 +25,7 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly IItemReceiptService itemReceipts;
 
     private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.Ean13, BarcodeSymbology.QrCode]);
+    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.Ean8, BarcodeSymbology.Ean13, BarcodeSymbology.QrCode]);
 
     public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies

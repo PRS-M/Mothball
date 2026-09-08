@@ -19,7 +19,7 @@ public partial class AddContainerViewModel : BaseViewModel
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IApplicationSettings applicationSettings;
     private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.Ean13, BarcodeSymbology.QrCode]);
+    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.Ean8, BarcodeSymbology.Ean13, BarcodeSymbology.QrCode]);
 
     public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies

@@ -114,7 +114,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
     public bool IsViewingBarcode => !IsEditingBarcode;
     private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<global::CoreApp.Domain.ValueObjects.BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> simpleBarcodeSymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean13, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode]);
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> simpleBarcodeSymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean8, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean13, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode]);
     public IReadOnlyList<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
         : simpleBarcodeSymbologies;
@@ -630,10 +630,13 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             return;
         }
 
-        var confirmation = barcode is null ? popupDefinitions.ClearBarcode() : popupDefinitions.ReplaceBarcode();
-        if (!await popup.ConfirmAsync(confirmation))
+        if (currentContainer.Barcode is not null)
         {
-            return;
+            var confirmation = barcode is null ? popupDefinitions.ClearBarcode() : popupDefinitions.ReplaceBarcode();
+            if (!await popup.ConfirmAsync(confirmation))
+            {
+                return;
+            }
         }
 
         await RunCommandAsync(async () =>
