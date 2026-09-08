@@ -113,5 +113,9 @@ public class DatabaseIndexTests
             await HasUniqueIndexAsync(nameof(DbContainerTag), nameof(DbContainerTag.ContainerId), nameof(DbContainerTag.TagId)),
             Is.True,
             "Missing unique index: container tags.ContainerId + TagId");
+        Assert.That(
+            await HasUniqueIndexAsync(nameof(DbBarcodeRegistry), nameof(DbBarcodeRegistry.NormalizedValue)),
+            Is.True,
+            "Missing unique index: barcode registry.NormalizedValue");
     }
 }
