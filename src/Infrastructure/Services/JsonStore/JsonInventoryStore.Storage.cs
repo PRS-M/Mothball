@@ -26,6 +26,8 @@ public sealed partial class JsonInventoryStore
                    ?? [];
         var tagAssignments = await TryReadJsonAsync<List<JsonTagAssignmentRow>>(JsonStoreConstants.TagAssignmentsFileName, slotFolder)
                             ?? [];
+        var barcodes = await TryReadJsonAsync<List<JsonBarcodeRegistryRow>>(JsonStoreConstants.BarcodesFileName, slotFolder)
+                      ?? [];
 
         // Ensure counters are sane even if metadata is missing/outdated.
         metadata.NextContainerRowId = Math.Max(metadata.NextContainerRowId, containers.Select(c => c.RowId).DefaultIfEmpty(0).Max() + 1);
@@ -44,6 +46,7 @@ public sealed partial class JsonInventoryStore
             Relations = relations,
             Tags = tags,
             TagAssignments = tagAssignments,
+            Barcodes = barcodes,
         };
     }
 
@@ -74,6 +77,7 @@ public sealed partial class JsonInventoryStore
         await WriteJsonAsync(JsonStoreConstants.RelationsFileName, slotFolder, state.Relations).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.TagsFileName, slotFolder, state.Tags).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.TagAssignmentsFileName, slotFolder, state.TagAssignments).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.BarcodesFileName, slotFolder, state.Barcodes).ConfigureAwait(false);
 
         // Commit info written last inside the slot.
         var commitInfo = new JsonStoreCommitInfo

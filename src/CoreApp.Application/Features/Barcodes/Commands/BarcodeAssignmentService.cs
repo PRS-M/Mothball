@@ -12,6 +12,7 @@ public sealed class BarcodeAssignmentService : IBarcodeAssignmentService
 {
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IInventoryQueryRepository inventoryQueries;
+    private readonly IBarcodeRegistryService? registry;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BarcodeAssignmentService"/> class.
@@ -20,28 +21,48 @@ public sealed class BarcodeAssignmentService : IBarcodeAssignmentService
     /// <param name="inventoryQueries">The repository used to resolve existing barcode owners.</param>
     public BarcodeAssignmentService(
         IInventoryCommandRepository inventoryCommands,
-        IInventoryQueryRepository inventoryQueries)
+        IInventoryQueryRepository inventoryQueries,
+        IBarcodeRegistryService? registry = null)
     {
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
+        this.registry = registry;
     }
 
     /// <inheritdoc />
     public async Task UpdateContainerAsync(Container container, Barcode? barcode)
     {
         ArgumentNullException.ThrowIfNull(container);
+        var previous = container.Barcode;
         await EnsureBarcodeIsAvailableAsync(barcode, BarcodeOwnerKind.Container, container.ContainerId);
         container.UpdateBarcode(barcode);
+        if (registry is not null && barcode is not null)
+        {
+            await registry.AssignAsync(barcode, BarcodeOwnerKind.Container, container.ContainerId, container.Name);
+        }
         await inventoryCommands.UpdateContainerAsync(container);
+        if (registry is not null && previous is not null && (barcode is null || previous != barcode))
+        {
+            await registry.ReleaseAsync(previous.Value);
+        }
     }
 
     /// <inheritdoc />
     public async Task UpdateItemAsync(Item item, Barcode? barcode)
     {
         ArgumentNullException.ThrowIfNull(item);
+        var previous = item.Barcode;
         await EnsureBarcodeIsAvailableAsync(barcode, BarcodeOwnerKind.Item, item.ItemId);
         item.UpdateBarcode(barcode);
+        if (registry is not null && barcode is not null)
+        {
+            await registry.AssignAsync(barcode, BarcodeOwnerKind.Item, item.ItemId, item.Name);
+        }
         await inventoryCommands.UpdateItemAsync(item);
+        if (registry is not null && previous is not null && (barcode is null || previous != barcode))
+        {
+            await registry.ReleaseAsync(previous.Value);
+        }
     }
 
     private async Task EnsureBarcodeIsAvailableAsync(

@@ -2,6 +2,7 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Contracts;
 using CoreApp.Application.Features.Photos;
 
 namespace CoreApp.Application.Features.Items.Commands;
@@ -11,15 +12,18 @@ public sealed class CreateItemCommandHandler : ICreateItemCommandHandler
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly ImageService imageService;
+    private readonly IBarcodeRegistryService? registry;
 
     public CreateItemCommandHandler(
         IInventoryCommandRepository inventoryCommands,
         IInventoryQueryRepository inventoryQueries,
-        ImageService imageService)
+        ImageService imageService,
+        IBarcodeRegistryService? registry = null)
     {
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
+        this.registry = registry;
     }
 
     /// <inheritdoc />
@@ -28,6 +32,10 @@ public sealed class CreateItemCommandHandler : ICreateItemCommandHandler
         var item = new Item(name, description);
         var assignedBarcode = barcode ?? InternalSkuGenerator.Create(item.ItemId);
         await EnsureBarcodeIsAvailableAsync(assignedBarcode);
+        if (registry is not null)
+        {
+            await registry.AssignAsync(assignedBarcode, BarcodeOwnerKind.Item, item.ItemId, item.Name);
+        }
         item.UpdateBarcode(assignedBarcode);
         var inventory = new ItemInventory(item.ItemId, quantity);
         if (containerId is { } cid && cid != Guid.Empty)

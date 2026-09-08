@@ -4,6 +4,7 @@ using Infrastructure.Services.Images;
 using Infrastructure.Services.Restore;
 using Infrastructure.Services.JsonStore;
 using Infrastructure.Services.JsonStore.Repositories;
+using Infrastructure.Services.BarcodeRegistry;
 using Infrastructure.Services.Repositories;
 using Infrastructure.Services.Startup;
 using CoreApp.Application.Utilities;
@@ -159,6 +160,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
         services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         services.AddSingleton<IInventoryBackupRestoreService, JsonInventoryBackupRestoreService>();
+        services.AddSingleton<IBarcodeRegistryService, JsonBarcodeRegistryService>();
         return services;
     }
 
@@ -180,6 +182,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IInventoryCommandRepository, InventoryCommandRepository>();
         services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         services.AddSingleton<IInventoryBackupRestoreService, SqliteInventoryBackupRestoreService>();
+        services.AddSingleton<IBarcodeRegistryService, SqliteBarcodeRegistryService>();
         return services;
     }
 

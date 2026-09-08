@@ -14,5 +14,6 @@ public sealed partial class JsonInventoryStore
         public List<JsonRelationRow> Relations { get; set; } = [];
         public List<JsonTagRow> Tags { get; set; } = [];
         public List<JsonTagAssignmentRow> TagAssignments { get; set; } = [];
+        public List<JsonBarcodeRegistryRow> Barcodes { get; set; } = [];
     }
 }
