@@ -20,4 +20,9 @@ public interface IBarcodeShareService
     /// <param name="labels">The labels to include in the document.</param>
     /// <param name="title">The title shown by the device share sheet.</param>
     Task ShareAsync(IReadOnlyCollection<BarcodeLabelData> labels, string title);
+
+    /// <summary>
+    /// Reserves internal Code 128 SKUs, renders them into a PDF, and shares the document.
+    /// </summary>
+    Task ShareNewInternalSkuBatchAsync(int count, string labelName, string title);
 }

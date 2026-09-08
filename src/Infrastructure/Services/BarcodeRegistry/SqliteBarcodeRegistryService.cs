@@ -11,6 +11,7 @@ namespace Infrastructure.Services.BarcodeRegistry;
 /// </summary>
 public sealed class SqliteBarcodeRegistryService : IBarcodeRegistryService
 {
+    private const int MaximumBatchSize = 1000;
     private readonly MothballDatabase database;
 
     public SqliteBarcodeRegistryService(MothballDatabase database)
@@ -28,6 +29,35 @@ public sealed class SqliteBarcodeRegistryService : IBarcodeRegistryService
             .Where(value => value.NormalizedValue == normalized)
             .FirstOrDefaultAsync().ConfigureAwait(false);
         return row is null ? null : ToDomain(row);
+    }
+
+    public async Task<IReadOnlyList<BarcodeRegistryEntry>> ReserveInternalSkuBatchAsync(int count)
+    {
+        if (count is < 1 or > MaximumBatchSize)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), "The SKU batch size must be between 1 and 1000.");
+        }
+
+        await database.InitializeAsync().ConfigureAwait(false);
+        var result = new List<BarcodeRegistryEntry>(count);
+        await database.Connection.RunInTransactionAsync(connection =>
+        {
+            for (var index = 0; index < count; index++)
+            {
+                var barcode = InternalSkuGenerator.Create(Guid.NewGuid());
+                var row = new DbBarcodeRegistry
+                {
+                    BarcodeId = Guid.NewGuid(),
+                    Value = barcode.Value,
+                    NormalizedValue = barcode.Value,
+                    Symbology = (int)barcode.Symbology,
+                    Status = (int)BarcodeRegistryStatus.Reserved,
+                };
+                connection.Insert(row);
+                result.Add(ToDomain(row));
+            }
+        }).ConfigureAwait(false);
+        return result;
     }
 
     public async Task<BarcodeRegistryEntry> ReserveAsync(Barcode barcode)

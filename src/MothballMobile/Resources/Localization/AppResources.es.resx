@@ -34,11 +34,15 @@
   <data name="BackgroundOperations" xml:space="preserve"><value>Operaciones en segundo plano</value></data>
   <data name="BackgroundPhotoOperations" xml:space="preserve"><value>Operaciones de fotos en segundo plano</value></data>
   <data name="Barcode" xml:space="preserve"><value>Código de barras</value></data>
+  <data name="GeneratePdfWithNewCodes" xml:space="preserve"><value>Generar PDF con códigos nuevos</value></data>
+  <data name="GeneratePdfWithNewCodesDescription" xml:space="preserve"><value>Reserva SKU Code 128 y comparte un PDF listo para imprimir.</value></data>
+  <data name="Generate" xml:space="preserve"><value>Generar</value></data>
+  <data name="InternalSku" xml:space="preserve"><value>SKU interno</value></data>
   <data name="Error" xml:space="preserve"><value>Error</value></data>
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Este código de barras ya está en uso.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Algo salió mal. Inténtalo de nuevo.</value></data>
   <data name="BarcodesExtendedMode" xml:space="preserve"><value>Modo ampliado de códigos de barras (experimental)</value></data>
-  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>El modo experimental muestra tipos adicionales de códigos de barras. En el modo simple están disponibles EAN-13 y el código QR.</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>El modo experimental muestra tipos adicionales de códigos de barras. En el modo simple están disponibles EAN-8, EAN-13 y el código QR.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Tipo de código de barras</value></data>
   <data name="Backup" xml:space="preserve"><value>Copia de seguridad</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Copia de seguridad exportada</value></data>

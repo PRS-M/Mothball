@@ -30,6 +30,12 @@ public sealed record BarcodeRegistryEntry(
 public interface IBarcodeRegistryService
 {
     /// <summary>
+    /// Reserves a batch of internal Code 128 SKU barcodes for later claiming.
+    /// </summary>
+    /// <param name="count">The number of SKUs to reserve.</param>
+    Task<IReadOnlyList<BarcodeRegistryEntry>> ReserveInternalSkuBatchAsync(int count);
+
+    /// <summary>
     /// Finds a barcode by its trimmed, case-sensitive value.
     /// </summary>
     Task<BarcodeRegistryEntry?> FindAsync(string barcodeValue);
