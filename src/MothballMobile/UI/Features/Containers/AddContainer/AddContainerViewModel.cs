@@ -56,7 +56,34 @@ public partial class AddContainerViewModel : BaseViewModel
     [ObservableProperty]
     private BarcodeSymbology barcodeSymbology = BarcodeSymbology.QrCode;
 
-    public bool GenerateInternalSku { get; set; } = true;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(GenerateBarcodeCommand))]
+    private bool generateInternalSku = true;
+
+    public bool IsManualBarcodeVisible => !GenerateInternalSku;
+
+    public bool CanGenerateBarcode => BarcodeSymbology is BarcodeSymbology.Code128 or BarcodeSymbology.QrCode;
+
+    [RelayCommand(CanExecute = nameof(CanGenerateBarcode))]
+    private void GenerateBarcode()
+    {
+        BarcodeValue = string.Empty;
+        GenerateInternalSku = true;
+    }
+
+    partial void OnGenerateInternalSkuChanged(bool value)
+        => OnPropertyChanged(nameof(IsManualBarcodeVisible));
+
+    partial void OnBarcodeSymbologyChanged(BarcodeSymbology value)
+    {
+        if (value is BarcodeSymbology.Ean8 or BarcodeSymbology.Ean13)
+        {
+            GenerateInternalSku = false;
+        }
+
+        OnPropertyChanged(nameof(CanGenerateBarcode));
+        GenerateBarcodeCommand.NotifyCanExecuteChanged();
+    }
 
     [ObservableProperty]
     private string? validationMessage;
@@ -176,7 +203,8 @@ public partial class AddContainerViewModel : BaseViewModel
                 string.IsNullOrWhiteSpace(Notes) ? string.Empty : Notes.Trim(),
                 pendingPhoto.Bytes,
                 barcode,
-                GenerateInternalSku);
+                GenerateInternalSku,
+                BarcodeSymbology);
 
             await pendingPhoto.DiscardAsync();
             PhotoThumbnailPath = null;

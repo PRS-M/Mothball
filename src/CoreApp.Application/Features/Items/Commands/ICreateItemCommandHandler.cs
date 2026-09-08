@@ -17,5 +17,5 @@ public interface ICreateItemCommandHandler
     /// <param name="quantity">The quantity used by the operation.</param>
     /// <param name="photoBytes">The value used by the operation.</param>
     /// <param name="barcode">The optional globally unique barcode assigned to the item.</param>
-    Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null, Barcode? barcode = null, bool generateInternalSku = true);
+    Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null, Barcode? barcode = null, bool generateInternalSku = true, BarcodeSymbology generatedBarcodeSymbology = BarcodeSymbology.Code128);
 }

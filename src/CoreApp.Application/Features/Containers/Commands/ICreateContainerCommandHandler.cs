@@ -15,5 +15,5 @@ public interface ICreateContainerCommandHandler
     /// <param name="notes">The value used by the operation.</param>
     /// <param name="photoBytes">The value used by the operation.</param>
     /// <param name="barcode">The optional globally unique barcode assigned to the container.</param>
-    Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null, Barcode? barcode = null, bool generateInternalSku = true);
+    Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null, Barcode? barcode = null, bool generateInternalSku = true, BarcodeSymbology generatedBarcodeSymbology = BarcodeSymbology.Code128);
 }

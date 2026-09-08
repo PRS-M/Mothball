@@ -27,10 +27,12 @@ public sealed class CreateItemCommandHandler : ICreateItemCommandHandler
     }
 
     /// <inheritdoc />
-    public async Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null, Barcode? barcode = null, bool generateInternalSku = true)
+    public async Task<Item> CreateAsync(string name, string description, Guid? containerId = null, int quantity = 1, byte[]? photoBytes = null, Barcode? barcode = null, bool generateInternalSku = true, BarcodeSymbology generatedBarcodeSymbology = BarcodeSymbology.Code128)
     {
         var item = new Item(name, description);
-        var assignedBarcode = barcode ?? (generateInternalSku ? InternalSkuGenerator.Create(item.ItemId) : null);
+        var assignedBarcode = barcode ?? (generateInternalSku
+            ? GeneratedBarcodeGenerator.Create(item.ItemId, BarcodeOwnerKind.Item, generatedBarcodeSymbology)
+            : null);
         if (assignedBarcode is not null)
         {
             await EnsureBarcodeIsAvailableAsync(assignedBarcode);

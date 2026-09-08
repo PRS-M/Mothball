@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Domain.Entities.ContainerAggregate;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Contracts;
 using CoreApp.Application.Abstractions.Persistence;
 using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Utilities;
@@ -59,6 +60,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
     [ObservableProperty]
     private bool isEditingBarcode;
+
+    [ObservableProperty]
+    private bool generateBarcode;
+
+    public bool IsManualBarcodeVisible => !GenerateBarcode;
 
     [ObservableProperty]
     private bool isEditingNotes;
@@ -566,11 +572,23 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     partial void OnIsEditingBarcodeChanged(bool value)
         => OnPropertyChanged(nameof(IsViewingBarcode));
 
+    partial void OnGenerateBarcodeChanged(bool value)
+        => OnPropertyChanged(nameof(IsManualBarcodeVisible));
+
+    partial void OnBarcodeSymbologyDraftChanged(global::CoreApp.Domain.ValueObjects.BarcodeSymbology value)
+    {
+        if (value is global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean8 or global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean13)
+        {
+            GenerateBarcode = false;
+        }
+    }
+
     [RelayCommand]
     private void EditBarcode()
     {
         BarcodeValueDraft = BarcodeValue;
         BarcodeSymbologyDraft = currentContainer?.Barcode?.Symbology ?? global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
+        GenerateBarcode = false;
         IsEditingBarcode = true;
     }
 
@@ -621,9 +639,11 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         }
 
         var normalizedBarcodeValue = BarcodeValueDraft?.Trim();
-        var barcode = string.IsNullOrWhiteSpace(normalizedBarcodeValue)
-            ? null
-            : new Barcode(normalizedBarcodeValue, BarcodeSymbologyDraft);
+        var barcode = GenerateBarcode
+            ? GeneratedBarcodeGenerator.Create(currentContainer.ContainerId, BarcodeOwnerKind.Container, BarcodeSymbologyDraft)
+            : string.IsNullOrWhiteSpace(normalizedBarcodeValue)
+                ? null
+                : new Barcode(normalizedBarcodeValue, BarcodeSymbologyDraft);
         if (currentContainer.Barcode == barcode)
         {
             IsEditingBarcode = false;

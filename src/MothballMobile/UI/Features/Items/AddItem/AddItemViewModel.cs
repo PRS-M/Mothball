@@ -40,7 +40,34 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     public bool IsReceivingExistingItem { get; private set; }
     public bool IsItemMetadataEditable => !IsReceivingExistingItem;
 
-    public bool GenerateInternalSku { get; set; } = true;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(GenerateBarcodeCommand))]
+    private bool generateInternalSku = true;
+
+    public bool IsManualBarcodeVisible => !GenerateInternalSku;
+
+    public bool CanGenerateBarcode => BarcodeSymbology is BarcodeSymbology.Code128 or BarcodeSymbology.QrCode;
+
+    [RelayCommand(CanExecute = nameof(CanGenerateBarcode))]
+    private void GenerateBarcode()
+    {
+        BarcodeValue = string.Empty;
+        GenerateInternalSku = true;
+    }
+
+    partial void OnGenerateInternalSkuChanged(bool value)
+        => OnPropertyChanged(nameof(IsManualBarcodeVisible));
+
+    partial void OnBarcodeSymbologyChanged(BarcodeSymbology value)
+    {
+        if (value is BarcodeSymbology.Ean8 or BarcodeSymbology.Ean13)
+        {
+            GenerateInternalSku = false;
+        }
+
+        OnPropertyChanged(nameof(CanGenerateBarcode));
+        GenerateBarcodeCommand.NotifyCanExecuteChanged();
+    }
 
     [ObservableProperty]
     private string destinationContainerName = string.Empty;
@@ -360,7 +387,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
                 quantity,
                 pendingPhoto.Bytes,
                 barcode,
-                GenerateInternalSku);
+                GenerateInternalSku,
+                BarcodeSymbology);
         }
         catch (Exception ex)
         {

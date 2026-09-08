@@ -40,6 +40,9 @@
   <data name="InternalSku" xml:space="preserve"><value>Interne SKU</value></data>
   <data name="GenerateInternalSku" xml:space="preserve"><value>Interne SKU generieren</value></data>
   <data name="GenerateInternalSkuDescription" xml:space="preserve"><value>Eine Code-128-SKU generieren, wenn kein Barcode angegeben ist.</value></data>
+  <data name="GenerateBarcode" xml:space="preserve"><value>Barcode generieren</value></data>
+  <data name="GenerateBarcodeDescription" xml:space="preserve"><value>Beim Speichern einen Barcode im ausgewählten Format generieren.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Bearbeiten</value></data>
   <data name="Error" xml:space="preserve"><value>Fehler</value></data>
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Dieser Barcode wird bereits verwendet.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.</value></data>

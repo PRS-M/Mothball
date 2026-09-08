@@ -14,7 +14,7 @@ public sealed class AddItemViewModelTests
     public async Task SaveCommand_InAdvancedMode_CreatesStandaloneItemWithEnteredUnassignedQuantity()
     {
         var createItem = new Mock<ICreateItemCommandHandler>();
-        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 4, null))
+        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 4, null, null, true, BarcodeSymbology.QrCode))
             .ReturnsAsync(new CoreApp.Domain.Entities.ItemAggregate.Item("Widget", ""));
         var viewModel = CreateViewModel(createItem.Object, isAdvancedMode: true);
         viewModel.Name = "Widget";
@@ -23,14 +23,14 @@ public sealed class AddItemViewModelTests
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.That(viewModel.ShowQuantityField, Is.True);
-        createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 4, null), Times.Once);
+        createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 4, null, null, true, BarcodeSymbology.QrCode), Times.Once);
     }
 
     [Test]
     public async Task SaveCommand_InSimpleMode_CreatesStandaloneItemWithDefaultQuantity()
     {
         var createItem = new Mock<ICreateItemCommandHandler>();
-        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null))
+        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null, null, true, BarcodeSymbology.QrCode))
             .ReturnsAsync(new CoreApp.Domain.Entities.ItemAggregate.Item("Widget", ""));
         var viewModel = CreateViewModel(createItem.Object, isAdvancedMode: false);
         viewModel.Name = "Widget";
@@ -39,14 +39,14 @@ public sealed class AddItemViewModelTests
         await viewModel.SaveCommand.ExecuteAsync(null);
 
         Assert.That(viewModel.ShowQuantityField, Is.False);
-        createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 1, null), Times.Once);
+        createItem.Verify(handler => handler.CreateAsync("Widget", "", null, 1, null, null, true, BarcodeSymbology.QrCode), Times.Once);
     }
 
     [Test]
     public async Task SaveCommand_WhenCreateThrows_RecordsGenericErrorWithoutRethrowing()
     {
         var createItem = new Mock<ICreateItemCommandHandler>();
-        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null))
+        createItem.Setup(handler => handler.CreateAsync("Widget", "", null, 1, null, null, true, BarcodeSymbology.QrCode))
             .ThrowsAsync(new InvalidOperationException("disk full"));
         var viewModel = CreateViewModel(createItem.Object, isAdvancedMode: false);
         viewModel.Name = "Widget";
