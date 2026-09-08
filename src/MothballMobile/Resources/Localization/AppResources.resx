@@ -223,10 +223,12 @@
   <data name="Share" xml:space="preserve"><value>Share</value></data>
   <data name="ShareSelected" xml:space="preserve"><value>Selected</value></data>
   <data name="ShareAll" xml:space="preserve"><value>All</value></data>
+  <data name="Visible" xml:space="preserve"><value>Visible</value></data>
   <data name="ShareSelectedEntries" xml:space="preserve"><value>Share selected entries</value></data>
   <data name="BarcodeSharing" xml:space="preserve"><value>Barcode Sharing</value></data>
   <data name="Select" xml:space="preserve"><value>Select</value></data>
   <data name="SelectAllLoaded" xml:space="preserve"><value>Select all loaded</value></data>
+  <data name="SelectVisible" xml:space="preserve"><value>Select visible</value></data>
   <data name="ClearSelection" xml:space="preserve"><value>Clear</value></data>
   <data name="ShareAllMatching" xml:space="preserve"><value>Share all filtered results</value></data>
   <data name="NumberOfSelectedContainers" xml:space="preserve"><value>Number of selected containers:</value></data>
