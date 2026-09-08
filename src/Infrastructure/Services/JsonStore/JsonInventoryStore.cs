@@ -68,7 +68,6 @@ public sealed partial class JsonInventoryStore
         {
             Constants.PathToContainerPhotos,
             Constants.PathToItemPhotos,
-            Constants.PathToSharedPhotos,
         };
         var filesToDelete = folders
             .SelectMany(folder => files.EnumerateFiles(folder).Select(file => (folder, file)))

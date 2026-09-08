@@ -179,6 +179,7 @@ public class JsonOperationalStoreTests
     {
         var files = new InMemoryFileHandler();
         await files.WriteRawAsync("photo.jpg", Constants.PathToItemPhotos, "photo");
+        await files.WriteRawAsync("seeded-item.jpg", Constants.PathToSharedPhotos, "shared item photo");
         var store = new JsonInventoryStore(files, NullLogger<JsonInventoryStore>.Instance);
         var tracker = new InventoryChangeTracker();
         var maintenance = new JsonInventoryMaintenanceService(store, tracker, files);
@@ -191,7 +192,9 @@ public class JsonOperationalStoreTests
             Assert.That(tracker.Revision, Is.EqualTo(1));
             Assert.That(reports.Any(report => report.Status == "Deleting photo files" && report.StepProgress > 0), Is.True);
             Assert.That(reports[^1].Progress, Is.EqualTo(1));
+            Assert.That(files.FileExists("photo.jpg", Constants.PathToItemPhotos), Is.False);
             Assert.That(files.FileExists("seeded-container.jpg", Constants.PathToSharedPhotos), Is.True);
+            Assert.That(files.FileExists("seeded-item.jpg", Constants.PathToSharedPhotos), Is.True);
         });
     }
 

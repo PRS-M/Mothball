@@ -66,7 +66,6 @@ public sealed class SqliteInventoryMaintenanceService : IInventoryMaintenanceSer
         {
             Constants.PathToContainerPhotos,
             Constants.PathToItemPhotos,
-            Constants.PathToSharedPhotos,
         };
         var filesToDelete = folders
             .SelectMany(folder => files.EnumerateFiles(folder).Select(file => (folder, file)))
