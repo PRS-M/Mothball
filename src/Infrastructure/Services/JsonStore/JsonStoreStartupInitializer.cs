@@ -14,14 +14,15 @@ public sealed class JsonStoreStartupInitializer : IAppStartupInitializer
     }
 
     /// <inheritdoc />
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        var recovered = await store.TryRecoverAsync().ConfigureAwait(false);
+        var recovered = await store.TryRecoverAsync(cancellationToken).ConfigureAwait(false);
         if (!recovered)
         {
             throw new InvalidOperationException("Failed to recover JSON inventory store during startup.");
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         if (files is not null && !files.FileExists("seeded-container.jpg", Constants.PathToSharedPhotos))
         {
             await files.CopyFileFromRawToAppDataAsync(

@@ -8,5 +8,5 @@ public interface IAppStartupInitializer
     /// <summary>
     /// Initializes the active persistence layer.
     /// </summary>
-    Task InitializeAsync();
+    Task InitializeAsync(CancellationToken cancellationToken = default);
 }

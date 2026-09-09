@@ -120,12 +120,13 @@ public sealed partial class JsonInventoryStore
         manifestManager = new JsonStoreManifestManager(this.files, this.logger, JsonOptions, IsSlotCompleteAsync);
     }
 
-    public async Task<bool> TryRecoverAsync()
+    public async Task<bool> TryRecoverAsync(CancellationToken cancellationToken = default)
     {
-        await writeLock.WaitAsync().ConfigureAwait(false);
+        await writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await TryRecoverUnlockedAsync().ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            return await TryRecoverUnlockedAsync(cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -133,8 +134,9 @@ public sealed partial class JsonInventoryStore
         }
     }
 
-    private async Task<bool> TryRecoverUnlockedAsync()
+    private async Task<bool> TryRecoverUnlockedAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         // Ensure there is at least one valid manifest+slot.
         // If none exist, initialize empty store into slot A.
         var active = await manifestManager.TryGetActiveAsync();
@@ -153,7 +155,7 @@ public sealed partial class JsonInventoryStore
                 SchemaVersion = empty.Metadata.SchemaVersion,
             };
 
-            await WriteSlotAsync("A", empty, generation: initial.Generation).ConfigureAwait(false);
+            await WriteSlotAsync("A", empty, generation: initial.Generation, cancellationToken).ConfigureAwait(false);
             await manifestManager.WriteAsync(JsonStoreConstants.ManifestAFileName, initial).ConfigureAwait(false);
             return true;
         }

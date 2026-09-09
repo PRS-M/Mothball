@@ -23,14 +23,15 @@ public class MothballDatabase : IAsyncDisposable
     /// <summary>
     /// Initializes the SQLite connection and creates the current database schema when needed.
     /// </summary>
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         if (connection != null) return;
 
-        await initLock.WaitAsync();
+        await initLock.WaitAsync(cancellationToken);
         try
         {
             if (connection != null) return;
+            cancellationToken.ThrowIfCancellationRequested();
             connection = await InitializeCoreAsync();
         }
         finally

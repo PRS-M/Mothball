@@ -14,9 +14,10 @@ public sealed class SqliteStartupInitializer : IAppStartupInitializer
     }
 
     /// <inheritdoc />
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        await database.InitializeAsync();
+        await database.InitializeAsync(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         await EnsureSharedContainerPhotoAsync();
     }
 

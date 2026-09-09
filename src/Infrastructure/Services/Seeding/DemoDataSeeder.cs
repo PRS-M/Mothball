@@ -133,8 +133,10 @@ public class DemoDataSeeder
     /// <returns><see langword="true"/> when the seeded records appear intact.</returns>
     public async Task<bool> IsSeedDataIntactAsync(
         int minContainers = 100,
-        int minItemsPerContainer = 100)
+        int minItemsPerContainer = 100,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         await containers.InitializeAsync();
         await items.InitializeAsync();
         await photos.InitializeAsync();
@@ -156,6 +158,7 @@ public class DemoDataSeeder
 
         foreach (var container in seededContainers)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrWhiteSpace(container.BarcodeValue))
             {
                 return false;

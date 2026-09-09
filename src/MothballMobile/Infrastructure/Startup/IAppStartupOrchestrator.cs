@@ -22,5 +22,6 @@ public interface IAppStartupOrchestrator
     /// <param name="automaticDemoSeeding">Whether Debug-style automatic example-data seeding is enabled for this startup.</param>
     Task StartAsync(
         IProgress<StartupProgress>? progress = null,
-        bool automaticDemoSeeding = true);
+        bool automaticDemoSeeding = true,
+        CancellationToken cancellationToken = default);
 }
