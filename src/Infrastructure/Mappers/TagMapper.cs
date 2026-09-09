@@ -21,6 +21,8 @@ public static class TagMapper
     public static Tag ToDomain(this DbTag tag)
     {
         ArgumentNullException.ThrowIfNull(tag);
-        return new Tag(tag.TagId, new TagName(tag.Name));
+        var result = new Tag(tag.TagId, new TagName(tag.Name));
+        result.ClearDomainEvents();
+        return result;
     }
 }

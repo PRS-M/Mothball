@@ -53,6 +53,7 @@ public static class ContainerMapper
             dbContainer.Notes
         );
         result.UpdateBarcode(CreateBarcode(dbContainer.BarcodeValue, dbContainer.BarcodeSymbology));
+        result.ClearDomainEvents();
 
         return result;
     }
@@ -119,6 +120,8 @@ public static class ItemMapper
                 .Where(p => !string.IsNullOrWhiteSpace(p.FileName))
                 .Select(p => p.ToDomain()));
         }
+
+        item.ClearDomainEvents();
 
         return item;
     }

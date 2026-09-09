@@ -8,6 +8,7 @@ using Infrastructure.Services.BarcodeRegistry;
 using Infrastructure.Services.Repositories;
 using Infrastructure.Services.Startup;
 using CoreApp.Application.Utilities;
+using CoreApp.Application.Abstractions.DomainEvents;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MothballMobile.Infrastructure.Scanning;
@@ -60,6 +61,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPagedListLoadDiagnostics, PagedListLoadDiagnostics>();
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IInventoryChangeTracker, InventoryChangeTracker>();
+        services.AddSingleton<IDomainEventHandler, InventoryRevisionEventHandler>();
+        services.AddSingleton<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<AppStartupCoordinator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();

@@ -1,4 +1,5 @@
 using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Events;
 using CoreApp.Domain.ValueObjects;
 
 namespace CoreApp.Domain.Entities.ContainerAggregate;
@@ -22,7 +23,8 @@ public class Container : BaseEntity, IAggregateRoot
         }
 
         ContainerId = containerId;
-        UpdateDetails(name, notes);
+        SetDetailsWithoutEvent(name, notes);
+        AddDomainEvent(new ContainerCreated(ContainerId, Name));
     }
 
     public Guid ContainerId { get; private set; }
@@ -68,13 +70,29 @@ public class Container : BaseEntity, IAggregateRoot
             throw new ArgumentException("Container name cannot be empty.", nameof(name));
         }
 
+        var normalizedNotes = notes ?? string.Empty;
+        if (Name == name && Notes == normalizedNotes)
+        {
+            return;
+        }
+
+        var previousName = Name;
+        var previousNotes = Notes;
         Name = name;
-        Notes = notes ?? string.Empty;
+        Notes = normalizedNotes;
+        AddDomainEvent(new ContainerDetailsUpdated(ContainerId, previousName, Name, previousNotes, Notes));
     }
 
     public void UpdateBarcode(Barcode? barcode)
     {
+        if (Barcode == barcode)
+        {
+            return;
+        }
+
+        var previousBarcode = Barcode?.Value;
         Barcode = barcode;
+        AddDomainEvent(new ContainerBarcodeChanged(ContainerId, previousBarcode, Barcode?.Value));
     }
 
     /// <summary>
@@ -119,5 +137,16 @@ public class Container : BaseEntity, IAggregateRoot
     public void RemoveImageItem(Guid imageId)
     {
         photos.RemoveAll(p => p.ImageId == imageId);
+    }
+
+    private void SetDetailsWithoutEvent(string name, string notes)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Container name cannot be empty.", nameof(name));
+        }
+
+        Name = name;
+        Notes = notes ?? string.Empty;
     }
 }

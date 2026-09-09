@@ -1,4 +1,5 @@
 using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Events;
 using CoreApp.Domain.ValueObjects;
 
 namespace CoreApp.Domain.Entities.TagAggregate;
@@ -37,6 +38,14 @@ public sealed class Tag : BaseEntity, IAggregateRoot
     /// <param name="name">The new tag name.</param>
     public void Rename(TagName name)
     {
+        ArgumentNullException.ThrowIfNull(name);
+        if (Name?.NormalizedValue == name.NormalizedValue)
+        {
+            return;
+        }
+
+        var previousName = Name?.Value ?? string.Empty;
         Name = name ?? throw new ArgumentNullException(nameof(name));
+        AddDomainEvent(new TagRenamed(TagId, previousName, Name.Value));
     }
 }

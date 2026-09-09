@@ -1,4 +1,5 @@
 using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Events;
 using CoreApp.Domain.ValueObjects;
 
 namespace CoreApp.Domain.Entities.ItemAggregate;
@@ -25,7 +26,8 @@ public class Item : BaseEntity, IAggregateRoot
         }
 
         ItemId = itemId;
-        UpdateDetails(name, description);
+        SetDetailsWithoutEvent(name, description);
+        AddDomainEvent(new ItemCreated(ItemId, Name));
     }
 
     private Item(Guid itemId)
@@ -53,13 +55,29 @@ public class Item : BaseEntity, IAggregateRoot
             throw new ArgumentException("Item name cannot be empty.", nameof(name));
         }
 
+        var normalizedDescription = description ?? string.Empty;
+        if (Name == name && Description == normalizedDescription)
+        {
+            return;
+        }
+
+        var previousName = Name;
+        var previousDescription = Description;
         Name = name;
-        Description = description ?? string.Empty;
+        Description = normalizedDescription;
+        AddDomainEvent(new ItemDetailsUpdated(ItemId, previousName, Name, previousDescription, Description));
     }
 
     public void UpdateBarcode(Barcode? barcode)
     {
+        if (Barcode == barcode)
+        {
+            return;
+        }
+
+        var previousBarcode = Barcode?.Value;
         Barcode = barcode;
+        AddDomainEvent(new ItemBarcodeChanged(ItemId, previousBarcode, Barcode?.Value));
     }
 
     /// <summary>
@@ -104,5 +122,16 @@ public class Item : BaseEntity, IAggregateRoot
     public void RemoveImageItem(Guid imageId)
     {
         photos.RemoveAll(p => p.ImageId == imageId);
+    }
+
+    private void SetDetailsWithoutEvent(string name, string description)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Item name cannot be empty.", nameof(name));
+        }
+
+        Name = name;
+        Description = description ?? string.Empty;
     }
 }

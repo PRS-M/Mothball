@@ -1,4 +1,5 @@
 using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Events;
 
 namespace CoreApp.Domain.Entities.InventoryAggregate;
 
@@ -19,11 +20,11 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
         }
 
         ItemId = itemId;
-        SetTotalQuantity(totalQuantity);
+        SetTotalQuantityWithoutEvent(totalQuantity);
 
         foreach (var allocation in allocations)
         {
-            SetContainerAllocation(allocation.ContainerId, allocation.ContainerName, allocation.Quantity);
+            SetContainerAllocationWithoutEvent(allocation.ContainerId, allocation.ContainerName, allocation.Quantity);
         }
     }
 
@@ -37,7 +38,9 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
     {
         if (totalQuantity > TotalQuantity)
         {
+            var previousTotalQuantity = TotalQuantity;
             TotalQuantity = totalQuantity;
+            AddInventoryChanged(previousTotalQuantity, previousAssignedQuantity: AssignedQuantity, []);
         }
     }
 
@@ -53,7 +56,15 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
             throw new InvalidOperationException("Total quantity cannot be less than assigned quantity.");
         }
 
+        if (TotalQuantity == totalQuantity)
+        {
+            return;
+        }
+
+        var previousTotalQuantity = TotalQuantity;
+        var previousAssignedQuantity = AssignedQuantity;
         TotalQuantity = totalQuantity;
+        AddInventoryChanged(previousTotalQuantity, previousAssignedQuantity, []);
     }
 
     public void SetContainerAllocation(Guid containerId, string containerName, int quantity)
@@ -70,15 +81,28 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
 
         var existingIndex = allocations.FindIndex(allocation => allocation.ContainerId == containerId);
         var previousQuantity = existingIndex >= 0 ? allocations[existingIndex].Quantity : 0;
+        var previousTotalQuantity = TotalQuantity;
+        var previousAssignedQuantity = AssignedQuantity;
         var resultingAssignedQuantity = AssignedQuantity - previousQuantity + quantity;
 
-        IncreaseTotalQuantity(resultingAssignedQuantity);
+        if (resultingAssignedQuantity > TotalQuantity)
+        {
+            TotalQuantity = resultingAssignedQuantity;
+        }
 
         if (quantity == 0)
         {
             if (existingIndex >= 0)
             {
                 allocations.RemoveAt(existingIndex);
+            }
+
+            if (previousQuantity != 0)
+            {
+                AddInventoryChanged(
+                    previousTotalQuantity,
+                    previousAssignedQuantity,
+                    [containerId]);
             }
 
             return;
@@ -96,6 +120,11 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
 
         allocations.Sort((left, right) =>
             string.Compare(left.ContainerName, right.ContainerName, StringComparison.OrdinalIgnoreCase));
+
+        if (previousQuantity != quantity)
+        {
+            AddInventoryChanged(previousTotalQuantity, previousAssignedQuantity, [containerId]);
+        }
     }
 
     public void ApplyWithdrawal(ItemInventoryWithdrawalPlan plan)
@@ -110,7 +139,10 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
             }
 
             allocations.Clear();
+            var previousTotalQuantity = TotalQuantity;
             TotalQuantity = 0;
+            AddDomainEvent(new InventoryWithdrawn(ItemId, previousTotalQuantity, 0, []));
+            AddDomainEvent(new ItemExhausted(ItemId));
             return;
         }
 
@@ -122,11 +154,63 @@ public sealed class ItemInventory : BaseEntity, IAggregateRoot
             throw new ArgumentException("Withdrawal plan quantities are inconsistent.", nameof(plan));
         }
 
+        var previousTotal = TotalQuantity;
+        var previousAssigned = AssignedQuantity;
+        var affectedContainerIds = allocations
+            .Select(allocation => allocation.ContainerId)
+            .ToArray();
         allocations.Clear();
         TotalQuantity = plan.TotalQuantity;
         foreach (var allocation in plan.Allocations.Where(allocation => allocation.Quantity > 0))
         {
-            SetContainerAllocation(allocation.ContainerId, allocation.ContainerName, allocation.Quantity);
+            SetContainerAllocationWithoutEvent(allocation.ContainerId, allocation.ContainerName, allocation.Quantity);
         }
+
+        AddInventoryChanged(previousTotal, previousAssigned, affectedContainerIds);
+        AddDomainEvent(new InventoryWithdrawn(ItemId, previousTotal, TotalQuantity, Allocations.ToArray()));
+    }
+
+    private void AddInventoryChanged(
+        int previousTotalQuantity,
+        int previousAssignedQuantity,
+        IReadOnlyCollection<Guid> affectedContainerIds)
+        => AddDomainEvent(new InventoryChanged(
+            ItemId,
+            previousTotalQuantity,
+            TotalQuantity,
+            previousAssignedQuantity,
+            AssignedQuantity,
+            affectedContainerIds));
+
+    private void SetTotalQuantityWithoutEvent(int totalQuantity)
+    {
+        if (totalQuantity < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(totalQuantity), "Total quantity must be at least one.");
+        }
+
+        TotalQuantity = totalQuantity;
+    }
+
+    private void SetContainerAllocationWithoutEvent(Guid containerId, string containerName, int quantity)
+    {
+        if (containerId == Guid.Empty)
+        {
+            throw new ArgumentException("Container ID cannot be empty.", nameof(containerId));
+        }
+
+        if (quantity < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity), "Allocated quantity cannot be negative.", nameof(quantity));
+        }
+
+        if (quantity == 0)
+        {
+            return;
+        }
+
+        allocations.Add(new ItemContainerAllocation(containerId, containerName, quantity));
+        allocations.Sort((left, right) =>
+            string.Compare(left.ContainerName, right.ContainerName, StringComparison.OrdinalIgnoreCase));
     }
 }
