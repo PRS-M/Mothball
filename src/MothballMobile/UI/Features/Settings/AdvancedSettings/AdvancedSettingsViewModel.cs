@@ -1,6 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MothballMobile.Infrastructure.Presentation.Popups;
+using CoreApp.Application.Abstractions.DomainEvents;
+using CoreApp.Domain.Events;
 
 namespace MothballMobile.UI.Features.Settings;
 
@@ -15,6 +17,7 @@ public partial class AdvancedSettingsViewModel : ObservableObject
     private readonly IPopupService popup;
     private readonly IInventoryChangeTracker? inventoryChanges;
     private readonly DemoDataSeeder? demoSeeder;
+    private readonly IDomainEventDispatcher? domainEvents;
     private CancellationTokenSource? maintenanceCancellation;
     public AdvancedSettingsViewModel(
         IApplicationSettings applicationSettings,
@@ -23,7 +26,8 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         IInventoryMaintenanceService maintenance,
         IPopupService popup,
         IInventoryChangeTracker? inventoryChanges = null,
-        DemoDataSeeder? demoSeeder = null)
+        DemoDataSeeder? demoSeeder = null,
+        IDomainEventDispatcher? domainEvents = null)
     {
         this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
         SigningKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
@@ -32,6 +36,7 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
         this.inventoryChanges = inventoryChanges;
         this.demoSeeder = demoSeeder;
+        this.domainEvents = domainEvents;
     }
 
     public BackupSigningKeySettingsViewModel SigningKey { get; }
@@ -231,7 +236,14 @@ public partial class AdvancedSettingsViewModel : ObservableObject
                 MaintenanceStatus = LocalizationManager.Current.Get("Generating demo items");
             });
             await demoSeeder.EnsureItemsAsync(100, withPhotos: true, itemProgress, maintenanceCancellation.Token);
-            inventoryChanges?.MarkChanged();
+            if (domainEvents is not null)
+            {
+                await domainEvents.DispatchAsync([new InventorySeeded()]);
+            }
+            else
+            {
+                inventoryChanges?.MarkChanged();
+            }
             MaintenanceProgress = 1;
             MaintenanceStepProgress = 1;
             MaintenanceStatus = LocalizationManager.Current.Get("Demo data ready");

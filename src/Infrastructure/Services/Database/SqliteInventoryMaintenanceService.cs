@@ -1,6 +1,8 @@
 using CoreApp.Application.Abstractions.Persistence;
 using CoreApp.Application.Abstractions.Platform;
 using CoreApp.Application.Utilities;
+using CoreApp.Application.Abstractions.DomainEvents;
+using CoreApp.Domain.Events;
 using Infrastructure.Services.DatabaseModels;
 
 namespace Infrastructure.Services.Database;
@@ -15,15 +17,18 @@ public sealed class SqliteInventoryMaintenanceService : IInventoryMaintenanceSer
     private readonly MothballDatabase database;
     private readonly IFileHandler files;
     private readonly IInventoryChangeTracker inventoryChanges;
+    private readonly IDomainEventDispatcher? domainEvents;
 
     public SqliteInventoryMaintenanceService(
         MothballDatabase database,
         IFileHandler files,
-        IInventoryChangeTracker inventoryChanges)
+        IInventoryChangeTracker inventoryChanges,
+        IDomainEventDispatcher? domainEvents = null)
     {
         this.database = database ?? throw new ArgumentNullException(nameof(database));
         this.files = files ?? throw new ArgumentNullException(nameof(files));
         this.inventoryChanges = inventoryChanges ?? throw new ArgumentNullException(nameof(inventoryChanges));
+        this.domainEvents = domainEvents;
     }
 
     public async Task ReplaceAllPhotosWithSharedAssetsAsync(IProgress<MaintenanceProgress>? progress = null, CancellationToken cancellationToken = default)
@@ -59,7 +64,14 @@ public sealed class SqliteInventoryMaintenanceService : IInventoryMaintenanceSer
     {
         progress?.Report(new MaintenanceProgress(0, "Deleting inventory data", 0));
         await database.ResetAsync();
-        inventoryChanges.MarkChanged();
+        if (domainEvents is not null)
+        {
+            await domainEvents.DispatchAsync([new InventoryReset()]).ConfigureAwait(false);
+        }
+        else
+        {
+            inventoryChanges.MarkChanged();
+        }
         progress?.Report(new MaintenanceProgress(0.25, "Deleting photo files", 0));
 
         var folders = new[]

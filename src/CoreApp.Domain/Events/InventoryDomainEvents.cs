@@ -64,5 +64,11 @@ public sealed record InventoryRestored(
     int UpdatedContainers,
     int DeletedContainers) : DomainEventBase;
 
+/// <summary>Indicates that all persisted inventory data was reset.</summary>
+public sealed record InventoryReset : DomainEventBase;
+
+/// <summary>Indicates that demo inventory data was generated successfully.</summary>
+public sealed record InventorySeeded : DomainEventBase;
+
 /// <summary>Indicates that a tag was renamed.</summary>
 public sealed record TagRenamed(Guid TagId, string PreviousName, string Name) : DomainEventBase;
