@@ -38,6 +38,12 @@ public sealed partial class BarcodeScannerViewModel : BaseViewModel
     public Task ProcessGalleryAsync(Func<Task> operation)
         => RunCommandAsync(operation, rethrowOnError: false);
 
+    /// <summary>
+    /// Cancels the pending scan when the scanner page disappears unexpectedly.
+    /// </summary>
+    public Task CancelPendingScanAsync()
+        => scanner.CancelAsync();
+
     [RelayCommand]
     private Task CancelAsync()
         => RunCommandAsync(() => scanner.CompleteAsync(null), rethrowOnError: false);

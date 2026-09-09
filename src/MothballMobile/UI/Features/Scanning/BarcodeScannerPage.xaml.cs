@@ -48,6 +48,19 @@ public partial class BarcodeScannerPage
         barcodeReader.IsTorchOn = !barcodeReader.IsTorchOn;
     }
 
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+
+        if (BindingContext is BarcodeScannerViewModel viewModel)
+        {
+            viewModel.CancelPendingScanAsync().FireAndForget(
+                IPlatformApplication.Current?.Services.GetRequiredService<IBackgroundTaskObserver>()
+                    ?? throw new InvalidOperationException("Background task observer is unavailable."),
+                "Cancel barcode scan");
+        }
+    }
+
     private async void OnGalleryClicked(object? sender, EventArgs e)
     {
         if (BindingContext is not BarcodeScannerViewModel viewModel)
