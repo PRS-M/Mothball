@@ -4,6 +4,8 @@ using CoreApp.Application.Contracts.Tags;
 using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Contracts;
+using CoreApp.Application.Abstractions.DomainEvents;
+using CoreApp.Domain.Events;
 
 namespace Infrastructure.Services.Restore;
 
@@ -11,13 +13,16 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
 {
     private readonly MothballDatabase database;
     private readonly IInventoryChangeTracker? inventoryChanges;
+    private readonly IDomainEventDispatcher? domainEvents;
 
     public SqliteInventoryBackupRestoreService(
         MothballDatabase database,
-        IInventoryChangeTracker? inventoryChanges = null)
+        IInventoryChangeTracker? inventoryChanges = null,
+        IDomainEventDispatcher? domainEvents = null)
     {
         this.database = database;
         this.inventoryChanges = inventoryChanges;
+        this.domainEvents = domainEvents;
     }
 
     /// <inheritdoc />
@@ -256,8 +261,27 @@ public sealed class SqliteInventoryBackupRestoreService : IInventoryBackupRestor
             result = plan.Result;
         }).ConfigureAwait(false);
 
-        inventoryChanges?.MarkChanged();
+        await PublishRestoreEventAsync(result).ConfigureAwait(false);
         return result;
+    }
+
+    private async Task PublishRestoreEventAsync(InventoryBackupRestoreResult result)
+    {
+        if (domainEvents is not null)
+        {
+            await domainEvents.DispatchAsync(
+                [new InventoryRestored(
+                    result.AddedItems,
+                    result.UpdatedItems,
+                    result.DeletedItems,
+                    result.AddedContainers,
+                    result.UpdatedContainers,
+                    result.DeletedContainers)]).ConfigureAwait(false);
+        }
+        else
+        {
+            inventoryChanges?.MarkChanged();
+        }
     }
 
     private static void SyncBarcodeRegistry(SQLite.SQLiteConnection connection)
