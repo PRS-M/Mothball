@@ -5,7 +5,10 @@ using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Utilities;
 using CoreApp.Application.Specifications;
 using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Abstractions.DomainEvents;
 using CoreApp.Application.Contracts.Tags;
+using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Events;
 using MothballMobile.UI.Features.Items.Consumption;
 using MothballMobile.UI.Features.Items.Quantity;
 using MothballMobile.Infrastructure.Scanning;
@@ -34,6 +37,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
     private readonly IInventoryChangeTracker inventoryChanges;
     private readonly BarcodeLookupCoordinator barcodeLookup;
     private readonly IBarcodeShareService? barcodeShare;
+    private readonly IDisposable? domainEventSubscription;
     private ItemsListFilter selectedFilter = ItemsListFilter.All;
 
     [ObservableProperty]
@@ -72,7 +76,8 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         IDebouncer? debouncer = null,
         IPagedListLoadDiagnostics? loadDiagnostics = null,
         IBarcodeShareService? barcodeShare = null,
-        ITagRepository? tagRepository = null)
+        ITagRepository? tagRepository = null,
+        IDomainEventStream? domainEventStream = null)
         : base(backgroundTasks, debouncer, loadDiagnostics: loadDiagnostics, tagRepository: tagRepository)
     {
         this.paths = paths;
@@ -87,6 +92,7 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         this.inventoryChanges = inventoryChanges;
         this.barcodeLookup = barcodeLookup ?? throw new ArgumentNullException(nameof(barcodeLookup));
         this.barcodeShare = barcodeShare;
+        domainEventSubscription = domainEventStream?.Subscribe(OnDomainEvent);
         this.applicationSettings.AppModeChanged += OnAppModeChanged;
     }
 
@@ -143,9 +149,29 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
         if (disposing)
         {
             applicationSettings.AppModeChanged -= OnAppModeChanged;
+            domainEventSubscription?.Dispose();
         }
 
         base.Dispose(disposing);
+    }
+
+    private void OnDomainEvent(IDomainEvent domainEvent)
+    {
+        if (domainEvent is not (
+            ItemCreated
+            or ItemDetailsUpdated
+            or ItemBarcodeChanged
+            or ItemDeleted
+            or InventoryChanged
+            or InventoryWithdrawn
+            or ItemExhausted
+            or InventoryRestored))
+        {
+            return;
+        }
+
+        MainThread.InvokeOnMainThreadAsync(SearchAsync)
+            .FireAndForget(backgroundTasks, SearchOperationName);
     }
 
     [RelayCommand]

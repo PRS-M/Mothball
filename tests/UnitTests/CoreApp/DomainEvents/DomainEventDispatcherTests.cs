@@ -25,6 +25,21 @@ public sealed class DomainEventDispatcherTests
         Assert.That(received, Is.EqualTo(events));
     }
 
+    [Test]
+    public async Task Subscribe_DisposeStopsNotifications()
+    {
+        var received = 0;
+        var dispatcher = new DomainEventDispatcher([]);
+        using (dispatcher.Subscribe(_ => received++))
+        {
+            await dispatcher.DispatchAsync([new ItemCreated(Guid.NewGuid(), "Item")]);
+        }
+
+        await dispatcher.DispatchAsync([new ItemCreated(Guid.NewGuid(), "Ignored")]);
+
+        Assert.That(received, Is.EqualTo(1));
+    }
+
     private sealed class RecordingHandler(List<IDomainEvent> received) : IDomainEventHandler
     {
         public Task HandleAsync(IDomainEvent domainEvent, CancellationToken cancellationToken = default)

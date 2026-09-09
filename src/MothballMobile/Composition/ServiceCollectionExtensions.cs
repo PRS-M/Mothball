@@ -62,7 +62,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IInventoryChangeTracker, InventoryChangeTracker>();
         services.AddSingleton<IDomainEventHandler, InventoryRevisionEventHandler>();
-        services.AddSingleton<IDomainEventDispatcher, DomainEventDispatcher>();
+        services.AddSingleton<DomainEventDispatcher>();
+        services.AddSingleton<IDomainEventDispatcher>(sp => sp.GetRequiredService<DomainEventDispatcher>());
+        services.AddSingleton<IDomainEventStream>(sp => sp.GetRequiredService<DomainEventDispatcher>());
         services.AddSingleton<IAppStartupOrchestrator, AppStartupOrchestrator>();
         services.AddSingleton<AppStartupCoordinator>();
         services.AddSingleton<IApplicationSettings, ApplicationSettings>();
