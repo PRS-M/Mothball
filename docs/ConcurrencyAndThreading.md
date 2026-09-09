@@ -9,21 +9,13 @@ Mothball is primarily an asynchronous, event-driven MAUI application. Most `asyn
 The main coordination mechanisms are:
 
 - MAUI `MainThread`/`Dispatcher` calls for UI-bound state and controls.
-- `SemaphoreSlim` for one-time database initialization, JSON-store writes, backup-key access, barcode-scan sessions, and one tag-results reload at a time.
+- `SemaphoreSlim` for one-time database initialization, JSON-store writes, backup-key access, barcode-scan sessions, barcode ownership, startup single-flight, and one tag-results reload at a time.
 - `lock` for the photo-operation tracker and search debouncer’s small in-memory state.
 - `Interlocked` request versions and cancellation-token replacement for stale-search suppression.
 - `TaskCompletionSource` for event-to-task bridges such as startup, ads, modal number picking, and barcode scanning.
 - A tracked fire-and-forget extension that logs background task failures.
 
-The most important risks found by static inspection are:
-
-1. Startup awaits signing-key access, persistence recovery/seeding, Shell loading, and an optional ad without a cancellation token for the first three stages. The ad and Shell have timeouts, but persistence and a first-time Debug seed do not. Completed Debug seed data now has a versioned preference marker and a lightweight integrity check, so the long seed path is not repeated when the data is intact.
-2. `BarcodeScanSession` waits for a result until `CompleteAsync` is called. If the scanner page disappears without completing the session, the original caller can remain blocked and the session gate can remain held.
-3. `TagResultsViewModel` starts reloads with `_ = ReloadAsync()`. Its internal error handling updates the view model and rethrows, so an unexpected failure from a property-change or navigation-attribute reload can become an unobserved task exception.
-4. The SQLite barcode registry uses a read/check followed by a separate insert or update. The uniqueness index protects the final data, but two concurrent callers can still race and receive a database exception rather than the application’s intended ownership exception. Assignment of an entity and registry update are also separate operations.
-5. The Debug seeder is a long sequence of individual asynchronous writes. It is not a single transaction and the startup orchestrator has no single-flight guard; concurrent startup calls could overlap.
-
-These findings do not prove the cause of a freeze. They identify the highest-value areas for runtime logging and targeted tests.
+The previous review identified five high-value risks: unbounded startup work, scanner-session gates held after disappearance, detached tag reloads, barcode registry races, and overlapping startup seeding. The mitigations and their remaining boundaries are recorded in [Review priorities and mitigations](#review-priorities-and-mitigations) below. These safeguards reduce race and hang risk but do not prove the cause of every freeze; runtime logs and targeted tests remain the preferred diagnostic tools.
 
 ## Execution model
 
@@ -58,12 +50,14 @@ Examples include `MauiPopupService`, `InventoryBackupWorkflowService`, `BackupSi
 
 | Mechanism | Location | Purpose | Assessment |
 | --- | --- | --- | --- |
-| `SemaphoreSlim initLock` | `Infrastructure/Services/Database/MothballDatabase.cs` | Ensures SQLite schema/connection initialization runs once | Good double-check inside the gate; no cancellation; disposal assumes app-lifetime shutdown rather than concurrent use |
+| `SemaphoreSlim initLock` | `Infrastructure/Services/Database/MothballDatabase.cs` | Ensures SQLite schema/connection initialization runs once | Good double-check inside the gate; startup cancellation can interrupt a waiter; disposal assumes app-lifetime shutdown rather than concurrent use |
 | `SemaphoreSlim writeLock` | `Infrastructure/Services/JsonStore/JsonInventoryStore.cs` | Serializes JSON snapshot writes, recovery, and rollback | Strong per-store-instance write serialization; reads use immutable two-slot snapshots but are not held by the write gate |
 | `SemaphoreSlim synchronizationLock` | `MothballMobile/Infrastructure/Backup/BackupSignatureSecretProvider.cs` | Prevents duplicate secure/keychain secret creation or replacement | Good in-process single-flight protection; secure-storage calls have partial cancellation support |
-| `SemaphoreSlim sessionGate` | `MothballMobile/Infrastructure/Scanning/BarcodeScanSession.cs` | Allows one active barcode scan | Correctly prevents overlapping scans; missing scanner completion can hold it indefinitely |
-| `SemaphoreSlim reloadGate` | `MothballMobile/UI/Features/Tags/TagResults/TagResultsViewModel.cs` | Serializes tag-result reload execution | Good stale-request design with cancellation and version checks; entry points do not always observe the returned task |
-| `SemaphoreSlim initializationGate` | `MothballMobile/UI/Shared/BasePage.cs` | Prevents overlapping page initialization calls | Serializes repeated `OnAppearing`; no cancellation on disappearance and the gate is not disposed |
+| `SemaphoreSlim sessionGate` | `MothballMobile/Infrastructure/Scanning/BarcodeScanSession.cs` | Allows one active barcode scan | Correctly prevents overlapping scans; page disappearance now completes a pending scan with `null` |
+| `SemaphoreSlim reloadGate` | `MothballMobile/UI/Features/Tags/TagResults/TagResultsViewModel.cs` | Serializes tag-result reload execution | Good stale-request design with cancellation, version checks, and observed detached entry points |
+| `SemaphoreSlim initializationGate` | `MothballMobile/UI/Shared/BasePage.cs` | Prevents overlapping page initialization calls | Serializes repeated `OnAppearing`; a page-owned token cancels initialization on disappearance |
+| `SemaphoreSlim` barcode-operation gate | `CoreApp.Application/Features/Barcodes/Commands/BarcodeOperationCoordinator.cs` | Serializes registry plus entity changes across barcode create/update workflows | Shared singleton gate prevents in-process check/write races; SQLite registry mutations additionally use transactions |
+| `SemaphoreSlim startupGate` | `MothballMobile/Infrastructure/Startup/AppStartupOrchestrator.cs` | Prevents duplicate persistence initialization and automatic seeding | Single-flight startup; successful completion is memoized and waits accept cancellation |
 | `lock (sync)` | `MothballMobile/Infrastructure/Resilience/Debouncer.cs` | Atomically replaces the current debounce CTS and handles disposal | Small critical sections; action runs outside the lock |
 | `lock (gate)` | `MothballMobile/Infrastructure/BackgroundOperations/Photos/PhotoBackgroundOperationTracker.cs` | Protects active-operation dictionary and banner CTS | State protection is localized; UI publication is queued while the lock is held |
 | `Interlocked` request versions | Searchable lists, item/container details, tag results, scanner | Rejects stale async results and accepts one scan result | Appropriate lock-free coordination for small scalar state |
@@ -85,12 +79,7 @@ It is used for:
 
 This is preferable to a completely unobserved discard because failures are logged. It still means the caller does not await completion, cannot directly cancel the operation, and usually cannot prevent the operation from finishing after its page has disappeared. The operation itself must check disposal, cancellation, or request-version state where appropriate.
 
-Two related paths are not routed through `FireAndForget`:
-
-- `TagResultsViewModel` uses `_ = ReloadAsync()` for filter, query, and navigation-attribute changes.
-- `SegmentedSwitch` uses `_ = AnimateSelectionAsync(...)` for selection changes.
-
-These paths should be reviewed if runtime logs show unobserved exceptions or UI updates after a page has been replaced.
+`TagResultsViewModel` and `TagsListViewModel` now route detached reloads through the observer. `SegmentedSwitch` still starts animation from a property callback, but the animation task catches and logs failures so a disposed control cannot create an unobserved exception.
 
 ## Cancellation and stale-result handling
 
@@ -99,11 +88,12 @@ Cancellation is concentrated in interactive search and tag suggestion flows:
 - `Debouncer` cancels the previous delay/action when a newer query arrives and cancels its active CTS on disposal.
 - `SearchablePagedListViewModelBase` and item/container detail view models replace suggestion CTS instances with `Interlocked.Exchange`, cancel the previous request, and use a version counter before publishing results.
 - `TagResultsViewModel` cancels the previous reload, waits on `reloadGate` with the new token, and checks the version before replacing `Results`.
-- `PhotoBackgroundOperationTracker` uses cancellation only for its three-second banner-hide timer.
+- `BasePage` creates a lifecycle token for each initialization attempt and cancels it from `OnDisappearing`; list/detail loaders check the token between repository and image stages.
+- `PhotoBackgroundOperationTracker` uses cancellation for its three-second banner-hide timer. Photo persistence is intentionally detached from page lifetime, observed through `FireAndForget`, and guarded against refreshing disposed detail state.
 
-Most repository and backup APIs accept cancellation tokens, but many UI initialization, mutation, image, navigation, and seeding paths do not pass one. Cancellation is therefore cooperative and incomplete rather than a global shutdown mechanism.
+Cancellation remains cooperative rather than a global shutdown mechanism: repository mutation and photo-file APIs still finish an already-started operation, while page initialization, startup, search, scan, and seeding now have explicit cancellation boundaries.
 
-Disposal generally cancels current work but does not await its completion. This is acceptable for short-lived suggestion requests only if every continuation checks its version/disposed state before touching UI. It is less safe for long-running image writes and page-level initialization.
+Disposal generally cancels current work but does not await its completion. Short-lived suggestions and page initialization check cancellation/version state; long-running photo writes are explicitly detached, tracked, and observed so they can finish safely after navigation.
 
 ## Event handlers and `async void`
 
@@ -161,7 +151,7 @@ sequenceDiagram
 
 The Shell-loaded and ad waits use `TaskCompletionSource` with asynchronous continuations and bounded waits. A Shell `Loaded` timeout prevents a missed event from leaving the splash page permanently visible.
 
-The following stages have no timeout or caller cancellation:
+The startup operation has a two-minute cancellation timeout owned by `AppStartupCoordinator`; the token is forwarded through secure storage, persistence initialization/recovery, and Debug seeding:
 
 - `BackupSignatureSecretProvider.GetOrCreateAsync` secure-storage/keychain access.
 - `AppStartupOrchestrator.StartAsync` persistence initialization and recovery.
@@ -169,7 +159,7 @@ The following stages have no timeout or caller cancellation:
 
 The Debug seed is intentionally large and performs many sequential operations. On a fresh device, it can make the splash screen appear frozen even when the process is progressing. The startup page now exposes both overall startup progress and current-step progress; the seeder reports container and item generation progress within the persistence phase. Instrumentation also logs signing-key and persistence elapsed time in `AppStartupCoordinator`. After successful completion, the orchestrator stores `DemoDataSeeder.SeedVersion` in preferences and checks seed-marker/container/item counts before skipping the expensive path on subsequent startups.
 
-There is no startup single-flight gate. The normal window lifecycle invokes initialization once, and the retry page invokes it after a failure, but defensive protection against duplicate calls is not present.
+`AppStartupOrchestrator` has a startup single-flight gate. Concurrent callers share one initialization attempt, and later callers return after the first successful completion. A failed or cancelled attempt does not mark startup complete, so a retry can run the workflow again.
 
 ## Persistence concurrency
 
@@ -177,7 +167,7 @@ There is no startup single-flight gate. The normal window lifecycle invokes init
 
 `MothballDatabase` protects connection/schema initialization with `initLock`. Higher-level multi-row changes use `SqliteTransactionRunner` and a synchronous `SQLiteConnection` transaction body for operations that must commit together, notably item allocation and withdrawal.
 
-Not every multi-step workflow is transactional. For example, `BarcodeAssignmentService` checks inventory ownership, updates the registry, updates the entity, and releases the old registry entry as separate operations. `SqliteBarcodeRegistryService` also performs availability checks and insert/update operations separately. The database uniqueness index is the final protection against duplicate normalized values, but callers can still observe race-dependent exceptions or an intermediate registry/entity mismatch after a later step fails.
+Not every multi-step workflow is one database transaction. `BarcodeOperationCoordinator` now serializes barcode create/update workflows in the application process, so the inventory ownership check, registry mutation, entity persistence, and old-entry release cannot race with another in-process barcode workflow. SQLite registry reserve/assign/release operations perform their lookup and mutation inside one transaction; the registry and entity tables are still separate persistence steps, so a later entity failure is handled by the existing release compensation rather than by a cross-table transaction.
 
 ### JSON operational store
 
@@ -223,16 +213,18 @@ The tracker does not transition to a terminal error state: callers must complete
 
 The tracker does not own or await the actual photo persistence task. Callers start the tracker, run persistence through a tracked fire-and-forget operation, and complete the tracker from the persistence workflow. A missing completion call can leave the banner and active-operation count inconsistent. The banner timer catches cancellation, but unexpected exceptions in the detached task would not be delivered to `IBackgroundTaskObserver`.
 
-## Review priorities
+## Review priorities and mitigations
 
-If the app freezes after inactivity or during startup, investigate in this order:
+The original review priorities are now addressed as follows:
 
-1. Add phase-duration and operation-count logs around Debug seeding, including photo copies and barcode/tag assignments.
-2. Add a startup cancellation/single-flight policy and a bounded timeout or progress surface for persistence and seeding.
-3. Ensure scanner disappearance completes the pending `BarcodeScanSession` with `null` and releases the gate.
-4. Route all detached reloads and animation tasks through a common observer, or make their `Task` lifetimes explicit.
-5. Add an application-level transaction/serialization boundary for barcode registry plus entity updates.
-6. Add lifecycle cancellation tokens to page initialization, image persistence, and background operations, and await or explicitly detach them during disposal.
+1. Startup logs phase durations and reports overall/current-step progress for persistence and seeding.
+2. Startup persistence and seeding use a two-minute cancellation timeout and a single-flight gate.
+3. Scanner disappearance completes the pending `BarcodeScanSession` with `null` and releases its gate.
+4. Detached tag reloads and segmented-switch animations are observed or log their failures; photo persistence is explicitly detached and tracked.
+5. Barcode create/update workflows share an application-level serialization gate, and SQLite registry mutations are transactional.
+6. Page initialization has lifecycle cancellation tokens; long-running photo persistence is intentionally allowed to finish after navigation and is guarded from publishing into disposed state.
+
+If the app still freezes after inactivity or during startup, use the phase-duration logs, background-operation history, and cancellation status to identify whether the work is repository I/O, image processing, or UI publication before changing synchronization.
 
 ## Audit method and limitations
 
