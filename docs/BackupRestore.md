@@ -100,6 +100,26 @@ This removes duplicate decision logic between the generic and SQLite restore ser
 - `FullSync`
 - `StrictFullSync`
 
+The policy differences can be reviewed as an activity diagram:
+
+```mermaid
+flowchart TD
+    Start([Backup selected]) --> Validate[Parse payload and verify integrity]
+    Validate --> Plan[Load existing state and build restore plan]
+    Plan --> Policy{Conflict policy}
+    Policy --> AddOnly[AddOnly\ninsert missing rows\nkeep existing rows]
+    Policy --> Upsert[AddAndUpsertMetadata\ninsert missing rows\nupdate existing metadata]
+    Policy --> Full[FullSync\nupsert metadata\ndelete missing roots\nkeep surviving children additive]
+    Policy --> Strict[StrictFullSync\nFullSync behavior\nreconcile surviving children exactly]
+    AddOnly --> Execute[Execute planned changes]
+    Upsert --> Execute
+    Full --> Execute
+    Strict --> Execute
+    Execute --> Result([Return counters and status])
+```
+
+All policies validate the payload before planning. The policy changes the plan; it does not bypass checksum or signature validation.
+
 ### AddOnly
 
 - Inserts only missing containers/items.

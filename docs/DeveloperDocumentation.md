@@ -44,6 +44,26 @@ MothballMobile -> Infrastructure.Persistence -> CoreApp.Application
 MothballMobile -> Infrastructure.Platform.Maui -> CoreApp.Application
 ```
 
+The same boundaries can be viewed as a component dependency diagram:
+
+```mermaid
+flowchart LR
+    Mobile["MothballMobile\nMAUI UI and composition"]
+    Platform["Infrastructure.Platform.Maui\ndevice services"]
+    Persistence["Infrastructure.Persistence\nSQLite and JSON"]
+    Application["CoreApp.Application\nuse cases and ports"]
+    Domain["CoreApp.Domain\nentities and policies"]
+
+    Mobile --> Application
+    Mobile --> Platform
+    Mobile --> Persistence
+    Platform --> Application
+    Persistence --> Application
+    Application --> Domain
+```
+
+The arrows show compile-time dependency direction. Application contracts point inward; the concrete persistence and platform projects implement those contracts rather than leaking their APIs into Domain.
+
 Keep `CoreApp.Domain` independent of Application, Infrastructure, MAUI, persistence, serialization, and device APIs. Keep `CoreApp.Application` independent of MAUI, SQLite, and device APIs. This keeps behavior testable and lets the SQLite and JSON backends implement the same application contracts.
 
 ## How the App Is Put Together
@@ -62,6 +82,31 @@ Page (XAML) -> ViewModel -> Application feature handler/service -> repository co
 - `MauiProgram.cs` and `Composition/ServiceCollectionExtensions.cs` register everything with dependency injection.
 
 This separation is a guide, not ceremony for its own sake: put behavior in the lowest layer that can own it without depending on UI details.
+
+A typical user action follows this sequence:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Page as MAUI Page
+    participant VM as ViewModel
+    participant Handler as Application handler
+    participant Contract as Repository contract
+    participant Backend as Selected backend
+    participant Storage as SQLite or JSON files
+
+    User->>Page: Submit action
+    Page->>VM: Invoke command
+    VM->>Handler: Execute use case
+    Handler->>Contract: Query or mutate
+    Contract->>Backend: Dispatch implementation
+    Backend->>Storage: Read or write
+    Storage-->>Backend: Result
+    Backend-->>Handler: Application result
+    Handler-->>VM: Updated data
+    VM-->>Page: Publish bindable state
+    Page-->>User: Refresh UI
+```
 
 ## Main Folders
 

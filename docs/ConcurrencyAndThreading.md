@@ -125,6 +125,40 @@ The scanner, Shell, and MainPage handlers catch their operation failures. `BaseP
 secret provider -> persistence initializer -> Debug seeding -> assign AppShell -> wait for Loaded (5 s) -> optional app-open ad (5 s)
 ```
 
+The lifecycle and its bounded waits can be reviewed as a UML sequence:
+
+```mermaid
+sequenceDiagram
+    participant App
+    participant Coordinator as AppStartupCoordinator
+    participant Secret as Signing-key provider
+    participant Orchestrator as AppStartupOrchestrator
+    participant Store as Persistence initializer
+    participant Seeder as Debug seeder
+    participant Shell
+    participant Ads as App-open ad
+
+    App->>Coordinator: InitializeAsync()
+    Coordinator->>Secret: GetOrCreateAsync()
+    Secret-->>Coordinator: Signing secret
+    Coordinator->>Orchestrator: StartAsync()
+    Orchestrator->>Store: InitializeAsync()
+    Store-->>Orchestrator: Store ready
+    opt Debug automatic seed is needed
+        Orchestrator->>Seeder: Ensure containers
+        Seeder-->>Orchestrator: Progress and completion
+        Orchestrator->>Seeder: Ensure items
+        Seeder-->>Orchestrator: Progress and completion
+    end
+    Coordinator->>Shell: Assign and load AppShell
+    Shell-->>Coordinator: Loaded event or 5-second timeout
+    opt Ad is available
+        Coordinator->>Ads: Show app-open ad
+        Ads-->>Coordinator: Closed, failed, or 5-second timeout
+    end
+    Coordinator-->>App: Initialization complete
+```
+
 The Shell-loaded and ad waits use `TaskCompletionSource` with asynchronous continuations and bounded waits. A Shell `Loaded` timeout prevents a missed event from leaving the splash page permanently visible.
 
 The following stages have no timeout or caller cancellation:
@@ -154,6 +188,38 @@ This is safe for concurrent callers sharing the registered store instance. The l
 ## Background photo operations
 
 `PhotoBackgroundOperationTracker` is an in-memory state machine. Start/report/complete calls are protected by `lock (gate)`. Property and collection notifications are dispatched to the MAUI main thread. When the last operation completes, a detached three-second `Task.Run` hides the banner unless a newer operation cancels that timer.
+
+Its visible lifecycle is shown below. Transition descriptions are intentionally separate nodes rather than labels placed on state-to-state arrows. This leaves enough space for the text in narrow and dark-mode Markdown renderers.
+
+```mermaid
+flowchart TB
+    Start((Start)) --> Idle([Idle])
+
+    Idle --> StartOperation["Start operation"]
+    StartOperation --> Active([Active])
+
+    Active --> StartAnother["Start another / report"]
+    StartAnother --> Active
+
+    Active --> CompleteRemaining["Complete; operations remain"]
+    CompleteRemaining --> Active
+
+    Active --> CompleteLast["Complete last operation"]
+    CompleteLast --> HideDelay([Hide delay])
+
+    HideDelay --> NewOperation["New operation starts"]
+    NewOperation --> Active
+
+    HideDelay --> TimerExpires["Three-second timer expires"]
+    TimerExpires --> Idle
+
+    classDef state fill:#202124,stroke:#2388bd,stroke-width:2px,color:#f1f3f4;
+    classDef transition fill:#303238,stroke:#8b949e,stroke-width:1px,color:#f1f3f4;
+    class Idle,Active,HideDelay state;
+    class StartOperation,StartAnother,CompleteRemaining,CompleteLast,NewOperation,TimerExpires transition;
+```
+
+The tracker does not transition to a terminal error state: callers must complete tracked operations even when their persistence task fails or is cancelled.
 
 The tracker does not own or await the actual photo persistence task. Callers start the tracker, run persistence through a tracked fire-and-forget operation, and complete the tracker from the persistence workflow. A missing completion call can leave the banner and active-operation count inconsistent. The banner timer catches cancellation, but unexpected exceptions in the detached task would not be delivered to `IBackgroundTaskObserver`.
 

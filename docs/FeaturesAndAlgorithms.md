@@ -125,6 +125,35 @@ For the full user workflow and contributor reference, see [Barcodes](Barcodes.md
 
 The scanner supports camera and gallery decoding. It is available from container and item lists, the Shell, create forms, and barcode detail editing. Scan-to-find opens the matching container or item details. In the item create flow, a scanned or typed barcode belonging to an existing item enters receipt mode: item metadata is locked, quantity defaults to one in simple mode, and saving delegates to `IItemReceiptService`. A receipt can remain unassigned, use the container context that opened the form, or scan a container barcode as its destination. The item/container association picker can likewise scan a container barcode and executes its normal available-quantity association path.
 
+The create/receipt distinction is a short sequence with an important generation rule:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Form as Add item/container form
+    participant Scanner as Barcode scanner
+    participant VM as Form view model
+    participant Lookup as Inventory barcode lookup
+    participant Save as Create or receipt handler
+
+    User->>Form: Tap scan
+    Form->>Scanner: Start camera or gallery scan
+    Scanner-->>Form: Decoded value and symbology
+    Form->>VM: Apply scanned barcode
+    VM->>VM: Preserve value and symbology
+    VM->>VM: Disable internal-code generation
+    User->>Form: Save
+    Form->>Lookup: Check barcode ownership
+    alt Existing item barcode
+        Lookup-->>VM: Existing item
+        VM->>Save: Receipt quantity for existing item
+    else New or unassigned barcode
+        Lookup-->>VM: Available barcode
+        VM->>Save: Create record with supplied barcode
+    end
+    Save-->>User: Updated details or receipt result
+```
+
 Barcode labels are generated as PDFs with SkiaSharp and shared through the MAUI `IShare` abstraction. Detail-page sharing creates one label. List sharing supports selected loaded rows and an explicit all-matching query that preserves the active search and filter; it does not infer that unloaded pages are selected.
 
 ## Assignments and Inventory Quantities
@@ -217,6 +246,31 @@ for each unassigned withdrawal:
 return remaining allocations, assigned quantity, unassigned quantity,
        final total, and whether the item should be deleted
 ```
+
+The interactive withdrawal flow can be summarized as an activity diagram:
+
+```mermaid
+flowchart TD
+    Start([Request lower total or consume stock]) --> Context{Container context?}
+    Context -->|Yes| Preferred[Offer current container first]
+    Context -->|No| SourcePicker[Open source picker]
+    Preferred --> Confirm{User confirms source?}
+    Confirm -->|No| SourcePicker
+    Confirm -->|Yes| Assigned
+    SourcePicker --> Assigned[Select assigned withdrawal]
+    Assigned --> Capacity{Enough in selected container?}
+    Capacity -->|No| Carry[Remove available amount\ncarry remainder forward]
+    Capacity -->|Yes| RemoveAssigned[Remove requested assigned amount]
+    Carry --> NextAssigned[Select next assigned source]
+    NextAssigned --> Capacity
+    RemoveAssigned --> Unassigned[Apply unassigned withdrawal if needed]
+    Unassigned --> Validate[Validate final inventory invariant]
+    Validate -->|Invalid| Reject([Reject plan and keep inventory unchanged])
+    Validate -->|Valid, total > 0| Save([Persist updated inventory])
+    Validate -->|Valid, total = 0| Delete([Persist deletion plan])
+```
+
+The planner remains pure; the coordinator owns prompts and the final persistence call.
 
 The carried remainder is important: a requested withdrawal may span multiple locations, but it must be explicitly allocated across them. This avoids silently subtracting stock from an arbitrary container. Invalid allocations, negative quantities, and plans that cannot reach the requested total are rejected before persistence.
 
@@ -391,6 +445,44 @@ import:
 ```
 
 External file import intentionally reuses the same restore methods as app-local backups. File selection is not a second restore implementation. This keeps integrity validation, signature lookup, merge policy handling, and backend behavior identical regardless of where the file originated.
+
+The file workflow and restore dispatch are easier to review as a sequence:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Settings as Settings view model
+    participant Workflow as InventoryBackupWorkflowService
+    participant Files as File handler / picker
+    participant Exporter as Backup exporter
+    participant Restore as JSON or ZIP restore service
+    participant Repositories as Repository contracts
+
+    alt Export
+        User->>Settings: Choose JSON or ZIP export
+        Settings->>Workflow: Export selected format
+        Workflow->>Exporter: Build signed or unsigned payload
+        Exporter->>Repositories: Read inventory data
+        Repositories-->>Exporter: Inventory snapshot
+        Exporter-->>Workflow: JSON or ZIP bytes
+        Workflow->>Files: Save backup locally
+        Files-->>User: Backup available to share
+    else Import or restore
+        User->>Settings: Choose file and conflict policy
+        Settings->>Files: Read local file or open picker
+        Files-->>Settings: JSON text or ZIP bytes
+        Settings->>Workflow: Restore selected format and policy
+        alt JSON backup
+            Workflow->>Restore: Restore JSON payload
+        else ZIP backup
+            Workflow->>Restore: Restore ZIP metadata and photos
+        end
+        Restore->>Repositories: Apply planned changes
+        Repositories-->>Restore: Restore result counters
+        Restore-->>Settings: Success or failure
+        Settings-->>User: Show restore result
+    end
+```
 
 ### Restore planning algorithm
 
