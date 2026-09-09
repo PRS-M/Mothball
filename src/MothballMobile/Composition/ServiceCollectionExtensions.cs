@@ -92,6 +92,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddContainerServices(this IServiceCollection services)
     {
+        services.AddSingleton<BarcodeOperationCoordinator>();
         services.AddSingleton<IBarcodeAssignmentService, BarcodeAssignmentService>();
         services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
         services.AddSingleton<IContainerDetailsHandler, ContainerDetailsHandler>();
