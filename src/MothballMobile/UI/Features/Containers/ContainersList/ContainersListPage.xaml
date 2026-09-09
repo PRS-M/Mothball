@@ -60,33 +60,32 @@
                     Background="{DynamicResource SecondaryContainer}"
                     Stroke="{DynamicResource OutlineVariant}"
                     StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 12">
-                                <Grid ColumnDefinitions="Auto,Auto,*"
-                                            ColumnSpacing="8">
-                      <Label Grid.Column="0"
-                          Text="&#xf0b0;"
-                          FontFamily="FontAwesomeSolid"
-                          FontSize="14"
-                          VerticalOptions="Center"
-                          TextColor="{DynamicResource OnSecondaryContainer}" />
-                      <Label Text="{x:Static strings:AppResources.Filter}"
+                    StrokeShape="RoundRectangle 12">
+                <Grid ColumnDefinitions="Auto,Auto,*"
+                      ColumnSpacing="8">
+                    <Label Grid.Column="0"
+                           Text="&#xf0b0;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="14"
+                           VerticalOptions="Center"
+                           TextColor="{DynamicResource OnSecondaryContainer}" />
+                    <Label Grid.Column="1"
+                           Text="{x:Static strings:AppResources.Filter}"
                            VerticalOptions="Center"
                            FontSize="12"
-                              TextColor="{DynamicResource OnSecondaryContainer}"
-                                                     Grid.Column="1" />
-
-                                        <Border Grid.Column="2"
-                                                Style="{StaticResource OutlinedPickerWrapper}">
-                                            <Grid ColumnDefinitions="*,Auto">
-                                                <Picker Grid.ColumnSpan="2"
-                                                        AutomationId="ContainersFilterPicker"
-                                                        ItemsSource="{x:Static Member=vm:ContainerListViewModel.AvailableFilters}"
-                                                        ItemDisplayBinding="{Binding ., Converter={StaticResource LocalizedEnumConverter}}"
-                                                        SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
-                                                        Style="{StaticResource CompactFilterPicker}" />
-                                                <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
-                                            </Grid>
-                                        </Border>
+                           TextColor="{DynamicResource OnSecondaryContainer}" />
+                    <Border Grid.Column="2"
+                            Style="{StaticResource OutlinedPickerWrapper}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Picker Grid.ColumnSpan="2"
+                                    AutomationId="ContainersFilterPicker"
+                                    ItemsSource="{x:Static Member=vm:ContainerListViewModel.AvailableFilters}"
+                                    ItemDisplayBinding="{Binding ., Converter={StaticResource LocalizedEnumConverter}}"
+                                    SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                                    Style="{StaticResource CompactFilterPicker}" />
+                            <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+                        </Grid>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>

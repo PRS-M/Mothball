@@ -40,63 +40,61 @@
                 </VerticalStackLayout>
             </Border>
 
-                        <Border Style="{StaticResource SectionCard}">
-                                <VerticalStackLayout Spacing="10">
-                                        <Label Text="{x:Static strings:AppResources.ThemeMode}"
-                                                   Style="{StaticResource HeadlineSmall}"
-                                                   TextColor="{DynamicResource OnSurface}" />
-
-                                        <Border Style="{StaticResource OutlinedPickerWrapper}">
-                                                <Grid ColumnDefinitions="*,Auto">
-                                                        <Picker Grid.ColumnSpan="2"
-                                                                Title="{x:Static strings:AppResources.ThemeMode}"
-                                                                        ItemsSource="{Binding Appearance.ModeOptions}"
-                                                                        SelectedItem="{Binding Appearance.SelectedModeOption, Mode=TwoWay}"
-                                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ChooseAutomaticSystemThemeLightThemeOrDarkTheme}" />
-                                                        <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
-                                                </Grid>
-                                        </Border>
-
-                                        <Label Text="{x:Static strings:AppResources.ChooseWhetherMothballFollowsTheSystemAppearanceOrAlwaysUsesALightOrDarkMode}"
-                                                   Style="{StaticResource BodyMedium}"
-                                                   TextColor="{DynamicResource OnSurfaceVariant}" />
-                                </VerticalStackLayout>
-                        </Border>
-
-                        <Border Style="{StaticResource SectionCard}">
-                                <VerticalStackLayout Spacing="10">
-                                        <Label Text="{x:Static strings:AppResources.Theme}"
-                                                   Style="{StaticResource HeadlineSmall}"
-                                                   TextColor="{DynamicResource OnSurface}" />
-                                        <Border Style="{StaticResource OutlinedPickerWrapper}">
-                                                <Grid ColumnDefinitions="*,Auto">
-                                                        <Picker Grid.ColumnSpan="2"
-                                                                Title="{x:Static strings:AppResources.Theme}"
-                                                                        ItemsSource="{Binding Appearance.ThemeOptions}"
-                                                                        SelectedItem="{Binding Appearance.SelectedThemeOption, Mode=TwoWay}"
-                                                                        SemanticProperties.Hint="{x:Static strings:AppResources.ChooseTheMothballColorTheme}" />
-                                                        <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
-                                                </Grid>
-                                        </Border>
-                                        <Label Text="{x:Static strings:AppResources.ChooseTheColorPaletteUsedThroughoutMothball}"
-                                                   Style="{StaticResource BodyMedium}"
-                                                   TextColor="{DynamicResource OnSurfaceVariant}" />
-                                </VerticalStackLayout>
-                        </Border>
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{x:Static strings:AppResources.ThemeMode}"
+                           Style="{StaticResource HeadlineSmall}"
+                           TextColor="{DynamicResource OnSurface}" />
+                    <Border Style="{StaticResource OutlinedPickerWrapper}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Picker Grid.ColumnSpan="2"
+                                    Title="{x:Static strings:AppResources.ThemeMode}"
+                                    ItemsSource="{Binding Appearance.ModeOptions}"
+                                    SelectedItem="{Binding Appearance.SelectedModeOption, Mode=TwoWay}"
+                                    SemanticProperties.Hint="{x:Static strings:AppResources.ChooseAutomaticSystemThemeLightThemeOrDarkTheme}" />
+                            <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+                        </Grid>
+                    </Border>
+                    <Label Text="{x:Static strings:AppResources.ChooseWhetherMothballFollowsTheSystemAppearanceOrAlwaysUsesALightOrDarkMode}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+                </VerticalStackLayout>
+            </Border>
 
             <Border Style="{StaticResource SectionCard}">
                 <VerticalStackLayout Spacing="10">
-                      <Label Text="{x:Static strings:AppResources.AppMode}"
-                              Style="{StaticResource HeadlineSmall}"
-                              TextColor="{DynamicResource OnSurface}" />
+                    <Label Text="{x:Static strings:AppResources.Theme}"
+                           Style="{StaticResource HeadlineSmall}"
+                           TextColor="{DynamicResource OnSurface}" />
+                    <Border Style="{StaticResource OutlinedPickerWrapper}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Picker Grid.ColumnSpan="2"
+                                    Title="{x:Static strings:AppResources.Theme}"
+                                    ItemsSource="{Binding Appearance.ThemeOptions}"
+                                    SelectedItem="{Binding Appearance.SelectedThemeOption, Mode=TwoWay}"
+                                    SemanticProperties.Hint="{x:Static strings:AppResources.ChooseTheMothballColorTheme}" />
+                            <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+                        </Grid>
+                    </Border>
+                    <Label Text="{x:Static strings:AppResources.ChooseTheColorPaletteUsedThroughoutMothball}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+                </VerticalStackLayout>
+            </Border>
 
-                      <controls:SegmentedSwitch LeftText="{x:Static strings:AppResources.Simple}"
-                                                    RightText="{x:Static strings:AppResources.Advanced}"
-                                                    IsRightSelected="{Binding Appearance.IsAdvancedAppMode, Mode=TwoWay}"
-                                                    LeftCommand="{Binding Appearance.SelectSimpleAppModeCommand}"
-                                                    RightCommand="{Binding Appearance.SelectAdvancedAppModeCommand}"
-                                                      HorizontalOptions="Fill"
-                                                    SemanticProperties.Hint="{x:Static strings:AppResources.SwitchBetweenSimpleModeAndAdvancedMode}" />
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                <Label Text="{x:Static strings:AppResources.AppMode}"
+                       Style="{StaticResource HeadlineSmall}"
+                       TextColor="{DynamicResource OnSurface}" />
+
+                <controls:SegmentedSwitch LeftText="{x:Static strings:AppResources.Simple}"
+                                          RightText="{x:Static strings:AppResources.Advanced}"
+                                          IsRightSelected="{Binding Appearance.IsAdvancedAppMode, Mode=TwoWay}"
+                                          LeftCommand="{Binding Appearance.SelectSimpleAppModeCommand}"
+                                          RightCommand="{Binding Appearance.SelectAdvancedAppModeCommand}"
+                                          HorizontalOptions="Fill"
+                                          SemanticProperties.Hint="{x:Static strings:AppResources.SwitchBetweenSimpleModeAndAdvancedMode}" />
 
                     <Label Text="{x:Static strings:AppResources.AdvancedModeShowsQuantityTotalsAssignmentsAndQuantityEditingSimpleModeHidesQuantityManagement}"
                            Style="{StaticResource BodyMedium}"

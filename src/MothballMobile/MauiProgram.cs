@@ -77,7 +77,7 @@ public static class MauiProgram
 
 	private static void ConfigurePlatformHandlers(IMauiHandlersCollection handlers)
 	{
-		#if IOS || MACCATALYST
+#if IOS || MACCATALYST
 		PickerHandler.Mapper.AppendToMapping("ApplePickerContrast", (handler, view) =>
 		{
 			if (handler.PlatformView is not UITextField picker)
@@ -104,12 +104,12 @@ public static class MauiProgram
 
 			// On iOS/MacCatalyst, SearchBar rendering is owned by UISearchTextField,
 			// so set contrast colors directly on the native field.
-					try
+			try
 			{
 				var tf = sb.SearchTextField;
 				if (tf is not null)
 				{
-							tf.BackgroundColor = UIColor.Clear;
+					tf.BackgroundColor = UIColor.Clear;
 					tf.BorderStyle = UITextBorderStyle.RoundedRect;
 					tf.Layer.BorderWidth = 0;
 					tf.Layer.CornerRadius = 10;
@@ -124,6 +124,6 @@ public static class MauiProgram
 				// Best-effort platform polish only.
 			}
 		});
-		#endif
+#endif
 	}
 }
