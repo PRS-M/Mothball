@@ -6,8 +6,11 @@ using CoreApp.Domain.ValueObjects;
 using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Abstractions.DomainEvents;
 using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Utilities;
+using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Events;
 using Microsoft.Extensions.Logging.Abstractions;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.BarcodeDocuments;
@@ -28,6 +31,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IBarcodeShareService? barcodeShare;
     private readonly ITagRepository? tagRepository;
+    private readonly IDisposable? domainEventSubscription;
     private CancellationTokenSource? tagSuggestionCancellation;
     private int tagSuggestionVersion;
     private CancellationTokenSource? assignmentTagSuggestionCancellation;
@@ -160,7 +164,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         IBarcodeScanSession barcodeScanner,
         IDebouncer? debouncer = null,
         IBarcodeShareService? barcodeShare = null,
-        ITagRepository? tagRepository = null)
+        ITagRepository? tagRepository = null,
+        IDomainEventStream? domainEventStream = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.deleteContainerHandler = deleteContainerHandler;
@@ -173,6 +178,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         this.barcodeScanner = barcodeScanner;
         this.barcodeShare = barcodeShare;
         this.tagRepository = tagRepository;
+        domainEventSubscription = domainEventStream?.Subscribe(OnDomainEvent);
         this.debouncer = debouncer ?? new Debouncer(250, NullLogger<Debouncer>.Instance);
         itemCoordinator.Reset(this);
     }
@@ -781,8 +787,36 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             Interlocked.Increment(ref assignmentTagSuggestionVersion);
             assignmentTagSuggestionCancellation?.Cancel();
             Interlocked.Exchange(ref assignmentTagSuggestionCancellation, null);
+            domainEventSubscription?.Dispose();
         }
 
         disposed = true;
     }
+
+    private void OnDomainEvent(IDomainEvent domainEvent)
+    {
+        if (!Guid.TryParse(ContainerId, out var currentId)
+            || IsEditingNotes
+            || IsEditingBarcode
+            || !AffectsCurrentContainer(domainEvent, currentId))
+        {
+            return;
+        }
+
+        MainThread.InvokeOnMainThreadAsync(() => InitializeAsync(ContainerId))
+            .FireAndForget(backgroundTasks, "Refresh container details from domain event");
+    }
+
+    private static bool AffectsCurrentContainer(IDomainEvent domainEvent, Guid containerId)
+        => domainEvent switch
+        {
+            ContainerCreated created => created.ContainerId == containerId,
+            ContainerDetailsUpdated updated => updated.ContainerId == containerId,
+            ContainerBarcodeChanged changed => changed.ContainerId == containerId,
+            ContainerDeleted deleted => deleted.ContainerId == containerId,
+            InventoryChanged changed => changed.AffectedContainerIds.Contains(containerId),
+            InventoryWithdrawn withdrawn => withdrawn.RemainingAllocations.Any(allocation => allocation.ContainerId == containerId),
+            InventoryRestored => true,
+            _ => false,
+        };
 }

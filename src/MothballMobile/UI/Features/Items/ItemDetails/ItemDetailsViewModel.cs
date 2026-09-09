@@ -6,9 +6,12 @@ using CoreApp.Application.Features.Barcodes.Commands;
 using CoreApp.Application.Contracts;
 using CoreApp.Application.Utilities;
 using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Abstractions.DomainEvents;
 using CoreApp.Application.Contracts.Tags;
 using CoreApp.Domain.Entities.ItemAggregate;
 using CoreApp.Domain.ValueObjects;
+using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Events;
 using MothballMobile.Infrastructure.Scanning;
 using MothballMobile.Infrastructure.BarcodeDocuments;
 using MothballMobile.Infrastructure.Utilities;
@@ -25,6 +28,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     private readonly IBarcodeScanSession barcodeScanner;
     private readonly IBarcodeShareService? barcodeShare;
     private readonly ITagRepository? tagRepository;
+    private readonly IDisposable? domainEventSubscription;
     private CancellationTokenSource? tagSuggestionCancellation;
     private int tagSuggestionVersion;
     private bool disposed;
@@ -133,7 +137,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         IBarcodeAssignmentService barcodeAssignments,
         IBarcodeScanSession barcodeScanner,
         IBarcodeShareService? barcodeShare = null,
-        ITagRepository? tagRepository = null)
+        ITagRepository? tagRepository = null,
+        IDomainEventStream? domainEventStream = null)
         : base(paths, imageService, popup, popupDefinitions, photoBackgroundOperationTracker)
     {
         this.itemDetailsCoordinator = itemDetailsCoordinator;
@@ -144,6 +149,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         this.barcodeScanner = barcodeScanner;
         this.barcodeShare = barcodeShare;
         this.tagRepository = tagRepository;
+        domainEventSubscription = domainEventStream?.Subscribe(OnDomainEvent);
     }
 
     /// <inheritdoc />
@@ -399,8 +405,37 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         Interlocked.Increment(ref tagSuggestionVersion);
         var cancellation = Interlocked.Exchange(ref tagSuggestionCancellation, null);
         cancellation?.Cancel();
+        domainEventSubscription?.Dispose();
         disposed = true;
     }
+
+    private void OnDomainEvent(IDomainEvent domainEvent)
+    {
+        if (!Guid.TryParse(ItemId, out var currentId)
+            || IsEditingDescription
+            || IsEditingBarcode
+            || !AffectsCurrentItem(domainEvent, currentId))
+        {
+            return;
+        }
+
+        MainThread.InvokeOnMainThreadAsync(() => InitializeAsync(ItemId))
+            .FireAndForget(backgroundTasks, "Refresh item details from domain event");
+    }
+
+    private static bool AffectsCurrentItem(IDomainEvent domainEvent, Guid itemId)
+        => domainEvent switch
+        {
+            ItemCreated created => created.ItemId == itemId,
+            ItemDetailsUpdated updated => updated.ItemId == itemId,
+            ItemBarcodeChanged changed => changed.ItemId == itemId,
+            ItemDeleted deleted => deleted.ItemId == itemId,
+            InventoryChanged changed => changed.ItemId == itemId,
+            InventoryWithdrawn withdrawn => withdrawn.ItemId == itemId,
+            ItemExhausted exhausted => exhausted.ItemId == itemId,
+            InventoryRestored => true,
+            _ => false,
+        };
 
     private void NotifyContainerRelationStateChanged()
     {
