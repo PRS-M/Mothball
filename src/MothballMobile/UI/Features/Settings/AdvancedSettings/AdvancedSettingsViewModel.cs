@@ -71,6 +71,35 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         }
     }
 
+    public bool IsSqlitePersistenceBackend
+    {
+        get => string.Equals(
+            applicationSettings.PersistenceBackend,
+            ApplicationSettings.SqlitePersistenceBackend,
+            StringComparison.OrdinalIgnoreCase);
+        set
+        {
+            var backend = value
+                ? ApplicationSettings.SqlitePersistenceBackend
+                : ApplicationSettings.JsonPersistenceBackend;
+            if (string.Equals(applicationSettings.PersistenceBackend, backend, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            applicationSettings.PersistenceBackend = backend;
+            OnPropertyChanged();
+        }
+    }
+
+    [RelayCommand]
+    private void SelectJsonPersistenceBackend()
+        => IsSqlitePersistenceBackend = false;
+
+    [RelayCommand]
+    private void SelectSqlitePersistenceBackend()
+        => IsSqlitePersistenceBackend = true;
+
     [RelayCommand]
     private Task NavigateToBackgroundOperationsAsync()
         => navigation.GoToAsync(NavigationRoutes.BackgroundOperations);

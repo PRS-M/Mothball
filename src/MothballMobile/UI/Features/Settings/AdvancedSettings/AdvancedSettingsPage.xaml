@@ -2,6 +2,7 @@
 <views:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:vm="clr-namespace:MothballMobile.UI.Features.Settings"
+                xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
                 xmlns:views="clr-namespace:MothballMobile.UI.Shared"
                 xmlns:strings="clr-namespace:MothballMobile.Resources.Localization"
                 x:Class="MothballMobile.UI.Features.Settings.AdvancedSettingsPage"
@@ -12,7 +13,7 @@
     <Grid>
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
-            <controls:PageHeader xmlns:controls="clr-namespace:MothballMobile.UI.Controls"
+            <controls:PageHeader
                                  Title="{x:Static strings:AppResources.AdvancedSettings}"
                                  Subtitle="{x:Static strings:AppResources.PowerUserAndTechnicalOptions}"
                                  TitleFontSize="22"
@@ -33,6 +34,26 @@
                     </Grid>
 
                     <Label Text="{x:Static strings:AppResources.BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable}"
+                           Style="{StaticResource BodyMedium}"
+                           TextColor="{DynamicResource OnSurfaceVariant}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource SectionCard}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{x:Static strings:AppResources.PersistenceBackend}"
+                           Style="{StaticResource HeadlineSmall}"
+                           TextColor="{DynamicResource OnSurface}" />
+
+                    <controls:SegmentedSwitch LeftText="{x:Static strings:AppResources.JSON}"
+                                              RightText="{x:Static strings:AppResources.SQLite}"
+                                              IsRightSelected="{Binding IsSqlitePersistenceBackend, Mode=TwoWay}"
+                                              LeftCommand="{Binding SelectJsonPersistenceBackendCommand}"
+                                              RightCommand="{Binding SelectSqlitePersistenceBackendCommand}"
+                                              HorizontalOptions="Fill"
+                                              SemanticProperties.Hint="{x:Static strings:AppResources.ChooseTheInventoryPersistenceBackend}" />
+
+                    <Label Text="{x:Static strings:AppResources.RestartMothballToApplyTheNewPersistenceBackend}"
                            Style="{StaticResource BodyMedium}"
                            TextColor="{DynamicResource OnSurfaceVariant}" />
                 </VerticalStackLayout>

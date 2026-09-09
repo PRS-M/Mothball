@@ -25,13 +25,20 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder();
 		var backendOverride = Environment.GetEnvironmentVariable("MOTHBALL_PERSISTENCE_BACKEND");
+		var configuredBackend = Preferences.Default.Get(
+			ApplicationSettings.PersistenceBackendKey,
+			ApplicationSettings.SqlitePersistenceBackend);
+		var selectedBackend = string.IsNullOrWhiteSpace(backendOverride) ? configuredBackend : backendOverride;
+		Preferences.Default.Set(
+			ApplicationSettings.PersistenceBackendKey,
+			PersistenceConfiguration.UseJsonBackend(selectedBackend)
+				? ApplicationSettings.JsonPersistenceBackend
+				: ApplicationSettings.SqlitePersistenceBackend);
 		builder.Configuration
 			.AddInMemoryCollection(new Dictionary<string, string?>
 			{
 				[PersistenceConfiguration.BackendKey] =
-					string.IsNullOrWhiteSpace(backendOverride)
-						? PersistenceConfiguration.SqliteBackend
-						: backendOverride
+					selectedBackend
 			});
 
 		builder

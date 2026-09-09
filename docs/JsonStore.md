@@ -34,7 +34,7 @@ Relevant files:
 - `src/MothballMobile/Composition/ServiceCollectionExtensions.cs`
 - `src/MothballMobile/MauiProgram.cs`
 
-By default, `MauiProgram` sets backend to SQLite unless environment variable `MOTHBALL_PERSISTENCE_BACKEND` is set.
+By default, `MauiProgram` sets backend to SQLite unless Advanced Settings has saved a different backend or environment variable `MOTHBALL_PERSISTENCE_BACKEND` is set. The environment variable takes precedence and is useful for development and test runs.
 
 Example:
 

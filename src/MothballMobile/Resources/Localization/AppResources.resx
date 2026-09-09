@@ -20,6 +20,10 @@
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Adds missing records just like Add only.</value></data>
   <data name="Advanced" xml:space="preserve"><value>Advanced</value></data>
   <data name="AdvancedSettings" xml:space="preserve"><value>Advanced Settings</value></data>
+  <data name="PersistenceBackend" xml:space="preserve"><value>Persistence backend</value></data>
+  <data name="SQLite" xml:space="preserve"><value>SQLite</value></data>
+  <data name="ChooseTheInventoryPersistenceBackend" xml:space="preserve"><value>Choose whether inventory data is stored in SQLite or JSON. JSON storage is experimental.</value></data>
+  <data name="RestartMothballToApplyTheNewPersistenceBackend" xml:space="preserve"><value>Restart Mothball to apply the new persistence backend.</value></data>
   <data name="OpenAdvancedSettings" xml:space="preserve"><value>Open advanced settings</value></data>
   <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Power-user and technical options</value></data>
   <data name="LicensesAndLibraries" xml:space="preserve"><value>Licenses and Libraries</value></data>

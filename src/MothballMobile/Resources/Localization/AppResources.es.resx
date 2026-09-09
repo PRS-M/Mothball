@@ -21,6 +21,10 @@
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Añade los registros que faltan, igual que «Solo añadir».</value></data>
   <data name="Advanced" xml:space="preserve"><value>Avanzado</value></data>
   <data name="AdvancedSettings" xml:space="preserve"><value>Configuración avanzada</value></data>
+  <data name="PersistenceBackend" xml:space="preserve"><value>Backend de almacenamiento</value></data>
+  <data name="SQLite" xml:space="preserve"><value>SQLite</value></data>
+  <data name="ChooseTheInventoryPersistenceBackend" xml:space="preserve"><value>Elige si los datos del inventario se almacenan en SQLite o JSON. El almacenamiento JSON es experimental.</value></data>
+  <data name="RestartMothballToApplyTheNewPersistenceBackend" xml:space="preserve"><value>Reinicia Mothball para aplicar el nuevo backend de almacenamiento.</value></data>
   <data name="OpenAdvancedSettings" xml:space="preserve"><value>Abrir configuración avanzada</value></data>
   <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Opciones técnicas y para usuarios avanzados</value></data>
   <data name="LicensesAndLibraries" xml:space="preserve"><value>Licencias y bibliotecas</value></data>

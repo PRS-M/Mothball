@@ -227,7 +227,7 @@ Use the matching method when you add a service:
 - `AddPlatformServices` for MAUI/device implementations.
 - `AddViewModels` for page view models.
 
-SQLite is the default backend. Set `MOTHBALL_PERSISTENCE_BACKEND=Json` to exercise the JSON operational store. `JsonOperationalStore` is accepted as an alternative value.
+SQLite is the default backend. Set `MOTHBALL_PERSISTENCE_BACKEND=Json` to exercise the JSON operational store. `JsonOperationalStore` is accepted as an alternative value. Advanced Settings also persists a JSON/SQLite selection for the next application restart; the environment variable takes precedence when supplied.
 
 The shared seeded container image is prepared during both SQLite and JSON startup initialization so containers without an assigned photo have a stable default image. Full data reset preserves that application asset after deleting inventory-owned photo files.
 
