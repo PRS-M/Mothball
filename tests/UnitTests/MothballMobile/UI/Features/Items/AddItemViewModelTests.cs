@@ -94,6 +94,8 @@ public sealed class AddItemViewModelTests
         {
             Assert.That(viewModel.BarcodeValue, Is.EqualTo("widget-01"));
             Assert.That(viewModel.BarcodeSymbology, Is.EqualTo(BarcodeSymbology.Code128));
+            Assert.That(viewModel.GenerateInternalSku, Is.False);
+            Assert.That(viewModel.IsBarcodeSymbologyEditable, Is.False);
         });
     }
 
@@ -102,16 +104,28 @@ public sealed class AddItemViewModelTests
     {
         var viewModel = CreateViewModel(Mock.Of<ICreateItemCommandHandler>(), false);
 
-        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.Ean8, BarcodeSymbology.Ean13, BarcodeSymbology.QrCode }));
+        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.QrCode, BarcodeSymbology.Code128 }));
     }
 
     [Test]
-    public void AvailableBarcodeSymbologies_WhenExtendedModeIsEnabled_ContainsAllSupportedSymbologies()
+    public void AvailableBarcodeSymbologies_WhenExtendedModeIsEnabledAndGenerationIsOn_ContainsGeneratedTypes()
     {
         var viewModel = CreateViewModel(
             Mock.Of<ICreateItemCommandHandler>(),
             false,
             isBarcodeExtendedMode: true);
+
+        Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(new[] { BarcodeSymbology.QrCode, BarcodeSymbology.Code128 }));
+    }
+
+    [Test]
+    public void AvailableBarcodeSymbologies_WhenExtendedModeIsEnabledAndGenerationIsOff_ContainsAllSupportedSymbologies()
+    {
+        var viewModel = CreateViewModel(
+            Mock.Of<ICreateItemCommandHandler>(),
+            false,
+            isBarcodeExtendedMode: true);
+        viewModel.GenerateInternalSku = false;
 
         Assert.That(viewModel.AvailableBarcodeSymbologies, Is.EquivalentTo(Enum.GetValues<BarcodeSymbology>()));
     }

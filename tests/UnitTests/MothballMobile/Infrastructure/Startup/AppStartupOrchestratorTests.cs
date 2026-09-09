@@ -54,6 +54,55 @@ public class AppStartupOrchestratorTests
     }
 
     [Test]
+    public async Task StartAsync_ForwardsCancellationTokenToInitializer()
+    {
+        var initializer = new Mock<IAppStartupInitializer>();
+        var cancellationToken = new CancellationTokenSource().Token;
+        var observedToken = CancellationToken.None;
+        initializer
+            .Setup(service => service.InitializeAsync(It.IsAny<CancellationToken>()))
+            .Callback<CancellationToken>(token => observedToken = token)
+            .Returns(Task.CompletedTask);
+        var orchestrator = new AppStartupOrchestrator(
+            initializer.Object,
+            NullLogger<AppStartupOrchestrator>.Instance);
+
+        await orchestrator.StartAsync(cancellationToken: cancellationToken);
+
+        Assert.That(observedToken, Is.EqualTo(cancellationToken));
+    }
+
+    [Test]
+    public async Task StartAsync_WhenCalledConcurrently_InitializesOnlyOnce()
+    {
+        var initializer = new Mock<IAppStartupInitializer>();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        initializer
+            .Setup(service => service.InitializeAsync(It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                entered.SetResult();
+                await release.Task;
+            });
+        var orchestrator = new AppStartupOrchestrator(
+            initializer.Object,
+            NullLogger<AppStartupOrchestrator>.Instance);
+
+        var firstStart = orchestrator.StartAsync();
+        await entered.Task;
+        var secondStart = orchestrator.StartAsync();
+
+        Assert.That(secondStart.IsCompleted, Is.False);
+        release.SetResult();
+        await Task.WhenAll(firstStart, secondStart);
+
+        initializer.Verify(
+            service => service.InitializeAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Test]
     public async Task StartAsync_WhenDemoSeederIsAvailable_SeedsAfterPersistenceInitialization()
     {
         var initializer = new Mock<IAppStartupInitializer>();
@@ -89,6 +138,30 @@ public class AppStartupOrchestratorTests
         initializer.Verify(service => service.InitializeAsync(), Times.Once);
         containers.Verify(repository => repository.GetAllAsync(), Times.Exactly(2));
         items.Verify(repository => repository.InitializeAsync(), Times.Once);
+    }
+
+    [Test]
+    public async Task StartAsync_WhenAutomaticDemoSeedingIsDisabled_SkipsSeeder()
+    {
+        var initializer = new Mock<IAppStartupInitializer>();
+        var containers = new Mock<IRepository<DbContainer>>();
+        var seeder = new DemoDataSeeder(
+            containers.Object,
+            Mock.Of<IRepository<DbItem>>(),
+            Mock.Of<IRepository<DbItemInventory>>(),
+            Mock.Of<IRepository<DbImage>>(),
+            Mock.Of<IRepository<DbItemContainerRelation>>(),
+            Mock.Of<IFileHandler>(),
+            NullLogger<DemoDataSeeder>.Instance);
+        var orchestrator = new AppStartupOrchestrator(
+            initializer.Object,
+            NullLogger<AppStartupOrchestrator>.Instance,
+            seeder);
+
+        await orchestrator.StartAsync(automaticDemoSeeding: false);
+
+        containers.Verify(repository => repository.GetAllAsync(), Times.Never);
+        containers.Verify(repository => repository.InitializeAsync(), Times.Never);
     }
 
     [Test]

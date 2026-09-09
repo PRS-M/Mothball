@@ -10,11 +10,11 @@ public sealed class BarcodeGeneratorFormatTests
     private static readonly Guid RecordId = Guid.Parse("4f4d2d7e-6f3c-4c0b-9f3a-8b5c2f8c14a1");
 
     [Test]
-    public void Create_Code128_ReturnsInternalSku()
+    public void Create_Code128_ReturnsSameValueAsQrCode()
     {
         var result = BarcodeGenerator.Create(RecordId, BarcodeOwnerKind.Item, BarcodeSymbology.Code128);
 
-        Assert.That(result, Is.EqualTo(new Barcode("MB-4F4D2D7E6F3C4C0B9F3A8B5C2F8C14A1", BarcodeSymbology.Code128)));
+        Assert.That(result, Is.EqualTo(new Barcode("mothball://v1/item/4f4d2d7e6f3c4c0b9f3a8b5c2f8c14a1", BarcodeSymbology.Code128)));
     }
 
     [Test]

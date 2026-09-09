@@ -21,6 +21,10 @@
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Fügt fehlende Einträge wie bei „Nur hinzufügen“ hinzu.</value></data>
   <data name="Advanced" xml:space="preserve"><value>Erweitert</value></data>
   <data name="AdvancedSettings" xml:space="preserve"><value>Erweiterte Einstellungen</value></data>
+  <data name="PersistenceBackend" xml:space="preserve"><value>Speicher-Backend</value></data>
+  <data name="SQLite" xml:space="preserve"><value>SQLite</value></data>
+  <data name="ChooseTheInventoryPersistenceBackend" xml:space="preserve"><value>Wählen Sie, ob Inventardaten in SQLite oder JSON gespeichert werden. Die JSON-Speicherung ist experimentell.</value></data>
+  <data name="RestartMothballToApplyTheNewPersistenceBackend" xml:space="preserve"><value>Starten Sie Mothball neu, um das neue Speicher-Backend anzuwenden.</value></data>
   <data name="OpenAdvancedSettings" xml:space="preserve"><value>Erweiterte Einstellungen öffnen</value></data>
   <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Optionen für erfahrene Nutzer und technische Optionen</value></data>
   <data name="LicensesAndLibraries" xml:space="preserve"><value>Lizenzen und Bibliotheken</value></data>
@@ -53,7 +57,7 @@
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Dieser Barcode wird bereits verwendet.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.</value></data>
   <data name="BarcodesExtendedMode" xml:space="preserve"><value>Erweiterter Barcode-Modus (experimentell)</value></data>
-  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Der experimentelle Modus zeigt zusätzliche Barcode-Typen an. Im einfachen Modus sind EAN-8, EAN-13 und QR-Code verfügbar.</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Der experimentelle Modus zeigt zusätzliche Barcode-Typen an. Im einfachen Modus sind QR-Code und Code 128 für generierte Codes verfügbar; gescannte Codes behalten ihr erkanntes Format.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Barcode-Typ</value></data>
   <data name="Backup" xml:space="preserve"><value>Sicherung</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Sicherung exportiert</value></data>
@@ -378,4 +382,5 @@
   <data name="ContainersWithCount" xml:space="preserve"><value>Container ({0})</value></data>
   <data name="ItemsWithCount" xml:space="preserve"><value>Elemente ({0})</value></data>
   <data name="TagNameIsRequired" xml:space="preserve"><value>Ein Tagname ist erforderlich.</value></data>
+  <data name="OperationCanceled" xml:space="preserve"><value>Vorgang abgebrochen</value></data>
 </root>

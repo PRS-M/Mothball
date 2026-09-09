@@ -14,6 +14,7 @@ public class BasePage : ContentPage
     private IDisposable? previousDisposable;
     private BaseViewModel? errorSource;
     private readonly SemaphoreSlim initializationGate = new(1, 1);
+    private CancellationTokenSource? initializationCancellation;
     private bool contentWrappedWithAdBanner;
 
     public BasePage()
@@ -72,10 +73,19 @@ public class BasePage : ContentPage
 
         if (BindingContext is IInitializable init)
         {
-            await initializationGate.WaitAsync();
+            var cancellation = new CancellationTokenSource();
+            var previousCancellation = Interlocked.Exchange(ref initializationCancellation, cancellation);
+            previousCancellation?.Cancel();
+            var gateAcquired = false;
             try
             {
-                await init.InitializeAsync();
+                await initializationGate.WaitAsync(cancellation.Token);
+                gateAcquired = true;
+                await init.InitializeAsync(cancellation.Token);
+            }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+            {
+                // Leaving the page cancels in-flight initialization without presenting an error.
             }
             catch (Exception ex)
             {
@@ -85,7 +95,15 @@ public class BasePage : ContentPage
             }
             finally
             {
-                initializationGate.Release();
+                if (gateAcquired)
+                {
+                    initializationGate.Release();
+                }
+
+                if (ReferenceEquals(Interlocked.CompareExchange(ref initializationCancellation, null, cancellation), cancellation))
+                {
+                    cancellation.Dispose();
+                }
             }
         }
     }
@@ -99,6 +117,7 @@ public class BasePage : ContentPage
     /// </remarks>
     protected override void OnDisappearing()
     {
+        Volatile.Read(ref initializationCancellation)?.Cancel();
         base.OnDisappearing();
     }
 

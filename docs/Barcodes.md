@@ -23,7 +23,7 @@ The details pages render an assigned value using its recorded symbology, so the 
 
 ## Assigning and Editing
 
-Use the Barcode field on an add form to enter a value manually or use **Scan Barcode**. The **Generate barcode** switch and button use the selected format when the record is saved. Code 128 and QR Code can be generated; selecting EAN-8 or EAN-13 automatically exposes the manual field because commercial EAN values must be supplied by the user. On an item or container details page, select **Edit** beside Barcode to enter, replace, clear, scan, or enable the same format-aware generation switch.
+Use the Barcode field on an add form to enter a value manually or use **Scan Barcode**. A successful scan disables automatic barcode generation and preserves the scanned value and symbology. The **Generate barcode** switch and button use the selected format when the record is saved. Code 128 and QR Code can be generated; selecting EAN-8 or EAN-13 automatically exposes the manual field because commercial EAN values must be supplied by the user. On an item or container details page, select **Edit** beside Barcode to enter, replace, clear, scan, or enable the same format-aware generation switch.
 
 Each barcode value belongs to at most one inventory record across the whole app. A value assigned to a container cannot also be assigned to an item, and vice versa. Reusing the same owner's current value is allowed. If a value is already in use, Mothball keeps the current record unchanged and shows a native device alert.
 

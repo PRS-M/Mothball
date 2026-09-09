@@ -50,13 +50,19 @@ public sealed partial class JsonInventoryStore
         };
     }
 
-    private async Task WriteSlotAsync(string slot, StoreState state, int generation)
+    private async Task WriteSlotAsync(
+        string slot,
+        StoreState state,
+        int generation,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         string slotFolder = JsonStoreConstants.SlotFolder(slot);
 
         // Clear the slot (best-effort).
         foreach (var file in files.EnumerateFiles(slotFolder, "*.json").ToList())
         {
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 await files.DeleteFileAsync(file, slotFolder).ConfigureAwait(false);
@@ -70,6 +76,7 @@ public sealed partial class JsonInventoryStore
 
         // Write metadata + tables.
         await WriteJsonAsync(JsonStoreConstants.MetadataFileName, slotFolder, state.Metadata).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
         await WriteJsonAsync(JsonStoreConstants.ContainersFileName, slotFolder, state.Containers).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.ItemsFileName, slotFolder, state.Items).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.InventoriesFileName, slotFolder, state.Inventories).ConfigureAwait(false);

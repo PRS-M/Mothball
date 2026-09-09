@@ -61,6 +61,24 @@ public sealed class SettingsViewModelTests
     }
 
     [Test]
+    public void AdvancedSettingsViewModel_SelectsPersistenceBackendThroughApplicationSettings()
+    {
+        var settings = new Mock<IApplicationSettings>();
+        settings.SetupGet(value => value.PersistenceBackend)
+            .Returns(ApplicationSettings.SqlitePersistenceBackend);
+        var viewModel = new AdvancedSettingsViewModel(
+            settings.Object,
+            CreateSigningKeyViewModel(),
+            Mock.Of<INavigationService>(),
+            Mock.Of<IInventoryMaintenanceService>(),
+            Mock.Of<IPopupService>());
+
+        viewModel.SelectJsonPersistenceBackendCommand.Execute(null);
+
+        settings.VerifySet(value => value.PersistenceBackend = ApplicationSettings.JsonPersistenceBackend, Times.Once);
+    }
+
+    [Test]
     public async Task SettingsViewModel_NavigateToAdvancedSettings_UsesAdvancedSettingsRoute()
     {
         var navigation = new Mock<INavigationService>();

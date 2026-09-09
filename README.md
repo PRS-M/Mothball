@@ -252,8 +252,8 @@ Mothball uses the following external open-source libraries directly:
 - [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet) — [MIT license](https://github.com/CommunityToolkit/dotnet/blob/main/License.md)
 - [Plugin.AdMob](https://github.com/marius-bughiu/Plugin.AdMob) — [MIT license](https://github.com/marius-bughiu/Plugin.AdMob/blob/main/LICENSE) · [Sponsor the maintainer](https://github.com/sponsors/marius-bughiu)
 - [SkiaSharp](https://github.com/mono/SkiaSharp) — [MIT license](https://github.com/mono/SkiaSharp/blob/main/LICENSE.md) · [Contributors](https://github.com/mono/SkiaSharp/graphs/contributors)
-- [sqlite-net-pcl](https://github.com/cjgaliana/SQLite.Net-PCL) — [MIT license](https://github.com/cjgaliana/SQLite.Net-PCL/blob/master/LICENSE)
-- [SQLitePCLRaw](https://github.com/ericsink/SQLitePCL.raw) — [Apache-2.0 license](https://github.com/ericsink/SQLitePCL.raw/blob/main/LICENSE.txt) · [Sponsor the maintainer](https://github.com/sponsors/ericsink)
+- [sqlite-net-pcl](https://github.com/cjgaliana/SQLite.Net-PCL) — [MIT license](https://github.com/cjgaliana/SQLite.Net-PCL/blob/master/LICENSE.txt)
+- [SQLitePCLRaw](https://github.com/ericsink/SQLitePCL.raw) — [Apache-2.0 license](https://github.com/ericsink/SQLitePCL.raw/blob/main/LICENSE.TXT) · [Sponsor the maintainer](https://github.com/sponsors/ericsink)
 - [ZXing.Net.Maui](https://github.com/Redth/ZXing.Net.Maui) — [MIT license](https://github.com/Redth/ZXing.Net.Maui/blob/master/LICENSE)
 
 ## Hashtags

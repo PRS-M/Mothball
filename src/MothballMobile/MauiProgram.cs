@@ -9,6 +9,7 @@ using Plugin.AdMob.Configuration;
 #endif
 
 #if IOS || MACCATALYST
+using CoreGraphics;
 using UIKit;
 #endif
 
@@ -24,13 +25,20 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder();
 		var backendOverride = Environment.GetEnvironmentVariable("MOTHBALL_PERSISTENCE_BACKEND");
+		var configuredBackend = Preferences.Default.Get(
+			ApplicationSettings.PersistenceBackendKey,
+			ApplicationSettings.SqlitePersistenceBackend);
+		var selectedBackend = string.IsNullOrWhiteSpace(backendOverride) ? configuredBackend : backendOverride;
+		Preferences.Default.Set(
+			ApplicationSettings.PersistenceBackendKey,
+			PersistenceConfiguration.UseJsonBackend(selectedBackend)
+				? ApplicationSettings.JsonPersistenceBackend
+				: ApplicationSettings.SqlitePersistenceBackend);
 		builder.Configuration
 			.AddInMemoryCollection(new Dictionary<string, string?>
 			{
 				[PersistenceConfiguration.BackendKey] =
-					string.IsNullOrWhiteSpace(backendOverride)
-						? PersistenceConfiguration.SqliteBackend
-						: backendOverride
+					selectedBackend
 			});
 
 		builder
@@ -76,7 +84,23 @@ public static class MauiProgram
 
 	private static void ConfigurePlatformHandlers(IMauiHandlersCollection handlers)
 	{
-		#if IOS || MACCATALYST
+#if IOS || MACCATALYST
+		PickerHandler.Mapper.AppendToMapping("ApplePickerContrast", (handler, view) =>
+		{
+			if (handler.PlatformView is not UITextField picker)
+			{
+				return;
+			}
+
+			picker.BorderStyle = UITextBorderStyle.RoundedRect;
+			picker.Layer.BorderWidth = 1.5f;
+			picker.Layer.BorderColor = UIColor.Separator.CGColor;
+			picker.Layer.CornerRadius = 8;
+			picker.Layer.ShadowOpacity = 0;
+			picker.RightView = new UIView(new CGRect(0, 0, 24, 1));
+			picker.RightViewMode = UITextFieldViewMode.Always;
+		});
+
 		SearchBarHandler.Mapper.AppendToMapping("ContrastBackground", (handler, view) =>
 		{
 			var sb = handler.PlatformView;
@@ -87,12 +111,12 @@ public static class MauiProgram
 
 			// On iOS/MacCatalyst, SearchBar rendering is owned by UISearchTextField,
 			// so set contrast colors directly on the native field.
-					try
+			try
 			{
 				var tf = sb.SearchTextField;
 				if (tf is not null)
 				{
-							tf.BackgroundColor = UIColor.Clear;
+					tf.BackgroundColor = UIColor.Clear;
 					tf.BorderStyle = UITextBorderStyle.RoundedRect;
 					tf.Layer.BorderWidth = 0;
 					tf.Layer.CornerRadius = 10;
@@ -107,6 +131,6 @@ public static class MauiProgram
 				// Best-effort platform polish only.
 			}
 		});
-		#endif
+#endif
 	}
 }

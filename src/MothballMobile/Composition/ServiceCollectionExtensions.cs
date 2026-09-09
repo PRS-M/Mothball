@@ -92,6 +92,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddContainerServices(this IServiceCollection services)
     {
+        services.AddSingleton<BarcodeOperationCoordinator>();
         services.AddSingleton<IBarcodeAssignmentService, BarcodeAssignmentService>();
         services.AddSingleton<IContainerDetailsQueryHandler, ContainerDetailsQueryHandler>();
         services.AddSingleton<IContainerDetailsHandler, ContainerDetailsHandler>();
@@ -130,9 +131,6 @@ public static class ServiceCollectionExtensions
             services.AddSqlitePersistence();
         }
 
-#if DEBUG
-        services.AddSingleton<DemoDataSeeder>();
-#endif
         return services;
     }
 
@@ -184,6 +182,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IImagePathResolver, ImagePathResolver>();
         services.AddSingleton<IInventoryBackupRestoreService, SqliteInventoryBackupRestoreService>();
         services.AddSingleton<IBarcodeRegistryService, SqliteBarcodeRegistryService>();
+        services.AddSingleton<DemoDataSeeder>();
         return services;
     }
 

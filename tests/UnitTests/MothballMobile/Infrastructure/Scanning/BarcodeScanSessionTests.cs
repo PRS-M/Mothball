@@ -35,6 +35,38 @@ public sealed class BarcodeScanSessionTests
     }
 
     [Test]
+    public async Task CancelAsync_CompletesPendingScanWithoutNavigatingBack()
+    {
+        var navigation = new Mock<INavigationService>();
+        var session = new BarcodeScanSession(navigation.Object);
+        var scan = session.ScanAsync();
+
+        await session.CancelAsync();
+
+        Assert.That(await scan, Is.Null);
+        navigation.Verify(service => service.GoBackAsync(), Times.Never);
+    }
+
+    [Test]
+    public async Task CancelAsync_DoesNotReplaceBarcodeWhenCompletionIsNavigatingBack()
+    {
+        var navigation = new Mock<INavigationService>();
+        var navigationCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        navigation.Setup(service => service.GoBackAsync()).Returns(navigationCompleted.Task);
+        var session = new BarcodeScanSession(navigation.Object);
+        var expected = new Barcode("crate-17", BarcodeSymbology.Code128);
+
+        var scan = session.ScanAsync();
+        var completion = session.CompleteAsync(expected);
+        await session.CancelAsync();
+
+        navigationCompleted.SetResult();
+        await completion;
+
+        Assert.That(await scan, Is.EqualTo(expected));
+    }
+
+    [Test]
     public async Task CompleteAsync_WaitsForScannerNavigationBeforeReturningBarcode()
     {
         var navigation = new Mock<INavigationService>();
@@ -54,20 +86,15 @@ public sealed class BarcodeScanSessionTests
         Assert.That(await scan, Is.EqualTo(expected));
     }
 
-    [TestCase(false, BarcodeSymbology.QrCode, true)]
-    [TestCase(false, BarcodeSymbology.Ean13, true)]
-    [TestCase(false, BarcodeSymbology.Ean8, true)]
-    [TestCase(false, BarcodeSymbology.UpcE, false)]
-    [TestCase(true, BarcodeSymbology.UpcE, true)]
-    public void IsSymbologyAllowed_UsesBarcodeExtendedMode(
-        bool isBarcodeExtendedMode,
-        BarcodeSymbology symbology,
-        bool expected)
+    [TestCase(BarcodeSymbology.QrCode)]
+    [TestCase(BarcodeSymbology.Code128)]
+    [TestCase(BarcodeSymbology.Ean13)]
+    [TestCase(BarcodeSymbology.Ean8)]
+    [TestCase(BarcodeSymbology.UpcE)]
+    public void IsSymbologyAllowed_AcceptsEveryRecognizedSymbology(BarcodeSymbology symbology)
     {
-        var settings = Mock.Of<IApplicationSettings>(value =>
-            value.IsBarcodeExtendedMode == isBarcodeExtendedMode);
-        var viewModel = new BarcodeScannerViewModel(Mock.Of<IBarcodeScanSession>(), settings);
+        var viewModel = new BarcodeScannerViewModel(Mock.Of<IBarcodeScanSession>());
 
-        Assert.That(viewModel.IsSymbologyAllowed(symbology), Is.EqualTo(expected));
+        Assert.That(viewModel.IsSymbologyAllowed(symbology), Is.True);
     }
 }

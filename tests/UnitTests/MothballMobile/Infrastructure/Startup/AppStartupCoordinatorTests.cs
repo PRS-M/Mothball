@@ -35,11 +35,14 @@ public sealed class AppStartupCoordinatorTests
     {
         var calls = new List<string>();
         var secrets = new Mock<IBackupSignatureSecretProvider>();
-        secrets.Setup(service => service.GetOrCreateAsync())
+        secrets.Setup(service => service.GetOrCreateAsync(It.IsAny<CancellationToken>()))
             .Callback(() => calls.Add("secret"))
             .ReturnsAsync("secret");
         var startup = new Mock<IAppStartupOrchestrator>();
-        startup.Setup(service => service.StartAsync(It.IsAny<IProgress<StartupProgress>>()))
+        startup.Setup(service => service.StartAsync(
+                It.IsAny<IProgress<StartupProgress>>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()))
             .Callback(() => calls.Add("startup"))
             .Returns(Task.CompletedTask);
         var coordinator = CreateCoordinator(secrets.Object, startup.Object);
@@ -58,7 +61,10 @@ public sealed class AppStartupCoordinatorTests
     public async Task InitializeAsync_WhenStartupFails_PresentsRetryPageAndLogsError()
     {
         var startup = new Mock<IAppStartupOrchestrator>();
-        startup.Setup(service => service.StartAsync(It.IsAny<IProgress<StartupProgress>>()))
+        startup.Setup(service => service.StartAsync(
+                It.IsAny<IProgress<StartupProgress>>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("startup failed"));
         var logger = new Mock<ILogger<AppStartupCoordinator>>();
         var coordinator = CreateCoordinator(Mock.Of<IBackupSignatureSecretProvider>(), startup.Object, logger.Object);
@@ -81,7 +87,7 @@ public sealed class AppStartupCoordinatorTests
     public async Task InitializeAsync_WhenSecretInitializationFails_PresentsRetryPageAndSkipsStartup()
     {
         var secrets = new Mock<IBackupSignatureSecretProvider>();
-        secrets.Setup(service => service.GetOrCreateAsync())
+        secrets.Setup(service => service.GetOrCreateAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("secret failed"));
         var startup = new Mock<IAppStartupOrchestrator>();
         var coordinator = CreateCoordinator(secrets.Object, startup.Object);
@@ -90,14 +96,20 @@ public sealed class AppStartupCoordinatorTests
         await coordinator.InitializeAsync(window);
 
         Assert.That(window.Page, Is.TypeOf<ContentPage>());
-        startup.Verify(service => service.StartAsync(It.IsAny<IProgress<StartupProgress>>()), Times.Never);
+        startup.Verify(service => service.StartAsync(
+                It.IsAny<IProgress<StartupProgress>>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Test]
     public async Task StartupErrorPage_WhenRetryClicked_RunsStartupAgain()
     {
         var startup = new Mock<IAppStartupOrchestrator>();
-        startup.SetupSequence(service => service.StartAsync(It.IsAny<IProgress<StartupProgress>>()))
+        startup.SetupSequence(service => service.StartAsync(
+                It.IsAny<IProgress<StartupProgress>>(),
+                It.IsAny<bool>(),
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("first attempt"))
             .Returns(Task.CompletedTask);
         var coordinator = CreateCoordinator(Mock.Of<IBackupSignatureSecretProvider>(), startup.Object);

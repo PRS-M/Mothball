@@ -14,6 +14,7 @@ namespace MothballMobile.Infrastructure.Startup;
 public sealed class AppStartupCoordinator
 {
     private static readonly TimeSpan ShellLoadedTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan StartupTimeout = TimeSpan.FromMinutes(2);
 
     private readonly IAppStartupOrchestrator startupOrchestrator;
     private readonly IBackupSignatureSecretProvider backupSignatureSecretProvider;
@@ -22,6 +23,7 @@ public sealed class AppStartupCoordinator
     private readonly ILogger<AppStartupCoordinator> logger;
     private readonly ILogger<AppShell> appShellLogger;
     private readonly BarcodeLookupCoordinator barcodeLookupCoordinator;
+    private readonly SemaphoreSlim initializationGate = new(1, 1);
     private ProgressBar? overallProgressBar;
     private ProgressBar? stepProgressBar;
     private Label? startupStatusLabel;
@@ -99,6 +101,21 @@ public sealed class AppStartupCoordinator
     {
         ArgumentNullException.ThrowIfNull(window);
 
+        await initializationGate.WaitAsync();
+        try
+        {
+            await InitializeCoreAsync(window);
+        }
+        finally
+        {
+            initializationGate.Release();
+        }
+    }
+
+    private async Task InitializeCoreAsync(Window window)
+    {
+        using var startupCancellation = new CancellationTokenSource(StartupTimeout);
+
         try
         {
             var startupStarted = Stopwatch.GetTimestamp();
@@ -108,14 +125,19 @@ public sealed class AppStartupCoordinator
 
             var secretStarted = Stopwatch.GetTimestamp();
             progress.Report(new StartupProgress(0.05, 0, "Preparing secure storage"));
-            await backupSignatureSecretProvider.GetOrCreateAsync();
+            await backupSignatureSecretProvider.GetOrCreateAsync(startupCancellation.Token);
             progress.Report(new StartupProgress(0.18, 1, "Preparing secure storage"));
             logger.LogInformation(
                 "Application startup signing key completed in {ElapsedMilliseconds:F0} ms.",
                 Stopwatch.GetElapsedTime(secretStarted).TotalMilliseconds);
 
             var persistenceStarted = Stopwatch.GetTimestamp();
-            await startupOrchestrator.StartAsync(progress);
+#if DEBUG
+            const bool automaticDemoSeeding = true;
+#else
+            const bool automaticDemoSeeding = false;
+#endif
+            await startupOrchestrator.StartAsync(progress, automaticDemoSeeding, startupCancellation.Token);
             logger.LogInformation(
                 "Application startup persistence completed in {ElapsedMilliseconds:F0} ms.",
                 Stopwatch.GetElapsedTime(persistenceStarted).TotalMilliseconds);

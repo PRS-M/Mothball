@@ -6,6 +6,7 @@ using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Features.Containers.Queries;
 using CoreApp.Application.Features.Items.Queries;
 using CoreApp.Application.Specifications;
+using MothballMobile.Infrastructure.BackgroundOperations.Observability;
 using MothballMobile.Infrastructure.Utilities;
 
 namespace MothballMobile.UI.Features.Tags.TagResults;
@@ -19,6 +20,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
     private readonly IContainerListQueryHandler containerQueries;
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService navigation;
+    private readonly IBackgroundTaskObserver backgroundTasks;
     private readonly SemaphoreSlim reloadGate = new(1, 1);
     private CancellationTokenSource? loadCancellation;
     private bool initialized;
@@ -31,12 +33,14 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         IItemsListQueryHandler itemQueries,
         IContainerListQueryHandler containerQueries,
         IImagePathResolver imagePaths,
-        INavigationService navigation)
+        INavigationService navigation,
+        IBackgroundTaskObserver backgroundTasks)
     {
         this.itemQueries = itemQueries ?? throw new ArgumentNullException(nameof(itemQueries));
         this.containerQueries = containerQueries ?? throw new ArgumentNullException(nameof(containerQueries));
         this.imagePaths = imagePaths ?? throw new ArgumentNullException(nameof(imagePaths));
         this.navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        this.backgroundTasks = backgroundTasks ?? throw new ArgumentNullException(nameof(backgroundTasks));
     }
 
     public ObservableCollection<TagResultViewModel> Results { get; } = [];
@@ -84,14 +88,14 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
 
         if ((wasInitialized || initializationAttempted || activeLoad is not null) && HasTag)
         {
-            _ = ReloadAsync();
+            ReloadAsync().FireAndForget(backgroundTasks, "Reload tag results after navigation");
         }
     }
 
-    public Task InitializeAsync()
+    public Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         initializationAttempted = true;
-        return !HasTag ? Task.CompletedTask : ReloadAsync();
+        return !HasTag ? Task.CompletedTask : ReloadAsync(cancellationToken);
     }
 
     partial void OnSelectedFilterChanged(TagTargetFilter value)
@@ -133,10 +137,10 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
             return;
         }
 
-        _ = ReloadAsync();
+        ReloadAsync().FireAndForget(backgroundTasks, "Reload tag results after filter change");
     }
 
-    private async Task ReloadAsync()
+    private async Task ReloadAsync(CancellationToken pageCancellation = default)
     {
         var version = Interlocked.Increment(ref requestVersion);
         var cancellation = new CancellationTokenSource();
@@ -146,6 +150,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
 
         try
         {
+            pageCancellation.ThrowIfCancellationRequested();
             await reloadGate.WaitAsync(cancellation.Token);
             gateAcquired = true;
             await RunCommandAsync(async () =>
@@ -159,6 +164,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
                 {
                     var items = await itemQueries.QueryAsync(
                         ItemQueryFilter.All, search, null, null, itemFilter);
+                    pageCancellation.ThrowIfCancellationRequested();
                     cancellation.Token.ThrowIfCancellationRequested();
                     results.AddRange(items.Select(item => new TagResultViewModel(item, imagePaths, navigation)));
                 }
@@ -167,6 +173,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
                 {
                     var containers = await containerQueries.QueryAsync(
                         false, search, null, null, containerFilter);
+                    pageCancellation.ThrowIfCancellationRequested();
                     cancellation.Token.ThrowIfCancellationRequested();
                     results.AddRange(containers.Select(container => new TagResultViewModel(container, imagePaths, navigation)));
                 }

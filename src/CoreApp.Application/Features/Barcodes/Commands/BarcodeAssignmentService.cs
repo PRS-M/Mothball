@@ -13,6 +13,7 @@ public sealed class BarcodeAssignmentService : IBarcodeAssignmentService
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IBarcodeRegistryService? registry;
+    private readonly BarcodeOperationCoordinator barcodeOperations;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BarcodeAssignmentService"/> class.
@@ -22,17 +23,20 @@ public sealed class BarcodeAssignmentService : IBarcodeAssignmentService
     public BarcodeAssignmentService(
         IInventoryCommandRepository inventoryCommands,
         IInventoryQueryRepository inventoryQueries,
-        IBarcodeRegistryService? registry = null)
+        IBarcodeRegistryService? registry = null,
+        BarcodeOperationCoordinator? barcodeOperations = null)
     {
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
         this.registry = registry;
+        this.barcodeOperations = barcodeOperations ?? new BarcodeOperationCoordinator();
     }
 
     /// <inheritdoc />
     public async Task UpdateContainerAsync(Container container, Barcode? barcode)
     {
         ArgumentNullException.ThrowIfNull(container);
+        using var coordination = await barcodeOperations.AcquireAsync();
         var previous = container.Barcode;
         await EnsureBarcodeIsAvailableAsync(barcode, BarcodeOwnerKind.Container, container.ContainerId);
         container.UpdateBarcode(barcode);
@@ -51,6 +55,7 @@ public sealed class BarcodeAssignmentService : IBarcodeAssignmentService
     public async Task UpdateItemAsync(Item item, Barcode? barcode)
     {
         ArgumentNullException.ThrowIfNull(item);
+        using var coordination = await barcodeOperations.AcquireAsync();
         var previous = item.Barcode;
         await EnsureBarcodeIsAvailableAsync(barcode, BarcodeOwnerKind.Item, item.ItemId);
         item.UpdateBarcode(barcode);

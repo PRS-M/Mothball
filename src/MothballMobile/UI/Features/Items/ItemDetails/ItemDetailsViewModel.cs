@@ -62,6 +62,9 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     [ObservableProperty]
     private bool generateBarcode;
 
+    [ObservableProperty]
+    private bool isBarcodeSymbologyEditable = true;
+
     public bool IsManualBarcodeVisible => !GenerateBarcode;
 
     [ObservableProperty]
@@ -87,8 +90,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     public bool HasBarcode => !string.IsNullOrWhiteSpace(BarcodeValue);
     public bool IsViewingBarcode => !IsEditingBarcode;
     private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<global::CoreApp.Domain.ValueObjects.BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> simpleBarcodeSymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean8, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Ean13, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode]);
-    public IReadOnlyList<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
+    private static readonly ReadOnlyCollection<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> simpleBarcodeSymbologies = new([global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode, global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Code128]);
+    public IReadOnlyList<global::CoreApp.Domain.ValueObjects.BarcodeSymbology> AvailableBarcodeSymbologies => !GenerateBarcode && applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
         : simpleBarcodeSymbologies;
     public string DisplayDescription => HasDescription ? Description : "No description.";
@@ -182,7 +185,19 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         => OnPropertyChanged(nameof(IsViewingBarcode));
 
     partial void OnGenerateBarcodeChanged(bool value)
-        => OnPropertyChanged(nameof(IsManualBarcodeVisible));
+    {
+        OnPropertyChanged(nameof(IsManualBarcodeVisible));
+        OnPropertyChanged(nameof(AvailableBarcodeSymbologies));
+        if (value)
+        {
+            BarcodeValueDraft = string.Empty;
+            IsBarcodeSymbologyEditable = true;
+            if (BarcodeSymbologyDraft is not (global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode or global::CoreApp.Domain.ValueObjects.BarcodeSymbology.Code128))
+            {
+                BarcodeSymbologyDraft = global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
+            }
+        }
+    }
 
     partial void OnBarcodeSymbologyDraftChanged(global::CoreApp.Domain.ValueObjects.BarcodeSymbology value)
     {
@@ -193,24 +208,25 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     }
 
     /// <inheritdoc />
-    public Task InitializeAsync()
+    public Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(ItemId))
         {
             return Task.CompletedTask;
         }
 
-        return InitializeAsync(ItemId);
+        return InitializeAsync(ItemId, cancellationToken);
     }
 
     /// <summary>
     /// Loads item details, photos, inventory, and allocation state for the specified item.
     /// </summary>
     /// <param name="itemId">The identifier of the item to load.</param>
-    public async Task InitializeAsync(string itemId)
+    public async Task InitializeAsync(string itemId, CancellationToken cancellationToken = default)
     {
         await RunCommandAsync(async () =>
         {
+            cancellationToken.ThrowIfCancellationRequested();
             ItemId = itemId;
             ImagePaths.Clear();
             Tags.Clear();
@@ -219,6 +235,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             NotifyContainerRelationStateChanged();
 
             var details = await itemDetailsCoordinator.GetDetailsAsync(itemId);
+            cancellationToken.ThrowIfCancellationRequested();
             if (details is null)
             {
                 Name = "Item not found";
@@ -239,6 +256,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             var item = details.Inventory.Item;
             currentItem = item;
             await LoadTagsAsync(item.ItemId);
+            cancellationToken.ThrowIfCancellationRequested();
             currentAllocations = details.Inventory.Allocations;
             Name = item.Name;
             Description = item.Description;
@@ -532,6 +550,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
         BarcodeValueDraft = BarcodeValue;
         BarcodeSymbologyDraft = currentItem?.Barcode?.Symbology ?? global::CoreApp.Domain.ValueObjects.BarcodeSymbology.QrCode;
         GenerateBarcode = false;
+        IsBarcodeSymbologyEditable = true;
         IsEditingBarcode = true;
     }
 
@@ -561,6 +580,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
 
             BarcodeValueDraft = barcode.Value;
             BarcodeSymbologyDraft = barcode.Symbology;
+            GenerateBarcode = false;
+            IsBarcodeSymbologyEditable = false;
 
             var item = currentItem;
             if (item?.Barcode is null && item is not null)

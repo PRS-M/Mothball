@@ -3,6 +3,15 @@ namespace MothballMobile.Infrastructure.Settings;
 
 public sealed class ApplicationSettings(IPreferences preferences) : IApplicationSettings
 {
+    /// <summary>Preference key for the selected persistence backend.</summary>
+    public const string PersistenceBackendKey = "PersistenceBackend";
+
+    /// <summary>Canonical SQLite backend preference value.</summary>
+    public const string SqlitePersistenceBackend = "SQLite";
+
+    /// <summary>Canonical JSON backend preference value.</summary>
+    public const string JsonPersistenceBackend = "Json";
+
     private const string AppModeKey = "AppMode";
     private const string ThemeOverrideKey = "ThemeOverride";
     private const string ThemePaletteKey = "ThemePalette";
@@ -122,6 +131,16 @@ public sealed class ApplicationSettings(IPreferences preferences) : IApplication
     {
         get => preferences.Get(BarcodeExtendedModeKey, defaultValue: false);
         set => preferences.Set(BarcodeExtendedModeKey, value);
+    }
+
+    public string PersistenceBackend
+    {
+        get => preferences.Get(PersistenceBackendKey, SqlitePersistenceBackend);
+        set => preferences.Set(
+            PersistenceBackendKey,
+            string.Equals(value, JsonPersistenceBackend, StringComparison.OrdinalIgnoreCase)
+                ? JsonPersistenceBackend
+                : SqlitePersistenceBackend);
     }
 
     public bool IsBackupSigningKeyEnabled

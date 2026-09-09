@@ -10,13 +10,17 @@ public interface IInventoryMaintenanceService
     /// Replaces all inventory-owned photos with the shared generic assets.
     /// </summary>
     /// <param name="progress">Optional progress callback for the long-running operation.</param>
-    Task ReplaceAllPhotosWithSharedAssetsAsync(IProgress<MaintenanceProgress>? progress = null);
+    Task ReplaceAllPhotosWithSharedAssetsAsync(
+        IProgress<MaintenanceProgress>? progress = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes all inventory data and recreates an empty operational store.
     /// </summary>
     /// <param name="progress">Optional progress callback for the long-running operation.</param>
-    Task ResetAllDataAsync(IProgress<MaintenanceProgress>? progress = null);
+    Task ResetAllDataAsync(
+        IProgress<MaintenanceProgress>? progress = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Attempts to recover the store to a usable state (best-effort).
@@ -35,4 +39,8 @@ public interface IInventoryMaintenanceService
 /// </summary>
 /// <param name="Progress">The operation progress from zero to one.</param>
 /// <param name="Status">A user-facing operation status.</param>
-public readonly record struct MaintenanceProgress(double Progress, string Status);
+/// <param name="StepProgress">The current-step progress from zero to one.</param>
+public readonly record struct MaintenanceProgress(
+    double Progress,
+    string Status,
+    double StepProgress = 0);

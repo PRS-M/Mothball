@@ -13,13 +13,16 @@ public partial class AdvancedSettingsViewModel : ObservableObject
     private readonly INavigationService navigation;
     private readonly IInventoryMaintenanceService maintenance;
     private readonly IPopupService popup;
+    private readonly IInventoryChangeTracker? inventoryChanges;
     private readonly DemoDataSeeder? demoSeeder;
+    private CancellationTokenSource? maintenanceCancellation;
     public AdvancedSettingsViewModel(
         IApplicationSettings applicationSettings,
         BackupSigningKeySettingsViewModel signingKey,
         INavigationService navigation,
         IInventoryMaintenanceService maintenance,
         IPopupService popup,
+        IInventoryChangeTracker? inventoryChanges = null,
         DemoDataSeeder? demoSeeder = null)
     {
         this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
@@ -27,6 +30,7 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         this.navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         this.maintenance = maintenance ?? throw new ArgumentNullException(nameof(maintenance));
         this.popup = popup ?? throw new ArgumentNullException(nameof(popup));
+        this.inventoryChanges = inventoryChanges;
         this.demoSeeder = demoSeeder;
     }
 
@@ -48,6 +52,10 @@ public partial class AdvancedSettingsViewModel : ObservableObject
 
     public bool IsMaintenanceIdle => !IsMaintenanceInProgress;
 
+    public bool CanSeedExampleData => demoSeeder is not null && IsMaintenanceIdle;
+
+    public bool CanCancelMaintenance => IsMaintenanceInProgress;
+
     public bool IsBarcodeExtendedMode
     {
         get => applicationSettings.IsBarcodeExtendedMode;
@@ -62,6 +70,35 @@ public partial class AdvancedSettingsViewModel : ObservableObject
             OnPropertyChanged();
         }
     }
+
+    public bool IsSqlitePersistenceBackend
+    {
+        get => string.Equals(
+            applicationSettings.PersistenceBackend,
+            ApplicationSettings.SqlitePersistenceBackend,
+            StringComparison.OrdinalIgnoreCase);
+        set
+        {
+            var backend = value
+                ? ApplicationSettings.SqlitePersistenceBackend
+                : ApplicationSettings.JsonPersistenceBackend;
+            if (string.Equals(applicationSettings.PersistenceBackend, backend, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            applicationSettings.PersistenceBackend = backend;
+            OnPropertyChanged();
+        }
+    }
+
+    [RelayCommand]
+    private void SelectJsonPersistenceBackend()
+        => IsSqlitePersistenceBackend = false;
+
+    [RelayCommand]
+    private void SelectSqlitePersistenceBackend()
+        => IsSqlitePersistenceBackend = true;
 
     [RelayCommand]
     private Task NavigateToBackgroundOperationsAsync()
@@ -111,9 +148,26 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         await SeedDemoDataAsync();
     }
 
-    private async Task<bool> RunMaintenanceAsync(Func<IProgress<MaintenanceProgress>, Task> operation)
+    [RelayCommand(CanExecute = nameof(CanSeedExampleData))]
+    private async Task SeedExampleDataAsync()
+    {
+        if (!await popup.ConfirmAsync(
+                LocalizationManager.Current.Get("Seed demo data"),
+                LocalizationManager.Current.Get("The inventory store is empty. Create the demonstration containers, items, and tags now?"),
+                LocalizationManager.Current.Get("Seed"),
+                LocalizationManager.Current.Get("Cancel")))
+        {
+            return;
+        }
+
+        await SeedDemoDataAsync();
+    }
+
+    private async Task<bool> RunMaintenanceAsync(
+        Func<IProgress<MaintenanceProgress>, CancellationToken, Task> operation)
     {
         IsMaintenanceInProgress = true;
+        maintenanceCancellation = new CancellationTokenSource();
         MaintenanceProgress = 0;
         MaintenanceStepProgress = 0;
         MaintenanceStatus = LocalizationManager.Current.Get("Preparing");
@@ -123,10 +177,15 @@ public partial class AdvancedSettingsViewModel : ObservableObject
             var progress = new Progress<MaintenanceProgress>(update =>
             {
                 MaintenanceProgress = update.Progress;
+                MaintenanceStepProgress = update.StepProgress;
                 MaintenanceStatus = LocalizationManager.Current.Get(update.Status);
             });
-            await operation(progress);
+            await operation(progress, maintenanceCancellation.Token);
             succeeded = true;
+        }
+        catch (OperationCanceledException)
+        {
+            MaintenanceStatus = LocalizationManager.Current.Get("Operation canceled");
         }
         catch (Exception exception)
         {
@@ -138,14 +197,21 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         finally
         {
             IsMaintenanceInProgress = false;
+            maintenanceCancellation?.Dispose();
+            maintenanceCancellation = null;
         }
 
         return succeeded;
     }
 
+    [RelayCommand(CanExecute = nameof(CanCancelMaintenance))]
+    private void CancelMaintenance()
+        => maintenanceCancellation?.Cancel();
+
     private async Task SeedDemoDataAsync()
     {
         IsMaintenanceInProgress = true;
+        maintenanceCancellation = new CancellationTokenSource();
         MaintenanceProgress = 0;
         MaintenanceStepProgress = 0;
         try
@@ -156,7 +222,7 @@ public partial class AdvancedSettingsViewModel : ObservableObject
                 MaintenanceStepProgress = fraction;
                 MaintenanceStatus = LocalizationManager.Current.Get("Generating demo containers");
             });
-            await demoSeeder!.EnsureContainersAsync(100, withPhotos: true, containerProgress);
+            await demoSeeder!.EnsureContainersAsync(100, withPhotos: true, containerProgress, maintenanceCancellation.Token);
 
             var itemProgress = new Progress<double>(fraction =>
             {
@@ -164,10 +230,15 @@ public partial class AdvancedSettingsViewModel : ObservableObject
                 MaintenanceStepProgress = fraction;
                 MaintenanceStatus = LocalizationManager.Current.Get("Generating demo items");
             });
-            await demoSeeder.EnsureItemsAsync(100, withPhotos: true, itemProgress);
+            await demoSeeder.EnsureItemsAsync(100, withPhotos: true, itemProgress, maintenanceCancellation.Token);
+            inventoryChanges?.MarkChanged();
             MaintenanceProgress = 1;
             MaintenanceStepProgress = 1;
             MaintenanceStatus = LocalizationManager.Current.Get("Demo data ready");
+        }
+        catch (OperationCanceledException)
+        {
+            MaintenanceStatus = LocalizationManager.Current.Get("Operation canceled");
         }
         catch (Exception exception)
         {
@@ -177,14 +248,20 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         finally
         {
             IsMaintenanceInProgress = false;
+            maintenanceCancellation?.Dispose();
+            maintenanceCancellation = null;
         }
     }
 
     partial void OnIsMaintenanceInProgressChanged(bool value)
     {
         OnPropertyChanged(nameof(IsMaintenanceIdle));
+        OnPropertyChanged(nameof(CanSeedExampleData));
+        OnPropertyChanged(nameof(CanCancelMaintenance));
         ReplaceAllPhotosCommand.NotifyCanExecuteChanged();
         ResetAllDataCommand.NotifyCanExecuteChanged();
+        SeedExampleDataCommand.NotifyCanExecuteChanged();
+        CancelMaintenanceCommand.NotifyCanExecuteChanged();
     }
 
 }

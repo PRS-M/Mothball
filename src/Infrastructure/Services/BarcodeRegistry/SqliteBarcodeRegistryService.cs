@@ -64,23 +64,30 @@ public sealed class SqliteBarcodeRegistryService : IBarcodeRegistryService
     {
         ArgumentNullException.ThrowIfNull(barcode);
         await database.InitializeAsync().ConfigureAwait(false);
-        var existing = await FindAsync(barcode.Value).ConfigureAwait(false);
-        if (existing is not null)
+        DbBarcodeRegistry? reserved = null;
+        await database.RunInTransactionAsync(connection =>
         {
-            throw new BarcodeAlreadyAssignedException(barcode.Value, existing.OwnerKind ?? BarcodeOwnerKind.Item, existing.OwnerName ?? "reserved code");
-        }
+            var normalized = Normalize(barcode.Value)!;
+            var existing = connection.Table<DbBarcodeRegistry>()
+                .FirstOrDefault(value => value.NormalizedValue == normalized);
+            if (existing is not null)
+            {
+                throw new BarcodeAlreadyAssignedException(
+                    barcode.Value,
+                    existing.OwnerKind is int kind ? (BarcodeOwnerKind)kind : BarcodeOwnerKind.Item,
+                    string.IsNullOrWhiteSpace(existing.OwnerName) ? "reserved code" : existing.OwnerName);
+            }
 
-        var row = new DbBarcodeRegistry
-        {
-            BarcodeId = existing?.BarcodeId ?? Guid.NewGuid(),
-            Value = barcode.Value,
-            NormalizedValue = Normalize(barcode.Value)!,
-            Symbology = (int)barcode.Symbology,
-            Status = (int)BarcodeRegistryStatus.Reserved,
-        };
-        if (existing is null) await database.Connection.InsertAsync(row).ConfigureAwait(false);
-        else await database.Connection.UpdateAsync(row).ConfigureAwait(false);
-        return ToDomain(row);
+            reserved = new DbBarcodeRegistry
+            {
+                Value = barcode.Value,
+                NormalizedValue = normalized,
+                Symbology = (int)barcode.Symbology,
+                Status = (int)BarcodeRegistryStatus.Reserved,
+            };
+            connection.Insert(reserved);
+        }).ConfigureAwait(false);
+        return ToDomain(reserved!);
     }
 
     public async Task AssignAsync(Barcode barcode, BarcodeOwnerKind ownerKind, Guid ownerId, string ownerName)
@@ -90,46 +97,62 @@ public sealed class SqliteBarcodeRegistryService : IBarcodeRegistryService
         if (ownerId == Guid.Empty) throw new ArgumentException("Owner ID cannot be empty.", nameof(ownerId));
 
         await database.InitializeAsync().ConfigureAwait(false);
-        var existing = await FindAsync(barcode.Value).ConfigureAwait(false);
-        if (existing?.Status == BarcodeRegistryStatus.Released)
+        await database.RunInTransactionAsync(connection =>
         {
-            throw new BarcodeAlreadyAssignedException(barcode.Value, existing.OwnerKind ?? BarcodeOwnerKind.Item, existing.OwnerName ?? "released code");
-        }
+            var normalized = Normalize(barcode.Value)!;
+            var existing = connection.Table<DbBarcodeRegistry>()
+                .FirstOrDefault(value => value.NormalizedValue == normalized);
+            if (existing?.Status == (int)BarcodeRegistryStatus.Released)
+            {
+                throw new BarcodeAlreadyAssignedException(
+                    barcode.Value,
+                    existing.OwnerKind is int kind ? (BarcodeOwnerKind)kind : BarcodeOwnerKind.Item,
+                    string.IsNullOrWhiteSpace(existing.OwnerName) ? "released code" : existing.OwnerName);
+            }
 
-        if (existing is not null
-            && existing.Status == BarcodeRegistryStatus.Assigned
-            && (existing.OwnerKind != ownerKind || existing.OwnerId != ownerId))
-        {
-            throw new BarcodeAlreadyAssignedException(barcode.Value, existing.OwnerKind ?? ownerKind, existing.OwnerName ?? ownerName);
-        }
+            if (existing is not null
+                && existing.Status == (int)BarcodeRegistryStatus.Assigned
+                && (existing.OwnerKind != (int)ownerKind || existing.OwnerId != ownerId))
+            {
+                throw new BarcodeAlreadyAssignedException(
+                    barcode.Value,
+                    existing.OwnerKind is int kind ? (BarcodeOwnerKind)kind : ownerKind,
+                    string.IsNullOrWhiteSpace(existing.OwnerName) ? ownerName : existing.OwnerName);
+            }
 
-        var row = new DbBarcodeRegistry
-        {
-            BarcodeId = existing?.BarcodeId ?? Guid.NewGuid(),
-            Value = barcode.Value,
-            NormalizedValue = Normalize(barcode.Value)!,
-            Symbology = (int)barcode.Symbology,
-            Status = (int)BarcodeRegistryStatus.Assigned,
-            OwnerKind = (int)ownerKind,
-            OwnerId = ownerId,
-            OwnerName = ownerName,
-        };
-        if (existing is null) await database.Connection.InsertAsync(row).ConfigureAwait(false);
-        else await database.Connection.UpdateAsync(row).ConfigureAwait(false);
+            var row = existing ?? new DbBarcodeRegistry
+            {
+                BarcodeId = Guid.NewGuid(),
+                NormalizedValue = normalized,
+            };
+            row.Value = barcode.Value;
+            row.Symbology = (int)barcode.Symbology;
+            row.Status = (int)BarcodeRegistryStatus.Assigned;
+            row.OwnerKind = (int)ownerKind;
+            row.OwnerId = ownerId;
+            row.OwnerName = ownerName;
+            if (existing is null) connection.Insert(row);
+            else connection.Update(row);
+        }).ConfigureAwait(false);
     }
 
     public async Task ReleaseAsync(string barcodeValue)
     {
-        var existing = await FindAsync(barcodeValue).ConfigureAwait(false);
-        if (existing is null) return;
+        var normalized = Normalize(barcodeValue);
+        if (normalized is null) return;
 
-        await database.Connection.UpdateAsync(new DbBarcodeRegistry
+        await database.InitializeAsync().ConfigureAwait(false);
+        await database.RunInTransactionAsync(connection =>
         {
-            BarcodeId = existing.BarcodeId,
-            Value = existing.Barcode.Value,
-            NormalizedValue = Normalize(existing.Barcode.Value)!,
-            Symbology = (int)existing.Barcode.Symbology,
-            Status = (int)BarcodeRegistryStatus.Released,
+            var existing = connection.Table<DbBarcodeRegistry>()
+                .FirstOrDefault(value => value.NormalizedValue == normalized);
+            if (existing is null) return;
+
+            existing.Status = (int)BarcodeRegistryStatus.Released;
+            existing.OwnerKind = null;
+            existing.OwnerId = null;
+            existing.OwnerName = string.Empty;
+            connection.Update(existing);
         }).ConfigureAwait(false);
     }
 

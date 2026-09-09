@@ -101,6 +101,29 @@
         </Setter>
     </Style>
 
+    <Style TargetType="Border" x:Key="OutlinedPickerWrapper">
+        <Setter Property="Stroke" Value="{DynamicResource Outline}"/>
+        <Setter Property="StrokeThickness" Value="1.5"/>
+        <Setter Property="Background" Value="{DynamicResource PickerSurface}"/>
+        <Setter Property="Padding" Value="4,0"/>
+        <Setter Property="Margin" Value="0,4"/>
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="6"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Label" x:Key="PickerChevron">
+        <Setter Property="Text" Value="&#xF078;"/>
+        <Setter Property="FontFamily" Value="FontAwesomeSolid"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="TextColor" Value="{DynamicResource Primary}"/>
+        <Setter Property="InputTransparent" Value="True"/>
+        <Setter Property="VerticalOptions" Value="Center"/>
+        <Setter Property="Margin" Value="4,0,8,0"/>
+    </Style>
+
     <Style TargetType="Border" x:Key="SearchWrapper" BasedOn="{StaticResource InputWrapper}">
         <Setter Property="Stroke" Value="{DynamicResource OutlineVariant}"/>
         <Setter Property="StrokeThickness" Value="0.75"/>

@@ -45,7 +45,7 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
     }
 
     /// <inheritdoc />
-    public Task InitializeAsync()
+    public Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(ItemId))
         {
@@ -54,8 +54,10 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
 
         return RunCommandAsync(async () =>
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Locations.Clear();
             var details = await itemDetailsQueries.GetDetailsAsync(ItemId);
+            cancellationToken.ThrowIfCancellationRequested();
             if (details is null)
             {
                 ItemName = "Item not found";
@@ -65,7 +67,9 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
             ItemName = details.Inventory.Item.Name;
             foreach (var allocation in details.Inventory.Allocations.Where(allocation => allocation.Quantity > 0))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var container = await inventoryQueries.GetContainerAsync(allocation.ContainerId.ToString());
+                cancellationToken.ThrowIfCancellationRequested();
                 if (container is null)
                 {
                     continue;
@@ -78,6 +82,7 @@ public partial class ItemLocationsViewModel : BaseViewModel, IQueryAttributable,
                     nav,
                     applicationSettings.IsAdvancedMode);
                 await location.LoadImagesAsync();
+                cancellationToken.ThrowIfCancellationRequested();
                 Locations.Add(location);
             }
         });

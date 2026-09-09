@@ -8,6 +8,7 @@ using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Domain.Entities.ItemAggregate;
 using Moq;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.BackgroundOperations.Observability;
 using MothballMobile.Infrastructure.Navigation;
 using MothballMobile.UI.Features.Tags.TagResults;
 
@@ -36,7 +37,8 @@ public sealed class TagResultsViewModelTests
             .ReturnsAsync([container]);
         using var viewModel = new TagResultsViewModel(
             itemQueries.Object, containerQueries.Object,
-            Mock.Of<IImagePathResolver>(), Mock.Of<INavigationService>());
+            Mock.Of<IImagePathResolver>(), Mock.Of<INavigationService>(),
+            Mock.Of<IBackgroundTaskObserver>());
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
             [NavigationParams.TagId] = tagId.ToString(),
@@ -111,7 +113,8 @@ public sealed class TagResultsViewModelTests
             itemQueries.Object,
             containerQueries.Object,
             Mock.Of<IImagePathResolver>(),
-            Mock.Of<INavigationService>());
+            Mock.Of<INavigationService>(),
+            Mock.Of<IBackgroundTaskObserver>());
 
         await viewModel.InitializeAsync();
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
@@ -133,7 +136,8 @@ public sealed class TagResultsViewModelTests
             itemQueries.Object,
             containerQueries.Object,
             Mock.Of<IImagePathResolver>(),
-            Mock.Of<INavigationService>());
+            Mock.Of<INavigationService>(),
+            Mock.Of<IBackgroundTaskObserver>());
 
         viewModel.IsBusy = true;
 
@@ -152,7 +156,8 @@ public sealed class TagResultsViewModelTests
             Mock.Of<IItemsListQueryHandler>(),
             Mock.Of<IContainerListQueryHandler>(),
             Mock.Of<IImagePathResolver>(),
-            navigation.Object);
+            navigation.Object,
+            Mock.Of<IBackgroundTaskObserver>());
         viewModel.ApplyQueryAttributes(new Dictionary<string, object>
         {
             [NavigationParams.TagId] = tagId.ToString(),

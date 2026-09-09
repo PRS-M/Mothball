@@ -34,7 +34,7 @@ Relevant files:
 - `src/MothballMobile/Composition/ServiceCollectionExtensions.cs`
 - `src/MothballMobile/MauiProgram.cs`
 
-By default, `MauiProgram` sets backend to SQLite unless environment variable `MOTHBALL_PERSISTENCE_BACKEND` is set.
+By default, `MauiProgram` sets backend to SQLite unless Advanced Settings has saved a different backend or environment variable `MOTHBALL_PERSISTENCE_BACKEND` is set. The environment variable takes precedence and is useful for development and test runs.
 
 Example:
 
@@ -425,6 +425,28 @@ sequenceDiagram
     Store->>Store: Repair next-id counters
     Store-->>Repo: StoreState
 ```
+
+The two-slot commit and recovery model can also be viewed as a state diagram:
+
+```mermaid
+stateDiagram-v2
+    [*] --> NoValidManifest
+    NoValidManifest --> SlotAActive: Bootstrap empty store
+    SlotAActive --> SlotAActive: Read active slot
+    SlotBActive --> SlotBActive: Read active slot
+    SlotAActive --> WritingB: UpdateAsync acquires write lock
+    WritingB --> SlotAActive: Write fails before manifest publish
+    WritingB --> SlotBActive: Write slot B, then publish manifest B
+    SlotBActive --> WritingA: UpdateAsync acquires write lock
+    WritingA --> SlotBActive: Write fails before manifest publish
+    WritingA --> SlotAActive: Write slot A, then publish manifest A
+    SlotAActive --> SlotBActive: Roll back to previous committed slot
+    SlotBActive --> SlotAActive: Roll back to previous committed slot
+    NoValidManifest --> RecoveryFailed: No complete slot can be recovered
+    RecoveryFailed --> [*]
+```
+
+The failed-write transitions preserve the previously published manifest, so readers continue to use the last complete slot. The rollback transitions represent a new manifest publication that points back to the previous committed generation; they do not delete the slot being reverted to.
 
 ---
 

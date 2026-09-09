@@ -25,9 +25,9 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     private readonly IItemReceiptService itemReceipts;
 
     private static readonly ReadOnlyCollection<BarcodeSymbology> extendedBarcodeSymbologies = EnumValues.CreateReadOnly<BarcodeSymbology>();
-    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.Ean8, BarcodeSymbology.Ean13, BarcodeSymbology.QrCode]);
+    private static readonly ReadOnlyCollection<BarcodeSymbology> simpleBarcodeSymbologies = new([BarcodeSymbology.QrCode, BarcodeSymbology.Code128]);
 
-    public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => applicationSettings.IsBarcodeExtendedMode
+    public IReadOnlyList<BarcodeSymbology> AvailableBarcodeSymbologies => !GenerateInternalSku && applicationSettings.IsBarcodeExtendedMode
         ? extendedBarcodeSymbologies
         : simpleBarcodeSymbologies;
 
@@ -41,22 +41,27 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
     public bool IsItemMetadataEditable => !IsReceivingExistingItem;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(GenerateBarcodeCommand))]
     private bool generateInternalSku = true;
+
+    [ObservableProperty]
+    private bool isBarcodeSymbologyEditable = true;
 
     public bool IsManualBarcodeVisible => !GenerateInternalSku;
 
-    public bool CanGenerateBarcode => BarcodeSymbology is BarcodeSymbology.Code128 or BarcodeSymbology.QrCode;
-
-    [RelayCommand(CanExecute = nameof(CanGenerateBarcode))]
-    private void GenerateBarcode()
-    {
-        BarcodeValue = string.Empty;
-        GenerateInternalSku = true;
-    }
-
     partial void OnGenerateInternalSkuChanged(bool value)
-        => OnPropertyChanged(nameof(IsManualBarcodeVisible));
+    {
+        OnPropertyChanged(nameof(IsManualBarcodeVisible));
+        OnPropertyChanged(nameof(AvailableBarcodeSymbologies));
+        if (value)
+        {
+            BarcodeValue = string.Empty;
+            IsBarcodeSymbologyEditable = true;
+            if (BarcodeSymbology is not (BarcodeSymbology.QrCode or BarcodeSymbology.Code128))
+            {
+                BarcodeSymbology = BarcodeSymbology.QrCode;
+            }
+        }
+    }
 
     partial void OnBarcodeSymbologyChanged(BarcodeSymbology value)
     {
@@ -65,8 +70,6 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
             GenerateInternalSku = false;
         }
 
-        OnPropertyChanged(nameof(CanGenerateBarcode));
-        GenerateBarcodeCommand.NotifyCanExecuteChanged();
     }
 
     [ObservableProperty]
@@ -221,6 +224,8 @@ public partial class AddItemViewModel : BaseViewModel, IQueryAttributable
 
             BarcodeValue = barcode.Value;
             BarcodeSymbology = barcode.Symbology;
+            GenerateInternalSku = false;
+            IsBarcodeSymbologyEditable = false;
 
             await ResolveBarcodeCoreAsync();
         }, rethrowOnError: false);

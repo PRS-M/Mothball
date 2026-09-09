@@ -7,24 +7,20 @@ namespace MothballMobile.UI.Features.Scanning;
 public sealed partial class BarcodeScannerViewModel : BaseViewModel
 {
     private readonly IBarcodeScanSession scanner;
-    private readonly IApplicationSettings applicationSettings;
 
     public BarcodeScannerViewModel(
-        IBarcodeScanSession scanner,
-        IApplicationSettings applicationSettings)
+        IBarcodeScanSession scanner)
     {
         this.scanner = scanner ?? throw new ArgumentNullException(nameof(scanner));
-        this.applicationSettings = applicationSettings ?? throw new ArgumentNullException(nameof(applicationSettings));
     }
 
     /// <summary>
     /// Determines whether a decoded barcode type is available in the current mode.
     /// </summary>
     /// <param name="symbology">The decoded barcode type.</param>
-    /// <returns><see langword="true"/> for EAN-8, EAN-13, and QR codes, and for every type in extended mode; otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> when the scanner can decode the symbology.</returns>
     public bool IsSymbologyAllowed(BarcodeSymbology symbology)
-        => applicationSettings.IsBarcodeExtendedMode
-            || symbology is BarcodeSymbology.Ean8 or BarcodeSymbology.Ean13 or BarcodeSymbology.QrCode;
+        => Enum.IsDefined(symbology);
 
     /// <summary>
     /// Completes the active scan while exposing processing state to the scanner page.
@@ -41,6 +37,12 @@ public sealed partial class BarcodeScannerViewModel : BaseViewModel
     /// <returns>A task that completes after the gallery operation finishes.</returns>
     public Task ProcessGalleryAsync(Func<Task> operation)
         => RunCommandAsync(operation, rethrowOnError: false);
+
+    /// <summary>
+    /// Cancels the pending scan when the scanner page disappears unexpectedly.
+    /// </summary>
+    public Task CancelPendingScanAsync()
+        => scanner.CancelAsync();
 
     [RelayCommand]
     private Task CancelAsync()

@@ -69,8 +69,10 @@ public class DemoDataSeeder
     public async Task EnsureContainersAsync(
         int minContainers = 100,
         bool withPhotos = true,
-        IProgress<double>? progress = null)
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         await containers.InitializeAsync();
         await photos.InitializeAsync();
 
@@ -93,6 +95,7 @@ public class DemoDataSeeder
 
         for (int i = 0; i < toCreate; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var id = Guid.NewGuid();
             var container = new DbContainer
             {
@@ -130,8 +133,10 @@ public class DemoDataSeeder
     /// <returns><see langword="true"/> when the seeded records appear intact.</returns>
     public async Task<bool> IsSeedDataIntactAsync(
         int minContainers = 100,
-        int minItemsPerContainer = 100)
+        int minItemsPerContainer = 100,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         await containers.InitializeAsync();
         await items.InitializeAsync();
         await photos.InitializeAsync();
@@ -153,6 +158,7 @@ public class DemoDataSeeder
 
         foreach (var container in seededContainers)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrWhiteSpace(container.BarcodeValue))
             {
                 return false;
@@ -178,8 +184,10 @@ public class DemoDataSeeder
     public async Task EnsureItemsAsync(
         int minItemsPerContainer = 100,
         bool withPhotos = true,
-        IProgress<double>? progress = null)
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         // Ensure tables exist
         await containers.InitializeAsync();
         await items.InitializeAsync();
@@ -191,7 +199,7 @@ public class DemoDataSeeder
         var containersList = await containers.GetAllAsync();
         if (containersList.Count == 0)
         {
-            await EnsureContainersAsync(minContainers: 100, withPhotos: withPhotos);
+            await EnsureContainersAsync(minContainers: 100, withPhotos: withPhotos, cancellationToken: cancellationToken);
             containersList = await containers.GetAllAsync();
         }
 
@@ -230,6 +238,7 @@ public class DemoDataSeeder
 
         for (var containerIndex = 0; containerIndex < orderedSeededContainers.Count; containerIndex++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var container = orderedSeededContainers[containerIndex];
             await EnsureGeneratedBarcodeAsync(container);
 
@@ -247,6 +256,7 @@ public class DemoDataSeeder
 
             for (int ordinal = 1; ordinal <= minItemsPerContainer; ordinal++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var itemName = BuildSeedItemName(container, ordinal);
                 if (existingSeededItemNames.Contains(itemName))
                 {
@@ -400,7 +410,7 @@ public class DemoDataSeeder
         string sharedFileName,
         bool prepared)
     {
-        if (prepared)
+        if (prepared && fileHandler.FileExists(sharedFileName, Constants.PathToSharedPhotos))
         {
             return true;
         }

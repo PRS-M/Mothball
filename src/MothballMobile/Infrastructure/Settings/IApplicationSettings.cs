@@ -19,6 +19,11 @@ public interface IApplicationSettings
 
     bool IsBarcodeExtendedMode { get; set; }
 
+    /// <summary>
+    /// Gets or sets the persistence backend used after the next application restart.
+    /// </summary>
+    string PersistenceBackend { get; set; }
+
     bool IsBackupSigningKeyEnabled { get; set; }
 
     LanguagePreference Language { get; set; }

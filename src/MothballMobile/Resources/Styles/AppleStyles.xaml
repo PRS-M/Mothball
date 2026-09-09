@@ -12,6 +12,14 @@
         <Setter Property="StrokeThickness" Value="0" />
     </Style>
 
+    <Style TargetType="Border" x:Key="OutlinedPickerWrapper">
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0,4" />
+    </Style>
+
     <Style TargetType="Button">
         <Setter Property="TextColor" Value="{DynamicResource OnPrimary}" />
         <Setter Property="Background" Value="{DynamicResource Primary}" />
@@ -48,7 +56,7 @@
     <Style TargetType="Picker">
         <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
         <Setter Property="TitleColor" Value="{DynamicResource OnSurfaceVariant}" />
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{DynamicResource PickerSurface}" />
         <Setter Property="FontSize" Value="17" />
         <Setter Property="MinimumHeightRequest" Value="44" />
         <Setter Property="MinimumWidthRequest" Value="44" />
@@ -156,7 +164,7 @@
     <Style TargetType="Picker" x:Key="PickerBaseStyle">
         <Setter Property="TextColor" Value="{DynamicResource OnSurface}" />
         <Setter Property="TitleColor" Value="{DynamicResource OnSurfaceVariant}" />
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="{DynamicResource PickerSurface}" />
         <Setter Property="FontSize" Value="17" />
         <Setter Property="MinimumHeightRequest" Value="44" />
         <Setter Property="MinimumWidthRequest" Value="44" />

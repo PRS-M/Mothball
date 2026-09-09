@@ -21,6 +21,10 @@
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Añade los registros que faltan, igual que «Solo añadir».</value></data>
   <data name="Advanced" xml:space="preserve"><value>Avanzado</value></data>
   <data name="AdvancedSettings" xml:space="preserve"><value>Configuración avanzada</value></data>
+  <data name="PersistenceBackend" xml:space="preserve"><value>Backend de almacenamiento</value></data>
+  <data name="SQLite" xml:space="preserve"><value>SQLite</value></data>
+  <data name="ChooseTheInventoryPersistenceBackend" xml:space="preserve"><value>Elige si los datos del inventario se almacenan en SQLite o JSON. El almacenamiento JSON es experimental.</value></data>
+  <data name="RestartMothballToApplyTheNewPersistenceBackend" xml:space="preserve"><value>Reinicia Mothball para aplicar el nuevo backend de almacenamiento.</value></data>
   <data name="OpenAdvancedSettings" xml:space="preserve"><value>Abrir configuración avanzada</value></data>
   <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Opciones técnicas y para usuarios avanzados</value></data>
   <data name="LicensesAndLibraries" xml:space="preserve"><value>Licencias y bibliotecas</value></data>
@@ -53,7 +57,7 @@
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Este código de barras ya está en uso.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Algo salió mal. Inténtalo de nuevo.</value></data>
   <data name="BarcodesExtendedMode" xml:space="preserve"><value>Modo ampliado de códigos de barras (experimental)</value></data>
-  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>El modo experimental muestra tipos adicionales de códigos de barras. En el modo simple están disponibles EAN-8, EAN-13 y el código QR.</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>El modo experimental muestra tipos adicionales de códigos de barras. En el modo simple, los códigos generados usan QR o Code 128; los códigos escaneados conservan el formato detectado.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Tipo de código de barras</value></data>
   <data name="Backup" xml:space="preserve"><value>Copia de seguridad</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Copia de seguridad exportada</value></data>
@@ -378,4 +382,5 @@
   <data name="ContainersWithCount" xml:space="preserve"><value>Contenedores ({0})</value></data>
   <data name="ItemsWithCount" xml:space="preserve"><value>Artículos ({0})</value></data>
   <data name="TagNameIsRequired" xml:space="preserve"><value>El nombre de la etiqueta es obligatorio.</value></data>
+  <data name="OperationCanceled" xml:space="preserve"><value>Operación cancelada</value></data>
 </root>

@@ -12,51 +12,58 @@ public sealed class CreateContainerCommandHandler : ICreateContainerCommandHandl
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly ImageService imageService;
     private readonly IBarcodeRegistryService? registry;
+    private readonly BarcodeOperationCoordinator barcodeOperations;
 
     public CreateContainerCommandHandler(
         IInventoryCommandRepository inventoryCommands,
         IInventoryQueryRepository inventoryQueries,
         ImageService imageService,
-        IBarcodeRegistryService? registry = null)
+        IBarcodeRegistryService? registry = null,
+        BarcodeOperationCoordinator? barcodeOperations = null)
     {
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
         this.imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
         this.registry = registry;
+        this.barcodeOperations = barcodeOperations ?? new BarcodeOperationCoordinator();
     }
 
     /// <inheritdoc />
     public async Task<Container> CreateAsync(string name, string notes, byte[]? photoBytes = null, Barcode? barcode = null, bool generateInternalSku = true, BarcodeSymbology generatedBarcodeSymbology = BarcodeSymbology.Code128)
     {
-        var container = new Container(
-            containerId: Guid.NewGuid(),
-            name: name,
-            notes: notes);
-        var assignedBarcode = barcode ?? (generateInternalSku
-            ? BarcodeGenerator.Create(container.ContainerId, BarcodeOwnerKind.Container, generatedBarcodeSymbology)
-            : null);
-        if (assignedBarcode is not null)
+        Container container;
+        using (await barcodeOperations.AcquireAsync())
         {
-            await EnsureBarcodeIsAvailableAsync(assignedBarcode);
-            if (registry is not null)
+            container = new Container(
+                containerId: Guid.NewGuid(),
+                name: name,
+                notes: notes);
+            var assignedBarcode = barcode ?? (generateInternalSku
+                ? BarcodeGenerator.Create(container.ContainerId, BarcodeOwnerKind.Container, generatedBarcodeSymbology)
+                : null);
+            if (assignedBarcode is not null)
             {
-                await registry.AssignAsync(assignedBarcode, BarcodeOwnerKind.Container, container.ContainerId, container.Name);
+                await EnsureBarcodeIsAvailableAsync(assignedBarcode);
+                if (registry is not null)
+                {
+                    await registry.AssignAsync(assignedBarcode, BarcodeOwnerKind.Container, container.ContainerId, container.Name);
+                }
             }
-        }
-        container.UpdateBarcode(assignedBarcode);
+            container.UpdateBarcode(assignedBarcode);
 
-        try
-        {
-            await inventoryCommands.InsertContainerAsync(container);
-        }
-        catch
-        {
-            if (registry is not null && assignedBarcode is not null)
+            try
             {
-                await registry.ReleaseAsync(assignedBarcode.Value);
+                await inventoryCommands.InsertContainerAsync(container);
             }
+            catch
+            {
+                if (registry is not null && assignedBarcode is not null)
+                {
+                    await registry.ReleaseAsync(assignedBarcode.Value);
+                }
 
-            throw;
+                throw;
+            }
         }
 
         if (photoBytes is { Length: > 0 })

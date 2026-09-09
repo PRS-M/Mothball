@@ -42,6 +42,16 @@
                                                Text="{Binding Description}"
                                                IsEnabled="{Binding IsItemMetadataEditable}" />
 
+                        <Grid WidthRequest="{StaticResource WidthM}" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Label Text="{x:Static strings:AppResources.GenerateBarcode}"
+                                   Style="{StaticResource BodyMedium}"
+                                   VerticalOptions="Center" />
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding GenerateInternalSku, Mode=TwoWay}"
+                                    IsEnabled="{Binding IsItemMetadataEditable}"
+                                    SemanticProperties.Hint="{x:Static strings:AppResources.GenerateBarcodeDescription}" />
+                        </Grid>
+
                         <controls:LabeledEntryField Label="{x:Static strings:AppResources.Barcode}"
                                                      LabelMargin="4,8,4,0"
                                                      FieldWidthRequest="{StaticResource WidthM}"
@@ -52,31 +62,20 @@
                                                      ReturnCommand="{Binding ResolveBarcodeCommand}"
                                                      UnfocusedCommand="{Binding ResolveBarcodeCommand}" />
 
-                        <Grid WidthRequest="{StaticResource WidthM}" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                            <Label Text="{x:Static strings:AppResources.GenerateBarcode}"
-                                   Style="{StaticResource BodyMedium}"
-                                   VerticalOptions="Center" />
-                            <Switch Grid.Column="1"
-                                    IsToggled="{Binding GenerateInternalSku, Mode=TwoWay}"
-                                    SemanticProperties.Hint="{x:Static strings:AppResources.GenerateBarcodeDescription}" />
-                            <Button Grid.Column="2"
-                                    Text="{x:Static strings:AppResources.Generate}"
-                                    Style="{StaticResource CompactOutlinedButton}"
-                                    Command="{Binding GenerateBarcodeCommand}"
-                                    IsEnabled="{Binding CanGenerateBarcode}">
-                                <Button.ImageSource>
-                                    <FontImageSource FontFamily="FontAwesomeSolid" Glyph="&#xF1D8;" Color="{DynamicResource Primary}" Size="14" />
-                                </Button.ImageSource>
-                            </Button>
-                        </Grid>
-
                         <Grid WidthRequest="{StaticResource WidthM}"
                               ColumnDefinitions="*,Auto"
                               ColumnSpacing="8"
                               IsEnabled="{Binding IsItemMetadataEditable}">
-                            <Picker Title="{x:Static strings:AppResources.BarcodeSymbology}"
-                                    ItemsSource="{Binding AvailableBarcodeSymbologies}"
-                                    SelectedItem="{Binding BarcodeSymbology}" />
+                            <Border Style="{StaticResource OutlinedPickerWrapper}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Picker Grid.ColumnSpan="2"
+                                            Title="{x:Static strings:AppResources.BarcodeSymbology}"
+                                            ItemsSource="{Binding AvailableBarcodeSymbologies}"
+                                            IsEnabled="{Binding IsBarcodeSymbologyEditable}"
+                                            SelectedItem="{Binding BarcodeSymbology}" />
+                                    <Label Grid.Column="1" Style="{StaticResource PickerChevron}" />
+                                </Grid>
+                            </Border>
                             <Button Grid.Column="1"
                                     Text="{x:Static strings:AppResources.ScanBarcode}"
                                     Style="{StaticResource OutlinedButton}"

@@ -20,6 +20,10 @@
   <data name="AddsMissingRecordsJustLikeAddOnly" xml:space="preserve"><value>Dodaje brakujące rekordy tak jak tryb Tylko dodaj.</value></data>
   <data name="Advanced" xml:space="preserve"><value>Zaawansowany</value></data>
   <data name="AdvancedSettings" xml:space="preserve"><value>Ustawienia zaawansowane</value></data>
+  <data name="PersistenceBackend" xml:space="preserve"><value>Backend przechowywania danych</value></data>
+  <data name="SQLite" xml:space="preserve"><value>SQLite</value></data>
+  <data name="ChooseTheInventoryPersistenceBackend" xml:space="preserve"><value>Wybierz, czy dane inwentarza mają być przechowywane w SQLite czy w JSON. Przechowywanie w JSON jest eksperymentalne.</value></data>
+  <data name="RestartMothballToApplyTheNewPersistenceBackend" xml:space="preserve"><value>Uruchom ponownie Mothball, aby zastosować nowy backend przechowywania danych.</value></data>
   <data name="OpenAdvancedSettings" xml:space="preserve"><value>Otwórz ustawienia zaawansowane</value></data>
   <data name="PowerUserAndTechnicalOptions" xml:space="preserve"><value>Opcje dla zaawansowanych użytkowników i techniczne</value></data>
   <data name="LicensesAndLibraries" xml:space="preserve"><value>Licencje i biblioteki</value></data>
@@ -52,7 +56,7 @@
   <data name="ThisBarcodeIsAlreadyInUse" xml:space="preserve"><value>Ten kod kreskowy jest już używany.</value></data>
   <data name="SomethingWentWrongPleaseTryAgain" xml:space="preserve"><value>Coś poszło nie tak. Spróbuj ponownie.</value></data>
   <data name="BarcodesExtendedMode" xml:space="preserve"><value>Rozszerzony tryb kodów kreskowych (eksperymentalny)</value></data>
-  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Tryb eksperymentalny pokazuje dodatkowe typy kodów kreskowych. W trybie prostym dostępne są kody EAN-8, EAN-13 i QR.</value></data>
+  <data name="BarcodesExtendedModeShowsAdditionalBarcodeTypesQrCodeIsAlwaysAvailable" xml:space="preserve"><value>Tryb eksperymentalny pokazuje dodatkowe typy kodów kreskowych. W trybie prostym dla generowanych kodów dostępne są QR i Code 128, a zeskanowane kody zachowują wykryty format.</value></data>
   <data name="BarcodeSymbology" xml:space="preserve"><value>Typ kodu kreskowego</value></data>
   <data name="Backup" xml:space="preserve"><value>Kopia zapasowa</value></data>
   <data name="BackupExported" xml:space="preserve"><value>Wyeksportowano kopię zapasową</value></data>
@@ -123,7 +127,7 @@
   <data name="DeleteTheSelectedPhoto" xml:space="preserve"><value>Usunąć wybrane zdjęcie?</value></data>
   <data name="DeleteThisContainerItemsInsideWillNotBeDeletedOnlyTheRelation" xml:space="preserve"><value>Usunąć ten pojemnik? Przedmioty w środku nie zostaną usunięte, tylko powiązanie.</value></data>
   <data name="Deleted0" xml:space="preserve"><value>Usunięto: {0}</value></data>
-  <data name="DeletesContainersAndItemsThatExistInTheAppButAreNotPresentInTheBackupThisMakesTheTopLevelInventoryMatchTheBackup" xml:space="preserve"><value>Deletes containers and items that exist in the app but are not present in the backup. This makes the top-level inventory match the backup.</value></data>
+  <data name="DeletesContainersAndItemsThatExistInTheAppButAreNotPresentInTheBackupThisMakesTheTopLevelInventoryMatchTheBackup" xml:space="preserve"><value>Usuwa pojemniki i przedmioty istniejące w aplikacji, których nie ma w kopii. Dzięki temu inwentarz głównych rekordów odpowiada kopii.</value></data>
   <data name="Description" xml:space="preserve"><value>Opis</value></data>
   <data name="DismissError" xml:space="preserve"><value>Zamknij błąd</value></data>
   <data name="DocumentationHelp" xml:space="preserve"><value>Dokumentacja / Pomoc</value></data>
@@ -146,16 +150,16 @@
   <data name="EnterHowManyUnassignedItemsToUsePermanently" xml:space="preserve"><value>Wpisz, ile nieprzypisanych przedmiotów zużyć bezpowrotnie.</value></data>
   <data name="EnterHowManyUnassignedItemsToWithdraw" xml:space="preserve"><value>Wpisz, ile nieprzypisanych przedmiotów pobrać.</value></data>
   <data name="EnterQuantity" xml:space="preserve"><value>Wpisz ilość</value></data>
-  <data name="ExistingContainersItemsRelationsAndImagesAreLeftUnchangedThisIsTheSafestChoiceWhenYouWantToMergeABackupWithoutModifyingCurrentData" xml:space="preserve"><value>Existing containers, items, relations, and images are left unchanged. This is the safest choice when you want to merge a backup without modifying current data.</value></data>
+  <data name="ExistingContainersItemsRelationsAndImagesAreLeftUnchangedThisIsTheSafestChoiceWhenYouWantToMergeABackupWithoutModifyingCurrentData" xml:space="preserve"><value>Istniejące pojemniki, przedmioty, powiązania i obrazy pozostają niezmienione. To najbezpieczniejszy wybór, jeśli chcesz scalić kopię bez modyfikowania bieżących danych.</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>Eksport nie powiódł się</value></data>
   <data name="ExportInventoryMetadataAsJSONOrCreateAZIPBackupThatAlsoIncludesPhotoFiles" xml:space="preserve"><value>Eksportuj metadane magazynu jako JSON lub utwórz kopię ZIP zawierającą także zdjęcia.</value></data>
   <data name="ExportToJSON" xml:space="preserve"><value>Eksportuj do JSON</value></data>
   <data name="ExportWithPhotosToZIP" xml:space="preserve"><value>Eksportuj ze zdjęciami do ZIP</value></data>
   <data name="Filter" xml:space="preserve"><value>Filtr:</value></data>
-  <data name="ForExistingContainersItUpdatesNameAndNotesWhenTheBackupDiffersForExistingItemsItUpdatesNameAndDescriptionWhenTheBackupDiffers" xml:space="preserve"><value>For existing containers, it updates name and notes when the backup differs. For existing items, it updates name and description when the backup differs.</value></data>
-  <data name="ForSurvivingContainersAndItemsRelationAndImageRestoreRemainsAdditiveMissingRelationQuantitiesAndImageReferencesAreAddedButOmittedRelationPairsAndImageReferencesAreNotRemoved" xml:space="preserve"><value>For surviving containers and items, relation and image restore remains additive. Missing relation quantities and image references are added, but omitted relation pairs and image references are not removed.</value></data>
-  <data name="ForSurvivingImageReferencesMissingOwnerImageReferencesAreInsertedAndExtraOwnerImageReferencesAreDeleted" xml:space="preserve"><value>For surviving image references, missing owner-image references are inserted and extra owner-image references are deleted.</value></data>
-  <data name="ForSurvivingRelationPairsTheAppIsReconciledToTheBackupExactlyMissingPairsAreInsertedExtraPairsAreDeletedAndExistingPairQuantitiesAreSetToTheBackupQuantity" xml:space="preserve"><value>For surviving relation pairs, the app is reconciled to the backup exactly. Missing pairs are inserted, extra pairs are deleted, and existing pair quantities are set to the backup quantity.</value></data>
+  <data name="ForExistingContainersItUpdatesNameAndNotesWhenTheBackupDiffersForExistingItemsItUpdatesNameAndDescriptionWhenTheBackupDiffers" xml:space="preserve"><value>W przypadku istniejących pojemników aktualizuje nazwę i notatki, gdy różnią się od kopii. W przypadku istniejących przedmiotów aktualizuje nazwę i opis, gdy różnią się od kopii.</value></data>
+  <data name="ForSurvivingContainersAndItemsRelationAndImageRestoreRemainsAdditiveMissingRelationQuantitiesAndImageReferencesAreAddedButOmittedRelationPairsAndImageReferencesAreNotRemoved" xml:space="preserve"><value>W przypadku zachowanych pojemników i przedmiotów przywracanie powiązań i obrazów pozostaje addytywne. Brakujące ilości powiązań i odwołania do obrazów są dodawane, ale pominięte pary powiązań i odwołania do obrazów nie są usuwane.</value></data>
+  <data name="ForSurvivingImageReferencesMissingOwnerImageReferencesAreInsertedAndExtraOwnerImageReferencesAreDeleted" xml:space="preserve"><value>W przypadku zachowanych odwołań do obrazów brakujące odwołania właściciel–obraz są dodawane, a nadmiarowe usuwane.</value></data>
+  <data name="ForSurvivingRelationPairsTheAppIsReconciledToTheBackupExactlyMissingPairsAreInsertedExtraPairsAreDeletedAndExistingPairQuantitiesAreSetToTheBackupQuantity" xml:space="preserve"><value>W przypadku zachowanych par powiązań aplikacja jest dokładnie uzgadniana z kopią. Brakujące pary są dodawane, nadmiarowe usuwane, a ilości istniejących par są ustawiane zgodnie z kopią.</value></data>
   <data name="FullSyncRoots" xml:space="preserve"><value>Pełna synchronizacja (główne rekordy)</value></data>
   <data name="GoToTheContainer" xml:space="preserve"><value>Przejdź do pojemnika</value></data>
   <data name="Home" xml:space="preserve"><value>Start</value></data>
@@ -211,7 +215,7 @@
   <data name="Quantity" xml:space="preserve"><value>Ilość</value></data>
   <data name="QuantityNotUpdated" xml:space="preserve"><value>Ilość nie została zaktualizowana</value></data>
   <data name="RecentOperations" xml:space="preserve"><value>Ostatnie operacje</value></data>
-  <data name="RelationsAndImageReferencesRemainAdditiveForExistingRecords" xml:space="preserve"><value>Relations and image references remain additive for existing records.</value></data>
+  <data name="RelationsAndImageReferencesRemainAdditiveForExistingRecords" xml:space="preserve"><value>Powiązania i odwołania do obrazów są tylko dodawane dla istniejących rekordów.</value></data>
   <data name="Remove" xml:space="preserve"><value>Remove</value></data>
   <data name="Remove0FromThisContainerTheItemItselfWillNotBeDeleted" xml:space="preserve"><value>Usunąć „{0}” z tego pojemnika? Sam przedmiot nie zostanie usunięty.</value></data>
   <data name="RemoveItem" xml:space="preserve"><value>Usuń przedmiot</value></data>
@@ -377,4 +381,5 @@
   <data name="ContainersWithCount" xml:space="preserve"><value>Kontenery ({0})</value></data>
   <data name="ItemsWithCount" xml:space="preserve"><value>Przedmioty ({0})</value></data>
   <data name="TagNameIsRequired" xml:space="preserve"><value>Nazwa tagu jest wymagana.</value></data>
+  <data name="OperationCanceled" xml:space="preserve"><value>Operacja anulowana</value></data>
 </root>

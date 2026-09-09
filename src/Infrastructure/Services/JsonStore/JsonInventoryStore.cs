@@ -14,15 +14,17 @@ public sealed partial class JsonInventoryStore
 {
     public async Task ReplaceAllPhotosWithSharedAssetsAsync(
         IFileHandler files,
-        IProgress<MaintenanceProgress>? progress = null)
+        IProgress<MaintenanceProgress>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(files);
         await UpdateAsync(state =>
         {
             var containerIds = state.Containers.Select(container => container.ContainerId).ToHashSet();
             var itemIds = state.Items.Select(item => item.ItemId).ToHashSet();
-            for (var index = 0; index < state.Images.Count; index++)
-            {
+        for (var index = 0; index < state.Images.Count; index++)
+        {
+                cancellationToken.ThrowIfCancellationRequested();
                 var image = state.Images[index];
                 image.StoredFileName = containerIds.Contains(image.OwnerUniqueId) ? "seeded-container.jpg" :
                     itemIds.Contains(image.OwnerUniqueId) ? "seeded-item.jpg" : image.StoredFileName;
@@ -43,10 +45,11 @@ public sealed partial class JsonInventoryStore
 
     public async Task ResetAllDataAsync(
         IFileHandler files,
-        IProgress<MaintenanceProgress>? progress = null)
+        IProgress<MaintenanceProgress>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(files);
-        progress?.Report(new MaintenanceProgress(0.1, "Deleting inventory data"));
+        progress?.Report(new MaintenanceProgress(0, "Deleting inventory data", 0));
         await UpdateAsync(state =>
         {
             state.Metadata = new JsonStoreMetadata();
@@ -60,11 +63,27 @@ public sealed partial class JsonInventoryStore
             state.Barcodes.Clear();
             return Task.CompletedTask;
         });
-        progress?.Report(new MaintenanceProgress(0.7, "Deleting photo files"));
-        await DeleteFilesAsync(files, Constants.PathToContainerPhotos);
-        await DeleteFilesAsync(files, Constants.PathToItemPhotos);
-        await DeleteFilesAsync(files, Constants.PathToSharedPhotos);
-        progress?.Report(new MaintenanceProgress(1, "Data reset complete"));
+        progress?.Report(new MaintenanceProgress(0.25, "Deleting photo files", 0));
+        var folders = new[]
+        {
+            Constants.PathToContainerPhotos,
+            Constants.PathToItemPhotos,
+        };
+        var filesToDelete = folders
+            .SelectMany(folder => files.EnumerateFiles(folder).Select(file => (folder, file)))
+            .ToList();
+
+        for (var index = 0; index < filesToDelete.Count; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var (folder, file) = filesToDelete[index];
+            await files.DeleteFileAsync(file, folder, cancellationToken);
+            var stepProgress = (index + 1d) / Math.Max(filesToDelete.Count, 1);
+            progress?.Report(new MaintenanceProgress(0.25 + stepProgress * 0.75, "Deleting photo files", stepProgress));
+        }
+
+        await EnsureSharedAssetAsync(files, "container.png", "seeded-container.jpg");
+        progress?.Report(new MaintenanceProgress(1, "Data reset complete", 1));
     }
 
     private async Task EnsureSharedAssetAsync(IFileHandler files, string rawName, string storedName)
@@ -101,12 +120,13 @@ public sealed partial class JsonInventoryStore
         manifestManager = new JsonStoreManifestManager(this.files, this.logger, JsonOptions, IsSlotCompleteAsync);
     }
 
-    public async Task<bool> TryRecoverAsync()
+    public async Task<bool> TryRecoverAsync(CancellationToken cancellationToken = default)
     {
-        await writeLock.WaitAsync().ConfigureAwait(false);
+        await writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await TryRecoverUnlockedAsync().ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            return await TryRecoverUnlockedAsync(cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -114,8 +134,9 @@ public sealed partial class JsonInventoryStore
         }
     }
 
-    private async Task<bool> TryRecoverUnlockedAsync()
+    private async Task<bool> TryRecoverUnlockedAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         // Ensure there is at least one valid manifest+slot.
         // If none exist, initialize empty store into slot A.
         var active = await manifestManager.TryGetActiveAsync();
@@ -134,7 +155,7 @@ public sealed partial class JsonInventoryStore
                 SchemaVersion = empty.Metadata.SchemaVersion,
             };
 
-            await WriteSlotAsync("A", empty, generation: initial.Generation).ConfigureAwait(false);
+            await WriteSlotAsync("A", empty, generation: initial.Generation, cancellationToken).ConfigureAwait(false);
             await manifestManager.WriteAsync(JsonStoreConstants.ManifestAFileName, initial).ConfigureAwait(false);
             return true;
         }

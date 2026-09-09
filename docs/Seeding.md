@@ -4,7 +4,7 @@ This document describes development demo-data seeding and its startup boundary.
 
 ## Trigger and lifetime
 
-`DemoDataSeeder` is registered only in Debug builds. `AppStartupOrchestrator.StartAsync()` initializes the selected persistence backend and then invokes the seeder before the main shell is shown:
+`DemoDataSeeder` is available for the SQLite-backed app in all configurations. Automatic startup seeding remains Debug-only. Release users can explicitly choose **Seed demo data** from Advanced Settings after confirming the operation. `AppStartupOrchestrator.StartAsync()` initializes the selected persistence backend and, in Debug builds, then invokes the seeder before the main shell is shown:
 
 1. Initialize SQLite or the JSON operational store.
 2. Ensure at least 100 demo containers exist.
@@ -56,7 +56,7 @@ Startup may be retried after a failure, so seeding remains idempotent:
 
 The persisted completion marker is a performance optimization, not the source of truth. It is versioned with the expected demo-data shape and is accepted only when the lightweight integrity check still finds the seeded containers and their minimum item counts. Deleting or partially removing seeded records therefore causes the seeder to repair them on the next Debug startup.
 
-Release builds do not register `DemoDataSeeder`; the optional orchestrator dependency is then `null`, and startup performs no demo-data work.
+Release builds do not perform automatic demo-data work. The explicit Advanced Settings action uses the same idempotent seeder, so example data can be created on demand without changing normal Release startup behavior.
 
 ## Sequence
 
@@ -65,13 +65,13 @@ sequenceDiagram
     participant App
     participant Startup as AppStartupOrchestrator
     participant Store as Persistence initializer
-    participant Seeder as DemoDataSeeder (Debug only)
+    participant Seeder as DemoDataSeeder
     participant Shell
 
     App->>Startup: StartAsync()
     Startup->>Store: InitializeAsync()
     Store-->>Startup: Ready
-    opt DemoDataSeeder is registered
+    opt Debug automatic seeding is enabled
         Startup->>Seeder: EnsureContainersAsync(100, photos: true)
         Startup->>Seeder: EnsureItemsAsync(100, photos: true)
     end
