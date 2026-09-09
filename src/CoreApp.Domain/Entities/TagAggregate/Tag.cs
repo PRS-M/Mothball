@@ -17,7 +17,7 @@ public sealed class Tag : BaseEntity, IAggregateRoot
         }
 
         TagId = tagId;
-        Rename(name);
+        Name = name ?? throw new ArgumentNullException(nameof(name));
     }
 
     public Tag(Guid tagId, string name)

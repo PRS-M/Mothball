@@ -1,6 +1,7 @@
 using CoreApp.Domain.Entities.InventoryAggregate;
 using CoreApp.Application.Features.Photos;
 using CoreApp.Domain.Inventory;
+using CoreApp.Application.Abstractions.DomainEvents;
 
 namespace CoreApp.Application.Features.Inventory.Allocation;
 
@@ -9,15 +10,18 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
     private readonly IInventoryQueryRepository inventoryQueries;
     private readonly IInventoryCommandRepository inventoryCommands;
     private readonly IPhotoDeletionService? photoDeletion;
+    private readonly IDomainEventDispatcher? domainEvents;
 
     public ItemInventoryCommandService(
         IInventoryQueryRepository inventoryQueries,
         IInventoryCommandRepository inventoryCommands,
-        IPhotoDeletionService? photoDeletion = null)
+        IPhotoDeletionService? photoDeletion = null,
+        IDomainEventDispatcher? domainEvents = null)
     {
         this.inventoryQueries = inventoryQueries ?? throw new ArgumentNullException(nameof(inventoryQueries));
         this.inventoryCommands = inventoryCommands ?? throw new ArgumentNullException(nameof(inventoryCommands));
         this.photoDeletion = photoDeletion;
+        this.domainEvents = domainEvents;
     }
 
     /// <inheritdoc />
@@ -93,6 +97,14 @@ public sealed class ItemInventoryCommandService : IItemInventoryCommandService
             {
                 await photoDeletion.DeleteItemPhotoFilesBestEffortAsync(summary.Item);
             }
+
+            var events = inventory.DomainEvents.ToArray();
+            if (domainEvents is not null && events.Length > 0)
+            {
+                await domainEvents.DispatchAsync(events).ConfigureAwait(false);
+            }
+
+            inventory.ClearDomainEvents();
 
             return new ItemInventoryUpdateResult(true, 0, 0, 0, ItemDeleted: true);
         }
