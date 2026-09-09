@@ -6,8 +6,7 @@ namespace CoreApp.Application.Utilities;
 /// <summary>
 /// Dispatches in-process domain events to registered application handlers.
 /// </summary>
-public sealed class DomainEventDispatcher : IDomainEventDispatcher
-    , IDomainEventStream
+public sealed class DomainEventDispatcher : IDomainEventDispatcher, IDomainEventStream
 {
     private readonly IReadOnlyCollection<IDomainEventHandler> handlers;
     private readonly List<Action<IDomainEvent>> subscribers = [];
