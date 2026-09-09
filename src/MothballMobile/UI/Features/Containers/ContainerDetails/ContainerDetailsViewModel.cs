@@ -343,23 +343,24 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
     }
 
     /// <inheritdoc />
-    public Task InitializeAsync()
+    public Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         if (itemCoordinator.TryConsumeSkipNextInitialization())
         {
             return Task.CompletedTask;
         }
 
-        return InitializeAsync(ContainerId);
+        return InitializeAsync(ContainerId, cancellationToken);
     }
 
     /// <summary>
     /// Loads container details, photos, and initial item-list state for the specified container.
     /// </summary>
     /// <param name="containerId">The identifier of the container to load.</param>
-    public async Task InitializeAsync(string containerId)
+    public async Task InitializeAsync(string containerId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(containerId)) return;
+        cancellationToken.ThrowIfCancellationRequested();
 
         ContainerId = containerId;
         SearchQuery = string.Empty;
@@ -375,6 +376,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
         ContainerImagePaths.Clear();
 
         var summary = await itemCoordinator.LoadSummaryAsync(containerId, this);
+        cancellationToken.ThrowIfCancellationRequested();
         if (summary is null)
         {
             currentContainer = null;
@@ -397,6 +399,7 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
 
         currentContainer = summary.Container;
         await LoadTagsAsync(currentContainer.ContainerId);
+        cancellationToken.ThrowIfCancellationRequested();
         Name = currentContainer.Name;
         Notes = currentContainer.Notes;
         NotesDraft = currentContainer.Notes;

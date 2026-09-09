@@ -92,10 +92,10 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         }
     }
 
-    public Task InitializeAsync()
+    public Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         initializationAttempted = true;
-        return !HasTag ? Task.CompletedTask : ReloadAsync();
+        return !HasTag ? Task.CompletedTask : ReloadAsync(cancellationToken);
     }
 
     partial void OnSelectedFilterChanged(TagTargetFilter value)
@@ -140,7 +140,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         ReloadAsync().FireAndForget(backgroundTasks, "Reload tag results after filter change");
     }
 
-    private async Task ReloadAsync()
+    private async Task ReloadAsync(CancellationToken pageCancellation = default)
     {
         var version = Interlocked.Increment(ref requestVersion);
         var cancellation = new CancellationTokenSource();
@@ -150,6 +150,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
 
         try
         {
+            pageCancellation.ThrowIfCancellationRequested();
             await reloadGate.WaitAsync(cancellation.Token);
             gateAcquired = true;
             await RunCommandAsync(async () =>
@@ -163,6 +164,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
                 {
                     var items = await itemQueries.QueryAsync(
                         ItemQueryFilter.All, search, null, null, itemFilter);
+                    pageCancellation.ThrowIfCancellationRequested();
                     cancellation.Token.ThrowIfCancellationRequested();
                     results.AddRange(items.Select(item => new TagResultViewModel(item, imagePaths, navigation)));
                 }
@@ -171,6 +173,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
                 {
                     var containers = await containerQueries.QueryAsync(
                         false, search, null, null, containerFilter);
+                    pageCancellation.ThrowIfCancellationRequested();
                     cancellation.Token.ThrowIfCancellationRequested();
                     results.AddRange(containers.Select(container => new TagResultViewModel(container, imagePaths, navigation)));
                 }

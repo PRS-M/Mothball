@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Abstractions.Persistence;
 using CoreApp.Application.Contracts.Tags;
+using MothballMobile.Infrastructure.BackgroundOperations.Observability;
 using MothballMobile.Infrastructure.Utilities;
 
 namespace MothballMobile.UI.Features.Tags.TagsList;
@@ -15,14 +16,19 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
     private const int PageSize = 20;
     private readonly ITagRepository tagRepository;
     private readonly INavigationService navigation;
+    private readonly IBackgroundTaskObserver backgroundTasks;
     private string? activeQuery;
     private int currentPage;
     private bool hasMorePages = true;
 
-    public TagsListViewModel(ITagRepository tagRepository, INavigationService navigation)
+    public TagsListViewModel(
+        ITagRepository tagRepository,
+        INavigationService navigation,
+        IBackgroundTaskObserver backgroundTasks)
     {
         this.tagRepository = tagRepository ?? throw new ArgumentNullException(nameof(tagRepository));
         this.navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
+        this.backgroundTasks = backgroundTasks ?? throw new ArgumentNullException(nameof(backgroundTasks));
     }
 
     public ObservableCollection<TagViewModel> Tags { get; } = [];
@@ -36,24 +42,26 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
     [ObservableProperty]
     private bool isAddTagFormVisible;
 
-    public Task InitializeAsync()
+    public Task InitializeAsync(CancellationToken cancellationToken = default)
         // Usage counts can change while a tag-details page is on the navigation stack.
         // Refresh whenever this page appears so returning from an assignment shows current counts.
-        => RefreshAsync();
+        => RunCommandAsync(() => RefreshCoreAsync(cancellationToken), showRefreshing: true);
 
     [RelayCommand]
     private Task RefreshAsync()
-        => RunCommandAsync(RefreshCoreAsync, showRefreshing: true);
+        => RunCommandAsync(() => RefreshCoreAsync(), showRefreshing: true);
 
     [RelayCommand]
     private Task LoadNextPageAsync()
         => IsBusy || !hasMorePages
             ? Task.CompletedTask
-            : RunCommandAsync(LoadNextPageCoreAsync);
+            : RunCommandAsync(() => LoadNextPageCoreAsync());
 
-    private async Task LoadNextPageCoreAsync()
+    private async Task LoadNextPageCoreAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var page = await tagRepository.GetUsageSummariesPageAsync(activeQuery, currentPage, PageSize);
+        cancellationToken.ThrowIfCancellationRequested();
         foreach (var tag in page)
         {
             Tags.Add(new TagViewModel(tag, navigation));
@@ -66,18 +74,19 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
         }
     }
 
-    private async Task RefreshCoreAsync()
+    private async Task RefreshCoreAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         currentPage = 0;
         hasMorePages = true;
         Tags.Clear();
-        await LoadNextPageCoreAsync();
+        await LoadNextPageCoreAsync(cancellationToken);
     }
 
     partial void OnQueryChanged(string value)
     {
         activeQuery = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-        _ = RefreshAsync();
+        RefreshAsync().FireAndForget(backgroundTasks, "Refresh tags");
     }
 
     [RelayCommand]

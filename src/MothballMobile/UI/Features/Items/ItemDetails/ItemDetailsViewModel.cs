@@ -208,24 +208,25 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
     }
 
     /// <inheritdoc />
-    public Task InitializeAsync()
+    public Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(ItemId))
         {
             return Task.CompletedTask;
         }
 
-        return InitializeAsync(ItemId);
+        return InitializeAsync(ItemId, cancellationToken);
     }
 
     /// <summary>
     /// Loads item details, photos, inventory, and allocation state for the specified item.
     /// </summary>
     /// <param name="itemId">The identifier of the item to load.</param>
-    public async Task InitializeAsync(string itemId)
+    public async Task InitializeAsync(string itemId, CancellationToken cancellationToken = default)
     {
         await RunCommandAsync(async () =>
         {
+            cancellationToken.ThrowIfCancellationRequested();
             ItemId = itemId;
             ImagePaths.Clear();
             Tags.Clear();
@@ -234,6 +235,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             NotifyContainerRelationStateChanged();
 
             var details = await itemDetailsCoordinator.GetDetailsAsync(itemId);
+            cancellationToken.ThrowIfCancellationRequested();
             if (details is null)
             {
                 Name = "Item not found";
@@ -254,6 +256,7 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             var item = details.Inventory.Item;
             currentItem = item;
             await LoadTagsAsync(item.ItemId);
+            cancellationToken.ThrowIfCancellationRequested();
             currentAllocations = details.Inventory.Allocations;
             Name = item.Name;
             Description = item.Description;

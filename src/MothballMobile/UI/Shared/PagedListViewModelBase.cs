@@ -29,19 +29,22 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     /// <summary>
     /// Initializes the list by ensuring source data exists and loading its first page.
     /// </summary>
-    public Task InitializeAsync()
+    public Task InitializeAsync(CancellationToken cancellationToken = default)
         => initialized && loadedRevision == DataRevision
             ? Task.CompletedTask
-            : ReloadAsync();
+            : ReloadAsync(cancellationToken);
 
-    private async Task ReloadAsync()
+    private async Task ReloadAsync(CancellationToken cancellationToken = default)
     {
         var revisionAtStart = DataRevision;
         await RunCommandAsync(async () =>
         {
+            cancellationToken.ThrowIfCancellationRequested();
             ResetPaging();
-            await LoadNextPageCore();
+            await LoadNextPageCore(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             await OnInitializedAsync();
+            cancellationToken.ThrowIfCancellationRequested();
             loadedRevision = revisionAtStart;
             initialized = true;
         }, showRefreshing: true);
@@ -55,7 +58,7 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     {
         if (IsBusy) return;
         if (!CanLoadNextPage) return;
-        await RunCommandAsync(LoadNextPageCore);
+        await RunCommandAsync(() => LoadNextPageCore());
     }
 
     /// <summary>
@@ -113,10 +116,11 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
     /// <summary>
     /// Replaces the current list with the first page from the normal data source.
     /// </summary>
-    protected async Task ReplaceWithFirstPagedAsync()
+    protected async Task ReplaceWithFirstPagedAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         ResetPaging();
-        await LoadNextPageCore();
+        await LoadNextPageCore(cancellationToken);
     }
 
     private void AddItemsPage(List<TSource> sources)
@@ -129,13 +133,15 @@ public abstract partial class PagedListViewModelBase<TSource, TViewModel> : Base
         }
     }
 
-    private async Task LoadNextPageCore()
+    private async Task LoadNextPageCore(CancellationToken cancellationToken = default)
     {
         if (!hasMorePages) return;
+        cancellationToken.ThrowIfCancellationRequested();
         int pageNumber = currentPage;
         long totalStart = Stopwatch.GetTimestamp();
         long queryStart = Stopwatch.GetTimestamp();
         var page = await LoadAsync(pageNumber, pageSize);
+        cancellationToken.ThrowIfCancellationRequested();
         double queryElapsed = Stopwatch.GetElapsedTime(queryStart).TotalMilliseconds;
         long populationStart = Stopwatch.GetTimestamp();
 

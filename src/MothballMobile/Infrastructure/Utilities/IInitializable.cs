@@ -8,5 +8,5 @@ public interface IInitializable
     /// <summary>
     /// Performs asynchronous initialization.
     /// </summary>
-    Task InitializeAsync();
+    Task InitializeAsync(CancellationToken cancellationToken = default);
 }

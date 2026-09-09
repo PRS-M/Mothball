@@ -1,4 +1,6 @@
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
+using MothballMobile.Infrastructure.Diagnostics;
 
 namespace MothballMobile.UI.Controls;
 
@@ -129,6 +131,11 @@ public partial class SegmentedSwitch : ContentView
                 selectionIndicator.TranslateToAsync(targetTranslation, 0, 180, Easing.CubicOut));
 
             await selectionIndicator.ScaleToAsync(1, 120, Easing.CubicOut);
+        }
+        catch (Exception ex)
+        {
+            MauiLogger.For(typeof(SegmentedSwitch), this)
+                ?.LogError(ex, "Segmented switch selection animation failed.");
         }
         finally
         {

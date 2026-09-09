@@ -2,6 +2,7 @@ using CoreApp.Application.Abstractions.Persistence;
 using CoreApp.Application.Contracts.Tags;
 using Moq;
 using MothballMobile.Infrastructure;
+using MothballMobile.Infrastructure.BackgroundOperations.Observability;
 using MothballMobile.UI.Features.Tags.TagsList;
 
 namespace Mothball.Tests.Unit.Mobile.UI.Features.Tags.TagsList;
@@ -18,7 +19,10 @@ public sealed class TagsListViewModelTests
                 It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([new TagUsageSummary(tagId, "winter", 1, 0)])
             .ReturnsAsync([new TagUsageSummary(tagId, "winter", 2, 1)]);
-        var viewModel = new TagsListViewModel(repository.Object, Mock.Of<INavigationService>());
+        var viewModel = new TagsListViewModel(
+            repository.Object,
+            Mock.Of<INavigationService>(),
+            Mock.Of<IBackgroundTaskObserver>());
 
         await viewModel.InitializeAsync();
         await viewModel.InitializeAsync();
@@ -39,7 +43,10 @@ public sealed class TagsListViewModelTests
             .ReturnsAsync([new TagUsageSummary(tagId, "new-tag", 0, 0)]);
         repository.Setup(tags => tags.GetOrCreateAsync(It.IsAny<CoreApp.Domain.ValueObjects.TagName>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new CoreApp.Domain.Entities.TagAggregate.Tag(tagId, "new-tag"));
-        var viewModel = new TagsListViewModel(repository.Object, Mock.Of<INavigationService>());
+        var viewModel = new TagsListViewModel(
+            repository.Object,
+            Mock.Of<INavigationService>(),
+            Mock.Of<IBackgroundTaskObserver>());
 
         await viewModel.InitializeAsync();
         viewModel.NewTagName = "new-tag";
