@@ -61,6 +61,7 @@ public sealed partial class JsonInventoryStore
             state.Tags.Clear();
             state.TagAssignments.Clear();
             state.Barcodes.Clear();
+            state.SyncOutbox.Clear();
             return Task.CompletedTask;
         });
         progress?.Report(new MaintenanceProgress(0.25, "Deleting photo files", 0));

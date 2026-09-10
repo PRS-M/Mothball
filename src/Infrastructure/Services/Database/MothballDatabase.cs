@@ -59,6 +59,8 @@ public class MothballDatabase : IAsyncDisposable
     {
         await InitializeAsync();
         await Connection.DropTableAsync<DbBarcodeRegistry>();
+        await Connection.DropTableAsync<DbSyncOutboxEntry>();
+        await Connection.DropTableAsync<DbSyncDeviceMetadata>();
         await Connection.DropTableAsync<DbContainerTag>();
         await Connection.DropTableAsync<DbItemTag>();
         await Connection.DropTableAsync<DbTag>();
@@ -77,6 +79,8 @@ public class MothballDatabase : IAsyncDisposable
         await CreateTableIfNotExistsAsync<DbItemTag>(Connection);
         await CreateTableIfNotExistsAsync<DbContainerTag>(Connection);
         await CreateTableIfNotExistsAsync<DbBarcodeRegistry>(Connection);
+        await CreateTableIfNotExistsAsync<DbSyncOutboxEntry>(Connection);
+        await CreateTableIfNotExistsAsync<DbSyncDeviceMetadata>(Connection);
     }
 
     private async Task<SQLiteAsyncConnection> InitializeCoreAsync()
@@ -93,6 +97,8 @@ public class MothballDatabase : IAsyncDisposable
         await CreateTableIfNotExistsAsync<DbItemTag>(databaseConnection);
         await CreateTableIfNotExistsAsync<DbContainerTag>(databaseConnection);
         await CreateTableIfNotExistsAsync<DbBarcodeRegistry>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbSyncOutboxEntry>(databaseConnection);
+        await CreateTableIfNotExistsAsync<DbSyncDeviceMetadata>(databaseConnection);
 
         return databaseConnection;
     }

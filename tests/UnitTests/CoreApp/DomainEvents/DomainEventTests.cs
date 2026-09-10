@@ -82,4 +82,14 @@ public sealed class DomainEventTests
             item.DomainEvents.Select(domainEvent => domainEvent.GetType()).ToArray(),
             Is.EqualTo(new[] { typeof(ItemPhotoAdded), typeof(ItemPhotoRemoved) }));
     }
+
+    [Test]
+    public void DomainEvents_HaveStableUniqueIdentifiers()
+    {
+        var first = new Item(Guid.NewGuid(), "First", string.Empty).DomainEvents.Single();
+        var second = new Item(Guid.NewGuid(), "Second", string.Empty).DomainEvents.Single();
+
+        Assert.That(first.EventId, Is.Not.EqualTo(Guid.Empty));
+        Assert.That(second.EventId, Is.Not.EqualTo(first.EventId));
+    }
 }

@@ -28,6 +28,8 @@ public sealed partial class JsonInventoryStore
                             ?? [];
         var barcodes = await TryReadJsonAsync<List<JsonBarcodeRegistryRow>>(JsonStoreConstants.BarcodesFileName, slotFolder)
                       ?? [];
+        var syncOutbox = await TryReadJsonAsync<List<JsonSyncOutboxRow>>(JsonStoreConstants.SyncOutboxFileName, slotFolder)
+                        ?? [];
 
         // Ensure counters are sane even if metadata is missing/outdated.
         metadata.NextContainerRowId = Math.Max(metadata.NextContainerRowId, containers.Select(c => c.RowId).DefaultIfEmpty(0).Max() + 1);
@@ -47,6 +49,7 @@ public sealed partial class JsonInventoryStore
             Tags = tags,
             TagAssignments = tagAssignments,
             Barcodes = barcodes,
+            SyncOutbox = syncOutbox,
         };
     }
 
@@ -85,6 +88,7 @@ public sealed partial class JsonInventoryStore
         await WriteJsonAsync(JsonStoreConstants.TagsFileName, slotFolder, state.Tags).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.TagAssignmentsFileName, slotFolder, state.TagAssignments).ConfigureAwait(false);
         await WriteJsonAsync(JsonStoreConstants.BarcodesFileName, slotFolder, state.Barcodes).ConfigureAwait(false);
+        await WriteJsonAsync(JsonStoreConstants.SyncOutboxFileName, slotFolder, state.SyncOutbox).ConfigureAwait(false);
 
         // Commit info written last inside the slot.
         var commitInfo = new JsonStoreCommitInfo

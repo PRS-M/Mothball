@@ -28,6 +28,8 @@ using MothballMobile.UI.Features.Tags.TagsList;
 using MothballMobile.UI.Features.Tags.TagResults;
 using MothballMobile.UI.Features.Tags.TagAssignment;
 using CoreApp.Application.Features.Barcodes.Commands;
+using CoreApp.Application.Features.Sync;
+using CoreApp.Application.Abstractions.Sync;
 
 namespace MothballMobile.Composition;
 
@@ -62,6 +64,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPhotoBackgroundOperationTracker, PhotoBackgroundOperationTracker>();
         services.AddSingleton<IInventoryChangeTracker, InventoryChangeTracker>();
         services.AddSingleton<IDomainEventHandler, InventoryRevisionEventHandler>();
+        services.AddSingleton<IDomainEventHandler, SyncOutboxEventHandler>();
         services.AddSingleton<DomainEventDispatcher>();
         services.AddSingleton<IDomainEventDispatcher>(sp => sp.GetRequiredService<DomainEventDispatcher>());
         services.AddSingleton<IDomainEventStream>(sp => sp.GetRequiredService<DomainEventDispatcher>());
@@ -149,6 +152,9 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddJsonPersistence(this IServiceCollection services)
     {
         services.AddSingleton<JsonInventoryStore>();
+        services.AddSingleton<JsonSyncOutboxStore>();
+        services.AddSingleton<ISyncOutboxStore>(sp => sp.GetRequiredService<JsonSyncOutboxStore>());
+        services.AddSingleton<ISyncDeviceIdentity>(sp => sp.GetRequiredService<JsonSyncOutboxStore>());
         services.AddSingleton<IAppStartupInitializer, JsonStoreStartupInitializer>();
         services.AddSingleton<IInventoryMaintenanceService, JsonInventoryMaintenanceService>();
 
@@ -170,6 +176,9 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddSqlitePersistence(this IServiceCollection services)
     {
         services.AddSingleton<MothballDatabase>();
+        services.AddSingleton<SqliteSyncOutboxStore>();
+        services.AddSingleton<ISyncOutboxStore>(sp => sp.GetRequiredService<SqliteSyncOutboxStore>());
+        services.AddSingleton<ISyncDeviceIdentity>(sp => sp.GetRequiredService<SqliteSyncOutboxStore>());
         services.AddSingleton<IInventoryMaintenanceService, SqliteInventoryMaintenanceService>();
         services.AddSingleton<IAppStartupInitializer, SqliteStartupInitializer>();
         services.AddSingleton<ITransactionRunner, SqliteTransactionRunner>();
