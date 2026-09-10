@@ -88,6 +88,7 @@ public class Item : BaseEntity, IAggregateRoot
     {
         var newImage = new ImageItem();
         photos.Add(newImage);
+        AddDomainEvent(new ItemPhotoAdded(ItemId, newImage.ImageId, newImage.FileName));
 
         return newImage;
     }
@@ -101,6 +102,7 @@ public class Item : BaseEntity, IAggregateRoot
     {
         var image = new ImageItem(imageId);
         photos.Add(image);
+        AddDomainEvent(new ItemPhotoAdded(ItemId, image.ImageId, image.FileName));
 
         return image;
     }
@@ -121,7 +123,17 @@ public class Item : BaseEntity, IAggregateRoot
     /// <param name="imageId">The identifier of the image to remove.</param>
     public void RemoveImageItem(Guid imageId)
     {
-        photos.RemoveAll(p => p.ImageId == imageId);
+        var removed = photos.Where(photo => photo.ImageId == imageId).ToArray();
+        if (removed.Length == 0)
+        {
+            return;
+        }
+
+        photos.RemoveAll(photo => photo.ImageId == imageId);
+        foreach (var image in removed)
+        {
+            AddDomainEvent(new ItemPhotoRemoved(ItemId, image.ImageId, image.FileName));
+        }
     }
 
     private void SetDetailsWithoutEvent(string name, string description)

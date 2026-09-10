@@ -50,7 +50,11 @@ public class ImageService
 
         return await CaptureAndPersistPhotoAsync(
             addImageItem: container.AddImageItem,
-            removeImageItem: container.RemoveImageItem,
+            removeImageItem: imageId =>
+            {
+                container.RemoveImageItem(imageId);
+                container.ClearDomainEvents();
+            },
             saveDirectory: Constants.PathToContainerPhotos,
             resizeProgress: resizeProgress,
             source: source,
@@ -79,7 +83,11 @@ public class ImageService
 
         return await CaptureAndPersistPhotoAsync(
             addImageItem: item.AddImageItem,
-            removeImageItem: item.RemoveImageItem,
+            removeImageItem: imageId =>
+            {
+                item.RemoveImageItem(imageId);
+                item.ClearDomainEvents();
+            },
             saveDirectory: Constants.PathToItemPhotos,
             resizeProgress: resizeProgress,
             source: source,
@@ -123,7 +131,11 @@ public class ImageService
         return await PersistPhotoBytesAsync(
             bytes,
             addImageItem: container.AddImageItem,
-            removeImageItem: container.RemoveImageItem,
+            removeImageItem: imageId =>
+            {
+                container.RemoveImageItem(imageId);
+                container.ClearDomainEvents();
+            },
             saveDirectory: Constants.PathToContainerPhotos,
             persistAsync: async image =>
             {
@@ -145,7 +157,11 @@ public class ImageService
         return await PersistPhotoBytesAsync(
             bytes,
             addImageItem: item.AddImageItem,
-            removeImageItem: item.RemoveImageItem,
+            removeImageItem: imageId =>
+            {
+                item.RemoveImageItem(imageId);
+                item.ClearDomainEvents();
+            },
             saveDirectory: Constants.PathToItemPhotos,
             persistAsync: async image =>
             {

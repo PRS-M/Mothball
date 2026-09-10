@@ -2,7 +2,10 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Abstractions.DomainEvents;
 using CoreApp.Application.Contracts.Tags;
+using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Events;
 using MothballMobile.Infrastructure.BackgroundOperations.Observability;
 using MothballMobile.Infrastructure.Utilities;
 
@@ -11,12 +14,13 @@ namespace MothballMobile.UI.Features.Tags.TagsList;
 /// <summary>
 /// Loads and filters the catalogue of reusable tags.
 /// </summary>
-public partial class TagsListViewModel : BaseViewModel, IInitializable
+public partial class TagsListViewModel : BaseViewModel, IInitializable, IDisposable
 {
     private const int PageSize = 20;
     private readonly ITagRepository tagRepository;
     private readonly INavigationService navigation;
     private readonly IBackgroundTaskObserver backgroundTasks;
+    private readonly IDisposable? domainEventSubscription;
     private string? activeQuery;
     private int currentPage;
     private bool hasMorePages = true;
@@ -24,11 +28,13 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
     public TagsListViewModel(
         ITagRepository tagRepository,
         INavigationService navigation,
-        IBackgroundTaskObserver backgroundTasks)
+        IBackgroundTaskObserver backgroundTasks,
+        IDomainEventStream? domainEventStream = null)
     {
         this.tagRepository = tagRepository ?? throw new ArgumentNullException(nameof(tagRepository));
         this.navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         this.backgroundTasks = backgroundTasks ?? throw new ArgumentNullException(nameof(backgroundTasks));
+        domainEventSubscription = domainEventStream?.Subscribe(OnDomainEvent);
     }
 
     public ObservableCollection<TagViewModel> Tags { get; } = [];
@@ -121,7 +127,27 @@ public partial class TagsListViewModel : BaseViewModel, IInitializable
             await tagRepository.GetOrCreateAsync(new CoreApp.Domain.ValueObjects.TagName(name));
             NewTagName = string.Empty;
             IsAddTagFormVisible = false;
-            await RefreshCoreAsync();
+            if (domainEventSubscription is null)
+            {
+                await RefreshCoreAsync();
+            }
         }, rethrowOnError: false);
+    }
+
+    public void Dispose()
+    {
+        domainEventSubscription?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    private void OnDomainEvent(IDomainEvent domainEvent)
+    {
+        if (domainEvent is not (TagCreated or TagAssigned or TagUnassigned or TagRenamed))
+        {
+            return;
+        }
+
+        MainThread.InvokeOnMainThreadAsync(RefreshAsync)
+            .FireAndForget(backgroundTasks, "Refresh tags from domain event");
     }
 }

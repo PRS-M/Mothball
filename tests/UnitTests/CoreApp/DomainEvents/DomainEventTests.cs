@@ -68,4 +68,18 @@ public sealed class DomainEventTests
 
         Assert.That(item.DomainEvents, Is.Empty);
     }
+
+    [Test]
+    public void Item_PhotoLifecycle_RecordsAddedAndRemovedEvents()
+    {
+        var item = new Item(Guid.NewGuid(), "Cable", string.Empty);
+        item.ClearDomainEvents();
+
+        var photo = item.AddImageItem();
+        item.RemoveImageItem(photo.ImageId);
+
+        Assert.That(
+            item.DomainEvents.Select(domainEvent => domainEvent.GetType()).ToArray(),
+            Is.EqualTo(new[] { typeof(ItemPhotoAdded), typeof(ItemPhotoRemoved) }));
+    }
 }

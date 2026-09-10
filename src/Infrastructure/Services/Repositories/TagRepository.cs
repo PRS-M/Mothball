@@ -1,6 +1,8 @@
 using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Abstractions.DomainEvents;
 using CoreApp.Application.Contracts.Tags;
 using CoreApp.Domain.Entities.TagAggregate;
+using CoreApp.Domain.Events;
 using CoreApp.Domain.ValueObjects;
 using Infrastructure.Services.Database;
 using Infrastructure.Services.DatabaseModels;
@@ -14,10 +16,12 @@ namespace Infrastructure.Services.Repositories;
 public sealed class TagRepository : ITagRepository
 {
     private readonly MothballDatabase database;
+    private readonly IDomainEventDispatcher? domainEvents;
 
-    public TagRepository(MothballDatabase database)
+    public TagRepository(MothballDatabase database, IDomainEventDispatcher? domainEvents = null)
     {
         this.database = database ?? throw new ArgumentNullException(nameof(database));
+        this.domainEvents = domainEvents;
     }
 
     /// <inheritdoc />
@@ -127,6 +131,10 @@ public sealed class TagRepository : ITagRepository
         cancellationToken.ThrowIfCancellationRequested();
         var tag = new Tag(Guid.NewGuid(), name);
         await database.Connection.InsertAsync(tag.ToDb()).ConfigureAwait(false);
+        if (domainEvents is not null)
+        {
+            await domainEvents.DispatchAsync([new TagCreated(tag.TagId, tag.Name.Value)]).ConfigureAwait(false);
+        }
         cancellationToken.ThrowIfCancellationRequested();
         return tag;
     }
@@ -204,10 +212,15 @@ public sealed class TagRepository : ITagRepository
         };
         string targetColumn = targetType == TagTargetType.Item ? nameof(DbItemTag.ItemId) : nameof(DbContainerTag.ContainerId);
 
-        await database.Connection.ExecuteAsync(
+        var affected = await database.Connection.ExecuteAsync(
             $"INSERT OR IGNORE INTO {table} ({targetColumn}, TagId) VALUES (?, ?)",
             targetId,
             tagId).ConfigureAwait(false);
+        if (affected > 0 && domainEvents is not null)
+        {
+            await domainEvents.DispatchAsync(
+                [new TagAssigned(tagId, ToDomainTargetKind(targetType), targetId)]).ConfigureAwait(false);
+        }
         cancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -229,12 +242,25 @@ public sealed class TagRepository : ITagRepository
         };
         string targetColumn = targetType == TagTargetType.Item ? nameof(DbItemTag.ItemId) : nameof(DbContainerTag.ContainerId);
 
-        await database.Connection.ExecuteAsync(
+        var affected = await database.Connection.ExecuteAsync(
             $"DELETE FROM {table} WHERE {targetColumn} = ? AND TagId = ?",
             targetId,
             tagId).ConfigureAwait(false);
+        if (affected > 0 && domainEvents is not null)
+        {
+            await domainEvents.DispatchAsync(
+                [new TagUnassigned(tagId, ToDomainTargetKind(targetType), targetId)]).ConfigureAwait(false);
+        }
         cancellationToken.ThrowIfCancellationRequested();
     }
+
+    private static TagTargetKind ToDomainTargetKind(TagTargetType targetType)
+        => targetType switch
+        {
+            TagTargetType.Item => TagTargetKind.Item,
+            TagTargetType.Container => TagTargetKind.Container,
+            _ => throw new NotSupportedException($"Unsupported tag target type '{targetType}'."),
+        };
 
     private static void ValidateTarget(Guid targetId)
     {

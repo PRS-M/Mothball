@@ -55,6 +55,34 @@ public sealed record InventoryWithdrawn(
 /// <summary>Indicates that an item reached zero inventory and was removed.</summary>
 public sealed record ItemExhausted(Guid ItemId) : DomainEventBase;
 
+/// <summary>Identifies the kind of inventory target associated with a tag assignment.</summary>
+public enum TagTargetKind
+{
+    Item,
+    Container,
+}
+
+/// <summary>Indicates that an item photo was added.</summary>
+public sealed record ItemPhotoAdded(Guid ItemId, Guid ImageId, string FileName) : DomainEventBase;
+
+/// <summary>Indicates that an item photo was removed.</summary>
+public sealed record ItemPhotoRemoved(Guid ItemId, Guid ImageId, string FileName) : DomainEventBase;
+
+/// <summary>Indicates that a container photo was added.</summary>
+public sealed record ContainerPhotoAdded(Guid ContainerId, Guid ImageId, string FileName) : DomainEventBase;
+
+/// <summary>Indicates that a container photo was removed.</summary>
+public sealed record ContainerPhotoRemoved(Guid ContainerId, Guid ImageId, string FileName) : DomainEventBase;
+
+/// <summary>Indicates that a tag was created.</summary>
+public sealed record TagCreated(Guid TagId, string Name) : DomainEventBase;
+
+/// <summary>Indicates that a tag was assigned to an inventory target.</summary>
+public sealed record TagAssigned(Guid TagId, TagTargetKind TargetKind, Guid TargetId) : DomainEventBase;
+
+/// <summary>Indicates that a tag was removed from an inventory target.</summary>
+public sealed record TagUnassigned(Guid TagId, TagTargetKind TargetKind, Guid TargetId) : DomainEventBase;
+
 /// <summary>Indicates that a restore operation committed successfully.</summary>
 public sealed record InventoryRestored(
     int CreatedItems,

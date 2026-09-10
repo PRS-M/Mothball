@@ -2,12 +2,15 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Abstractions.DomainEvents;
 using CoreApp.Application.Contracts.Tags;
 using CoreApp.Application.Features.Containers.Queries;
 using CoreApp.Application.Features.Items.Queries;
 using CoreApp.Application.Specifications;
 using MothballMobile.Infrastructure.BackgroundOperations.Observability;
 using MothballMobile.Infrastructure.Utilities;
+using CoreApp.Domain.Abstractions;
+using CoreApp.Domain.Events;
 
 namespace MothballMobile.UI.Features.Tags.TagResults;
 
@@ -21,6 +24,7 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
     private readonly IImagePathResolver imagePaths;
     private readonly INavigationService navigation;
     private readonly IBackgroundTaskObserver backgroundTasks;
+    private readonly IDisposable? domainEventSubscription;
     private readonly SemaphoreSlim reloadGate = new(1, 1);
     private CancellationTokenSource? loadCancellation;
     private bool initialized;
@@ -34,13 +38,15 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         IContainerListQueryHandler containerQueries,
         IImagePathResolver imagePaths,
         INavigationService navigation,
-        IBackgroundTaskObserver backgroundTasks)
+        IBackgroundTaskObserver backgroundTasks,
+        IDomainEventStream? domainEventStream = null)
     {
         this.itemQueries = itemQueries ?? throw new ArgumentNullException(nameof(itemQueries));
         this.containerQueries = containerQueries ?? throw new ArgumentNullException(nameof(containerQueries));
         this.imagePaths = imagePaths ?? throw new ArgumentNullException(nameof(imagePaths));
         this.navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
         this.backgroundTasks = backgroundTasks ?? throw new ArgumentNullException(nameof(backgroundTasks));
+        domainEventSubscription = domainEventStream?.Subscribe(OnDomainEvent);
     }
 
     public ObservableCollection<TagResultViewModel> Results { get; } = [];
@@ -213,5 +219,29 @@ public partial class TagResultsViewModel : BaseViewModel, IQueryAttributable, II
         Interlocked.Increment(ref requestVersion);
         var cancellation = Interlocked.Exchange(ref loadCancellation, null);
         cancellation?.Cancel();
+        domainEventSubscription?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    private void OnDomainEvent(IDomainEvent domainEvent)
+    {
+        if (!HasTag || domainEvent is not (TagAssigned or TagUnassigned or TagRenamed))
+        {
+            return;
+        }
+
+        var affectsCurrentTag = domainEvent switch
+        {
+            TagAssigned assigned => assigned.TagId == tagId,
+            TagUnassigned unassigned => unassigned.TagId == tagId,
+            TagRenamed renamed => renamed.TagId == tagId,
+            _ => false,
+        };
+        if (!affectsCurrentTag)
+        {
+            return;
+        }
+
+        ReloadAsync().FireAndForget(backgroundTasks, "Reload tag results from domain event");
     }
 }

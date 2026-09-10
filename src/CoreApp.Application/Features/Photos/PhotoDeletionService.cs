@@ -42,6 +42,7 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
         catch
         {
             container.AddImageItem(imageId);
+            container.ClearDomainEvents();
             throw;
         }
 
@@ -69,6 +70,7 @@ public sealed class PhotoDeletionService : IPhotoDeletionService
         catch
         {
             item.AddImageItem(imageId);
+            item.ClearDomainEvents();
             throw;
         }
 

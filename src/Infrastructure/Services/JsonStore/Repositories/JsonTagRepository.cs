@@ -1,7 +1,9 @@
 using CoreApp.Application.Abstractions.Persistence;
+using CoreApp.Application.Abstractions.DomainEvents;
 using CoreApp.Application.Contracts.Tags;
 using CoreApp.Domain.Entities.TagAggregate;
 using CoreApp.Domain.ValueObjects;
+using CoreApp.Domain.Events;
 using Infrastructure.Services.JsonStore.Models;
 using Infrastructure.Services.Repositories;
 
@@ -13,10 +15,12 @@ namespace Infrastructure.Services.JsonStore.Repositories;
 public sealed class JsonTagRepository : ITagRepository
 {
     private readonly JsonInventoryStore store;
+    private readonly IDomainEventDispatcher? domainEvents;
 
-    public JsonTagRepository(JsonInventoryStore store)
+    public JsonTagRepository(JsonInventoryStore store, IDomainEventDispatcher? domainEvents = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.domainEvents = domainEvents;
     }
 
     /// <inheritdoc />
@@ -109,6 +113,7 @@ public sealed class JsonTagRepository : ITagRepository
     {
         ArgumentNullException.ThrowIfNull(name);
         Tag? result = null;
+        var created = false;
 
         await store.UpdateAsync(state =>
         {
@@ -128,9 +133,15 @@ public sealed class JsonTagRepository : ITagRepository
             };
             state.Tags.Add(row);
             result = ToDomain(row);
+            created = true;
 
             return Task.CompletedTask;
         }, cancellationToken).ConfigureAwait(false);
+        if (created && result is not null && domainEvents is not null)
+        {
+            await domainEvents.DispatchAsync([new TagCreated(result.TagId, result.Name.Value)]).ConfigureAwait(false);
+        }
+
         return result ?? throw new InvalidOperationException("Tag creation did not produce a result.");
     }
 
@@ -173,7 +184,7 @@ public sealed class JsonTagRepository : ITagRepository
             .ToHashSet();
     }
 
-    public Task AssignAsync(
+    public async Task AssignAsync(
         Guid tagId,
         TagTargetType targetType,
         Guid targetId,
@@ -181,7 +192,8 @@ public sealed class JsonTagRepository : ITagRepository
     {
         ValidateIds(tagId, targetId);
 
-        return store.UpdateAsync(state =>
+        var changed = false;
+        await store.UpdateAsync(state =>
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (state.TagAssignments.Any(assignment =>
@@ -199,12 +211,19 @@ public sealed class JsonTagRepository : ITagRepository
                 TargetId = targetId,
                 TargetType = targetType,
             });
+            changed = true;
 
             return Task.CompletedTask;
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
+
+        if (changed && domainEvents is not null)
+        {
+            await domainEvents.DispatchAsync(
+                [new TagAssigned(tagId, ToDomainTargetKind(targetType), targetId)]).ConfigureAwait(false);
+        }
     }
 
-    public Task RemoveAsync(
+    public async Task RemoveAsync(
         Guid tagId,
         TagTargetType targetType,
         Guid targetId,
@@ -212,19 +231,34 @@ public sealed class JsonTagRepository : ITagRepository
     {
         ValidateIds(tagId, targetId);
 
-        return store.UpdateAsync(state =>
+        var changed = false;
+        await store.UpdateAsync(state =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            state.TagAssignments.RemoveAll(assignment =>
+            changed = state.TagAssignments.RemoveAll(assignment =>
                 assignment.TagId == tagId
                 && assignment.TargetType == targetType
-                && assignment.TargetId == targetId);
+                && assignment.TargetId == targetId) > 0;
             return Task.CompletedTask;
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
+
+        if (changed && domainEvents is not null)
+        {
+            await domainEvents.DispatchAsync(
+                [new TagUnassigned(tagId, ToDomainTargetKind(targetType), targetId)]).ConfigureAwait(false);
+        }
     }
 
     private static Tag ToDomain(JsonTagRow row)
         => new(row.TagId, new TagName(row.Name));
+
+    private static TagTargetKind ToDomainTargetKind(TagTargetType targetType)
+        => targetType switch
+        {
+            TagTargetType.Item => TagTargetKind.Item,
+            TagTargetType.Container => TagTargetKind.Container,
+            _ => throw new NotSupportedException($"Unsupported tag target type '{targetType}'."),
+        };
 
     private static void ValidateTarget(Guid targetId)
     {
