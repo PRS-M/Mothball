@@ -38,16 +38,45 @@ public sealed class BarcodeAssignmentService : IBarcodeAssignmentService
         ArgumentNullException.ThrowIfNull(container);
         using var coordination = await barcodeOperations.AcquireAsync();
         var previous = container.Barcode;
+        var newlyAssigned = false;
+        var persisted = false;
         await EnsureBarcodeIsAvailableAsync(barcode, BarcodeOwnerKind.Container, container.ContainerId);
-        container.UpdateBarcode(barcode);
-        if (registry is not null && barcode is not null)
+        try
         {
-            await registry.AssignAsync(barcode, BarcodeOwnerKind.Container, container.ContainerId, container.Name);
+            container.UpdateBarcode(barcode);
+            if (registry is not null && barcode is not null)
+            {
+                await registry.AssignAsync(barcode, BarcodeOwnerKind.Container, container.ContainerId, container.Name);
+                newlyAssigned = true;
+            }
+
+            await inventoryCommands.UpdateContainerAsync(container);
+            persisted = true;
+            if (registry is not null && previous is not null && (barcode is null || previous != barcode))
+            {
+                await registry.ReleaseAsync(previous.Value);
+            }
         }
-        await inventoryCommands.UpdateContainerAsync(container);
-        if (registry is not null && previous is not null && (barcode is null || previous != barcode))
+        catch
         {
-            await registry.ReleaseAsync(previous.Value);
+            if (!persisted)
+            {
+                container.UpdateBarcode(previous);
+                container.ClearDomainEvents();
+                if (newlyAssigned && registry is not null && barcode is not null)
+                {
+                    try
+                    {
+                        await registry.ReleaseAsync(barcode.Value);
+                    }
+                    catch
+                    {
+                        // Preserve the original assignment failure; registry cleanup is best effort.
+                    }
+                }
+            }
+
+            throw;
         }
     }
 
@@ -57,16 +86,45 @@ public sealed class BarcodeAssignmentService : IBarcodeAssignmentService
         ArgumentNullException.ThrowIfNull(item);
         using var coordination = await barcodeOperations.AcquireAsync();
         var previous = item.Barcode;
+        var newlyAssigned = false;
+        var persisted = false;
         await EnsureBarcodeIsAvailableAsync(barcode, BarcodeOwnerKind.Item, item.ItemId);
-        item.UpdateBarcode(barcode);
-        if (registry is not null && barcode is not null)
+        try
         {
-            await registry.AssignAsync(barcode, BarcodeOwnerKind.Item, item.ItemId, item.Name);
+            item.UpdateBarcode(barcode);
+            if (registry is not null && barcode is not null)
+            {
+                await registry.AssignAsync(barcode, BarcodeOwnerKind.Item, item.ItemId, item.Name);
+                newlyAssigned = true;
+            }
+
+            await inventoryCommands.UpdateItemAsync(item);
+            persisted = true;
+            if (registry is not null && previous is not null && (barcode is null || previous != barcode))
+            {
+                await registry.ReleaseAsync(previous.Value);
+            }
         }
-        await inventoryCommands.UpdateItemAsync(item);
-        if (registry is not null && previous is not null && (barcode is null || previous != barcode))
+        catch
         {
-            await registry.ReleaseAsync(previous.Value);
+            if (!persisted)
+            {
+                item.UpdateBarcode(previous);
+                item.ClearDomainEvents();
+                if (newlyAssigned && registry is not null && barcode is not null)
+                {
+                    try
+                    {
+                        await registry.ReleaseAsync(barcode.Value);
+                    }
+                    catch
+                    {
+                        // Preserve the original assignment failure; registry cleanup is best effort.
+                    }
+                }
+            }
+
+            throw;
         }
     }
 

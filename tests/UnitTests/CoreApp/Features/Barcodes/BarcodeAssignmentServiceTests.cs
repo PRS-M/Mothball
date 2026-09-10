@@ -55,4 +55,26 @@ public sealed class BarcodeAssignmentServiceTests
         Assert.That(item.Barcode, Is.Null);
         commands.Verify(repository => repository.UpdateItemAsync(item), Times.Once);
     }
+
+    [Test]
+    public void UpdateItemAsync_WhenEntityPersistenceFails_ReleasesNewRegistryClaimAndRestoresEntity()
+    {
+        var item = new Item(Guid.NewGuid(), "Tape", "");
+        var barcode = new Barcode("tape-01", BarcodeSymbology.Code39);
+        var commands = new Mock<IInventoryCommandRepository>();
+        commands.Setup(repository => repository.UpdateItemAsync(item))
+            .ThrowsAsync(new InvalidOperationException("persistence failed"));
+        var registry = new Mock<IBarcodeRegistryService>();
+        var service = new BarcodeAssignmentService(
+            commands.Object,
+            Mock.Of<IInventoryQueryRepository>(),
+            registry.Object);
+
+        Assert.ThrowsAsync<InvalidOperationException>(async () => await service.UpdateItemAsync(item, barcode));
+
+        Assert.That(item.Barcode, Is.Null);
+        registry.Verify(
+            value => value.ReleaseAsync(barcode.Value),
+            Times.Once);
+    }
 }

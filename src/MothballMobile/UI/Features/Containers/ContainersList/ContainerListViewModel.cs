@@ -143,6 +143,8 @@ public partial class ContainerListViewModel : SearchablePagedListViewModelBase<C
             ContainerCreated
             or ContainerDetailsUpdated
             or ContainerBarcodeChanged
+            or ContainerPhotoAdded
+            or ContainerPhotoRemoved
             or ContainerDeleted
             or InventoryChanged
             or InventoryWithdrawn

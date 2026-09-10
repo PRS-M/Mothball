@@ -429,6 +429,8 @@ public partial class ItemDetailsViewModel : PhotoDetailsViewModelBase, IQueryAtt
             ItemCreated created => created.ItemId == itemId,
             ItemDetailsUpdated updated => updated.ItemId == itemId,
             ItemBarcodeChanged changed => changed.ItemId == itemId,
+            ItemPhotoAdded added => added.ItemId == itemId,
+            ItemPhotoRemoved removed => removed.ItemId == itemId,
             ItemDeleted deleted => deleted.ItemId == itemId,
             InventoryChanged changed => changed.ItemId == itemId,
             InventoryWithdrawn withdrawn => withdrawn.ItemId == itemId,

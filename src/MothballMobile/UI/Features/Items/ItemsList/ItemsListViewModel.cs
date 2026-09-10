@@ -161,6 +161,8 @@ public partial class ItemsListViewModel : SearchablePagedListViewModelBase<Inven
             ItemCreated
             or ItemDetailsUpdated
             or ItemBarcodeChanged
+            or ItemPhotoAdded
+            or ItemPhotoRemoved
             or ItemDeleted
             or InventoryChanged
             or InventoryWithdrawn

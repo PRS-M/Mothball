@@ -813,6 +813,8 @@ public partial class ContainerDetailsViewModel : PhotoDetailsViewModelBase, IQue
             ContainerCreated created => created.ContainerId == containerId,
             ContainerDetailsUpdated updated => updated.ContainerId == containerId,
             ContainerBarcodeChanged changed => changed.ContainerId == containerId,
+            ContainerPhotoAdded added => added.ContainerId == containerId,
+            ContainerPhotoRemoved removed => removed.ContainerId == containerId,
             ContainerDeleted deleted => deleted.ContainerId == containerId,
             InventoryChanged changed => changed.AffectedContainerIds.Contains(containerId),
             InventoryWithdrawn withdrawn => withdrawn.RemainingAllocations.Any(allocation => allocation.ContainerId == containerId),
